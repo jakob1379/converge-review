@@ -32,6 +32,10 @@ Advisory findings may be accepted and fixed, but never block convergence. If a
 reviewer from another model family is available (e.g. a `codex` CLI), give it
 one correctness seat — diversity buys more than seat count.
 
+Installed as plain skills rather than Claude Code plugins, the seats drop their
+prefix: `delegate-review`, `requesting-code-review`, `ponytail-review` and
+`code-review`.
+
 ## Loop
 
 1. **Pin the inputs.** Choose the base once. Write the whole change, including

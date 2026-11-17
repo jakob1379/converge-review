@@ -97,13 +97,13 @@ Or simply tell your agent to install https://github.com/jakob1379/converge-revie
 
 ### Nix
 
-Copy the skill and its four seat skills into `~/.claude/skills`:
+Copy the skill and its four seats, as plain skills, into `~/.claude/skills` (set `SKILLS_DIR` for another agent's folder):
 
 ```sh
 nix run github:jakob1379/converge-review
 ```
 
-Set `CLAUDE_SKILLS_DIR` to install somewhere else. Existing skill folders are kept, not overwritten. The `open-code-review` seat also needs the `ocr` binary on your `PATH`:
+Existing skill folders are kept, not overwritten. The `delegate-review` seat also needs the `ocr` binary on your `PATH`:
 
 ```sh
 nix profile install github:jakob1379/converge-review#open-code-review
@@ -111,7 +111,7 @@ nix profile install github:jakob1379/converge-review#open-code-review
 
 ### home-manager
 
-Add the flake as an input and import the module. It links the five skills into `~/.claude/skills` and installs `ocr`.
+Import the module. It adds the five skills to every agent you have enabled among Claude Code, Codex, OpenCode, Crush, GitHub Copilot CLI, Antigravity CLI and Warp, and installs `ocr`.
 
 ```nix
 {
@@ -121,6 +121,14 @@ Add the flake as an input and import the module. It links the five skills into `
   imports = [ inputs.converge-review.homeManagerModules.default ];
 }
 ```
+
+Or pick the agents yourself. `skills.<system>` is an attribute set of skill folders that any `programs.<agent>.skills` option accepts:
+
+```nix
+programs.codex.skills = inputs.converge-review.skills.${pkgs.stdenv.hostPlatform.system};
+```
+
+The skill dispatches its seats as parallel subagents, so the agent needs to support subagents.
 
 ### Without Nix
 
