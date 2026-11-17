@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "initErr is still read after construction: Stop sets it at pkg/storage/unified/resource/server.go:328 and returns it at line 337, so that write is used. Only the sentinel writes at lines 321 and 339 have no reader now that Init is called only from NewResourceServer (server.go:258). So the claim is partly right, but its blanket statement is wrong.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.15386060000000001
+}

@@ -1,0 +1,105 @@
+{
+  "findings": [
+    {
+      "path": "pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go",
+      "line": 58,
+      "severity": "Minor",
+      "claim": "LoggerMiddleware no longer sets pluginId/endpoint/uname/dsName/dsUID/traceID on the 'Plugin Request Completed' (grafana-data-egress) log line itself; it gets them only via m.logger.FromContext(ctx), so it silently depends on ContextualLoggerMiddleware being earlier in the chain (and on the tracing log provider being registered). Reordering or omitting it drops those fields with no error; field order in the line also changes.",
+      "evidence": "Only wiring is CreateMiddlewares in pluginsintegration.go (Tracing -> Metrics -> ContextualLogger -> Logger after decorator reversal, pkg/plugins/manager/client/decorator.go). The old 'should live at the top of the middleware stack' note was removed from metrics_middleware.go with no replacement. traceID still emitted via provider at pkg/infra/tracing/tracing.go:91. Production path verified equivalent by three seats; reasoned, no failing command.",
+      "seats": ["superpowers:requesting-code-review", "open-code-review:delegate-review", "mattpocock-skills:code-review"],
+      "verdict": "fix",
+      "reason": "Behaviour is correct today, so correctness seats rate it Minor (advisory seat's Important not adopted). Accepted: guard the coupling with a contract test over CreateMiddlewares asserting the egress log fields, plus a one-line ordering note on NewLoggerMiddleware."
+    },
+    {
+      "path": "pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go",
+      "line": 14,
+      "severity": "Minor",
+      "claim": "New ContextualLoggerMiddleware, grafanaInfraLogWrapper.FromContext and the changed LoggerMiddleware output have no tests; the refactor moves the egress-log fields to a new component with nothing pinning them.",
+      "evidence": "No contextual_logger_middleware_test.go or logger_middleware_test.go in clientmiddleware/; metrics_middleware_test.go never asserts on context attributes or logs (nor did the base instrumentation test). contribute/backend/style-guide.md:28 asks for code 'covered by unit tests'.",
+      "seats": ["superpowers:requesting-code-review", "mattpocock-skills:code-review", "open-code-review:delegate-review"],
+      "verdict": "fix",
+      "reason": "Same remedy as the ordering finding: one contract test through the middleware stack covers both. Requires the TestLogger.FromContext fix first."
+    },
+    {
+      "path": "pkg/plugins/log/fake.go",
+      "line": 46,
+      "severity": "Minor",
+      "claim": "TestLogger.FromContext returns a fresh NewTestLogger() instead of f, so anything logged via logger.FromContext(ctx) is invisible to the injected fake; since LoggerMiddleware now logs only through FromContext, a test using the fake always sees InfoLogs.Calls == 0.",
+      "evidence": "fake.go:46-48 returns NewTestLogger(); logger_middleware.go:58 is the only production FromContext caller. Mirrors existing TestLogger.New behaviour, so not a regression; no current test hits it.",
+      "seats": ["ponytail:ponytail-review", "superpowers:requesting-code-review", "open-code-review:delegate-review", "mattpocock-skills:code-review"],
+      "verdict": "fix",
+      "reason": "One-line change (return f) and a prerequisite for testing the egress-log fields."
+    },
+    {
+      "path": "pkg/plugins/log/logger.go",
+      "line": 49,
+      "severity": "Minor",
+      "claim": "The type assertion d.l.FromContext(ctx).(*log.ConcreteLogger) can never fail, so the !ok fallback (return d.New()) is dead code; if it ever ran it would silently drop context fields.",
+      "evidence": "ConcreteLogger.FromContext (pkg/infra/log/log.go:203-217) returns either cl or cl.New(...), both *ConcreteLogger.",
+      "seats": ["ponytail:ponytail-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review"],
+      "verdict": "reject",
+      "reason": "The suggested simplification swaps a non-panicking comma-ok assertion for one that panics if infra/log ever changes its return type, to save three lines. The guard is cheap insurance against an interface-typed return (log.Logger), not over-engineering."
+    },
+    {
+      "path": "pkg/plugins/log/ifaces.go",
+      "line": 22,
+      "severity": "Minor",
+      "claim": "Doc comment on Logger.FromContext is copy-pasted from New ('...plus the given context') and does not say the attributes come from context.Context via registered log providers.",
+      "evidence": "Compare ifaces.go:6 (New) and ifaces.go:22 (FromContext).",
+      "seats": ["ponytail:ponytail-review", "superpowers:requesting-code-review"],
+      "verdict": "fix",
+      "reason": "Misleading doc on a new public interface method; trivial wording fix."
+    },
+    {
+      "path": "pkg/services/pluginsintegration/clientmiddleware/metrics_middleware_test.go",
+      "line": 21,
+      "severity": "Minor",
+      "claim": "Rename from Instrumentation to Metrics is incomplete: test is still func TestInstrumentationMiddleware and the local in NewMetricsMiddleware is still imw (metrics_middleware.go:77).",
+      "evidence": "metrics_middleware_test.go:21; metrics_middleware.go:77 'imw := newMetricsMiddleware(...)'. Logger name log.New(\"plugin.instrumentation\") at pluginsintegration.go correctly left alone as a user-facing filter key.",
+      "seats": ["superpowers:requesting-code-review", "mattpocock-skills:code-review", "ponytail:ponytail-review", "open-code-review:delegate-review"],
+      "verdict": "fix",
+      "reason": "The PR's stated purpose is the rename; finishing it is two identifier changes."
+    },
+    {
+      "path": "pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go",
+      "line": 22,
+      "severity": "Minor",
+      "claim": "Exported type ContextualLoggerMiddleware and its exported methods lack doc comments, while the constructor and the neighbouring MetricsMiddleware type have them.",
+      "evidence": "contextual_logger_middleware.go:22 and methods ~39-67. contribute/backend/style-guide.md:8 adopts Go Code Review Comments, which require doc comments on exported top-level names.",
+      "seats": ["mattpocock-skills:code-review"],
+      "verdict": "fix",
+      "reason": "Documented standard; one-line type comment. Method comments on interface-satisfying pass-throughs follow existing package practice and are optional."
+    },
+    {
+      "path": "pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go",
+      "line": 27,
+      "severity": "Minor",
+      "claim": "Helper is still named instrumentContext, the old instrumentation-middleware wording; out of context it reads as a metrics/tracing function.",
+      "evidence": "contextual_logger_middleware.go:27; function moved verbatim from instrumentation_middleware.go.",
+      "seats": ["superpowers:requesting-code-review"],
+      "verdict": "defer",
+      "reason": "Moved code, unexported, no behavioural effect. ponytail: rename to e.g. withLogAttributes when the file is next touched."
+    },
+    {
+      "path": "pkg/plugins/log/ifaces.go",
+      "line": null,
+      "severity": "Minor",
+      "claim": "About 15 changed lines only swap interface{} for any in Logger/PrettyLogger, unrelated to the feature and inflating the diff.",
+      "evidence": "ifaces.go diff hunks 9-39.",
+      "seats": ["ponytail:ponytail-review"],
+      "verdict": "reject",
+      "reason": "Mechanical, behaviour-neutral modernization consistent with Go 1.18+ style; the standards seat checked it and found it fine. Splitting it out has no review or runtime value."
+    },
+    {
+      "path": "pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go",
+      "line": 53,
+      "severity": "Minor",
+      "claim": "Log key time_before_plugin_request is snake_case, against the camelCase log-key convention.",
+      "evidence": "contribute/backend/instrumentation.md Logs -> Naming conventions: 'Prefer using camelCase style when naming log keys.' Key sits in the logParams literal this patch rewrote.",
+      "seats": ["mattpocock-skills:code-review"],
+      "verdict": "reject",
+      "reason": "Key predates this patch (seat concedes it) and renaming it changes emitted grafana-data-egress output that downstream log queries may match on; out of scope for a rename/refactor PR."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode: no dependency install, build, lint or tests), so the review is unanchored by executed checks; all claims are reasoned. Spec axis did not run (no spec; intent inferred from branch name and commit messages). open-code-review:delegate-review excluded pkg/services/pluginsintegration/clientmiddleware/metrics_middleware_test.go by its default test-path rule (it read the one-line diff anyway); all other seats reviewed all 8 files. No cross-family reviewer available; all four seats are same-model, so seat agreement is weak evidence. Untracked harness files in the worktree root (.bashrc, .claude/, .gitconfig, etc.) are environment artifacts and were excluded from the pinned patch. No Critical/Important finding from a correctness seat was rejected, so no Rejections-rule verifier was dispatched."
+}

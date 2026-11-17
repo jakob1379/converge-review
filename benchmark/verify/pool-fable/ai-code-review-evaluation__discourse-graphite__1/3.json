@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch hardcodes 10 MB as separate literals in three places: app/assets/javascripts/discourse/lib/utilities.js:182 and :246 (`10 * 1024`) and app/controllers/uploads_controller.rb:55 (`10.megabytes`). They replace the SiteSetting lookups and have no shared source, so client and server values can drift independently.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1470993
+}

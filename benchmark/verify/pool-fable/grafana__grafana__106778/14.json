@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/hooks/useAbilities.ts:219-221 has a bare `@deprecated Use {@link useAllRulerRuleAbilities} instead` with no reason, and that target hardcodes `const isFederated = false` (useAbilities.ts:243-245) where the pre-patch hook used `isFederatedRuleGroup(rule.group)`. Because the deprecated hook now simply delegates (useAbilities.ts:227-228), the two are equivalent to each other post-patch; the real difference is that CombinedRule callers such as RuleActionsButtons.tsx:57 lose the federated immutability check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3197024
+}

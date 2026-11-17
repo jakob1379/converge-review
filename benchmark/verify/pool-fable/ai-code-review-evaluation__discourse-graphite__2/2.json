@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `:unsubscribe` to `ensure_logged_in` (app/controllers/topics_controller.rb:28) and puts `post.topic.unsubscribe_url` in notification emails (app/mailers/user_notifications.rb:295); for an anonymous HTML GET, `NotLoggedIn` is rescued with a bare `redirect_to path(\"/\")` (app/controllers/application_controller.rb:97-104), so nothing is unsubscribed and no message is shown. The `destination_url` cookie is set (application_controller.rb:420) but only honoured after login when `loginRequired` is on (app/assets/javascripts/discourse/controllers/login.js.es6:84), so on a default site there is no return path.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.46419150000000003
+}

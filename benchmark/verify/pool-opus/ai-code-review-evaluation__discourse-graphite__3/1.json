@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "users_controller.rb:168 calls user.valid? and then :172 calls user.save, so validations run twice. On a new record email_changed? stays true, so EmailValidator (lib/validators/email_validator.rb:183) calls BlockedEmail.should_block? both times, and that method saves match_count+1 and last_match_at on every call (app/models/blocked_email.rb:80-84). One signup with a blocked email therefore counts two matches and does two writes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0818194
+}

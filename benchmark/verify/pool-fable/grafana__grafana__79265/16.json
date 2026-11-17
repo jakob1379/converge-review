@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/anonymous/anonimpl/client.go:44-47 now calls TagDevice synchronously and returns `nil, err` on `anonstore.ErrDeviceLimitReached`, which propagates from database.go:96 via impl.go:147, so a new device over the limit fails anonymous authentication. The explicit `errors.Is` branch looks deliberate, it applies only when `device_limit` > 0 and the request carries `X-Grafana-Device-Id`, and because impl.go:87 sets the local cache before the store call, repeat requests from the same device then pass.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4522584
+}

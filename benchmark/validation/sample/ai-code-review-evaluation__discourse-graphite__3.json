@@ -1,0 +1,60 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BlockedEmail.should_block? increments match_count/last_match_at inside email validation, and users#create runs validations twice (user.valid? then user.save), so one signup attempt is counted twice and causes extra writes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "pushObject(result.values.email) adds null/undefined to rejectedEmails when the server response omits or blanks values.email.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "EmailValidator no longer rejects malformed addresses, so validates :email, email: true accepts values like sam@sam or sam.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'last_match_at is null' example tests an ActiveRecord/migration default rather than application logic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The modified User model validations have no updated specs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

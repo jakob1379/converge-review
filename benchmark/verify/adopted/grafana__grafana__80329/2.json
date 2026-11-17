@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "xorm_store.go:609-612, added by this patch, builds `values` with `values = fmt.Sprintf(\"%s, %d\", values, v)` inside a loop over ids. Each pass copies the whole string built so far, so the work is O(n^2). This only runs when the database is SQLite and AnnotationCleanupJobBatchSize > 999 (line 608).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.049468200000000004
+}

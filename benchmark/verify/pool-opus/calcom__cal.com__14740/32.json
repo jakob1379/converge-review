@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts (patch lines 582-589) builds EventManager from `...user` and `getUsersCredentials(ctx.user)`, not from booking.user. In EventManager.ts:871-878, a calendar reference with no credentialId is matched only by type against `this.calendarCredentials` (the caller's). The other_calendar branch at 898-918 also uses the caller's credentials. So when an attendee or team owner adds guests, the update runs against their calendars instead of the organizer's.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1858284
+}

@@ -1,0 +1,82 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In account-ui, error-invalid-multivalued-size was changed from i18next {{N}} placeholders to MessageFormat {N}/choice syntax. account-ui uses default i18next interpolation without i18next-icu, so the string renders with raw placeholders.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "messages_lt.properties",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the Lithuanian bundles messages_lt.properties (account totpStep1 and login loginTotpStep1), the value was replaced with the Italian text 'Installa una delle seguenti applicazioni sul tuo cellulare:' instead of Lithuanian.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The method name 'santizeAnchors' is misspelled; it should be 'sanitizeAnchors'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "POLICY_SOME_HTML, POLICY_NO_HTML and HTML_TAGS use constant naming but are non-static instance fields rebuilt per instance. This is inconsistent with the private static final ANCHOR_PATTERN.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commons-text dependency version 1.13.0 is outdated compared with 1.15.0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The theme verifier anchor check does not fail when a translation drops an anchor present in the source, so translations can lose links and still pass.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The sanitize/unescape/strip-comment/trim-diff pipeline and the commons-text dependency duplicate functionality available through OWASP's HtmlChangeListener.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

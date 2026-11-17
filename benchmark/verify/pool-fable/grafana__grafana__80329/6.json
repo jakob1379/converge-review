@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:609-612 builds the SQLite IN list with `values = fmt.Sprintf(\"%s, %d\", values, v)` inside a loop over ids, re-copying the whole accumulated string each iteration, so the cost is O(n\u00b2) in the batch size. This path only runs on SQLite when AnnotationCleanupJobBatchSize > 999.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1234402
+}

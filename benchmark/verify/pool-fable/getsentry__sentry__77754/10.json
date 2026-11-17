@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only matching-source test added is for assign (tests/sentry/models/test_groupassignee.py:203-221); the deassign test at :273-276 passes no source and asserts assignment_source=None. test_assignee_sync_inbound_deassign (:349-388) does reach deassign with a matching source via sync.py:96-99, but runs outside self.tasks() and never asserts the outbound sync is suppressed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3180751
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The gate at organization_auditlogs.py:71 checks the member's stored `has_global_access` field. That field is `BooleanField(default=True)` (organizationmember.py:216), so it is true for almost every member, not only in open-membership orgs, and does not limit the paginator to administrators. The exposure is smaller than the claim says, because the endpoint already requires `org:write` (organization.py:110-111).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16735280000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch leaves trailing whitespace at src/sentry/api/endpoints/organization_auditlogs.py:72 and :89, and at src/sentry/api/paginator.py:824, :827 and :829. paginator.py also ends in an extra blank line after `return cursor` (line 912), so the trailing-whitespace and end-of-file-fixer hooks at .pre-commit-config.yaml:175-180 will flag and rewrite these files.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08571350000000001
+}

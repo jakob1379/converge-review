@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/serializers/user_serializer_spec.rb:76-91 has only three `website_name` cases (unrelated host, same host, parent of instance host), so the sibling-subdomain `elsif` at app/serializers/user_serializer.rb:144-146, the nil/blank and URI-rescue paths at :138-140, and www-vs-apex are never exercised. The TL0/anonymous spec list at spec:11 omits `website_name`, which is in fact not restricted at all: it is absent from `untrusted_attributes` (serializer :105-111) and `include_website_name` at :153 lacks the `?`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2422937
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The main defect is real, but part of the claim is wrong: Group#remove (app/models/group.rb:276-278) only destroys GroupUser rows and never clears primary_group_id. Only the removed usernames= \u2192 destroy_deletions path did that (group.rb:291), so switching to Group#remove would not fix it. The new remove_member (groups_controller.rb:649) calls group.users.delete(user_id) and has no primary_group_id cleanup, so the removed user still shows the group as flair (post_serializer.rb:96-102). The user_count claim depends on the Rails 4.1.8 gem source, which is not in the repo, so it is unverified here.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.26716039999999996
+}

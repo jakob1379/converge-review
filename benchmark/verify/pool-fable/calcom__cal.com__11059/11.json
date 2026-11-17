@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In sync mode `parseRefreshTokenResponse` uses `minimumTokenResponseSchema` (packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:5-11,15-16), whose two computed keys both evaluate to \"[object Object]\", so the default-stripping `z.object` keeps only `access_token` and drops `expires_in`. packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:122 then computes `Date.now() + undefined * 1000` = NaN and persists it as `expiry_date`, so the next `zoomTokenSchema.parse(credential.key)` at line 132 fails on `expiry_date: z.number()`. Read from source only (zod not installed here).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.6233109
+}

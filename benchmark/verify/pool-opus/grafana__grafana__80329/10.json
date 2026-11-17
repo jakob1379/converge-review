@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "xorm_store.go:528-539, 548-559 and 570-581 each repeat the same closure: fetchIDs, r.log.Error, then `x, y := r.deleteByIDs(...)`, r.log.Error, `return x, y`. Only the condition, table and log messages change, and the messages are worded differently in each copy (\"Annotations to clean by time\" / \"cleaned annotations by count\" / \"Tags to clean\" / \"cleaned tags\").",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0915483
+}

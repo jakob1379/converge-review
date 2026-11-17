@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`isConditionalPasskeysEnabled` requires `user != null` (UsernamePasswordForm.java:160-161), so on a first login with no user the guards at :115 and :137 skip `fillContextForm`. Before the patch it ran only when the user was null. Without that call, nothing sets `ENABLE_WEBAUTHN_CONDITIONAL_UI` (WebAuthnConditionalUIAuthenticator.java:43) or `AUTH_CHALLENGE_NOTE` (WebAuthnAuthenticator.java:90), which the passkey action later reads at WebAuthnAuthenticator.java:176, so passkey login on the start page breaks.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2225919
+}

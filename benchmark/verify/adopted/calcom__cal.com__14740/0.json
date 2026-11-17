@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts:46-48 sets isTeamAdminOrOwner to isTeamAdmin(...) && isTeamOwner(...). isTeamAdmin matches ADMIN or OWNER (teams/index.ts:270), but isTeamOwner matches OWNER only (teams/index.ts:292), so the check is owner-only and a team ADMIN who is neither organizer nor attendee gets FORBIDDEN at line 54-55.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.058073299999999994
+}

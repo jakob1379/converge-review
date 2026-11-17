@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `ctxLogger.Error(\"could not check permission\", ...)` at pkg/services/authz/rbac/service.go:127, and contribute/backend/instrumentation.md:33 says log messages should start with a capital letter. The rest of this file already uses lowercase messages, including the same text at line 148, so the patch copies the file's existing style.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0453886
+}

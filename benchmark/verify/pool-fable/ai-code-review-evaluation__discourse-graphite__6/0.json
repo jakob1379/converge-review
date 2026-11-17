@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/serializers/user_serializer.rb:153 defines `include_website_name` without `?`, while the pinned AMS 0.8.3 (Gemfile.lock:22) only looks up `include_<attr>?` (the form used at user_serializer.rb:9,18,27 and lib/plugin/instance.rb:61), so the predicate is dead code and `website_name` is always emitted, as nil when the host is nil (user_serializer.rb:140). The AMS gem source is not vendored here, so the lookup rule rests on known 0.8.x behaviour and the repo's own convention.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.243085
+}

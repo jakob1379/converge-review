@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`app/controllers/embed_controller.rb:19` calls `discourse_expires_in`, which sets the anon-cache duration (`app/controllers/application_controller.rb:168-171`); the middleware keys only on `HTTP_HOST` + `REQUEST_URI` (`lib/middleware/anonymous_cache.rb:14`) and returns the cached body and headers, including `X-Frame-Options: ALLOWALL`, before the app and `ensure_embeddable` run (`lib/middleware/anonymous_cache.rb:83`). The cached body also contains the first requester's `request.referer` as the postMessage target (`app/views/layouts/embed.html.erb:11`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4439533
+}

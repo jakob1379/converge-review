@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts writes the new attendees with prisma.booking.update(createMany) (patch lines 516-530) outside any transaction, then calls eventManager.updateCalendarAttendees unwrapped (line 589), before the try/catch around sendAddGuestsEmails (591-595). Calendar API errors are swallowed in CalendarManager.ts:336-348, but updateAllCalendarEvents returns Promise.all(result) without await (EventManager.ts:920), so a rejected updateEvent escapes its catch. That happens if a CalendarService constructor throws in getCalendar, or credential.appId is read on an undefined credential (CalendarManager.ts:371). The guests then stay in the DB, no emails go out, and resubmitting the same guests hits emails_must_be_unique_valid (lines 498-505).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.22994910000000002
+}

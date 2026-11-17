@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:25 looks up `req.headers[process.env.CALCOM_WEBHOOK_HEADER_NAME || ...]` without calling `.toLowerCase()`, and Node always stores incoming header keys in lowercase, so a mixed-case name never matches and every request gets a 403. Only a comment in .env.example:238 ('Should be in lowercase') guards against this.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.054512500000000005
+}

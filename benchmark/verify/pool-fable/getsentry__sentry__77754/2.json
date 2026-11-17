@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "from_dict does pass queued through unconverted (src/sentry/integrations/services/assignment_source.py:31-35), but the str outcome cannot occur here: Celery is configured for pickle only (src/sentry/conf/server.py:739-741), so the datetime round-trips intact. Nothing in src/ ever reads .queued, so the JSON-serializer scenario is hypothetical.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3818154
+}

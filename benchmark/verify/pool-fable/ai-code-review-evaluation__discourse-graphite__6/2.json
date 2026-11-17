@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/serializers/user_serializer.rb:144-146 only checks that both hosts have the same label count (>2) and identical labels after the first, with no public-suffix awareness. So `evil.co.uk` vs `forum.co.uk` and `a.github.io` vs `forum.github.io` both compare equal (`co.uk`, `github.io`) and return host + path for unrelated sites.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11384649999999999
+}

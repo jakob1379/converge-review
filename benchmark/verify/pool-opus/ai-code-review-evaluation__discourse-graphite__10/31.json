@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The Embedding OpenStruct holds only `id: 'default'` and `embeddable_hosts` (app/controllers/admin/embedding_controller.rb:305-308), its `update` action just re-renders without changing anything (embedding_controller.rb:298-300), and EmbeddingSerializer only emits `id` plus `embeddable_host_ids` (app/serializers/embedding_serializer.rb:441-448). The new plural `_ids` hydration (discourse/models/store.js.es6:220-232) is used in the app only by that `embeddable_host_ids` key; the only other user is the fruit/colors test fixture.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.16276060000000003
+}

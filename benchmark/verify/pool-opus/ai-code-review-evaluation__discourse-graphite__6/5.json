@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The sibling-subdomain branch in app/serializers/user_serializer.rb:74-76 only runs when both hosts have the same number of labels and more than two. All three new specs (spec/serializers/user_serializer_spec.rb:78-89) use the two-label website host `example.com` against `discourse.org`, `example.com` or `forums.example.com`, so none of them reaches that branch, and no other spec mentions `website_name`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.05167240000000001
+}

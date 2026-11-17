@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts:147-149, selectedCalendar is `destinationCalendar?.find(cal => cal.credentialId === credentialId)?.externalId`, so it can be undefined. Line 154 falls back to `selectedCalendar || \"primary\"`, but the hangout-link `calendar.events.patch` at line 168 passes the bare `calendarId: selectedCalendar`, so that patch call gets undefined. Before this change, the value defaulted to \"primary\".",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0824069
+}

@@ -1,0 +1,489 @@
+{
+ "findings": [
+  {
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": 9,
+   "severity": "Critical",
+   "claim": "The migration crashes on any database that has no site_settings row for embed_category. This covers fresh installs, CI and most upgraded sites, because defaults are not stored as rows. The category_id == 0 fallback is never reached. The line-15 uncategorized_category_id lookup uses the same unguarded pattern, so it also fails on a fresh database.",
+   "evidence": "Lines 9-11 run execute(...)[0]['id'] with no row-count check. With pg 0.18.1 (Gemfile.lock:220), PG::Result#[] on an empty result raises IndexError 'Index 0 is out of range'. Lines 18-20 of the same migration guard with cmd_tuples > 0, and migration 20140711193923 uses .first with a nil check. Proposed red check: RAILS_ENV=test bundle exec rake db:drop db:create db:migrate should abort at CreateEmbeddableHosts with IndexError. No seat ran it.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with four-seat agreement. All seats reasoned it and none ran it, so it is unverified. The fresh-DB db:migrate command must fail on the pinned code before the fix.",
+   "list": "main"
+  },
+  {
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": 25,
+   "severity": "Important",
+   "claim": "Legacy host values are interpolated straight into SQL ('#{h}') without quoting. Any stored host containing a single quote aborts the migration.",
+   "evidence": "The INSERT builds VALUES ('#{h}', ...) by string interpolation over val.split on newlines. The values come from an admin-only setting, so injection risk is low but the migration can still break. quote(h) would fix it. Seat severities: open-code-review Minor; ponytail Important; mattpocock and superpowers folded it into their Important migration finding. All reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted; severity normalised to Important by majority. Unverified. Red check: seed site_settings embeddable_hosts with a value containing a single quote, then run the migration; it should fail.",
+   "list": "main"
+  },
+  {
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": 22,
+   "severity": "Important",
+   "claim": "Legacy hosts are copied verbatim, skipping the model's normalisation. Entries with a scheme or path (http://eviltrout.com, https://example.com/1234), or with trailing whitespace or carriage returns, never match after upgrade, so embedding silently breaks for those sites.",
+   "evidence": "The old SiteSetting.allows_embeddable_host? accepted scheme and path forms; the removed specs 'works with a http host' and 'works with a https host' covered them. The raw-SQL insert bypasses EmbeddableHost before_validation. record_for_host compares lower(host) = uri.host, so a stored 'http://eviltrout.com' never equals 'eviltrout.com'. EmbedController#ensure_embeddable and TopicRetriever then reject the site. Proposed red check (superpowers): seed embeddable_hosts = 'http://eviltrout.com', migrate, then EmbeddableHost.host_allowed?('http://eviltrout.com/x') returns false.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with three-seat agreement. Reasoned and unverified; make the seeded-migration check red before fixing.",
+   "list": "main"
+  },
+  {
+   "path": "app/models/embeddable_host.rb",
+   "line": 6,
+   "severity": "Minor",
+   "claim": "Creating a host with no host value raises NoMethodError, which returns a 500 instead of a validation error. A missing params[:embeddable_host] also raises in the controller.",
+   "evidence": "before_validation calls self.host.sub! on nil. Admin::EmbeddableHostsController#save_host passes params[:embeddable_host][:host] straight through, so POST /admin/embeddable_hosts with only category_id raises. Admin-only.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with four-seat agreement. Minor and reasoned.",
+   "list": "main"
+  },
+  {
+   "path": "app/controllers/admin/embeddable_hosts_controller.rb",
+   "line": 10,
+   "severity": "Minor",
+   "claim": "update and destroy with an unknown id return a 500 instead of a 404.",
+   "evidence": "EmbeddableHost.where(id: params[:id]).first returns nil. host.destroy or save_host(host) then raises NoMethodError. find would raise RecordNotFound, which renders a 404.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with three-seat agreement. mattpocock raised it inside its missing-tests finding; normalised to Minor.",
+   "list": "main"
+  },
+  {
+   "path": "app/models/embeddable_host.rb",
+   "line": 2,
+   "severity": "Minor",
+   "claim": "Validation and lookup disagree on ports. A host saved as example.com:8080 passes validation but can never match a request.",
+   "evidence": "The format regex accepts :[0-9]{1,5}, and before_validation strips only the path. record_for_host compares against URI(...).host, which never includes the port.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with three-seat agreement. Minor and reasoned.",
+   "list": "main"
+  },
+  {
+   "path": "app/models/embeddable_host.rb",
+   "line": 2,
+   "severity": "Minor",
+   "claim": "The TLD rule [a-z]{2,5} rejects localhost, IP addresses and TLDs longer than 5 characters, all of which the old host_list setting allowed. Migrated rows skip validation, so editing such a row later in the admin UI fails.",
+   "evidence": "The validation regex in embeddable_host.rb:2 requires the TLD rule. The migration inserts by raw SQL, so validation never runs on legacy values.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with three-seat agreement. Minor and reasoned.",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/models/store.js.es6",
+   "line": 197,
+   "severity": "Minor",
+   "claim": "The new plural _ids hydration branch is unguarded. It deletes *_ids keys even when the sub-collection was not side-loaded, leaving arrays of undefined. A null *_ids value throws a TypeError on .map. The singular _id branch, by contrast, only acts when hydration succeeds.",
+   "evidence": "_hydrateEmbedded maps obj[k] through the lookup with no hydration check and always deletes obj[k]. superpowers notes that no existing rest_serializer endpoint other than this patch sends _ids keys, so the risk is latent. Seats cite lines 192-201 (mattpocock), 197-201 (superpowers) and 220-232 (open-code-review).",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with three-seat agreement. Minor and reasoned.",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/models/store.js.es6",
+   "line": 200,
+   "severity": "Minor",
+   "claim": "In obj[pluralize(subType)] = hydrated || [], the || [] is dead code because Array#map always returns an array. It suggests the author thought misses were handled.",
+   "evidence": "Array#map never returns a falsy value.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with four-seat agreement. Trivial deletion.",
+   "list": "main"
+  },
+  {
+   "path": "app/controllers/admin/embedding_controller.rb",
+   "line": 9,
+   "severity": "Minor",
+   "claim": "Admin::EmbeddingController#update persists nothing and just re-renders show. Its only client caller, the saveChanges action in admin-embedding.js.es6:5-7, is never triggered from any template. The result is a dead PUT route (config/routes.rb:139) plus dead client code that looks like it saves data.",
+   "evidence": "ponytail: grep -rn saveChanges app/assets/javascripts/admin matches only the new controller, with no admin/templates/embedding* reference. mattpocock and superpowers report the same from reading the code.",
+   "seats": [
+    "mattpocock",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with three-seat agreement. Normalised to Minor: ponytail rated it Important as an advisory seat, the others rated it Minor. Fix by deleting the action, route and saveChanges.",
+   "list": "main"
+  },
+  {
+   "path": "spec/fabricators/category_fabricator.rb",
+   "line": 1,
+   "severity": "Minor",
+   "claim": "The contents of spec/fabricators/category_fabricator.rb and spec/fabricators/embeddable_host_fabricator.rb are swapped. category_fabricator.rb now defines :embeddable_host, and embeddable_host_fabricator.rb holds all the category fabricators.",
+   "evidence": "The new embeddable_host_fabricator.rb blob (a37f5b4c8b) is identical to the old category_fabricator.rb. It works only because Fabrication loads every file. It turns a 4-line addition into a 54-line move and breaks the per-file naming convention.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with four-seat agreement. Restore category_fabricator.rb and put only the :embeddable_host fabricator in the new file.",
+   "list": "main"
+  },
+  {
+   "path": "test/javascripts/models/store-test.js.es6",
+   "line": 111,
+   "severity": "Minor",
+   "claim": "The test calls store.find('fruit', 2) but asserts apple's colours [1,2]. It passes for the wrong reason.",
+   "evidence": "The pretender /fruits/:id handler (create-pretender.js.es6:226-228) ignores the id and always returns fruits[0] (apple, color_ids [1,2]). Banana has color_ids [3].",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with three-seat agreement. Minor test-validity issue.",
+   "list": "main"
+  },
+  {
+   "path": "spec/models/topic_spec.rb",
+   "line": 1403,
+   "severity": "Minor",
+   "claim": "The spec 'is false if embeddable_host is blank' no longer tests anything about hosts, because Topic#expandable_first_post? (app/models/topic.rb:869) dropped the embeddable_hosts.present? guard.",
+   "evidence": "mattpocock and superpowers say it now passes only because embed_truncate defaults to false. open-code-review says it passes because a built topic has no topic_embed. open-code-review cites lines 868-871, which looks like the topic.rb line; superpowers cites 1397-1427.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with three-seat agreement. The seats agree the test is vacuous and differ only on which default makes it pass; neither explanation disproves the claim.",
+   "list": "main"
+  },
+  {
+   "path": "spec/controllers/admin/embeddable_hosts_controller_spec.rb",
+   "line": 5,
+   "severity": "Important",
+   "claim": "The new admin controllers' specs (embeddable_hosts_controller_spec.rb and embedding_controller_spec.rb) only check the AdminController subclass. Nothing covers create, update, destroy, show, or normalisation through the controller, against CONTRIBUTING's 'include tests'. The migration findings are untested too.",
+   "evidence": "Both spec files at line 5 only assert the subclass.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats, so it is not reported or fixed in this loop. Severity normalised to Important: mattpocock rated it Important, superpowers Minor.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/topic_embed.rb",
+   "line": 43,
+   "severity": "Important",
+   "claim": "Topics imported by feed polling (poll_feed.rb:39, typepad.thor:63) whose article host is not registered now get category nil and land in Uncategorized. The removed embed_category setting has no replacement for this path.",
+   "evidence": "The category now comes from EmbeddableHost.record_for_host(url) instead of SiteSetting.embed_category. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats; not fixed. Normalised to Important from superpowers' correctness rating (open-code-review rated it Minor). Unverified.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/admin/embedding_controller.rb",
+   "line": 1,
+   "severity": "Important",
+   "claim": "YAGNI: the Embedding OpenStruct wrapper (id 'default') exists only to wrap the host list. It carries its own controller, EmbeddingSerializer, admin adapter, routes and the store _ids hydration. Adding an index action to EmbeddableHostsController and calling store.findAll('embeddable-host') would remove about 60 lines.",
+   "evidence": "admin-plugins.js.es6:3 already uses store.findAll for an admin model, and resources :embeddable_hosts exists at config/routes.rb:153. Design judgement, no failing test.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat; a design call. Not fixed and never blocking.",
+   "list": "appendix"
+  },
+  {
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": 2,
+   "severity": "Minor",
+   "claim": "The migration is irreversible. def change uses raw execute data moves and deletes the old site settings, so rollback raises ActiveRecord::IrreversibleMigration and the old data is lost.",
+   "evidence": "def change wraps execute and DELETE statements with no up/down.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/embeddable_host.rb",
+   "line": 14,
+   "severity": "Minor",
+   "claim": "The case-insensitive match lowercases only the column, not uri.host. http://EvilTrout.com/x fails via TopicRetriever, which passes the raw embed_url. TopicEmbed is unaffected because it normalises first.",
+   "evidence": "where('lower(host) = ?', host); URI('http://EvilTrout.com').host is 'EvilTrout.com'.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": 3,
+   "severity": "Minor",
+   "claim": "There is no unique index on host and no uniqueness validation. With duplicate hosts, record_for_host's .first picks a category arbitrarily.",
+   "evidence": "The create_table has no index, and the model has no validates uniqueness.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": 6,
+   "severity": "Minor",
+   "claim": "category_id is NOT NULL but has no foreign key or dependent handling. Deleting a category leaves orphaned host rows, so imported topics silently get no category and the admin badge renders empty.",
+   "evidence": "No FK in the migration, and no dependent association on Category. TopicEmbed.import (topic_embed.rb:43) passes the stale id.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/admin/components/embeddable-host.js.es6",
+   "line": 39,
+   "severity": "Minor",
+   "claim": "A new host saved without picking a category shows a blank category badge until reload. The client sets category = Category.findById(null), while the server substitutes uncategorized_category_id.",
+   "evidence": "embeddable_hosts_controller.rb:26 defaults to the uncategorized category server-side; the client never mirrors it.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/admin/components/embeddable-host.js.es6",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the delete action, destroyRecord() has no .catch(popupAjaxError), so delete errors are silently swallowed.",
+   "evidence": "superpowers finding 10. Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/adapters/rest.js.es6",
+   "line": 21,
+   "severity": "Minor",
+   "claim": "type.replace('_', '-') replaces only the first underscore, so a future admin model with multiple underscores resolves to the wrong base path.",
+   "evidence": "JS String#replace with a string pattern replaces the first match only. superpowers cites line 22.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/admin/embeddable_hosts_controller.rb",
+   "line": 3,
+   "severity": "Minor",
+   "claim": "before_filter :ensure_logged_in, :ensure_staff in embeddable_hosts_controller.rb and embedding_controller.rb repeats filters the parent Admin::AdminController already declares.",
+   "evidence": "app/controllers/admin/admin_controller.rb:3-4.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two advisory seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "config/locales/client.en.yml",
+   "line": 2498,
+   "severity": "Minor",
+   "claim": "The locale key admin.embedding.edit is never referenced; the component uses an unlabelled pencil icon.",
+   "evidence": "ponytail: grep -rn 'embedding.edit' app/assets finds nothing.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two advisory seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/embeddable_host.rb",
+   "line": 2,
+   "severity": "Minor",
+   "claim": "The validation regex's optional path group can never match, because before_validation strips everything from the first slash before validation runs.",
+   "evidence": "before_validation at embeddable_host.rb:5-8 runs before the format validation.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only two seats; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/admin/embeddable_hosts_controller.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "category_id from params is not checked to reference an existing category.",
+   "evidence": "open-code-review finding 9, secondary note on save_host.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/embeddable_host.rb",
+   "line": 2,
+   "severity": "Minor",
+   "claim": "validates_format_of uses hash-rocket syntax (:with =>), against CONTRIBUTING's 'use Ruby 1.9 hash syntax'.",
+   "evidence": "CONTRIBUTING.md standards list.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/embeddable_host.rb",
+   "line": 10,
+   "severity": "Minor",
+   "claim": "The model uses def self.record_for_host and def self.host_allowed? (lines 10 and 20), but CONTRIBUTING prefers class << self.",
+   "evidence": "CONTRIBUTING.md: 'prefer class << self; def method; end over def self.method'.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/serializers/embeddable_host_serializer.rb",
+   "line": 16,
+   "severity": "Minor",
+   "claim": "The file ends with an extra trailing blank line, against CONTRIBUTING's no-trailing-blank-lines rule.",
+   "evidence": "CONTRIBUTING.md whitespace rule.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/admin/templates/embedding.hbs",
+   "line": 15,
+   "severity": "Minor",
+   "claim": "The file ends with an extra trailing blank line, against CONTRIBUTING's no-trailing-blank-lines rule.",
+   "evidence": "CONTRIBUTING.md whitespace rule.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/topic.rb",
+   "line": 869,
+   "severity": "Minor",
+   "claim": "The commit message does not mention several changes. The embeddable_hosts and embed_category site settings are removed, which breaks API or provisioning scripts that set them. expandable_first_post? no longer requires any configured hosts. topic_spec.rb:1241,1250 carries unrelated unused-variable cleanup, against 'one feature or bug-fix per branch'.",
+   "evidence": "Checked against the commit message only, because there is no spec. Diff of config/site_settings.yml, app/models/topic.rb:869 and spec/models/topic_spec.rb.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/serializers/embeddable_host_serializer.rb",
+   "line": 4,
+   "severity": "Minor",
+   "claim": "The id, host and category_id methods at lines 4-15 only pass through object attributes, which attributes :id, :host, :category_id already does.",
+   "evidence": "app/serializers/permalink_serializer.rb:2 declares the same attributes with no pass-through methods.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": 21,
+   "severity": "Minor",
+   "claim": "The check if records.present? after splitting on newlines is redundant, because val.present? already guarantees at least one element.",
+   "evidence": "ponytail finding 7. Reasoned.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat; not fixed.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "No file was skipped outright. mattpocock, open-code-review and ponytail report reviewing all 36 patch files. superpowers reports 33 files, so up to 3 files may not have been seen by that seat; it did not name them. open-code-review's tool excluded 16 files (.es6 files and spec/), but the seat read them manually. ponytail gave only a light pass to the spec, test, fixture and locale files. superpowers gave only a light read to the locale, route-map, template, adapter, serializer and routes files. Non-English config/locales/server.*.yml files still carry the removed keys; they are outside the patch and were not reviewed. Axes that did not run: (1) The gate was not run (benchmark mode), so the review is unanchored and every finding is reasoned, not executed. In particular, the Critical migration crash depends on unverified pg 0.18.1 IndexError behaviour. (2) There is no spec; the spec axis was checked against the commit message only. (3) Documented standards come from CONTRIBUTING.md and were applied only by mattpocock. (4) Not checked: plugin usage of the removed settings (open-code-review), and whether AMS 0.8.3 needs the EmbeddingSerializer#id override (ponytail; lookup unfinished). (5) No correctness seat came from a different model family. (6) No rejections were made, because no seat report disproves another's finding."
+}

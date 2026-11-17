@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/protocol/oidc/encode/DefaultTokenContextEncoderProviderFactory.java:74-76 passes gtf.getShortcut() unchecked into ConcurrentHashMap.put, which throws NPE on a null key or value. It is only reachable through a third-party factory, because all nine in-repo OAuth2GrantTypeFactory implementations return non-null string constants (e.g. PermissionGrantTypeFactory.java:39-41).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5959926
+}

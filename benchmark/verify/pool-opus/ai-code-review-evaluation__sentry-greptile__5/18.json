@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "project_replay_summarize_breadcrumbs.py binds the full error_events list into on_results through functools.partial(analyze_recording_segments, error_events) (patch line 711), so every page gets all errors. gen_request_data (patch lines 753-779) emits errors older than the page's events inline and appends the rest at the end, so each page's Seer request includes every error and errors repeat across pages.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.227692
+}

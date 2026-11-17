@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py:337-347, once the deadline has passed, the `break` at line 341 leaves the loop before line 347 calls `process.terminate()`. The current process and every later one in `self.processes` are never terminated and can still be running when join returns (the stopped flag is set, so they should exit eventually).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10100239999999999
+}

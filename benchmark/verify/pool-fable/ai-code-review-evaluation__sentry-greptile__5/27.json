@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`fetch_error_details` is called with `project.id` (src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:94) and hashes every id as `md5(f\"{project_id}:{event_id}\")` (:107, src/sentry/eventstore/models.py:285), so any id in `error_ids` that belongs to another project misses in nodestore and is left out. Reach is narrow: the query producing `error_ids` is already scoped to this project (src/sentry/replays/usecases/query/__init__.py:428) and event-link rows carry the error's own project (src/sentry/replays/lib/event_linking.py:137), so only SDK-reported ids routed to another project can hit it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.1483862
+}

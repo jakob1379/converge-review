@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/validators/email_validator.rb:188-192 builds `Regexp.new(\"@(#{domains})\", true)` with no `$`/`\\z` anchor, so `user@example.com.evil.com` matches a whitelist of `example.com` and gets past the check at line 175. The patch moved this logic unchanged from the old `User#email_in_restriction_setting?` (removed at app/models/user.rb:126-130 in the patch).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0691775
+}

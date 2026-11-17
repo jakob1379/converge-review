@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `TestLogger.FromContext`, which returns `NewTestLogger()` (pkg/plugins/log/fake.go:46-48), and `LoggerMiddleware` now logs through `m.logger.FromContext(ctx).Info(...)`, so those calls never reach the original fake. This copies the existing `New()` pattern (fake.go:18-19), and no current test checks `LoggerMiddleware` output through a `TestLogger`, so nothing fails yet.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1370468
+}

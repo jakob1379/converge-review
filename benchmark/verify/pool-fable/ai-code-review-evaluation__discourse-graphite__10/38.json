@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20150818190757_create_embeddable_hosts.rb:3 calls `create_table :embeddable_hosts, force: true`, which in ActiveRecord drops any existing table of that name before creating it. A re-run would also lose the data for good, because line 31 deletes the source `embeddable_hosts`/`embed_category` site settings on the first run.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.08728040000000001
+}

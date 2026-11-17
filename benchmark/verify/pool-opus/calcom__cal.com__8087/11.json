@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch does change the comment from `// import * as example from \"./_example\"` to `// example: import(\"./example\")` (packages/app-store/index.ts:1). But the claim's premise is wrong: no `_example` folder or any other example folder exists under packages/app-store in this checkout, so the comment does not mismatch a real folder.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0705825
+}

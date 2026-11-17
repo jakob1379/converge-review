@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/expr/sql/db.go:12-22 defines TablesList, RunCommands and QueryFramesInto as stubs that each return errors.New(\"not implemented\"), and NewInMemoryDB (db.go:24) returns an empty DB; the patch drops go-duck from go.mod and points pkg/expr/sql/parser.go:23-26 and pkg/expr/sql_command.go:96-100 at these stubs, so every SQL expression now fails (the stubbing looks deliberate: pkg/expr/reader.go:129-132 also hard-disables the experimental feature).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2744645
+}

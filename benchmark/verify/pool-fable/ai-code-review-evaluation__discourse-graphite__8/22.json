@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both actions load a persisted group with `Group.find` (app/controllers/admin/groups_controller.rb:66,85), so `group.add` \u2192 `self.users.push(user)` (app/models/group.rb:272-274) and `group.users.delete(user_id)` (groups_controller.rb:90) write the `group_users` join rows immediately under Rails 4.1.8. `GroupUser` has no validations (app/models/group_user.rb:1-4), so the following `group.save` (groups_controller.rb:77,92) changes no attributes and can only fail on the group's own name/alias_level validations (group.rb:12-13,37).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4428451
+}

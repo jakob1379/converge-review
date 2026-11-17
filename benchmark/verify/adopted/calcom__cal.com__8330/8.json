@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `timeZone` optional at packages/types/schedule.d.ts:248, and packages/lib/slots.ts:212 calls `.tz(override.timeZone)` without a guard. With no default set in dayjs, an undefined value resolves to the host machine's timezone. Today nothing reaches that path: the only caller that passes overrides (packages/trpc/server/routers/viewer/slots.ts:410-414) sets `timeZone` from getUserAvailability (packages/core/getUserAvailability.ts:201), which falls back to the non-null `User.timeZone` (schema.prisma:161), and the TeamAvailabilityTimes callers pass no dateOverrides.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1828843
+}

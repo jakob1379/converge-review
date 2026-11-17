@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes js/apps/admin-ui/maven-resources/theme/keycloak.v2/admin/messages/messages_en.properties:3138 from `{{0}}/{{1}}/{{2}}` to `{0} \u2026 {2,choice,0#values|1#value|1<values}`. The Admin UI uses plain i18next with default `{{ }}` interpolation and no ICU plugin (js/apps/admin-ui/src/i18n/i18n.ts:13-37), ThemeResource.java:153 serves the values unconverted, and the key is rendered via t(key, params) in js/libs/ui-shared/src/user-profile/utils.ts:79, so the raw template is displayed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.7577156
+}

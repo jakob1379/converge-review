@@ -1,0 +1,49 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Core Keycloak does not enforce single use for recovery codes stored through the generic user-storage path. It leaves consuming a used code entirely to the user-storage provider, with no guidance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RecoveryAuthnCodesFormAuthenticator takes the credential returned by getCredential(), which may come from user storage, makes the allCodesUsed decision on it, and calls removeStoredCredentialById(). That method only removes local/fed-storage credentials, so the provider's copy is not removed. When local and federated credentials both exist, the authenticator inspects or removes a different credential from the one that validated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When createRecoveryCodesCredential stores codes in user storage (updateCredential returns true), it returns without calling recoveryCodeCredentialProvider.createCredential(), so existing local recovery-code credentials are not deleted and old codes remain valid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test calls TestAppHelper.logout(), which relies on a refreshToken set by completeLogin(), but never calls completeLogin() after submitting the recovery code, so logout may be a no-op and leave sessions behind.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

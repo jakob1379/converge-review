@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes `update_patch` and the `request.patch?` branch in `app/controllers/admin/groups_controller.rb` (old lines 539-564 and 595-596) and the PATCH incremental specs. The patch has no changelog or deprecation note. `resources :groups` (`config/routes.rb:45`) still sends PATCH to `update`, which ignores `changes` and returns success. Because `params[:visible]` is missing from such a request, `update` also sets `visible` to false.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16787000000000002
+}

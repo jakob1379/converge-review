@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Line 107 of InfinispanIdentityProviderStorageProvider.java (patch line 107) does call session.identityProviders().getById(id), but this is deliberate and not a bug. The query cache keeps only IDP IDs and then looks each one up through the cached getById (lines 123-139), which never calls getForLogin, so there is no recursion. The existing getByOrganization code at line 202 uses the same pattern, and calling idpDelegate.getById would skip the per-IDP cache.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0788312
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "AlertRuleMenu.tsx:31 types handleDelete as (rule: RulerRuleDTO, groupIdentifier) => void, and its only call (AlertRuleMenu.tsx:172) passes rulerRule, which is a RulerRuleDTO. The consumer in RuleActionsButtons.V2.tsx:99 passes a closure that takes no arguments, `() => showDeleteModal(identifier, groupIdentifier)`, so nothing passes an EditableRuleIdentifier where a RulerRuleDTO is expected and the types match.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.36422089999999996
+}

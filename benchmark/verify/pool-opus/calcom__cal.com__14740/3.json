@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The server schema accepts any array of emails, with no uniqueness check and no `.max()` (addGuests.schema.ts:609). The `uniqueGuests` filter only removes existing attendees and blacklisted addresses (addGuests.handler.ts:498-502), so repeated emails each get their own row through `createMany` (handler:516-530), and `sendAddGuestsEmails` emails every one of those rows. The Attendee model has only `@@index([email])` and `@@index([bookingId])`, with no unique constraint on (bookingId, email) (packages/prisma/schema.prisma:526-539). The duplicate check exists only in the client dialog (AddGuestsDialog.tsx:79-82).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1475398
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `cancelled Boolean?` to `model WorkflowReminder` (packages/prisma/schema.prisma:644), but the model has no `@@index([cancelled, scheduledDate])`. Its only index is `@unique` on referenceId (line 640), even though the new cron query in scheduleEmailReminders.ts filters on `cancelled: true` and `scheduledDate lte`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.13455899999999998
+}

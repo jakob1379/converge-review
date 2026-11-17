@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only disabled-feature test is testFeatureNotEnabled (UpdateCommandDistTest.java:46-50), and it launches only the metadata subcommand. Every test that runs UpdateCompatibilityCheck passes ENABLE_FEATURE (lines 65, 81, 96, 105), so no test reaches the feature gate in UpdateCompatibilityCheck.run() (lines 46-50 from the patch) or checks its FEATURE_DISABLED exit code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1070197
+}

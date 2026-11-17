@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:21-23 throws `new Error(\"Invalid refreshed tokens were returned\")` on safeParse failure without including the zod error or the response. The patch also deletes the `console.error(\"Outlook error grabbing new tokens ~ zodError:\", tokenResponse.error, \"MS response:\", responseJson)` block in packages/app-store/office365calendar/lib/CalendarService.ts (patch lines 528-535).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1883491
+}

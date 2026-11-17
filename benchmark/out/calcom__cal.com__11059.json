@@ -1,0 +1,282 @@
+{
+  "findings": [
+    {
+      "path": "packages/app-store/googlecalendar/lib/CalendarService.ts",
+      "line": 97,
+      "severity": "Critical",
+      "claim": "Google token refresh persists the whole safeParse wrapper {success,data} as credential.key (default mode, sync off); next constructor googleCredentialSchema.parse(credential.key) at :75 throws, breaking Google Calendar after first refresh.",
+      "evidence": "parseRefreshTokenResponse returns safeParse result (_utils/oauth/parseRefreshTokenResponse.ts:29); base used .parse() which returned data. Zod repro (MP zt/check.js on zod 3.25.76; SP repro.cjs on zod 4.6.7) prints stored key {\"success\":true,\"data\":{...}} and next parse throws ZodError.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Executed repro by two seats; regression in default mode."
+    },
+    {
+      "path": "packages/app-store/salesforce/lib/CalendarService.ts",
+      "line": 96,
+      "severity": "Critical",
+      "claim": "prisma used without import; resolves only via globalThis.prisma, which packages/prisma/index.ts:58-60 assigns only when NODE_ENV !== 'production', so getClient throws ReferenceError in production and every Salesforce operation fails.",
+      "evidence": "No prisma import in file (grep -c 'import prisma' = 0); type-checks via global declare in packages/prisma/index.ts:6-9. Reasoned, not executed.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Source citation from all four seats; production-only crash."
+    },
+    {
+      "path": "packages/app-store/_utils/oauth/refreshOAuthTokens.ts",
+      "line": 8,
+      "severity": "Critical",
+      "claim": "In sync mode refreshOAuthTokens returns a raw fetch Response, but Google (res?.data), HubSpot (used as HubspotToken, Response persisted as key at :198), Zoho CRM (:217) and Zoho Bigin (:96) (tokenInfo.data.error) expect axios/gaxios/SDK shapes; sync refresh crashes or destroys the credential for these four integrations. response.ok is also never checked.",
+      "evidence": "fetch Response has no .data; refreshFunction typed () => any hides the mismatch. Reasoned from source.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Four seats agree; core purpose of the feature broken for 4 integrations and HubSpot credential overwritten."
+    },
+    {
+      "path": "packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts",
+      "line": 5,
+      "severity": "Critical",
+      "claim": "minimumTokenResponseSchema computed keys [z.string().toString()] and [z.string().optional().toString()] both evaluate to '[object Object]' and collide; z.object strips unknown keys, so sync mode keeps only access_token and drops all expiry fields (Zoom expiry_date becomes NaN -> next zoomTokenSchema.parse fails permanently; Office365 refreshes on every call; Salesforce loses instance_url).",
+      "evidence": "node -e repro of key collapse; MP zod check prints {\"success\":true,\"data\":{\"access_token\":\"a\"}} for input with expiry_date/refresh_token; SP repro prints computed keys \"[object Object]\" \"[object Object]\".",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Executed repro; sync-mode credential destruction for Zoom. Severities ranged Important-Critical; normalised to Critical for credential loss."
+    },
+    {
+      "path": "packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts",
+      "line": 25,
+      "severity": "Important",
+      "claim": "Missing refresh_token is replaced with the literal string 'refresh_token'; Office365 calendar (:264, schema marks refresh_token optional) and Zoom (:117-121, sync mode) persist it over the real refresh token, causing permanent invalid_grant.",
+      "evidence": "Before patch the key was absent and the stored token survived the spread. Reasoned plus zod repro output.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three correctness/spec seats agree; credential loss in default mode for Office365 when Microsoft omits refresh_token."
+    },
+    {
+      "path": "apps/web/pages/api/webhook/app-credential.ts",
+      "line": 50,
+      "severity": "Important",
+      "claim": "Webhook looks up appStoreMetadata[app.slug], but appStoreMetadata is keyed by directory name, not slug; google-calendar, office365-calendar, msteams, zoom, lark-calendar return 404 'App not found'.",
+      "evidence": "packages/app-store/apps.metadata.generated.ts:98,109,110,146 keys googlecalendar/office365calendar/office365video/zoomvideo vs slugs in each _metadata.ts (e.g. googlecalendar/_metadata.ts:17 slug 'google-calendar'). getAppFromSlug (packages/app-store/utils.ts:123) does the correct lookup. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Source citation; webhook unusable for most integrations the patch wires up."
+    },
+    {
+      "path": "packages/app-store/zoho-bigin/lib/CalendarService.ts",
+      "line": 93,
+      "severity": "Important",
+      "claim": "credentialId passed as the userId argument of refreshOAuthTokens(fn, appSlug, userId); sync endpoint receives calcomUserId=<credential id> and may return another user's tokens; userId guard bypassed for team credentials.",
+      "evidence": "Signature at refreshOAuthTokens.ts:3; every other caller passes credential.userId. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cross-user token confusion in sync mode."
+    },
+    {
+      "path": "packages/app-store/salesforce/lib/CalendarService.ts",
+      "line": 75,
+      "severity": "Important",
+      "claim": "getClient performs an unconditional token refresh on every construction (every booking), persists the new token but builds jsforce.Connection with the stale credentialKey.access_token (:104), bypasses refreshOAuthTokens so sync mode never applies, uses fragile response.statusText !== 'OK' instead of response.ok, hard-codes login.salesforce.com (sandbox orgs fail), and has a dead !success branch.",
+      "evidence": "Reasoned from source; jsforce Connection already receives clientId/clientSecret/refreshToken (auto-refresh not confirmed, node_modules absent).",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Four seats agree; extra network call per booking and contradicts sync intent."
+    },
+    {
+      "path": "packages/app-store/zoomvideo/lib/VideoApiAdapter.ts",
+      "line": 92,
+      "severity": "Important",
+      "claim": "Slug sent to sync endpoint is 'zoomvideo' but the app slug is 'zoom' (zoomvideo/_metadata.ts:16); the webhook resolves apps by prisma.app.slug, so outbound and inbound halves of the protocol name Zoom differently.",
+      "evidence": "grep slug zoomvideo/_metadata.ts -> 'zoom'; other hard-coded slugs match their config. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Source citation; SP rated Minor, OCR/MP Important; normalised to Important."
+    },
+    {
+      "path": "packages/app-store/_utils/oauth/refreshOAuthTokens.ts",
+      "line": 8,
+      "severity": "Important",
+      "claim": "Outbound POST to CALCOM_CREDENTIAL_SYNC_ENDPOINT carries no secret/signature, only calcomUserId and appSlug; the parent app cannot authenticate Cal.com before returning live access tokens.",
+      "evidence": "Reasoned from source; CALCOM_WEBHOOK_SECRET exists but is not sent.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Unverified: protocol decision with the external endpoint owner; settle by agreeing an auth header contract and asserting it in an integration test against a stub endpoint."
+    },
+    {
+      "path": "(patch-wide)",
+      "line": null,
+      "severity": "Important",
+      "claim": "No tests for the new credential-writing webhook or for the shared refresh/parse helpers; an integration test would have caught the Google key-shape, sync shape mismatch, minimum-schema and slug-lookup bugs.",
+      "evidence": "No test files in the patch (git diff --stat). Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Red tests written in the fix step for each accepted finding close this gap."
+    },
+    {
+      "path": "apps/web/pages/api/webhook/app-credential.ts",
+      "line": 31,
+      "severity": "Minor",
+      "claim": "schema.parse(req.body), JSON.parse(symmetricDecrypt(...)) are unguarded: malformed body, bad ciphertext or wrong key yields 500 instead of 400; decrypted keys are not shape-validated before being written to credential.key.",
+      "evidence": "Lines 31, 57-59. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap input-validation fix at a trust boundary."
+    },
+    {
+      "path": "apps/web/pages/api/webhook/app-credential.ts",
+      "line": 25,
+      "severity": "Minor",
+      "claim": "Webhook secret compared with !== (not constant-time) and no req.method restriction on a credential-write endpoint.",
+      "evidence": "Reasoned; crypto.timingSafeEqual is the standard fix.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Hardening at trust boundary; small change."
+    },
+    {
+      "path": "packages/app-store/office365calendar/lib/CalendarService.ts",
+      "line": 264,
+      "severity": "Minor",
+      "claim": "parseRefreshTokenResponse throws on failure yet returns a safeParse wrapper, so .success checks are dead (office365 :264, zoomvideo VideoApiAdapter.ts:104-106, salesforce :91-94); office365's console.error of the failing MS response was removed and the thrown error has no zod detail.",
+      "evidence": "parseRefreshTokenResponse.ts:21-29. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Falls out of returning .data in the Google fix; restores diagnostics."
+    },
+    {
+      "path": "apps/web/pages/api/webhook/app-credential.ts",
+      "line": 62,
+      "severity": "Minor",
+      "claim": "findFirst on userId+appId updates an arbitrary credential when a user has several for the same app; team credentials ignored; invalid flag never reset on update.",
+      "evidence": "Lines 62-85. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: multi-credential semantics need a product decision on which credential the parent app targets."
+    },
+    {
+      "path": "packages/lib/constants.ts",
+      "line": 103,
+      "severity": "Minor",
+      "claim": "APP_CREDENTIAL_SHARING_ENABLED evaluates to string | undefined rather than boolean; the APP_CREDENTIAL_SHARING_ENABLED && CALCOM_CREDENTIAL_SYNC_ENDPOINT condition is duplicated in refreshOAuthTokens.ts:4 and parseRefreshTokenResponse.ts:14.",
+      "evidence": "constants.ts:103-104. Works via truthiness.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: no behavioural impact; tidy when the helpers are next touched."
+    },
+    {
+      "path": "packages/app-store/_utils/oauth/refreshOAuthTokens.ts",
+      "line": 3,
+      "severity": "Minor",
+      "claim": "refreshFunction: () => any and response: any discard the return type (warned by @typescript-eslint/recommended in packages/config/eslint-preset.js) and hide the fetch-vs-axios mismatch; redundant await/return wrapper at :13-19 and async () => await at call sites.",
+      "evidence": "Reasoned; lint preset cited.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: typing becomes moot once the sync-mode shape fix defines the return contract."
+    },
+    {
+      "path": "packages/app-store/zoho-bigin/api/add.ts",
+      "line": 17,
+      "severity": "Minor",
+      "claim": "Unrelated churn: appConfig.slug replaced with literal 'zoho-bigin' while appConfig.slug is still used on line 12.",
+      "evidence": "Identical value; drift risk only.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: no behavioural change; reverting is churn of equal size."
+    },
+    {
+      "path": "packages/app-store/_utils/oauth/createOAuthAppCredential.ts",
+      "line": 6,
+      "severity": "Minor",
+      "claim": "Import '../oauth/decodeOAuthState' from inside oauth/ should be './decodeOAuthState'.",
+      "evidence": "Path resolves correctly; cosmetic.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: cosmetic, resolves correctly."
+    },
+    {
+      "path": "apps/web/pages/api/webhook/app-credential.ts",
+      "line": 16,
+      "severity": "Minor",
+      "claim": "Empty /** */ doc comment.",
+      "evidence": "Dead text.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: cosmetic."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode: no dependency install, no project checks); review is unanchored by executed checks except two seat-run zod repros against zod 3.25.76 and 4.6.7, not the pinned 3.21.4/3.22.x. No spec: the spec axis checked only intent inferred from commit messages. Standards sources: CONTRIBUTING.md, packages/app-store/CONTRIBUTING.md, .eslintrc.js/packages/config/eslint-preset.js; no AGENTS.md/CLAUDE.md/.cursor rules. No seat skipped a file outright. Import-path-only edits (add/_getAdd/callback.ts across googlecalendar, hubspot, larkcalendar, office365calendar, office365video, salesforce, stripepayment, tandemvideo, webex, zoho-bigin, zohocrm, zoomvideo), renamed decode/encodeOAuthState.ts, .env.example and turbo.json got mechanical checks only. superpowers seat checked only the wrapper call for larkcalendar, webex and office365video, not whether a sync-endpoint response satisfies each provider's response handler. jsforce auto-refresh behaviour was not confirmed (node_modules absent). Untracked harness files at the worktree root (.bashrc, .claude/, .mcp.json, etc.) were excluded from the pinned patch as environment, not part of the PR. No cross-family (e.g. codex) seat ran; all four seats share one model family. Steps 5+ (fixes, red tests, re-review) not run per benchmark override."
+}

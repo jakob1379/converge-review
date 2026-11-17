@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In cleanup_test.go:239-241 the seeded rows do get explicit IDs that bypass annotation_id_seq, but nothing in that test inserts annotations through the sequence (the annotationTag struct at xorm_store.go:663 has no annotation id, so tag inserts never use that sequence), and each subtest's t.Cleanup deletes all annotations. Each InitTestDB also runs TruncateDBTables (sqlstore.go:712/741), which on Postgres runs `TRUNCATE ... RESTART IDENTITY` (postgres_dialect.go:161), so no later sequence-based insert can collide with the seeded IDs.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.21893900000000002
+}

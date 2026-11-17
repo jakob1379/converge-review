@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/bookings/lib/handleCancelBooking.ts:458-470 runs `.forEach(async (credential) => { const calendar = await getCalendar(credential); ... })` un-awaited, and `apiDeletes.push(deletedEvent)` at :467 only happens after `await calendar?.deleteEvent(...)`, so `Promise.all(prismaPromises.concat(apiDeletes))` at :652 neither waits for those recurring-series deletes nor surfaces their rejections. The un-awaited `forEach(async ...)` and the awaited `deleteEvent` were already there before the patch; the patch only added `await` to `getCalendar` at :461, deferring the start of the first delete slightly.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.357148
+}

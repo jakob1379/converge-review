@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/lib/slots.ts:218-223 the patch shifts override.start/end by the offset and takes hour()*60+minute() with no day carry. For example, a 09:00\u201317:00 override shifted +10h becomes startTime 1140 and endTime 180. buildSlots then skips it (`start >= end` at slots.ts:68, and no slotStart passes slots.ts:90), and because lines 228-243 already removed that user's working hours, the day has no slots.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.11219400000000002
+}

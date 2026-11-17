@@ -1,0 +1,581 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In ClientPermissionsV2.hasPermission(ClientModel, String), the result of getResourceTypeResource() can be null and is passed to findByResource(server, resource) without a null check. This causes a NullPointerException, which surfaces as HTTP 500 instead of 403. It can also happen when realm admin permissions are disabled after the client exists.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ClientPermissionsV2.java:217-219 passes the result of getResourceTypeResource() straight to findByResource() without a null check. getResourceTypeResource() returns null when realm admin permissions are off (AdminPermissionsSchema.java:117-118, 144-149), and both findByResource implementations then call resource.getId() (JPAPolicyStore.java:215, StoreFactoryCacheSession.java:938). Turning admin permissions off only clears the realm flag (DefaultExportImportManager.java:783) and leaves the permissions client in place, so realmResourceServer() is still non-null and this code is reached.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4399143999999999
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The AdminPermissions role/client/group removal listener is guarded only by the V1 flag ADMIN_FINE_GRAINED_AUTHZ. When only ADMIN_FINE_GRAINED_AUTHZ_V2 is enabled, the permission cleanup block is skipped and permission resources are left orphaned.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch wraps the role/client/group removal listener in `if (Profile.isFeatureEnabled(ADMIN_FINE_GRAINED_AUTHZ))` (AdminPermissions.java:77). V1 and V2 are versions of the same feature and cannot both be on (Profile.java:56-58), so under V2 the block never runs. Nothing else deletes V2 resources: AdminPermissionsSchema.java:104 owns them by the admin-permissions client, and ClientApplicationSynchronizer.java:49-75 only removes the deleted client's own resource server and client policies, so the V2 'Clients' resource for a deleted client is left behind.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.21686149999999998
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The removal listener is now wrapped in a V1-only feature gate. Deployments without V1 no longer clean up leftover V1 permission resources and policies when a role, client or group is deleted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Before the patch, deployments without V1 never cleaned up V1 leftovers either. With no fine-grained feature enabled, `authz` is null (MgmtPermissions.java:85-88), so `realmResourceServer()` returns null (MgmtPermissions.java:251) and `deletePermissions` exits early (ClientPermissions.java:189-190). With V2 enabled, `getRealmPermissionsClient()` points at the V2 admin-permissions client, not realm-management (MgmtPermissionsV2.java:52-53), and `ClientPermissionsV2.setPermissionsEnabled` throws an exception; the new gate at AdminPermissions.java:77 avoids that throw.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.3655113000000001
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Under V2, deleting a client leaves its per-client resource and scope permissions orphaned, because there is no V2 cleanup path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In V2, a per-client resource is created by getOrCreateResource (AdminPermissionsSchema.java:104). It is named after the client's id but owned by the admin-permissions client. When a client is deleted, nothing removes it: AdminPermissions' ClientRemovedEvent listener is gated on V1 ADMIN_FINE_GRAINED_AUTHZ (patch line 76), and ClientApplicationSynchronizer.java:49-75 only removes the deleted client's own resource server and its entries in client policies. So the resource and its scope permissions are left behind.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4535934
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ClientPermissionsV2.getClientsWithPermission uses findByType(server, 'Clients'). This matches only the typed all-clients resource, because per-client resources are created without a type. As a result it never returns per-client IDs and may return the string 'Clients', which callers such as AvailableRoleMappingResource pass to realm.getClientById.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ClientPermissionsV2.java:138 calls findByType(server, \"Clients\") and adds resource.getName(). Per-client resources are created at AdminPermissionsSchema.java:104 with no setType, so they never match. Only the all-clients resource gets a type (setType at AdminPermissionsSchema.java:250), so the method never returns per-client IDs and can return the name \"Clients\". AvailableRoleMappingResource.java:230 then calls realm.getClientById(\"Clients\").getRolesStream(), and since no client has that ID this would throw a NullPointerException.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.16109630000000003
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "hasPermission(ClientModel, String) looks up the resource with findByName(server, client.getId(), server.getId()). AdminPermissionsSchema.getOrCreateResource creates per-client resources with owner resourceServer.getClientId(), so the lookup never finds them and always falls back to the all-clients resource.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "ResourceServer.getClientId() just returns getId() in both the JPA adapter (model/jpa/.../ResourceServerAdapter.java:91-93) and the Infinispan adapter (ResourceServerAdapter.java:121-123). So the owner set at AdminPermissionsSchema.java:104 is server.getId(), and the resource name is client.getId() (via resolveClient). The lookup findByName(server, client.getId(), server.getId()) in the patch's hasPermission matches the per-client resource and does not fall back to the all-clients resource.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.13458910000000002
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "hasPermission(ClientModel, String) does not filter on permission.getResourceId().equals(resource.getId()), unlike UserPermissionsV2.java:135.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ClientPermissionsV2.hasPermission(ClientModel, String), added at change.patch lines 493-521, goes through every evaluated Permission and returns true on any matching scope without checking permission.getResourceId().equals(resource.getId()). UserPermissionsV2.java:135 does make that check. The hasGrantedPermission helper (change.patch lines 560-572) also leaves it out.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1181751
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ClientPermissionsV2 uses Arrays.asList() for single-element lists where List.of() could be used.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ClientPermissionsV2.java:225 and :250 (both new in this patch) build a one-element list with `List<String> expectedScopes = Arrays.asList(scope);`. Each list is only used for a `contains` check, so `List.of(scope)` or a plain `scope.equals(s)` would work just as well.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.05254620000000001
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An empty line was replaced by a line containing four spaces of trailing whitespace.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes the empty line after the class declaration in server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java and adds one that holds only four spaces. That whitespace-only line is now at line 53 of the file.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0723652
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no migration for realms whose admin-permissions client already existed. Those realms never receive the Clients resource type or the new scopes (configure, map-roles-client-scope, map-roles-composite). As a result getResourceTypeResource returns null, and creating a Clients permission fails with 'Scope [configure] does not exist' or 'No scopes found'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AdminPermissionsSchema.init (AdminPermissionsSchema.java:222-228) returns early when the realm already has an admin-permissions client, and it is the only place that creates scopes and type resources (lines 237-254). No migration in model/storage-private/.../migration touches AdminPermissionsSchema. So existing realms never get the Clients resource or the configure/map-roles-client-scope/map-roles-composite scopes: getResourceTypeResource returns null (line 133), getScope throws 'Scope [configure] does not exist.' (line 210), and getOrCreateResource throws 'No scopes found.' (line 108).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2818794
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Tests access getDefaultClientScopes().get(1) without checking that the list has at least two elements, which risks an IndexOutOfBoundsException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In PermissionClientTest.testManageOnlyOneClient (change.patch:862-865), the test only asserts `not(empty())` and then calls `defaultClientScopes.get(1)`, so nothing checks that the list has two elements. Line 839 also calls `.get(1)` inside a try block that expects ForbiddenException. In practice a realm's built-in default scopes (profile, email, roles, web-origins and others) make the list long enough, so the risk is small.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08707219999999999
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "canExchangeTo throws UnsupportedOperationException. When token-exchange and admin-fine-grained-authz:v2 are both enabled, this produces HTTP 500 instead of 403.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "With ADMIN_FINE_GRAINED_AUTHZ_V2 on, AdminPermissions.management() returns MgmtPermissionsV2, whose clients() now returns the new ClientPermissionsV2. Its canExchangeTo(client, to, token) always throws UnsupportedOperationException(\"Not supported in V2\"). AbstractTokenExchangeProvider.java:276 calls it with no try/catch, so token exchange to another client's audience fails with HTTP 500 instead of the 403 at line 280.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1536351
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The evaluate-and-match-scope loop is duplicated three times: hasGrantedPermission duplicates ClientPermissions.hasPermission(Resource,String), and the two hasPermission overloads repeat the same logic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In ClientPermissionsV2.java (new file, patch lines 493-572), hasGrantedPermission(Resource,String) is a line-for-line copy of the private ClientPermissions.hasPermission(Resource,String) at ClientPermissions.java:689-701. Both hasPermission(ClientModel,String) and hasPermission(String) repeat the same evaluatePermission call and nested scope-matching loop, with only the resource lookup differing.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.22556039999999997
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The label 'area/dependencies' does not exist for Dependabot to use.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch only changes Java permission and test files and does not touch Dependabot config. The 'area/dependencies' label used in .github/dependabot.yml:12,23 also appears in .github/teams.yml:55, so the repository does define it.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.2148378
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The label 'area/ci' does not exist for Dependabot to use.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch only changes Java permission classes and tests, and never touches Dependabot config. The 'area/ci' label is already used in .github/dependabot.yml:13 and .github/teams.yml:7, which suggests it exists; whether it is defined on GitHub cannot be checked from the source.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.2194566
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Once a per-client permission exists for a client, all-clients permissions stop applying to it. Per-client resources are created without a type, and DefaultPolicyEvaluator adds type-level policies only when resource.getType() != null.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AdminPermissionsSchema.java:104 creates the per-client resource with no type, and an all-clients permission is attached only to the typed 'Clients' resource (AuthorizationProvider.java:323-326). Once a per-client resource exists, ClientPermissionsV2.hasPermission(client, scope) (patch lines ~500-510) evaluates only that resource, and DefaultPolicyEvaluator.java:73 skips type-level policies when getType() is null, so all-clients grants are ignored for canManage/canConfigure/canMapRoles on that client.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.3944502999999999
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Tests are missing for MAP_ROLES_CLIENT_SCOPE, the client-scope endpoints, realm-management escalation, and V2 delete cleanup.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds V2 checks for MAP_ROLES_CLIENT_SCOPE (ClientPermissionsV2.java canMapClientScopeRoles, patch ~L387) and for realm-level client scopes (canManageClientScopes and canView(ClientScopeModel), ~L392-408), but no test in tests/base/.../fgap uses MAP_ROLES_CLIENT_SCOPE, the client-scopes endpoints, or realm-management escalation. PermissionClientTest.java only calls per-client getDefaultClientScopes/add/remove (lines ~148-230), and testManageAllClients deletes a client without checking that its V2 permission resources get cleaned up.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.25677890000000003
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Javadoc on the void methods requireView() and requireViewClientScopes() says 'Returns true if...', but these methods throw ForbiddenException and return nothing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In ClientPermissionEvaluator.java:95-103, the patch adds Javadoc reading 'Returns {@code true} if {@link #canView()} returns {@code true}' (and the same for canViewClientScopes) to the methods `void requireView()` and `void requireViewClientScopes()`. Both methods are void, so they cannot return true; they are require-style checks that throw when access is denied.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0524439
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new feature gate re-indents the listener body and changes cast spacing from (X)event to (X) event, which are formatting changes unrelated to the fix.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In AdminPermissions.java (patch lines 76-95), the listener body is wrapped in a new `Profile.isFeatureEnabled(ADMIN_FINE_GRAINED_AUTHZ)` check, and every cast changes from `(X)event` to `(X) event`, e.g. `(RoleContainerModel.RoleRemovedEvent) event` and `((ClientModel) role.getContainer())`. The re-indent follows from adding the wrapper, but the cast spacing changes no behaviour and only adds diff noise.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.20240689999999997
+   }
+  },
+  {
+   "issue": "i20",
+   "path": "AdminPermissionsSchema",
+   "line": null,
+   "severity": "Minor",
+   "claim": "AdminPermissionsSchema.getResourceName has no CLIENTS case and handles only Users, so Clients resources resolve to a null display name.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In AdminPermissionsSchema.java:304-326, getResourceName only checks the Users type (line 310). Clients resources fall through to resource.getDisplayName() (line 325), which is never set: they are created with only a name (line 104), so PolicyResourceService.java:218 returns a null displayName for them.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.16885239999999999
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Javadoc text 'For V2 only: Also if ... for all clients' misdescribes V2 behavior: V2 replaces the V1 per-client check rather than adding to it, and V2 also honours per-client grants.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The Javadoc lists the role check, the per-client permission and then, for V2, the extra all-clients permission. ClientPermissionsV2.java:64-69/91-103 does exactly that: role, or hasPermission(client, scope), which checks the per-client resource and falls back to the all-clients resource (lines 214-222). V2 does override the V1 code, but it keeps the per-client semantics the doc describes, so the 'Also ... for all clients' wording is accurate rather than misleading.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.11386990000000001
+   }
+  },
+  {
+   "issue": "i22",
+   "path": "ClientPermissionsV2",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ClientPermissionsV2 contains dead code copied from V1 token-exchange support: the private getEvaluationContext(ClientModel, AccessToken) method, the logger field, the static TOKEN_EXCHANGE import, and the Scope, ClientModelIdentity, DefaultEvaluationContext and EvaluationContext imports are all unused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new file ClientPermissionsV2.java, the private getEvaluationContext at :262-272 is never called, the logger at :51 and the static TOKEN_EXCHANGE import at :46 are never used, and the Scope import at :27 is never referenced. The ClientModelIdentity, DefaultEvaluationContext and EvaluationContext imports (:22,:23,:29) are used only inside that dead method, so in practice they are dead too.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08641149999999999
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A new private ClientPermissionsV2 clientPermissions field hides the inherited protected clientPermissions field from MgmtPermissions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "MgmtPermissionsV2.java:29 declares `private ClientPermissionsV2 clientPermissions`, which hides `protected ClientPermissions clientPermissions` at MgmtPermissions.java:76. It does no harm, because the base field is only touched inside the overridden clients() (MgmtPermissions.java:222-224), and the patch follows the existing userPermissions pattern (MgmtPermissionsV2.java:27).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.07374510000000001
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "testViewAllClients calls create(null) and never tests a real payload.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patch's testViewAllClients, the 'can't create a new client' check calls clients().create(null) (change.patch:1011) and no create call in that test sends a real ClientRepresentation. The 403 assertion is still meaningful because ClientsResource.createClient checks auth.clients().requireManage() before it reads the body (ClientsResource.java:186).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0501378
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An all-clients map-roles grant, or configure plus map-roles-composite, also covers the realm-management client. This lets an admin with map-roles on users grant realm-admin privileges, bypassing checkAdminRoles validation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Under V2, ClientPermissionsV2.hasPermission (patch lines 493-508) falls back to the all-clients resource whenever a client has no resource of its own, so canMapRoles and canMapCompositeRoles also return true for the realm-management client. RolePermissions.canMapRole (RolePermissions.java:307-308) and canMapComposite (RolePermissions.java:397-398) return true straight away in that case, without calling checkAdminRoles (lines 149-287), so an admin holding that grant can map admin roles such as realm-admin.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.30481969999999997
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "canView() accepts only the VIEW scope and not MANAGE, so GET /client-scopes returns 403 for admins with only all-clients MANAGE. This is inconsistent with canManageClientScopes() and canView(ClientScopeModel).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ClientPermissionsV2.canView() (patch line 372-374) returns canViewClientDefault() || hasPermission(VIEW) and never checks MANAGE, while canView(ClientScopeModel) (line 404-408) accepts VIEW or MANAGE and canManageClientScopes() (line 392-396) accepts MANAGE. GET /client-scopes calls requireListClientScopes() (ClientScopesResource.java:91), which checks canView() || QUERY_CLIENTS (ClientPermissions.java:258-260), so an admin with only all-clients MANAGE gets 403; MgmtPermissions.evaluatePermission does not treat manage as implying view.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2682504
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The tests do not clean up after themselves: @AfterEach removes only permissions, testManageOnlyOneClient leaves a renamed client and changed client-scope types, and testMapRolesAndCompositesOnlyOneClient leaves roles and mappings behind. Results therefore depend on test order.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The @AfterEach in PermissionClientTest (patch lines 792-797) removes only scope permissions, and ManagedRealm.runCleanup (test-framework/.../ManagedRealm.java:66-72) runs only registered cleanup tasks, so the realm, which is shared by the class (InjectRealm lifecycle CLASS), keeps the leftovers. testManageOnlyOneClient renames myclient and moves a default scope to optional (patch 857-869), and testMapRolesAndCompositesOnlyOneClient creates roles, a user mapping and a composite (patch 1022-1055), with no cleanup. However, I found no existing assertion in this class that changes with test order, so the order dependence is a risk, not a failure that happens today.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.30754250000000005
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test imports the JUnit 4 org.junit.Assert.fail while the rest of the file uses JUnit 5 Assertions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `import static org.junit.Assert.fail;` (JUnit 4) at PermissionClientTest.java:25. The same file also uses `org.junit.jupiter.api.Assertions` (JUnit 5, line 40) for `Assertions.assertEquals` (lines 259, 313, 321) and the JUnit 5 `@Test`/`@AfterEach` annotations.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0578788
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The createClientPolicy method is never used.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the protected static helper createClientPolicy(ManagedRealm, ManagedClient, String, String) at tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/AbstractPermissionTest.java:136, and a repo-wide search finds no call to it. The only other createClientPolicy matches are a different private method in UMAPolicyProviderFactory.java:406.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0399107
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No documentation is added for the Clients resource type or its scopes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch only touches Java sources and tests. It adds CLIENTS_RESOURCE_TYPE and the configure/map-roles-client-scope/map-roles-composite scopes in AdminPermissionsSchema.java:12-25 without Javadoc, and it changes no .adoc file under docs/. The existing Users resource type for fine-grained admin permissions v2 has no docs in the repo either.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.06336510000000001
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "hasPermission(String) runs a full policy evaluation of the all-clients resource on every call without checking whether any policies exist, causing repeated evaluations per client in GET /clients.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ClientPermissionsV2.hasPermission(String) (patch lines 523-546) checks only that the 'Clients' resource exists, and the schema always creates it (AdminPermissionsSchema.java:247). It then calls root.evaluatePermission, which has no cache (MgmtPermissions.java:347-351), and unlike hasPermission(ClientModel,String) it never checks findByResource for policies. ClientsResource.java:148/151 calls canView(c) per client, which calls canView() and so hasPermission(VIEW) again, up to twice per client.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.30973619999999996
+   }
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "hasOneAdminRole(MANAGE_CLIENTS) duplicates canManageClientsDefault(), and hasOneAdminRole(VIEW_CLIENTS, MANAGE_CLIENTS) duplicates canViewClientDefault().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ClientPermissions.java:268-273 defines canManageClientsDefault() as root.hasOneAdminRole(MANAGE_CLIENTS) and canViewClientDefault() as root.hasOneAdminRole(MANAGE_CLIENTS, VIEW_CLIENTS). The new ClientPermissionsV2 makes these same calls inline (patch lines 352, 393, 405) instead of using the helpers, even though it calls canViewClientDefault() at line 373.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.06360740000000001
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

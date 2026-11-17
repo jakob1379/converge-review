@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The method DB.TablesList at pkg/expr/sql/db.go:12 has no callers in pkg/. All calls go to the package-level TablesList that parser.go:22 defines: sql_command.go:30 calls it as sql.TablesList, and parser_test.go calls it as TablesList. That package-level function only uses NewInMemoryDB().RunCommands, never the method. The claim is slightly off in saying parser.go calls TablesList, since parser.go defines it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1457348
+}

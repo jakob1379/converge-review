@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:26-42 already loads the full organizer row via `include: { user: { include: {...} } }`, yet lines 58-68 run a separate `prisma.user.findFirstOrThrow` on `booking.userId` selecting only name/email/timeZone/locale, all of which are already on `booking.user`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3241661
+}

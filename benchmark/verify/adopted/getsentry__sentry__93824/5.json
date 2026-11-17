@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Searching the whole repo for `_create_process_for_shard` finds only its definition at src/sentry/spans/consumers/process/flusher.py:127. Restarts in `_ensure_processes_alive` call `_create_process_for_shards(process_index, shards)` directly (patch line 308), so the single-shard helper is never used.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0938251
+}

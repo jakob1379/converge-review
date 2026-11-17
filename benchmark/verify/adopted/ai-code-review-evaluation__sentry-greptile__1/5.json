@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/paginator.py:182, the shared BasePaginator.get_result now silently sets negative next-cursor offsets to 0, but still passes negative prev-cursor offsets to `queryset[start_offset:stop]`. Django raises ValueError on that slice, and paginate() in api/base.py:540 only catches BadPaginationError, so the request returns a 500. That makes the comment about the queryset handling boundaries false. OffsetPaginator rejects negative offsets with BadPaginationError (tests/sentry/api/test_paginator.py:143), and no test covers the new clamp.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1358773
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In GitHubInstallation.dispatch, the `except Integration.DoesNotExist: return pipeline.next_step()` branch (integration.py ~479-481) skips the installer check, which only runs later at ~493-503. build_integration (integration.py:351-353) then fetches `/app/installations/{installation_id}` with the app client for whatever id the user supplied, without checking who installed it.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0.12416060000000001
+}

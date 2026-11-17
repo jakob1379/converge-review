@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/source_code_management/commit_context.py:578-582 returns `title[:max_length].rstrip() + \"...\"`, so a title longer than ISSUE_TITLE_MAX_LENGTH (50, line 142) yields up to 53 characters. The only use is cosmetic display text in a PR comment (line 601), with no hard limit enforced downstream.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11480710000000001
+}

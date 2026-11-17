@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "static/app/views/insights/pages/transactionNameSearchBar.tsx:54-57 calls useGetTraceItemAttributeValues without projectIds although the component receives a projectIds prop (line 36), so the hook falls back to selection.projects at static/app/views/explore/hooks/useGetTraceItemAttributeValues.tsx:100. The pre-patch useTraceItemAttributeValues call omitted projectIds too; the patch only renamed the hook and dropped attributeKey/enabled.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5415603999999999
+}

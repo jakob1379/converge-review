@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/index.ts:1-31 builds the object with bare `import(\"./x\")` calls as property values (not wrapped in functions or getters), so all 28 dynamic imports fire when the module is evaluated and every app package starts loading as soon as appStore is imported, not on key access.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1090656
+}

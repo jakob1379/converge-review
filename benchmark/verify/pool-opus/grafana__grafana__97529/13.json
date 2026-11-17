@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new `s.Init(ctx)` error return in `NewResourceServer` (resource/server.go:258-262) has no test: `resource/server_test.go`, `sql/test/integration_test.go` and `apistore/watcher_test.go:122-156` only assert NoError, and none check that handlers work without lazy Init. The manual `ret.Init(ctx)` at `apistore/watcher_test.go:148` is a harmless duplicate because both `backend.Init` and `server.Init` run only once, but it was already a duplicate before this patch, so 'now redundant' overstates the change.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.12982549999999998
+}

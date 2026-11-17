@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/authz/rbac/service.go:116 builds the denial key from the raw `checkReq.UserUID` (the parsed subject, which may be a numeric ID or a UID), whereas `getCachedIdentityPermissions` at service.go:356-360 keys on the resolved `userIdentifiers.UID`. The only effect is that the same user addressed by ID and by UID gets separate denial entries, since `GetUserIdentifiers` (service.go:452-478) resolves both forms to the same user.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.33804039999999996
+}

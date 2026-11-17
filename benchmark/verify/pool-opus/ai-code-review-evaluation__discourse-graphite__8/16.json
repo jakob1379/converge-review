@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the afterModel hooks that returned model.findMembers(). In admin_group_route.js setupController (patch line 127) and group-members.js.es6 setupController (patch line 364), `model.findMembers();` is now called without its promise being returned or awaited, so the route renders before members load. The members are set on the model through setProperties, so the template fills in once the request finishes. The visible effect is an empty list at first, and any request error is not handled.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0724759
+}

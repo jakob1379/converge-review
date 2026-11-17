@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`error()` calls `_(error_short)` on a parameter at src/sentry/integrations/github/integration.py:141 while callers pass bare literals at :132, :471 and :488, so `makemessages` (Makefile:61) can no longer extract them. The two pre-existing msgids have empty `msgstr` in all 42 checked-in catalogs (e.g. src/sentry/locale/de/LC_MESSAGES/django.po:902-907), so no in-repo translation is actually lost; the strings just become untranslatable.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3247913
+}

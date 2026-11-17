@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In TagDevice (pkg/services/anonymous/anonimpl/impl.go:119-129), an empty X-Grafana-Device-Id or an IP that fails to parse returns nil before CreateOrUpdateDevice is reached. Anonymous.Authenticate in client.go only fails on ErrDeviceLimitReached, so these clients are never counted and still get an anonymous identity even when the device limit is full.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11367179999999999
+}

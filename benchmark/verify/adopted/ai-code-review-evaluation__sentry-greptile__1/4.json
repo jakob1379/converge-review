@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/api/paginator.py:877 the advanced branch slices `queryset[cursor.offset:stop]` with a negative offset taken straight from the request. `Cursor.from_string` (src/sentry/utils/cursors.py:53-61) accepts negative offsets, and the pinned Django 5.2.1 (requirements-frozen.txt:36) raises ValueError('Negative indexing is not supported.') on negative slices. `paginate` (src/sentry/api/base.py:540) only catches BadPaginationError, so the request returns a 500 and the comments saying the ORM handles negative slicing are false.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1022555
+}

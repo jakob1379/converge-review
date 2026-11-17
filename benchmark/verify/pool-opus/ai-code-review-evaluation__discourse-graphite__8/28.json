@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/groups_controller.rb:622-623 splits `usernames` on \",\" and passes each piece straight to `User.find_by_username`, which only lowercases it (app/models/user.rb:175-177) and never strips whitespace, so a request like \"alice, bob\" silently skips bob. Blank entries just match nobody and are harmless, and the UI's user-selector joins names with a bare \",\" (user-selector.js.es6:52), so only hand-written API requests hit this.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1716688
+}

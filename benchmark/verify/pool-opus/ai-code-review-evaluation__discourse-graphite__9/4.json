@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The unguarded `.to_sym` call is real (config/initializers/i18n.rb:82, added by the patch), but `default_locale` cannot be nil. It defaults to 'en' (config/site_settings.yml:59-60) and is an enum checked by `LocaleSiteSetting.valid_value?`, which only accepts supported locales (app/models/locale_site_setting.rb:5-6), so a nil value is rejected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0535768
+}

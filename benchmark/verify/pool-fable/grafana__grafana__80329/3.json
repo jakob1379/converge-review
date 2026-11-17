@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:534, :554 and :576 log the whole `ids` slice (\"ids\", ids) at Error level on every batch. Batch size is the configurable `cleanupjob_batchsize` (default 100, pkg/setting/setting.go:710), so it reaches thousands of IDs per line only when set that high, as the patch's own test does with 32767.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2109346
+}

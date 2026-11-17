@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java:44 declares `int order();` with no default, and CryptoIntegration.java:57 sorts ServiceLoader-discovered providers with `Comparator.comparingInt(CryptoProvider::order)`, so an external implementation no longer compiles. A pre-compiled one would throw AbstractMethodError only when two or more providers are on the classpath (a single-element sort never calls the comparator); all four in-repo implementations are updated.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.20683790000000002
+}

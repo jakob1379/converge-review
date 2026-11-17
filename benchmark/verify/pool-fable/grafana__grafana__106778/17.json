@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new `useIsGrafanaPromRuleEditable` in `public/app/features/alerting/unified/hooks/useAbilities.ts:349-378` repeats the same `useFolder` -> `getRulesPermissions('grafana')` -> `hasPermissionInMetadata(update/delete, folder)` sequence as the Grafana branch of `useIsRuleEditable` in `public/app/features/alerting/unified/hooks/useIsRuleEditable.ts:50-76`. Its own docstring calls it an \"Adapted version of useIsRuleEditable\"; the only differences are the folder UID source (`rule.folderUid`) and the dropped feature-discovery query.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.24969550000000001
+}

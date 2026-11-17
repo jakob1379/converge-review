@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The doc comment at public/app/features/alerting/unified/rule-list/GrafanaGroupLoader.tsx:25 still says \"Loads an evaluation group from Prometheus and Ruler endpoints\", but the patch removed the `useGetGrafanaRulerGroupQuery` call, so the component now only calls `useGetGrafanaGroupsQuery` from `prometheusApi` (GrafanaGroupLoader.tsx:34-41).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2327128
+}

@@ -1,0 +1,264 @@
+{
+ "pr_url": "https://github.com/getsentry/sentry/pull/80168",
+ "cost_usd": 0.05908900000000001,
+ "items": [
+  {
+   "id": "c1",
+   "source": "cubic-v2",
+   "text": "This expected occurrence is built with the wrong group key/value, so the test can pass without validating the new hook inputs."
+  },
+  {
+   "id": "c2",
+   "source": "claude-code",
+   "text": "On line 196, the expected occurrence for group_2 is built with value=6 when the data packet has group_2=10 - this only passes because value is never used in occurrence construction"
+  },
+  {
+   "id": "c3",
+   "source": "cubic-v2",
+   "text": "The `evaluate()` method in `StatefulDetectorHandler` now returns `dict[DetectorGroupKey, DetectorEvaluationResult]`, but its docstring still says \"returns a list of `DetectorEvaluationResult`\". The docstring should be updated to reflect the dict-keyed-by-`DetectorGroupKey` return type."
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "MetricAlertDetectorHandler subclasses StatefulDetectorHandler with only `pass`, leaving abstract members counter_names, get_dedupe_value, get_group_key_values and build_occurrence_and_event_data unimplemented; it is still registered as MetricAlertFire.detector_handler, causing TypeError (Can't instantiate abstract class) when detector_handler is called for any metric_alert_fire detector"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review-replay",
+   "text": "Tests cannot detect wrong arguments passed to build_occurrence_and_event_data because the mock occurrence builder ignores its value argument, hard-codes the occurrence id, and IssueOccurrence equality compares only id - meaning tests pass even with incorrect values"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "BaseDetectorHandlerTest.build_handler's detector_type parameter is never passed by any caller, and create_detector_and_conditions(type=None) replaces None with 'handler_with_state' instead of using a plain default"
+  },
+  {
+   "id": "c7",
+   "source": "coderabbit",
+   "text": "Docstring is inconsistent with return type: docstring says 'returns a list of DetectorEvaluationResult' but the method now returns a dict[DetectorGroupKey, DetectorEvaluationResult]"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review",
+   "text": "StatefulDetectorHandler.evaluate docstring says it returns a list of DetectorEvaluationResult but the return type is now dict[DetectorGroupKey, DetectorEvaluationResult]"
+  },
+  {
+   "id": "c9",
+   "source": "coderabbit",
+   "text": "Mutable class attribute counter_names should be annotated with typing.ClassVar"
+  },
+  {
+   "id": "c10",
+   "source": "golden",
+   "text": "MetricAlertDetectorHandler inherits from StatefulDetectorHandler but only contains pass, failing to implement its required abstract methods: counter_names (property), get_dedupe_value(), get_group_key_values(), and build_occurrence_and_event_data(). This will cause a TypeError at runtime when the class is instantiated."
+  },
+  {
+   "id": "c11",
+   "source": "claude-code",
+   "text": "MetricAlertDetectorHandler now inherits from StatefulDetectorHandler but implements none of its 4 required abstract methods/properties (counter_names, get_dedupe_value, get_group_key_values, build_occurrence_and_event_data), so Python will raise TypeError on instantiation"
+  },
+  {
+   "id": "c12",
+   "source": "golden",
+   "text": "Docstring says this returns a list of DetectorEvaluationResult, but the method now returns a dict keyed by DetectorGroupKey. Consider updating the docstring to match the new return type."
+  },
+  {
+   "id": "c13",
+   "source": "claude-code",
+   "text": "build_mock_occurrence_and_event hardcodes the same id for every call, and IssueOccurrence.__eq__ only compares by id, so all occurrences from this helper compare as equal regardless of fingerprint or group_key, making multi-group test assertions unable to distinguish between occurrences for different groups"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "Comment 'TODO: This will be a stateful detector when we build that abstraction' is stale; the class now subclasses StatefulDetectorHandler"
+  },
+  {
+   "id": "c15",
+   "source": "cubic-v2",
+   "text": "`MetricAlertDetectorHandler` inherits from `StatefulDetectorHandler` which declares four abstract methods (`counter_names`, `get_dedupe_value`, `get_group_key_values`, `build_occurrence_and_event_data`), but none of them are implemented here. The class is still abstract and will raise `TypeError` at instantiation time."
+  },
+  {
+   "id": "c16",
+   "source": "qodo-extended-v2",
+   "text": "MetricAlertDetectorHandler extends StatefulDetectorHandler which declares 4 abstract methods (counter_names, get_dedupe_value, get_group_key_values, build_occurrence_and_event_data) but implements none of them, causing TypeError when attempting to instantiate the class"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review-replay",
+   "text": "The StatefulDetectorHandler.evaluate docstring incorrectly states it 'returns a list of DetectorEvaluationResult' when the return type was changed to dict[DetectorGroupKey, DetectorEvaluationResult]"
+  },
+  {
+   "id": "c18",
+   "source": "augment",
+   "text": "In test_state_results_multi_group, the second occurrence is built with value=6 even though group_2 has a value of 10 in the data packet, so the test won't catch regressions in how value is threaded into build_occurrence_and_event_data"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "MetricAlertDetectorHandler subclasses StatefulDetectorHandler with only 'pass', leaving four abstract members unimplemented (counter_names, get_dedupe_value, get_group_key_values, and build_occurrence_and_event_data), so it cannot be instantiated and will raise TypeError when MetricAlertFire.detector_handler or Detector.detector_handler is called"
+  },
+  {
+   "id": "c20",
+   "source": "augment",
+   "text": "MetricAlertDetectorHandler subclasses StatefulDetectorHandler but doesn't implement its abstract methods (get_dedupe_value, get_group_key_values, build_occurrence_and_event_data), causing TypeError when instantiating MetricAlertFire.detector_handler"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "The comment 'TODO: This will be a stateful detector when we build that abstraction' at grouptype.py:10 is stale since the class now subclasses StatefulDetectorHandler"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "build_mock_occurrence_and_event hard-codes the occurrence id and ignores its `value` argument, and IssueOccurrence.__eq__ compares only id, so every mock occurrence compares equal; tests cannot detect wrong group_key, value or priority passed to build_occurrence_and_event_data"
+  },
+  {
+   "id": "c23",
+   "source": "coderabbit",
+   "text": "Inconsistent value parameter in test: data packet specifies {\"group_1\": 6, \"group_2\": 10} but build_mock_occurrence_and_event for group_2 is called with value=6 instead of value=10"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "The new public abstract hook build_occurrence_and_event_data has no docstring, unlike sibling abstract members; undocumented that it is called only on transitions to non-OK status, new_status arrives as PriorityLevel, and event_data goes unchanged to produce_occurrence_to_kafka"
+  },
+  {
+   "id": "c25",
+   "source": "claude-code",
+   "text": "Docstring on line 230 says 'returns a list of DetectorEvaluationResult' but the return type was changed to dict[DetectorGroupKey, DetectorEvaluationResult] - docstring should be updated to match"
+  },
+  {
+   "id": "c26",
+   "source": "cubic-v2",
+   "text": "This assertion allows extra Kafka publishes, so the test no longer catches duplicate occurrence production."
+  },
+  {
+   "id": "c27",
+   "source": "augment",
+   "text": "Docstring for evaluate method incorrectly states it returns a list of DetectorEvaluationResult when it actually returns a dict keyed by DetectorGroupKey"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "TestProcessDetectors.setUp only calls super().setUp() and is a no-op override"
+  },
+  {
+   "id": "c29",
+   "source": "golden",
+   "text": "Wrong value `6` passed for `group_2` occurrence \u2014 the data packet specifies `\"group_2\": 10`. Should be `10` to accurately reflect the test scenario, which will ensure the test produces the correct occurrence data."
+  },
+  {
+   "id": "c30",
+   "source": "qodo-extended-v2",
+   "text": "StatefulDetectorHandler.evaluate docstring incorrectly states it returns a list when the method signature and implementation actually return a dict keyed by group key"
+  },
+  {
+   "id": "c31",
+   "source": "coderabbit",
+   "text": "Unused value parameter in build_mock_occurrence_and_event helper function"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The `StatefulDetectorHandler.evaluate` docstring says it returns a list of `DetectorEvaluationResult`, but the method now returns `dict[DetectorGroupKey, DetectorEvaluationResult]`.",
+   "path": null,
+   "members": [
+    "c3",
+    "c7",
+    "c8",
+    "c12",
+    "c17",
+    "c25",
+    "c27",
+    "c30"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "`MetricAlertDetectorHandler` subclasses `StatefulDetectorHandler` with only `pass` and implements none of its abstract members (`counter_names`, `get_dedupe_value`, `get_group_key_values`, `build_occurrence_and_event_data`). Instantiating it through `MetricAlertFire.detector_handler` / `Detector.detector_handler` therefore raises TypeError.",
+   "path": null,
+   "members": [
+    "c4",
+    "c10",
+    "c11",
+    "c15",
+    "c16",
+    "c19",
+    "c20"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "In `test_state_results_multi_group`, the expected occurrence for `group_2` is built with `value=6`, while the data packet has `group_2=10`. The test passes only because the value is not used when the occurrence is constructed.",
+   "path": null,
+   "members": [
+    "c1",
+    "c2",
+    "c18",
+    "c23",
+    "c29"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The test helper `build_mock_occurrence_and_event` ignores its `value` argument and hard-codes the occurrence id, and `IssueOccurrence.__eq__` compares only id. As a result, all mock occurrences compare equal, and tests cannot detect wrong group_key, value or priority passed to `build_occurrence_and_event_data`.",
+   "path": null,
+   "members": [
+    "c5",
+    "c13",
+    "c22",
+    "c31"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The comment 'TODO: This will be a stateful detector when we build that abstraction' is stale, because `MetricAlertDetectorHandler` now subclasses `StatefulDetectorHandler`.",
+   "path": "grouptype.py",
+   "members": [
+    "c14",
+    "c21"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "No caller ever passes the `detector_type` parameter of `BaseDetectorHandlerTest.build_handler`. Also, `create_detector_and_conditions(type=None)` replaces None with 'handler_with_state' instead of using a plain default.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The mutable class attribute `counter_names` is not annotated with `typing.ClassVar`.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The new public abstract hook `build_occurrence_and_event_data` has no docstring, unlike its sibling abstract members. It is undocumented that the hook is called only on transitions to non-OK status, that `new_status` arrives as `PriorityLevel`, and that `event_data` is passed unchanged to `produce_occurrence_to_kafka`.",
+   "path": null,
+   "members": [
+    "c24"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The Kafka publish assertion allows extra publishes, so the test does not catch duplicate occurrence production.",
+   "path": null,
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "`TestProcessDetectors.setUp` only calls `super().setUp()`, which makes it a no-op override.",
+   "path": null,
+   "members": [
+    "c28"
+   ]
+  }
+ ]
+}

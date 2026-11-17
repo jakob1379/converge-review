@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/webhook/app-credential.ts (new file, ~lines 57-59), `keys` is the raw `JSON.parse(symmetricDecrypt(...))` result. It is written straight into `credential.key` by both `prisma.credential.update` and `prisma.credential.create` (~lines 77 and 85) with no zod or app-specific schema check, while the request schema only checks that `keys` is a string.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2118102
+}

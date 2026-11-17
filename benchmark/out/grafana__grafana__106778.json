@@ -1,0 +1,287 @@
+{
+  "findings": [
+    {
+      "path": "public/app/features/alerting/unified/rule-list/components/RuleActionsButtons.V2.tsx",
+      "line": 104,
+      "severity": "Important",
+      "claim": "In the new Grafana list view, 'Silence notifications' is shown but clicking it does nothing: the silence drawer only mounts when rulerRuleType.grafana.alertingRule(rule) is true, and GrafanaRuleListItem now passes only promRule, so rule is undefined.",
+      "evidence": "canSilence becomes true via the prom path (useAbilities.ts:323, ORed at AlertRuleMenu.tsx:96); drawer guard at RuleActionsButtons.V2.tsx:104-106 needs the ruler rule; SilenceGrafanaRuleDrawer only reads grafana_alert.uid, which the prom rule's uid could supply. GrafanaGroupLoader.test.tsx asserts the item exists but never clicks it. Proposed red test: click More > Silence, expect a dialog. Reasoned, not run.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two independent correctness seats, concrete code path cited; user-visible dead menu action."
+    },
+    {
+      "path": "public/app/features/alerting/unified/components/rule-viewer/AlertRuleMenu.tsx",
+      "line": 123,
+      "severity": "Important",
+      "claim": "Pause and Delete no longer appear for Grafana rules in the list view, even for users with update/delete permissions: render conditions still require rulerRule (rulerRuleType.grafana.rule(rulerRule) at :123, canDelete && rulerRule at :165), which the list view no longer supplies, so the new grafanaPause/grafanaDelete abilities are computed but never used.",
+      "evidence": "Before the patch list items had a ruler rule and showed Pause/Delete. GrafanaGroupLoader.test.tsx grants AlertingRuleDelete + folder delete (:58) yet asserts exactly 4 menu items (:207); ui.menuItems.delete is defined but never asserted. Delete only needs identifier (showDeleteModal(identifier, groupIdentifier)); Pause needs the ruler group. Proposed red test: same test asserting the delete menu item is present. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two correctness seats; the test locking 4 items may reflect an intentional scope cut, so confirm with the PR author, but as written permitted actions silently vanish."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 309,
+      "severity": "Important",
+      "claim": "Duplicate is wrongly enabled for non-Grafana rules: AlertRuleMenu passes skipToken for non-Grafana rules, useAllGrafanaPromRuleAbilities(undefined) sets loading=false so MaybeSupported=AlwaysSupported, giving Duplicate=[true, hasPermission(AlertingRuleCreate)], which is ORed into canDuplicate.",
+      "evidence": "Users with Grafana alert.rules:create see Duplicate on Mimir/Loki/Prometheus rules, including sources without a ruler (previously hidden via isRulerAvailable=false) and users lacking AlertingRuleExternalWrite; also re-enables Duplicate for plugin-provided Grafana rules when promRule is absent. Reaches v1 RuleActionsButtons.tsx:110, rule viewer, and V2 DataSourceRuleLoader. RulesTable.test mocks useGrafanaPromRuleAbilities to [false,false], hiding it. Proposed red test: AlertRuleMenu for a cloud rule without ruler, grant AlertingRuleCreate, expect no Duplicate item. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two correctness seats with a traced code path; fix is to return NotSupported for all actions when the prom rule is undefined/skipped."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 243,
+      "severity": "Important",
+      "claim": "Federated Mimir rule groups become editable/deletable/pausable in the v1 list and rule details: useAllAlertRuleAbilities previously computed isFederated = isFederatedRuleGroup(rule.group) but now delegates to useAllRulerRuleAbilities, which hardcodes isFederated = false (with a TODO).",
+      "evidence": "Base code at useAllAlertRuleAbilities used isFederatedRuleGroup; patched :243-245 hardcodes false. Live consumers: components/rules/RuleActionsButtons.tsx:57 (Edit), RuleDetailsButtons.tsx, GrafanaRuleQueryViewer.tsx; conflicts with RulesGroup.tsx:69 and RuleDetailsButtons.tsx:38 which still treat federated groups as read-only. Proposed red test: v1 RulesTable without the useAbilities mock, cloud rule with group.source_tenants=['t1'], AlertingRuleExternalWrite granted, expect no Edit button. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Raised by both correctness seats and passed on by both advisory seats; a behaviour regression against base with a cited source line."
+    },
+    {
+      "path": "public/app/features/alerting/unified/rule-list/FilterView.tsx",
+      "line": 157,
+      "severity": "Important",
+      "claim": "The 'grafana' case renders <GrafanaRuleListItem> inside rules.map(...) without key={key}; the removed <GrafanaRuleLoader key={key}> had it and the sibling cases at :165/:169 still pass it.",
+      "evidence": "React missing-key console.error; public/test/setupTests.ts:16-21 enables jest-fail-on-console under CI, so any test rendering multiple Grafana rules here would fail; per-row state (open menu, drawers, modals) can attach to the wrong row as the paginated list grows. react/jsx-key not enabled in eslint.config.js, so lint won't catch it. Command (not run): CI=true yarn jest public/app/features/alerting/unified/rule-list/FilterView.test.tsx with a Grafana rule fixture.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three seats, trivially verifiable from the diff hunk; one-token fix."
+    },
+    {
+      "path": "public/app/features/alerting/unified/rule-list/GrafanaRuleListItem.tsx",
+      "line": 40,
+      "severity": "Important",
+      "claim": "The rule view href drops { returnTo }, which the deleted GrafanaRuleLoader/old list item passed via createRelativeUrl(..., { returnTo }); opening a Grafana rule from the list no longer returns the user to their filtered list.",
+      "evidence": "Deleted GrafanaRuleLoader.tsx (patch ~line 1222) included returnTo; DataSourceRuleListItem.tsx:36-42 still sets it, so Grafana and datasource items now diverge. Proposed red test: assert the rule link href contains returnTo= in GrafanaGroupLoader.test.tsx. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "All four seats; correctness seats split Important/Minor, normalised to Important as a user-visible navigation regression against base."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 324,
+      "severity": "Minor",
+      "claim": "useAllGrafanaPromRuleAbilities gates ModifyExport, Pause, Restore and DeletePermanently on prometheusRuleType.grafana.alertingRule, whereas the ruler path it replaces used a check covering Grafana recording rules too; Grafana recording rules lose Export (and others) in the new list. The comment at :301 ('All GrafanaPromRuleDTO rules are Grafana-managed') does not match what the code checks.",
+      "evidence": "Patched :301 comment vs :323-329 isAlertingRule usage; base used rulerRuleType.grafana.rule / isGrafanaManagedAlertRule. Suggested: use prometheusRuleType.grafana.rule(rule) and keep alerting-only for Silence. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Real regression against base, cheap to fix alongside the Duplicate gating fix."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 227,
+      "severity": "Minor",
+      "claim": "useAllAlertRuleAbilities now calls groupIdentifier.fromCombinedRule, which calls getDatasourceAPIUid and throws 'Datasource \"<name>\" not found' for unregistered rule sources; the old getRulesSourceName path never threw, so a render can now crash instead of degrading.",
+      "evidence": "utils/datasource.ts:299-307 throw path; RuleDetails.test.tsx had to switch fixture to rulesSource: mimirDs (:36, :87) to avoid it. Seats rate production risk low since v1 CombinedRules come from configured datasources. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Minor, low production likelihood; settle by a test rendering RuleDetails for a CombinedRule whose rulesSource name is not registered. ponytail: new throw path in render hook, revisit if a removed/renamed datasource crash is reported."
+    },
+    {
+      "path": "public/app/features/alerting/unified/components/rules/RulesTable.test.tsx",
+      "line": 20,
+      "severity": "Minor",
+      "claim": "Test coverage gap: RulesTable.test.tsx mocks every useAbilities hook including the new prom path (contrary to alerting TESTING.md, which prescribes enableRBAC/grantUserPermissions + MSW), so the OR-merge in AlertRuleMenu/RuleActionsButtons.V2, useAllGrafanaPromRuleAbilities and useIsGrafanaPromRuleEditable are never exercised unmocked; GrafanaGroupLoader.test never clicks Silence/Duplicate. This is how the Duplicate and federated regressions slip through.",
+      "evidence": "RulesTable.test.tsx:20-29, 57-73 mock additions; useGrafanaPromRuleAbility mocks in Grafana Edit tests are no-ops because v1 RuleActionsButtons never calls it; public/app/features/alerting/unified/TESTING.md.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Addressed incidentally by the red tests for the accepted Important findings; ponytail: replacing the mock-heavy RulesTable setup is a separate refactor."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 339,
+      "severity": "Minor",
+      "claim": "useIsGrafanaPromRuleEditable (+ new IsGrafanaPromRuleEditableResult interface) duplicates the Grafana branch of useIsRuleEditable (useFolder -> getRulesPermissions -> hasPermissionInMetadata); the two copies will drift.",
+      "evidence": "hooks/useIsRuleEditable.ts Grafana branch vs patched useAbilities.ts:339-378; call site at :289 carries a '// duplicate' comment. ~-30 lines possible. Advisory, reasoned.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory over-engineering; normalised from Important to Minor (maintainability, no current behaviour defect). ponytail: extract a shared folder-permission hook when either copy next changes."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 287,
+      "severity": "Minor",
+      "claim": "useAllGrafanaPromRuleAbilities rebuilds the same 10-entry ability map as useAllRulerRuleAbilities; only inputs differ, so immutability/plugin/admin rules live in two places.",
+      "evidence": "Patched useAbilities.ts:287-337 vs :231-285. Suggested pure buildRuleAbilities(...) helper, ~-35 lines. Advisory, reasoned.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory; normalised to Minor. ponytail: consolidate when the ability rules next change."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 287,
+      "severity": "Minor",
+      "claim": "useAllGrafanaPromRuleAbilities is exported but used only inside useAbilities.ts.",
+      "evidence": "grep shows call sites only at useAbilities.ts:387 and :401; contribute/style-guides/frontend.md > Exports: 'Export only the code that is meant to be used outside the module.'",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Documented-standard breach but harmless; ponytail: drop the export during the ability-map consolidation."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 380,
+      "severity": "Minor",
+      "claim": "A homemade skipToken Symbol is introduced only to be converted back to undefined (rule === skipToken ? undefined : rule); it shadows RTK Query's skipToken already imported in this folder, and as a module constant it breaches the ALL-CAPS constants rule.",
+      "evidence": "useAbilities.ts:380-405; callers AlertRuleMenu.tsx:73, RuleActionsButtons.V2.tsx:57; RTK skipToken imports at hooks/useFolder.ts:16, rule-list/DataSourceRuleLoader.tsx:34; frontend.md > Constants.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory; the Duplicate-gating fix touches the same skip path. ponytail: replace with GrafanaPromRuleDTO | undefined when that fix lands if it stays simple."
+    },
+    {
+      "path": "public/app/features/alerting/unified/components/rule-viewer/AlertRuleMenu.tsx",
+      "line": 56,
+      "severity": "Minor",
+      "claim": "The five-item action list is written twice and each ability unpacked from both sources and ORed by hand (10 destructurings, 5 near-identical || lines); inline arrays are new each render, defeating the useMemo([abilities, actions]) inside both hooks.",
+      "evidence": "AlertRuleMenu.tsx:56-100. Suggested module-level MENU_ACTIONS constant, ~45 -> ~10 lines. Advisory, reasoned.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory; ponytail: restructure together with the Pause/Delete gating fix in the same component if it reduces churn."
+    },
+    {
+      "path": "public/app/features/alerting/unified/rule-list/GrafanaRuleListItem.tsx",
+      "line": 22,
+      "severity": "Minor",
+      "claim": "The operation prop on GrafanaRuleListItem is dead: neither caller (GrafanaGroupLoader.tsx:70, FilterView.tsx:157) passes it after the Creating branch was deleted.",
+      "evidence": "GrafanaRuleListItem.tsx:22,30,60; callers listed. Reasoned from grep.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Dead code introduced by this patch; deletion is the smallest change."
+    },
+    {
+      "path": "public/app/features/alerting/unified/rule-list/GrafanaRuleListItem.tsx",
+      "line": 41,
+      "severity": "Minor",
+      "claim": "Leftover optional chaining (rule?.health, rule?.lastError, rule?.isPaused) and a redundant promAlertingRule recomputation inside the alerting branch, carried over from when rule was optional.",
+      "evidence": "GrafanaRuleListItem.tsx:41,42,45,51; rule is now a required prop. Advisory.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Cosmetic, no behaviour impact. ponytail: clean up when the file is next touched for the returnTo fix."
+    },
+    {
+      "path": "public/app/features/alerting/unified/rule-list/components/AlertRuleListItemLoader.tsx",
+      "line": 24,
+      "severity": "Minor",
+      "claim": "RulerRuleLoadingError export is orphaned: its only user was the deleted GrafanaRuleLoader.tsx.",
+      "evidence": "Seat grep of public/app found no other reference. File is outside the patch but orphaned by it.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Dead export created by this patch; deleting it is trivial."
+    },
+    {
+      "path": "public/app/features/alerting/unified/rule-list/components/RuleActionsButtons.V2.tsx",
+      "line": 118,
+      "severity": "Minor",
+      "claim": "getIsProvisioned is 11 lines for a one-line expression; the logWarning + return undefined fallback in getEditableIdentifier (:130-150) is unreachable for current callers.",
+      "evidence": "RuleActionsButtons.V2.tsx:118-128, 130-150; callers DataSourceRuleLoader, DataSourceGroupLoader, StateView always pass a ruler rule, GrafanaRuleListItem always passes a Grafana prom rule. Advisory.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory; seat itself says keep-or-drop. ponytail: collapse when the file is edited for the Silence fix."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 289,
+      "severity": "Minor",
+      "claim": "Stray '// duplicate' comment carries no information.",
+      "evidence": "useAbilities.ts:289; contribute/style-guides/code-comments.md.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Trivial deletion."
+    },
+    {
+      "path": "public/app/features/alerting/unified/hooks/useAbilities.ts",
+      "line": 220,
+      "severity": "Minor",
+      "claim": "New @deprecated TSDoc on useAllAlertRuleAbilities gives no reason and points to useAllRulerRuleAbilities, which is not equivalent (hardcodes isFederated=false).",
+      "evidence": "useAbilities.ts:220 vs :243-245; contribute/style-guides/code-comments.md > Deprecate an API ('add a reason why the API is deprecated').",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Resolved together with the federated-rules fix; add the reason once the replacement is equivalent."
+    },
+    {
+      "path": "public/app/features/alerting/unified/rule-list/GrafanaGroupLoader.test.tsx",
+      "line": 42,
+      "severity": "Minor",
+      "claim": "ui.menuItems.delete is defined but never used, likely tripping unicorn/no-unused-properties (enabled for public/app/features/alerting/** at eslint.config.js:293).",
+      "evidence": "GrafanaGroupLoader.test.tsx:42 vs usages at :194-203; lint not run, nested-property coverage of the rule unconfirmed.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Becomes used by the red test for the Pause/Delete regression."
+    },
+    {
+      "path": "public/app/features/alerting/unified/rule-list/GrafanaRuleListItem.tsx",
+      "line": 26,
+      "severity": "Minor",
+      "claim": "export function GrafanaRuleListItem has no explicit return type, contrary to frontend.md > Types ('Specify function return types explicitly in new code').",
+      "evidence": "GrafanaRuleListItem.tsx:26; guide notes lint does not enforce it.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "reject",
+      "reason": "GrafanaRuleListItem is moved code (relocated from GrafanaGroupLoader.tsx per the patch), not new code, so the 'new code' rule does not apply; Minor advisory finding, no verifier required."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode): no lint, tsc or jest executed, so every finding is reasoned and none was made red. No spec: the spec-compliance axis had nothing to check. All four seats are the same model family; no cross-family reviewer was available. Untracked harness dotfiles (.bashrc, .claude/, .idea, etc.) were excluded from the pinned patch as not part of the PR. Seat skips: ponytail-review only skimmed RuleDetails.test.tsx, RulesTable.test.tsx, GrafanaGroupLoader.test.tsx and did not review public/locales/en-US/grafana.json (out of role); mattpocock code-review checked public/locales/en-US/grafana.json, public/app/types/unified-alerting-dto.ts and rule-list/hooks/prometheusGroupsGenerator.ts only partially (standards only); open-code-review's file selector excluded the 3 test files and deleted GrafanaRuleLoader.tsx from its reviewable set, though the seat read them as context; requesting-code-review skipped nothing. Rounds 2+, fixes and red tests not run per benchmark override."
+}

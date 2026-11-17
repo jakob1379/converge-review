@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/apiserver/rest/dualwriter.go:188-222: with an empty KV store, SetDualWritingMode sets currentMode to Mode1 and only switches between 1 and 2 (lines 199 and 209, with a TODO for the other cases at line 220), so a desired Mode3 returns Mode1. builder/helper.go:173-184 then calls NewDualWriter(Mode1), which means the new 'mode 3' playlist subtests (playlist_test.go:128-141, 188-205) and a production setting of 3 (config.go:60) actually run mode 1.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2611735
+}

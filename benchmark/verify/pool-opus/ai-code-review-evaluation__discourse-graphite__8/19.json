@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Admin::GroupsController#add_members (app/controllers/admin/groups_controller.rb, patch lines 622-626) calls group.add(user) for each username without checking whether the user is already a member. Group#add is `self.users.push(user)` (app/models/group.rb:272-274), which immediately inserts a GroupUser row for a saved group. GroupUser has no uniqueness validation (app/models/group_user.rb), and the (group_id,user_id) index is UNIQUE (db/migrate/20130416004933_group_users.rb:9), so adding an existing member raises RecordNotUnique (a 500), and users inserted earlier in the loop stay saved because there is no surrounding transaction.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21001189999999997
+}

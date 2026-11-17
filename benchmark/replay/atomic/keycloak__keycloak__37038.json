@@ -1,0 +1,442 @@
+{
+ "findings": [
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java",
+   "line": 70,
+   "severity": "Critical",
+   "claim": "canManage() returns hasPermission(null, VIEW, MANAGE), so an admin with only an all-groups VIEW permission passes the global manage check. This is a VIEW-to-write privilege escalation.",
+   "evidence": "GroupsResource.addTopLevelGroup (GroupsResource.java:181) gates only on auth.groups().requireManage(). A view-only admin can therefore create top-level groups. With rep.id set, they can also re-parent any group to top level via realm.moveGroup(child, null) at GroupsResource.java:198. canManage(GroupModel) at line 78 correctly requires MANAGE only. In V1, canManage() means MANAGE_USERS only. testViewGroups never attempts a write. Reasoned test: createAllGroupsPermission(policy, Set.of(VIEW)), then groups().add(...) should return 403 but returns 201. Not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. Two rated it Critical and two Important; normalised to Critical because it is an authorization bypass. The claim is reasoned, not observed, so step 5 must make the 403 test red on the pinned code before fixing (likely hasPermission(null, MANAGE)).",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java",
+   "line": 75,
+   "severity": "Minor",
+   "claim": "The canManage() Javadoc documents the escalation as the contract: for V2 it says the check passes with a permission to 'VIEW or MANAGE groups'.",
+   "evidence": "Seats cite GroupPermissionEvaluator.java:75-76 (open-code-review, superpowers), ~72-78 (mattpocock) and ~86 (ponytail). The text copies the canView wording, so it cannot count as intent.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "This is a documentation defect separate from the code at GroupPermissionsV2.java:70. Correct it to MANAGE only, together with the canManage() fix.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java",
+   "line": 123,
+   "severity": "Important",
+   "claim": "getGroupIdsWithViewPermission() adds groupResource.getId(), which is an authz resource UUID, instead of a group ID. With an all-groups VIEW_MEMBERS or MANAGE_MEMBERS permission it returns {<Groups type-resource UUID>}, so user search and count come back empty.",
+   "evidence": "UsersResource.searchForUser (UsersResource.java:398, 425, 430, 448) and BruteForceUsersResource.java:147 pass the set as UserModel.GROUPS. JpaUserProvider (762-765, 1059-1089) then restricts to members of a group with that ID, and none exists. GET /users and /users/count therefore return nothing, although canView(user) would allow every member. V1 adds resource.getName().substring(prefix) instead (GroupPermissions.java:313-315). Reasoned test: all-groups VIEW_MEMBERS, then users().search(null,-1,-1) should contain alice but is empty. Not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. One rated it Critical; normalised to Important because it denies visibility rather than escalating access. Reasoned only, so step 5 must make it red first.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java",
+   "line": 121,
+   "severity": "Important",
+   "claim": "getGroupIdsWithViewPermission() never collects per-group grants. findByType(server, \"Groups\") only matches the typed all-groups resource, and hasPermission(groupResource.getId(), ...) looks a resource ID up by name, misses, and falls back to the type resource. With only per-group VIEW_MEMBERS the set is empty.",
+   "evidence": "Per-group resources are created by resourceStore.create(server, name, owner) without a type (AdminPermissionsSchema.java:121). Only init() sets the type (AdminPermissionsSchema.java:271-274). findResourceIdByType filters on r.type (ResourceEntity.java:64). With an empty set, getUsersCount(realm, emptySet) returns 0 (JpaUserProvider.java:599-602) while /users returns members through the canView post-filter. Count and list disagree, and first/max apply before the post-filter, so pages come back short or empty and the lookup is a full scan. testCanViewUserByViewGroupMembers passes only through that post-filter. Reasoned test: per-group VIEW_MEMBERS on topGroup, then users().count() should be 1 but is 0. Not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. Its cause (per-group resources never enumerated or matched) differs from the wrong-ID defect at line 123, so it is a separate finding. Reasoned only, so step 5 must make the count test red first.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java",
+   "line": 133,
+   "severity": "Minor",
+   "claim": "The requireManageMembers Javadoc says it throws when canManageMembership(GroupModel) is false, but the implementation checks canManageMembers.",
+   "evidence": "GroupPermissions.requireManageMembers (GroupPermissions.java:376-380) calls canManageMembers. The Javadoc was added in this patch.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. Doc-only correction.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java",
+   "line": 145,
+   "severity": "Minor",
+   "claim": "The getGroupIdsWithViewPermission Javadoc says '@return Stream of IDs', but the method returns Set<String>.",
+   "evidence": "The return type is Set<String>. The Javadoc was added in this patch.",
+   "seats": [
+    "mattpocock",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree. Doc-only correction.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java",
+   "line": 141,
+   "severity": "Important",
+   "claim": "hasPermission evaluates only the per-group resource when one exists, so all-groups permissions are ignored for any group that has its own permission, including one granted to someone else.",
+   "evidence": "DefaultPolicyEvaluator adds type-level policies only when resource.getType() != null, and per-group resources have no type. findPolicyIdByNullResourceScope / findByScopes(server, null, ...) exclude policies tied to the type resource. The patch also removed the canViewGlobal short-circuit in GroupsResource.java:113 and GroupResource getSubGroups, so listings depend on this per-group check. UserPermissionsV2 has the same pattern. Reasoned test: all-groups VIEW for myadmin plus per-group permission on topGroup for another user, then topGroup should still be visible.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by two seats, so not reported and not fixed in this loop. Unverified: it rests on reading DefaultPolicyEvaluator and the JPA queries. Settle it with the mixed-permission test. ponytail: track as follow-up.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java",
+   "line": 141,
+   "severity": "Important",
+   "claim": "When the all-groups type resource is evaluated, every per-group permission is pulled in. A per-group grant on group A therefore leaks to every group that has no per-group resource. The Groups copy of hasPermission omits the permission.getResourceId().equals(resource.getId()) filter that UserPermissionsV2 carries.",
+   "evidence": "findByResourceType(server, \"Groups\") (PolicyEntity.java:64) matches defaultResourceType and so returns per-group permissions. DecisionPermissionCollector.onComplete grants scopes without a containsResource check. UserPermissionsV2 added the resource-ID filter in c2acddc7ca for the equivalent user leak. Reasoned test: per-group VIEW on myGroup plus all-groups MANAGE_MEMBERSHIP for another user, then groups().groups() should have size 1 but is expected to return 2.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by two seats. Unverified: ponytail could not read c2acddc7ca and did not prove exploitability. Settle it with the test sketch. ponytail: track as follow-up.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java",
+   "line": 130,
+   "severity": "Minor",
+   "claim": "hasPermission is a third near-copy of the evaluator in UserPermissionsV2.java:94-133 and ClientPermissionsV2.java:207-235. It should be a single helper on MgmtPermissionsV2.",
+   "evidence": "The three copies perform the same steps, and they have already diverged (the resource-ID filter). Consolidating would remove about 60 lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. This is a refactor beyond the smallest fix. ponytail: consolidate hasPermission copies.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java",
+   "line": 73,
+   "severity": "Minor",
+   "claim": "Deleting a group under FGAP v2 leaves its per-group authz resource and permissions orphaned.",
+   "evidence": "The GroupRemovedEvent cleanup is registered only for v1 (ADMIN_FINE_GRAINED_AUTHZ). v1 and v2 share a feature key and are mutually exclusive. AuthorizationStoreFactory synchronizers cover clients, realms and users only. GroupPermissionsV2.setPermissionsEnabled throws.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. This is a spec gap, possibly planned for later work. ponytail: add v2 group cleanup.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java",
+   "line": 74,
+   "severity": "Minor",
+   "claim": "The v1 feature check moved from event time to listener-registration time. When v1 is enabled at runtime, the role/client/group-removed cleanup listener is never registered.",
+   "evidence": "The legacy testsuite uses @EnableFeature(ADMIN_FINE_GRAINED_AUTHZ, skipRestart = true) (e.g. UsersTest.java:228/235/258/295 and the token-exchange tests). In those runs v1 resources are orphaned. Production is unaffected because Profile is fixed at boot. ponytail and superpowers judged production behaviour unchanged, which does not address the runtime-enable case.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. The effect is test-suite-only. ponytail: revisit if the legacy tests leak resources.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java",
+   "line": 107,
+   "severity": "Minor",
+   "claim": "switch (resourceType) throws NPE on a null resource type, where the old code threw IllegalStateException('Could not map resource object\u2026').",
+   "evidence": "updateResources (RepresentationToModel.java:1423) calls this for any admin-permissions policy that has resources set. Only ScopePermissionRepresentation is validated to carry a resource type.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. ponytail: add a null guard if this path is confirmed reachable.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java",
+   "line": 144,
+   "severity": "Minor",
+   "claim": "Realms whose admin-permissions client was initialised before this patch have no Groups type resource and none of the new scopes. Group checks then NPE (HTTP 500), and creating group permissions fails.",
+   "evidence": "AdminPermissionsSchema.init returns early if the client exists, and no migration is added. getResourceTypeResource returns null, and policyStore.findByResource(server, null) dereferences it (JPAPolicyStore.java:215). The feature is EXPERIMENTAL.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. ponytail: add a migration or a null guard before v2 leaves experimental.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java",
+   "line": 328,
+   "severity": "Minor",
+   "claim": "getResourceName is not extended for GROUPS. Group permission resources render a null display name, and the type resource has no 'All groups' label.",
+   "evidence": "Resources are created with only a name. getResourceName is used by PolicyResourceService.java:218 when listing a permission's resources.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. ponytail: add a GROUPS branch.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The canView() Javadoc ('Or if it has a permission to VIEW or MANAGE groups') lacks the 'For V2 only' qualifier that canList and canManage carry.",
+   "evidence": "v1 canView() checks roles only.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. ponytail: doc qualifier.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java",
+   "line": 145,
+   "severity": "Minor",
+   "claim": "The getGroupIdsWithViewPermission Javadoc omits that V2 returns the type resource ID.",
+   "evidence": "superpowers finding 8, which refers back to its finding 2.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "reject",
+   "reason": "All four seat reports establish that returning the type-resource ID is a defect (main-list finding at line 123). Documenting it would enshrine the bug. The fix removes the behaviour instead.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": 72,
+   "severity": "Minor",
+   "claim": "The try (Response ...) wrapper and the CREATED assertion around ApiUtil.handleCreatedResponse are redundant, because the patched handleCreatedResponse now asserts 201 and closes the response.",
+   "evidence": "Lines 72-77, 194-199 and 260-265. Line 165 already uses the single-call form. ApiUtil.java:8-14 was changed in this patch.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. ponytail: simplify to x.setId(ApiUtil.handleCreatedResponse(...)).",
+   "list": "appendix"
+  },
+  {
+   "path": "docs/documentation/server_admin/topics/admin-console-permissions/fine-grain.adoc",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new Groups resource type and the manage-membership, manage-members and view-members scopes ship without documentation, contrary to CONTRIBUTING.md and PR-CHECKLIST.md.",
+   "evidence": "fine-grain.adoc covers v1 only. v2 is EXPERIMENTAL, and the earlier Users/Clients v2 work is also undocumented.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. ponytail: document v2 resource types together.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": 2,
+   "severity": "Minor",
+   "claim": "The copyright year is 2024 on a new 2025 file.",
+   "evidence": "The sibling GroupPermissionsV2 says 2025.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. Cosmetic.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": 68,
+   "severity": "Minor",
+   "claim": "Stray ';;'.",
+   "evidence": "Line 68.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. Cosmetic.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": 70,
+   "severity": "Minor",
+   "claim": "Typo 'initializaed' in the @BeforeEach comment.",
+   "evidence": "About line 70.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. Cosmetic.",
+   "list": "appendix"
+  },
+  {
+   "path": "test-framework/core/src/main/java/org/keycloak/testframework/util/ApiUtil.java",
+   "line": 8,
+   "severity": "Minor",
+   "claim": "Rewriting handleCreatedResponse as try-with-resources is a change unrelated to the issue (CONTRIBUTING.md, PR-CHECKLIST.md).",
+   "evidence": "ApiUtil.java:8-14.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. ponytail notes the new test relies on the new behaviour, so relatedness is arguable.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/models/utils/ModelToRepresentation.java",
+   "line": 176,
+   "severity": "Minor",
+   "claim": "Removing the public static searchGroupModelsByAttributes is a change unrelated to the issue.",
+   "evidence": "ponytail and superpowers grepped and found no remaining callers.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/UserPermissions.java",
+   "line": 229,
+   "severity": "Minor",
+   "claim": "Deleting and inlining canManageDefault/canViewDefault is an unrelated refactor, and it forces a change in RolePermissions.java:302.",
+   "evidence": "UserPermissions.java ~229-299 and 580-591.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. superpowers found the behaviour equivalent.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java",
+   "line": 54,
+   "severity": "Minor",
+   "claim": "Reordering the constants and replacing the if-chain with a switch is an unrelated refactor.",
+   "evidence": "AdminPermissionsSchema.java:54-76.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java",
+   "line": 206,
+   "severity": "Minor",
+   "claim": "Changing 'child = null' to 'child' is an unrelated change.",
+   "evidence": "GroupResource.java:206.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/UserResourceTypeEvaluationTest.java",
+   "line": 32,
+   "severity": "Minor",
+   "claim": "Removing an unused import is an unrelated change.",
+   "evidence": "UserResourceTypeEvaluationTest.java:32.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers all-groups VIEW_MEMBERS or MANAGE_MEMBERS.",
+   "evidence": "superpowers finding 9. The existing tests use only per-group permissions.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat as a standalone finding. The red test for the main-list line 123 finding would close it.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test asserts users().count().",
+   "evidence": "superpowers finding 9.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. The red test for the main-list line 121 finding would close it.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test attempts a write with VIEW-only permissions.",
+   "evidence": "superpowers findings 1 and 9. testViewGroups grants all-groups VIEW but never writes.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. The red test for the main-list canManage() finding would close it.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers mixed all-groups and per-group permissions.",
+   "evidence": "superpowers finding 9. Such a test would exercise the appendix hasPermission findings.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. ponytail: add when the hasPermission findings are settled.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "testManageGroupMembership grants both the user-side and group-side scopes and asserts only the positive case, so it does not show that the group MANAGE_MEMBERSHIP check is enforced.",
+   "evidence": "superpowers finding 9.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. ponytail: add a negative case.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats report reviewing all 19 files. open-code-review's tool excluded three test files by default_path (GroupResourceTypeEvaluationTest, RealmAdminPermissionsConfig, UserResourceTypeEvaluationTest), but the seat read them manually. superpowers gave only a light read to ApiUtil.java, RealmAdminPermissionsConfig.java, UserResourceTypeEvaluationTest.java and ModelToRepresentation.java. Axes not run: the gate was not run (benchmark mode), so the review is unanchored, and no seat built or ran any test, so every Critical and Important claim is reasoned, not observed. Spec: none supplied. Issue #35562 was not fetched, and seats used the commit subject and the patch's own Javadoc as a stand-in. Standards: mattpocock checked CONTRIBUTING.md, PR-CHECKLIST.md, docs/tests-development.md, tests/MIGRATING_TESTS.md and test-framework/README.md. open-code-review applied only generic Java rules. Other gaps: ponytail could not read commit c2acddc7ca (partial clone, no network), and mattpocock did not check the inherited no-arg UserPermissionsV2.canView()/canManage()."
+}

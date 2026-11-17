@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AdminPermissionsSchema.java:328-350 only special-cases USERS ('All users' or the username) and otherwise returns resource.getDisplayName(). Group resources are created by name only (line 121), and the 'Groups' type resource is built with ResourceRepresentation(name, scopes), which never sets displayName (lines 270-276), so PolicyResourceService.java:218 returns a null display name for groups and there is no 'All groups' label.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19369719999999999
+}

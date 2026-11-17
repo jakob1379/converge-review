@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/layouts/embed.html.erb:11 interpolates `'<%= request.referer %>'` inside a `<script>` string with only ERB's default HTML escaping, no `escape_javascript`/`to_json`. Exploitability is limited: HTML escaping still neutralises quotes and `</script>`, and app/controllers/embed_controller.rb:26 requires the referer host to equal `embeddable_host`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11583689999999999
+}

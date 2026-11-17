@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AuthenticatorUtils.java:126-128 repeats the `getAuthNote(USER_SET_BEFORE_USERNAME_PASSWORD_AUTH)` + `Boolean.parseBoolean` logic that still lives in AbstractUsernameFormAuthenticator.java:257-260, and the patch changes the constant at AbstractUsernameFormAuthenticator.java:58 from `protected` to `public` so the utility can import it. Behaviour is identical; this is duplication and a wider visibility only.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3784221
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `updatedAt` and `googleChannelId` to the `selectedCalendars` select at packages/lib/server/repository/user.ts:899-900 and as required fields in `UserWithCalendars` (packages/lib/getConnectedDestinationCalendars.ts:21-28), but no code path reads them: `getConnectedCalendars` takes only `{ externalId }[]` (packages/lib/CalendarManager.ts:53), and the new cache UI uses `cacheUpdatedAt`, which comes from the `CalendarCache` table, not `SelectedCalendar`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2425574
+}

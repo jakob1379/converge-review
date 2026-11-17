@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new file apps/web/pages/api/webhook/app-credential.ts, line 31 calls `appCredentialWebhookRequestBodySchema.parse(req.body)` and lines 57-59 call `JSON.parse(symmetricDecrypt(...))`, with no try/catch around either. The handler is exported directly rather than through a wrapper such as `defaultResponder` that would turn a ZodError into a 4xx, so Next.js answers any of these exceptions with a 500.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0654272
+}

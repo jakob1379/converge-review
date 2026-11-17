@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The loop at app/controllers/uploads_controller.rb:64-70 stops after 5 tries of downsize \"80%\" and then calls Upload.create_for with whatever size the file has, so an oversized image does get there. The \"33%\" is off: 80% scales each side, so pixel area falls to about 0.64^5 \u2248 11%. The size check in lib/validators/upload_validator.rb:81-85 still rejects the file with a too_large error, so the limit is not bypassed.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08100829999999999
+}

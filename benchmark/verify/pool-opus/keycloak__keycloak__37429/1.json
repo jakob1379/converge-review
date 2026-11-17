@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes account-ui messages_en.properties:188 from {{0}}/{{1}}/{{2}} to {0}/{1}/{2} with {2,choice,...}, but account-ui/src/i18n.ts:25-43 sets up plain i18next with no ICU plugin (no package.json in js/ uses i18next-icu), and ThemeResource.java:153 returns the strings unconverted. ui-shared user-profile/utils.ts:74-84 passes the values as named params, so i18next leaves '{0}' and the choice expression as raw text, while every other account-ui error message still uses {{0}}.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16739700000000002
+}

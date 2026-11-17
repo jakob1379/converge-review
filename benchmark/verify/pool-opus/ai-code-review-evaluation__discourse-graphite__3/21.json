@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In lib/validators/email_validator.rb:191, `value =~ regexp` with a nil value returns nil and does not raise, because Ruby's Object#=~ (and NilClass#=~ in newer versions) returns nil. A nil email is treated as \"not in the setting\", and the presence validation added in app/models/user.rb:105 reports the missing email.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0663638
+}

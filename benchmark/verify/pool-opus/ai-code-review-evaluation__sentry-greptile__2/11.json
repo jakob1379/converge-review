@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/spans/buffer.py:150 and :158 still accept and store max_segment_spans (default 1001), but the patch removes its only read (the old span-count check in flush_segments). The cap is now hard-coded as 1000 in add-buffer.lua (`if span_count > 1000 then zpopmin ...`), so the Python setting does nothing and disagrees with the Lua value.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1275539
+}

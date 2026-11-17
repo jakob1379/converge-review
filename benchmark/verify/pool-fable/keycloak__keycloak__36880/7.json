@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java:225 and :250 both build `List<String> expectedScopes = Arrays.asList(scope)` from a single `String scope` parameter (methods at :207 and :237), while the same file already uses `List.of(...)` at :268. Purely stylistic; behaviour differs only for a null scope.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.094886
+}

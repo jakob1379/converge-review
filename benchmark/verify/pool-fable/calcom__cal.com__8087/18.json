@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/CalendarManager.ts:233 awaits getCalendar(credential) outside any try/catch, and packages/app-store/_utils/getCalendar.ts:15 awaits the dynamic-import promise without a catch, so a rejected import rejects createEvent before the logging .catch at CalendarManager.ts:244 is reached; the EventManager.ts callers at 328-360 add no try/catch either. In practice these are statically bundled local modules, so rejection is unlikely.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3522168
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodesUtils.getCredential (server-spi/.../RecoveryAuthnCodesUtils.java:101-107) calls getFederatedCredentialsStream first, and that call goes to the provider's getCredentials for any user with an enabled federation link (UserCredentialManager.java:130-142). For LDAP, LDAPStorageProvider.getCredentials (LDAPStorageProvider.java:1211-1225) runs loadLDAPUserByUuid, which is an LDAP search, and only ever returns a password credential. The patch calls this from RecoveryAuthnCodeInputLoginBean when the challenge page renders and from RecoveryAuthnCodesFormAuthenticator on submit, so each step adds a wasted LDAP query.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21500300000000003
+}

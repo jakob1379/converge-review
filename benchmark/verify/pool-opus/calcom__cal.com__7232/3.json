@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch passes `immediateDelete=true` to `deleteScheduledEmailReminder` on workflow deletion (workflows.tsx:214) and step deletion (workflows.tsx:521); the reschedule call is in handleNewBooking.ts:968, not workflows.tsx. With that flag, emailReminderManager.ts sends the SendGrid `scheduled_sends` cancel straight away instead of marking the reminder `cancelled` for the cron in scheduleEmailReminders.ts, though the deferred path could not work for workflow or step deletion because cascade-deleting the workflow or step also deletes the reminder rows.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.17662029999999998
+}

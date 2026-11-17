@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java, all-groups permissions are only created with MANAGE (line 160) and VIEW (line 276), while VIEW_MEMBERS/MANAGE_MEMBERS are per-group only (lines 100, 126); no V2 fgap test calls users().count(), and none grants VIEW then attempts a write. The one partial exception is testViewGroups (lines 268-280), which combines a per-group VIEW with an all-groups VIEW but tests no conflict or differing scopes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.7492768
+}

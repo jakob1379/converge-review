@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `src/sentry/integrations/github/integration.py:481-482` the `Integration.DoesNotExist` branch returns `pipeline.next_step()` before the sender-login comparison at lines 500-505, and `build_integration` (lines 346-353) then looks up the supplied `installation_id` with the app-level client with no tie to the OAuth-authenticated user. The Integration row with `sender` is only created by the installation webhook (`webhook.py:204-210`), so until that webhook lands, or if it never does, any installation id can be claimed; this path behaved the same before the patch, whose new check simply does not cover it.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.403527
+}

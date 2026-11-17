@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`OptimizedCursorPaginator.get_result` (src/sentry/api/paginator.py:845-911) repeats `BasePaginator.get_result` (136-215) statement for statement, with the same `build_queryset`, `count_hits` and `queryset[start_offset:stop]` slice, and its key/cursor methods (838-843) are identical to `Paginator`'s (222-227). The only addition is the negative-offset branch (877-882), which passes a negative index to a queryset slice that Django rejects, so no faster query path exists.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2241555
+}

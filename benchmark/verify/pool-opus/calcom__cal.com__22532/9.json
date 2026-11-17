@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes apps/web/package.json:11 to `\"dev:cron\": \"npx tsx cron-tester.ts\"`, but no package.json in the repo declares `tsx` and yarn.lock has no `tsx@` entry, so npx will fetch an unpinned copy from the registry when the script runs.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.055195400000000006
+}

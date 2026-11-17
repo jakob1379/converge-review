@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `def self.import_remote(user, url, opts=nil)` with no spaces around `=` at app/models/topic_embed.rb:44, then `opts = opts || {}` at line 47; lib/topic_retriever.rb:3,5 does the same with `opts=nil` and `@opts = opts || {}`, where a default of `opts={}` would do.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.049649399999999996
+}

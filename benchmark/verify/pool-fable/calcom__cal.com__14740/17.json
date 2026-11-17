@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`evt` in packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:124-147 has no `team` field and `formatCalEvent` only clones it, so the `calendarEvent.team?.members` branch at packages/emails/email-manager.ts:531 never runs. The stated consequence is overstated, though: team hosts are stored as booking attendees (packages/features/bookings/lib/handleNewBooking/createBooking.ts:153-161), so they still get the attendee-style email from the loop at email-manager.ts:540-546, just not the organizer one.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3081833
+}

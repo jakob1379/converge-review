@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In queue_consumer.py:233-234, shutdown() sets worker.shutdown=True before q.shutdown(immediate=False), so the `while not self.shutdown` loop at :129 stops after the current item and leaves queued items unprocessed. close() at :335-338 stops the commit thread before the pool shuts down, nothing commits afterwards, and join() at :344-345 ignores its timeout and just calls close(). One overstatement: setting shutdown_event wakes _commit_loop for one last commit pass (:276-289), so offsets completed before close() are mostly committed. What is lost is work finished during pool shutdown plus everything still queued, which the next owner reprocesses.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0935441
+}

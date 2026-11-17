@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py:43-44, `destination` and `attempts` are required fields. In the patched post(), the first report that fails validation returns HTTP 422 for the whole array before any report is processed (patch lines 418-429). Under the W3C Reporting spec, browsers send only age/timestamp, type, url, user_agent and body; destination and attempts stay inside the browser. So real payloads fail validation, and the patch's tests pass only because their fixtures include both fields (tests/sentry/api/endpoints/test_browser_reporting_collector.py:23-25, 39-41).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2800296
+}

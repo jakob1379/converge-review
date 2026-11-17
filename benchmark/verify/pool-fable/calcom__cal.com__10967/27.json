@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes `console.error(message);` from the catch block in packages/core/EventManager.ts (change.patch:501); at head, `message` is built at EventManager.ts:592-595 but never read, and the catch only returns `success: false` placeholder results (597-608) with no logging.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1913876
+}

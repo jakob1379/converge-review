@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The immediateDelete branch (emailReminderManager.ts:213-222) does skip the DB row, but every caller that uses it removes the row by cascade. At handleNewBooking.ts:978 the reschedule always reaches EventManager.reschedule, which deletes the old booking (EventManager.ts:290), and WorkflowReminder.booking is onDelete: Cascade (schema.prisma:637). In workflows.tsx, deleting the workflow or step at lines 220 and 527 cascades through WorkflowStep (schema.prisma:587, 640). So no rows stay behind, and the cron never sends a second cancel for the same batch_id.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22021199999999996
+}

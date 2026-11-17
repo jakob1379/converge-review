@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/settings/EnableTwoFactorModal.tsx:98, the only call to URL.revokeObjectURL comes right before a new URL is created in handleSetup. resetState (lines ~79-83) and the Close and Cancel handlers do not revoke the URL, and the only useEffect (line 157) handles TOTP auto-submit and has no cleanup.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08090149999999999
+}

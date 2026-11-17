@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only test the patch adds, testCacheIDPForLogin (OrganizationCacheTest.java, patch lines 222-388), checks only whether IdentityProviderListQuery entries exist and how many ids getIDPs() returns. It never disables or removes an organization, never exercises the new idp.isEnabled() filters in OrganizationAwareIdentityProviderBean.java:75 and :80, and never renders a login page.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11222389999999999
+}

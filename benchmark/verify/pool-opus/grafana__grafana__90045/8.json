@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Both mocks share one *mock.Mock (dualwriter_mode3_test.go:580-585, 634-639: `ls := legacyStoreMock{m, l}; us := storageMock{m, s}`). testify matches calls by method name, so the async legacy Delete/DeleteCollection (storage_mocks_test.go:66,77) use the same \"Delete\"/\"DeleteCollection\" expectations set up in the test (lines 565, 619) and do not hit unmocked methods.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.20307349999999996
+}

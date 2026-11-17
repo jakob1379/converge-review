@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:158-163 builds EventManager from getUsersCredentials(ctx.user) although attendees and team admins may call it; packages/core/EventManager.ts:871-878 then matches references lacking a credentialId against those caller credentials by type (references with a credentialId fall back to a DB lookup at 849-869).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4234122
+}

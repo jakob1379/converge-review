@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only specs touching `website_name` are in the \"with filled out website\" context (spec/serializers/user_serializer_spec.rb:67-92), all with website set to 'http://example.com/user'; no spec sets a nil or blank website or asserts `website_name` is nil or absent, and the TL0 untrusted-attributes list at line 11 omits `website_name`. A repo-wide search finds `website_name` in no other spec file.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1600956
+}

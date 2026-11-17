@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only caller is src/sentry/api/endpoints/organization_auditlogs.py:82, which always passes enable_advanced_features=True. In src/sentry/api/paginator.py:834-836 and :877, the flag's only effect is to allow negative-offset slicing, and the generic name 'advanced features' does not say that.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0551224
+}

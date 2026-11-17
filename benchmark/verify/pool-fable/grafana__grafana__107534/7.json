@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both halves hold: the new tests mock `replace` to turn `$__auto` into `5m` (querySplitting.test.ts:78-80, shardQuerySplitting.test.ts:87-89), while `applyTemplateVariables` drops `__auto` from scopedVars so it passes through untouched (datasource.ts:1113). This is by design and harmless, since the backend expands `$__auto` itself (pkg/tsdb/loki/parse_query.go:49-55); the only real issue is that the test asserts an unrealistic frontend expansion.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.37156429999999996
+}

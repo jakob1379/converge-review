@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The keys do use `hash(tuple(sorted(project_ids)))` (src/sentry/api/helpers/error_upsampling.py:27 and :73), but `project_ids` is `list[int]` (src/sentry/search/events/types.py:182-184) and PYTHONHASHSEED only randomises str/bytes hashes, so a tuple of ints hashes identically in every worker. The remaining collision risk is a 64-bit hash collision within one organisation's key namespace, which is theoretical only.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1725467
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The offset is clamped twice. The `next` action uses `Math.min(offset + limit, user_count)` (admin-group.js.es6, patch lines 59) and `previous` uses `Math.max(offset - limit, 0)` (patch line 70). `Group.findMembers` then clamps it again with `Math.min(user_count, Math.max(offset, 0))` (discourse/models/group.js, patch line 259).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1451827
+}

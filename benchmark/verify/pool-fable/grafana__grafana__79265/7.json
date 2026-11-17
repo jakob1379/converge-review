@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new test `TestIntegrationBeyondDeviceLimit` builds its `Device` literal at pkg/services/anonymous/anonimpl/anonstore/database_test.go:55-60 without `CreatedAt`, so the zero time is inserted via database.go:120-121. The pre-existing tests in the same file (lines 19-24, 77-82) omit it in the same way and the new test's assertion does not depend on it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3054659
+}

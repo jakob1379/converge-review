@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java:675-678, the test decodes the JDK signature, re-encodes it to DER (asn1Des), decodes that again and asserts only rsConcat == rsConcat2. Nothing checks asn1Des against the original `sign` bytes or with Signature.verify, and nothing checks that rsConcat is correct, so matching encoder/decoder bugs would still pass.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.149448
+}

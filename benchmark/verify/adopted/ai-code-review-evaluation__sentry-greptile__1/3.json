@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "organization_auditlogs.py:71 (added by the patch) gates on the raw `request.user.is_superuser` flag. The endpoint's own permission class, OrganizationAuditPermission, uses `is_active_superuser(request)` at bases/organization.py:124. So a user who has the flag and can already reach the endpoint, but has no active superuser session, gets the admin paginator path.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0871181
+}

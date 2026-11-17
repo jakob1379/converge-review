@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The package-global `entryPointAssetsCache` (pkg/api/webassets/webassets.go:37) is only ever assigned at webassets.go:69 and nothing in the repository resets it, so a value cached in a non-Dev run persists for the rest of the test process. The global predates the patch, which only adds a mutex and a \"TODO: get rid of global state\" comment, and no current test loads a valid manifest through `GetWebAssets`, so nothing is actually affected today.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3886045
+}

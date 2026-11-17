@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The factory builds a single FixedQueuePool in __init__ (result_consumer.py:133) and hands that same pool to every strategy (result_consumer.py:255). SimpleQueueProcessingStrategy.close()/terminate() call queue_pool.shutdown() (queue_consumer.py:338,342), which shuts down every queue and stops the workers. After a rebalance, the next strategy's submit hits a ShutDown error on queue.put; the generic except catches it and marks the offset complete, so the messages are dropped and their offsets still get committed.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2440691
+}

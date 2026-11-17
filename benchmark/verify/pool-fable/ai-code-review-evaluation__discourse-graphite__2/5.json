@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/topics_controller.rb:107-111 sets the level to regular if it is above regular and otherwise to muted, so a second request to the GET route (config/routes.rb:440-441) moves a watching/tracking user from regular to muted. The action requires login, so only an authenticated reload or prefetch triggers the second step.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1860927
+}

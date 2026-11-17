@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20150818190757_create_embeddable_hosts.rb:2 defines `def change` and runs raw `execute` calls (lines 9-31), ending with `DELETE FROM site_settings WHERE name IN ('embeddable_hosts', 'embed_category')` at line 31. On Rails 4.1.10 (Gemfile.lock:244) the CommandRecorder has no inverse for `execute`, so rollback raises IrreversibleMigration at line 9, and no `down` exists to restore the deleted settings.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4643115
+}

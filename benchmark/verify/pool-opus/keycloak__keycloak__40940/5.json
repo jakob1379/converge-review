@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In GroupTest.java (patch lines 99-120), the reader thread does not count its reads and is never joined. The only check is assertThat(caughtExceptions, Matchers.empty()), so the test passes if the thread gets in no read, or no overlapping one, before deletedAll is set, including on unpatched code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.045898
+}

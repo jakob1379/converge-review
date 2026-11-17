@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java:42 generates one key with KeyPairGenerator.getInstance(\"EC\").genKeyPair() (JDK default curve, P-256 or P-384) and reuses it for ES256/ES384/ES512 at lines 59-72. With r and s at most 49 bytes the DER sequence body is at most 102 bytes, so the length > 127 branches at ASN1Encoder.java:67 and ASN1Decoder.java:137 are never reached; only a P-521 key (body up to ~136 bytes) would hit them, and no other test in authz/client uses these classes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3567437
+}

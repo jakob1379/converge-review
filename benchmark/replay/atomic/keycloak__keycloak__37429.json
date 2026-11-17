@@ -1,0 +1,440 @@
+{
+ "findings": [
+  {
+   "path": "js/apps/admin-ui/maven-resources/theme/keycloak.v2/admin/messages/messages_en.properties",
+   "line": 3138,
+   "severity": "Important",
+   "claim": "error-invalid-multivalued-size was rewritten from i18next placeholders {{0}}/{{1}}/{{2}} to Java MessageFormat {0}/{1}/{2} plus {2,choice,...}. The admin console renders this bundle with plain i18next, which has no choice support, so users see the raw template text.",
+   "evidence": "admin-ui src/i18n/i18n.ts uses default i18next interpolation with no ICU plugin. ThemeResource serves the values unconverted. ui-shared user-profile/utils.ts:73-85 calls t(key,{0,1,2}). Every sibling error-* key and every community translation of this key still uses {{N}}. Repro is reasoned: configure a multivalued validator with max=1 and submit two values.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree. Reasoned, not run. Step 5 needs a red test before fixing, e.g. an i18next t() call that returns the literal {0}. Smallest fix is to revert this file to {{N}}; the server-side base-theme change is correct and stays.",
+   "list": "main"
+  },
+  {
+   "path": "js/apps/account-ui/maven-resources/theme/keycloak.v3/account/messages/messages_en.properties",
+   "line": 188,
+   "severity": "Important",
+   "claim": "Same {{N}} to {N}/{2,choice,...} rewrite of error-invalid-multivalued-size in the account console bundle. It is rendered by i18next, so the error message shows the raw template.",
+   "evidence": "account-ui src/i18n.ts uses plain i18next with default {{ }} delimiters. There is no server-side conversion (AccountConsole.convertPropValue only feeds the legacy msgJSON path). Community translations still use {{0}}.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree. Reasoned, not run. Needs a red i18next test before fixing; revert this file to {{N}}.",
+   "list": "main"
+  },
+  {
+   "path": "themes/src/main/resources-community/theme/base/account/messages/messages_lt.properties",
+   "line": 101,
+   "severity": "Important",
+   "claim": "Lithuanian totpStep1 was replaced with Italian text ('Installa una delle seguenti applicazioni sul tuo cellulare:').",
+   "evidence": "grep -n Installa on the patched lt bundles. The neighbouring totpStep2/3 are still Lithuanian. The text matches messages_it.properties:138.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree (ponytail flagged it outside its seat). A grep-based check gives the red test. Fix by deleting the key so it falls back to English, or by translating it.",
+   "list": "main"
+  },
+  {
+   "path": "themes/src/main/resources-community/theme/base/login/messages/messages_lt.properties",
+   "line": 71,
+   "severity": "Important",
+   "claim": "Lithuanian loginTotpStep1 was replaced with Italian text, so Lithuanian users see Italian on the OTP setup page.",
+   "evidence": "grep -n Installa on the patched lt bundles. The text matches login messages_it.properties:92. Rendered at login-config-totp.ftl:10.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. A grep-based check gives the red test. Delete the key or translate it.",
+   "list": "main"
+  },
+  {
+   "path": "themes/src/main/resources-community/theme/base/account/messages/messages_zh_CN.properties",
+   "line": 112,
+   "severity": "Minor",
+   "claim": "The Simplified Chinese bundle received a Traditional Chinese totpStep1 (\u624b\u6a5f, \u61c9\u7528\u7a0b\u5f0f).",
+   "evidence": "Line 111 (\u624b\u673a) and lines 113-114 of the same file are Simplified. The sibling login/messages_zh_CN.properties:123 uses Simplified forms.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. Severity was normalised to Minor following both correctness seats (mattpocock rated it Important), because the text is still largely legible to Simplified readers.",
+   "list": "main"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 157,
+   "severity": "Minor",
+   "claim": "The anchor-mismatch error ('Didn't find anchor tag ... in original string') names neither the key nor the file, so the failure cannot be located among roughly 160-180 bundles.",
+   "evidence": "Compare :157 with the 'Illegal HTML' message at :111 and the message at :194, which both name the file.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree. One-line message change.",
+   "list": "main"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 79,
+   "severity": "Minor",
+   "claim": "Read failures in verifySafeHtml (:70 and :79), notably a missing _en counterpart, throw a raw RuntimeException instead of the MojoExecutionException that verify() uses. The Mojo then crashes rather than reporting.",
+   "evidence": "verify() wraps IOException in MojoExecutionException at :52-53. The duplicate_keys fixture had to be renamed because of this. superpowers checked all 162 current bundles and each has an _en twin, so nothing breaks today.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. Latent only: per superpowers no current bundle triggers it.",
+   "list": "main"
+  },
+  {
+   "path": "misc/theme-verifier/pom.xml",
+   "line": 78,
+   "severity": "Minor",
+   "claim": "The owasp-java-html-sanitizer version 20240325.1 is hard-coded, duplicating the root pom.xml:119 property owasp.html.sanitizer.version, so the two can drift.",
+   "evidence": "Root pom.xml:119 and :559 manage the artifact. The theme-verifier pom has no parent and already pins commons-io the same way.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: the module is standalone with no parent, so the root property cannot resolve here. Tying the versions together needs a module restructure outside this change's scope. Not disproved; defer with a ponytail: comment.",
+   "list": "main"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 101,
+   "severity": "Important",
+   "claim": "The common prefix/suffix trim used to build the error message does not cap start+end at the shorter length. When they overlap, substring throws StringIndexOutOfBoundsException. That aborts the plugin with a stack trace and skips all later keys and files.",
+   "evidence": "open-code-review: a jshell repro with <b>x</b></b> printed Range [8, 4) out of bounds. ponytail: a jshell repro of L102-111 with 'Next -><br>' printed Range [7, 6). Both hardcode the sanitizer output, because the OWASP jar was unavailable, so the end-to-end path was not run.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats, below the three-seat threshold, so not reported or fixed. Note for the reader: two independent repros of the trim logic and Important severity.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 124,
+   "severity": "Minor",
+   "claim": "For the allowlisted keys (linkExpirationFormatter.timePeriodUnit*, error-invalid-multivalued-size), whole {N,choice,...} blocks are removed before sanitising, so HTML inside a choice branch is never checked.",
+   "evidence": "Reasoned: normalizeValue runs before policy.sanitize. Runtime kcSanitize still covers email bodies.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 92,
+   "severity": "Minor",
+   "claim": "The check compares the value with the sanitiser's re-serialised output rather than checking that nothing was removed. Equivalent markup (<br/>, </ b>, </p >, < p>) therefore fails the build.",
+   "evidence": "About 25 files in the patch are mechanical <br/> to <br /> rewrites.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 150,
+   "severity": "Minor",
+   "claim": "Anchors are matched by position against the English string, so a valid translation that reorders the links is a false positive.",
+   "evidence": "Reasoned from the santizeAnchors logic at :150-160.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 145,
+   "severity": "Minor",
+   "claim": "ANCHOR_PATTERN </?a[^>]*> also matches <abbr>, <area> and <audio>, which produces misleading 'anchor' errors or extra false positives.",
+   "evidence": "Reasoned from the regex.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 74,
+   "severity": "Minor",
+   "claim": "The English counterpart path is derived with replaceAll on the whole absolute path (e.g. resources-community), not on the theme-relative part.",
+   "evidence": "Code at :74-75. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 132,
+   "severity": "Minor",
+   "claim": "Email files are detected with getAbsolutePath().contains(\"email\"), so a checkout path containing 'email' applies the RTL-style stripping to every file.",
+   "evidence": "Code at :132. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "A TODO is left in the new code.",
+   "evidence": "mattpocock finding 14 notes it near the email detection; no exact line was given.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "themes/src/main/resources-community/theme/base/login/messages/messages_sk.properties",
+   "line": 501,
+   "severity": "Minor",
+   "claim": "The {1,choice} to {2,choice} correction is unrelated to HTML sanitising, which is scope creep under CONTRIBUTING.md's 'No changes to code not directly related to your PR'.",
+   "evidence": "CONTRIBUTING.md. open-code-review and superpowers confirm the change itself is a correct bug fix; that does not address the scope claim.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "docs/translation.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new translator-facing rules are not documented: HTML is allowed only where English has it, only br/p/strong/b are allowed, and anchors must be byte-identical. CONTRIBUTING.md requires documentation.",
+   "evidence": "grep -i html docs/translation.md returns nothing. The rules are introduced at VerifyMessageProperties.java:58-63 and :90-91.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 58,
+   "severity": "Minor",
+   "claim": "POLICY_SOME_HTML, POLICY_NO_HTML and HTML_TAGS have constant-style names but are package-private instance fields. They are rebuilt per file because ThemeVerifierMojo.java:51 creates one verifier per file, and ANCHOR_PATTERN in the same file is private static final.",
+   "evidence": "Lines 58, 63, 139 vs 145.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 150,
+   "severity": "Minor",
+   "claim": "The method name santizeAnchors is misspelled.",
+   "evidence": "Line 150.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 94,
+   "severity": "Minor",
+   "claim": "Typo 'numberic'.",
+   "evidence": "Line 94.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 150,
+   "severity": "Minor",
+   "claim": "The key parameter of santizeAnchors is unused.",
+   "evidence": "The body at L150-162 never references key.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 164,
+   "severity": "Minor",
+   "claim": "The key parameter of getEnglishValue is unused, per mattpocock.",
+   "evidence": "mattpocock finding 12.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 58,
+   "severity": "Minor",
+   "claim": "org.owasp.html.HtmlPolicyBuilder and org.apache.commons.text.StringEscapeUtils are fully qualified inline while PolicyFactory is imported, which is inconsistent import style.",
+   "evidence": "Lines 58, 63, 95, 130.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/test/java/org/keycloak/themeverifier/VerifyMessagePropertiesTest.java",
+   "line": 33,
+   "severity": "Minor",
+   "claim": "The duplicate-keys assertion was loosened from contains (exactly one message) to hasItem, so extra spurious messages no longer fail the test.",
+   "evidence": "Test file. open-code-review judged hasItem fine; that is a judgement difference, not a disproof.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/test/java/org/keycloak/themeverifier/VerifyMessagePropertiesTest.java",
+   "line": 30,
+   "severity": "Minor",
+   "claim": "No test asserts that a valid bundle produces zero messages. Cases left uncovered include allowed <b>, identical anchors, {{0}}, <1>, choice formats, email RTL style and CLAIM.<NAME>, so false positives surface only in a full build.",
+   "evidence": "Every test at lines 30-52 is a positive detection.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/test/resources/illegalHtmlTag_en.properties",
+   "line": 17,
+   "severity": "Minor",
+   "claim": "The fixture value 'Some <div>tag</div' has a malformed closing tag with no '>', so it does not represent the intended case.",
+   "evidence": "Fixture line 17. The test still passes because <div> is stripped either way.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 65,
+   "severity": "Minor",
+   "claim": "verifySafeHtml re-opens the file already held in memory as contents (L49) instead of building the bundle from a StringReader. This is over-engineering.",
+   "evidence": "Reasoned from L46-80.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat (advisory).",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 164,
+   "severity": "Minor",
+   "claim": "getEnglishValue uses MissingResourceException for control flow where a one-line containsKey check would do.",
+   "evidence": "L164-172. ResourceBundle.containsKey exists since Java 6 and the module targets 17.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat (advisory).",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java",
+   "line": 92,
+   "severity": "Minor",
+   "claim": "The sanitize/unescape/comment-strip/manual-diff pipeline (L92-111, L130) and the commons-text dependency could be replaced by OWASP's HtmlChangeListener reporting discarded tags and attributes.",
+   "evidence": "Reasoned. ponytail notes it did not verify that the listener catches non-tag text changes such as a stray '<'.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat (advisory).",
+   "list": "appendix"
+  },
+  {
+   "path": "misc/theme-verifier/pom.xml",
+   "line": 84,
+   "severity": "Minor",
+   "claim": "<scope>compile</scope> on commons-text is the Maven default and has no effect.",
+   "evidence": "Maven's default scope is compile.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat (advisory).",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "No seat skipped any file; all four report 48/48 reviewed. open-code-review's tool excluded VerifyMessagePropertiesTest.java by default_path, but the seat reviewed it by hand. The webauthn <br/> to <br /> hunks in about 17-22 login bundles were checked by pattern only, not by meaning. Translation quality was not judged beyond the wrong-language strings, and non-Latin accuracy (ar, fa, ka, ko, th, el, uk) was not assessed. Axes that did not run: (1) the gate was not run (benchmark mode), so the review is unanchored; no Maven build, verifier test or UI check ran, and every claim is reasoned except two jshell repros of isolated trim logic with hardcoded sanitizer output (OWASP jar unavailable). (2) No spec: only the commit message 'Add a HTML sanitizer for translated message resources / Closes #37428' was available, and issue #37428 was not fetched. (3) No cross-family correctness seat was used. Standards docs were available (CONTRIBUTING.md, PR-CHECKLIST.md, docs/translation.md, docs/dependency-license-information.md). Whether the patched resources pass the new check with zero false positives is unconfirmed. Stopped after step 4: no red tests were written, no fixes were applied, and no scoped re-review ran, so nothing is converged."
+}

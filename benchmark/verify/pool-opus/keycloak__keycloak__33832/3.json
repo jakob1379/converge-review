@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "AuthzClient.java:95 does pass AuthzClient.class.getClassLoader(), but that is a deliberate choice that follows the codebase's own pattern (KeycloakApplication.java:89 does the same). The loader can always see the AuthzClientCryptoProvider shipped in the same jar (META-INF/services), and any default, FIPS or Elytron provider on that classpath ranks above it by order(). Nothing in the repository shows a provider reachable only through the thread context class loader, so the claimed missed or wrong selection is speculative rather than a defect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1772134
+}

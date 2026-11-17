@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In emailReminderManager.ts (patch lines 345-355), when `immediateDelete` is true and a `referenceId` exists, the function only POSTs the SendGrid cancel and returns without deleting or flagging the WorkflowReminder row. Every other path deletes the row or sets `cancelled`. The workflow-delete and step-delete callers in workflows.tsx get away with this because the rows cascade-delete, but handleNewBooking.ts:966-968 also passes `true` and does not delete the original booking, so the undocumented precondition is already broken there and reminder rows are left behind.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1502365
+}

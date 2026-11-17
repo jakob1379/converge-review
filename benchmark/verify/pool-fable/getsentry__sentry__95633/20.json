@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`FixedQueuePool.submit` calls `add_offset` then `work_queue.put` (src/sentry/remote_subscriptions/consumers/queue_consumer.py:211-212); on a shut-down queue `put` raises `queue.ShutDown`, an `Exception` subclass, so the `except Exception` at queue_consumer.py:317-325 logs it and calls `add_offset`/`complete_offset`, making the unprocessed offset committable by `_commit_loop` (273-291). This is reachable (traced by reading, not run): `close()`/`terminate()` shut down the factory-shared pool (335-342), which a strategy created after a rebalance reuses with a live commit thread.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.4889143
+}

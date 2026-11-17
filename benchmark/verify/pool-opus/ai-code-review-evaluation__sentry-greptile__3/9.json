@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/helpers/error_upsampling.py:43-64, `_are_all_projects_error_upsampled` takes `organization`, but the body only uses `project_ids` and the `issues.client_error_sampling.project_allowlist` option. The caller at line 35 passes `organization`, and nothing reads it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.049519400000000005
+}

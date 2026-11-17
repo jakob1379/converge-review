@@ -1,0 +1,294 @@
+{
+ "findings": [
+  {
+   "path": "app/controllers/topics_controller.rb",
+   "line": 105,
+   "severity": "Important",
+   "claim": "unsubscribe returns a 500 when the logged-in user has no TopicUser row for the topic. TopicUser.find_by returns nil and the next line calls tu.notification_level on it.",
+   "evidence": "find_by(user_id:, topic_id:) is followed by tu.notification_level with no nil check, and ensure_logged_in is the only guard. open-code-review: mention, link and PM-invite emails are sent via PostAlerter without creating a row, and post_alerter.rb:22,105 already uses .try(:notification_level). The seats disagree on how often this happens: superpowers says the emailed recipient always has a row (user_notifications calls TopicUser.change with last_emailed_post_number), but all three agree on forwarded, shared or hand-typed links. All three propose the same controller spec, which expects NoMethodError on nil. Reasoned; not executed.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test first: a controller spec with log_in, a fresh Fabricate(:topic), then get :unsubscribe, expecting success. Smallest fix: use TopicUser.change, which creates the missing row. The disagreement over how common the case is does not affect the crash path.",
+   "list": "main"
+  },
+  {
+   "path": "config/routes.rb",
+   "line": 440,
+   "severity": "Important",
+   "claim": "A plain GET with no CSRF protection and no per-user token changes notification state. Any third-party page can change a logged-in visitor's level for any topic they can see, including PMs, for example with <img src=.../unsubscribe>.",
+   "evidence": "Routes at config/routes.rb:440-441 are plain get. The action (topics_controller.rb:98-115) calls tu.save!. Rails CSRF protection skips GET, and skip_before_filter :check_xhr (line 32) lets plain navigations through. Unlike the digest route email/unsubscribe/:key (routes.rb:202), the link carries no signed key. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test: a request spec showing that a cross-origin-style GET with no token changes notification_level. Smallest fix: mutate only on POST or with a signed per-user token, and keep the GET as a confirmation page. Severity stays Important even though superpowers notes the impact per hit is low.",
+   "list": "main"
+  },
+  {
+   "path": "app/controllers/topics_controller.rb",
+   "line": 107,
+   "severity": "Important",
+   "claim": "The action steps the level down instead of setting a target level, so it is not idempotent. Watching/tracking goes to regular on the first visit and regular goes to muted on a reload, second click or history replay, muting a topic the user never chose to mute.",
+   "evidence": "At topics_controller.rb:107-111, a level above regular is set to regular and any other level is set to muted. Two visits to a watching-topic email therefore produce muted. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test: from watching, two GETs to unsubscribe should leave the same level as one GET; this fails on the pinned code. Smallest fix: set one fixed target level.",
+   "list": "main"
+  },
+  {
+   "path": "config/locales/client.en.yml",
+   "line": 985,
+   "severity": "Important",
+   "claim": "After a watching/tracking user's first click the confirmation says 'You will stop receiving notifications for {{title}}', but the server only lowered the level to regular, which still notifies (and emails) on replies, mentions and quotes. The copy promises a state that was not set.",
+   "evidence": "Text at client.en.yml:985, rendered via controllers/topic-unsubscribe.js.es6:5-7 and templates/topic/unsubscribe.hbs:3, compared with the level logic at topics_controller.rb:107-111. Severity varies by seat: Important as part of a larger finding in mattpocock and superpowers, Minor as a standalone finding in open-code-review. Normalised to Important. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test: after one unsubscribe visit from watching, assert the user gets no reply notifications for the topic (level muted). This fails on the pinned code. Probably settled by the same fixed-target-level change as the idempotency finding; otherwise reword the copy.",
+   "list": "main"
+  },
+  {
+   "path": "spec/controllers/topics_controller_spec.rb",
+   "line": null,
+   "severity": "Important",
+   "claim": "The new state-changing behaviour has no tests: TopicsController#unsubscribe, Topic#unsubscribe_url, the new email footer, the login requirement, the slug redirect, the missing-TopicUser path and the Ember route. This breaches CONTRIBUTING.md \u00a73, 'Include tests, and ensure they pass'.",
+   "evidence": "The only spec change is spec/components/email/message_builder_spec.rb:171-172, which adds unsubscribe_url: so the existing spec keeps passing and asserts nothing about it. Nothing is added under spec/controllers. open-code-review rated this Minor; mattpocock and superpowers rated it Important.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Settled by keeping the red-to-green controller specs written for the main-list fixes (nil TopicUser, CSRF GET, idempotency, copy) in the suite. No separate abstraction is needed.",
+   "list": "main"
+  },
+  {
+   "path": "app/controllers/topics_controller.rb",
+   "line": 27,
+   "severity": "Important",
+   "claim": "A logged-out recipient who clicks the email link is redirected to '/' with no message and no return to the unsubscribe page, so nothing is unsubscribed.",
+   "evidence": "unsubscribe was added to ensure_logged_in; mattpocock cites line 27 and open-code-review line 28. rescue_from Discourse::NotLoggedIn (application_controller.rb:97-104) runs redirect_to path('/') for HTML GETs without storing a destination. Rated Minor by mattpocock and Important by open-code-review. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. Not reported as a review comment and not fixed this loop. ponytail named the same issue under 'outside my lane, not assessed', so it is not counted as a raising seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/topics_controller.rb",
+   "line": 113,
+   "severity": "Important",
+   "claim": "tu.save! bypasses TopicUser.change. As a result there is no MessageBus notification_level_change publish (other open tabs go stale), notifications_reason_id is not set to user_changed (the old reason text stays), and notifications_changed_at is not stamped.",
+   "evidence": "TopicUser.change (topic_user.rb:77-115) does all three, and the existing set_notifications action (topics_controller.rb:330-334) uses it. routes/topic-unsubscribe.js.es6:14 nulls details.notificationReasonText, which hides the stale reason on this one page only. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. Not fixed this loop. It will probably be resolved by the main-list nil-row fix if that fix switches to TopicUser.change.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/topics_controller.rb",
+   "line": 500,
+   "severity": "Important",
+   "claim": "The new render :show in perform_show_response runs before show sets canonical_url (line 87). Every server-rendered topic page, not just the new endpoint, therefore loses its <link rel=canonical> tag.",
+   "evidence": "show calls perform_show_response at line 85 and sets canonical_url at line 87. layouts/_head.html.erb:9 calls canonical_link_tag while @canonical_url is nil, and lib/canonical_url.rb:14 returns '' for nil. Proposed red test: a controller spec with render_views that expects response.body to include rel=canonical. Reasoned; not run.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. Not fixed under the merge rule. Flagged for attention because the claimed blast radius is every topics#show page, and no other seat assessed it.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/routes/topic-unsubscribe.js.es6",
+   "line": 4,
+   "severity": "Minor",
+   "claim": "An in-app Ember transition to topicUnsubscribe only loads topic JSON and never calls the server action, yet it still shows the 'You will stop receiving notifications' confirmation.",
+   "evidence": "Route lines 4-10 call only PostStream.loadTopicView (/t/:id.json). The state change exists only in the server-side HTML GET. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. ponytail listed it as out of lane and did not assess it, so it is not counted.",
+   "list": "appendix"
+  },
+  {
+   "path": "config/locales/server.en.yml",
+   "line": 1852,
+   "severity": "Minor",
+   "claim": "Hidden coupling. The shared unsubscribe_link string now needs %{unsubscribe_url}, so any MessageBuilder caller passing add_unsubscribe_link: true without unsubscribe_url: raises I18n::MissingInterpolationArgument (message_builder.rb:67, 90).",
+   "evidence": "The existing spec had to be patched (message_builder_spec.rb:172), showing the contract changed. In core only user_notifications.rb:294-295 sets the flag, and it passes the URL. open-code-review checked this and found core safe; superpowers agrees. The claim concerns plugins and future callers, and no seat disproves that.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. Core is not affected, according to all three seats that looked.",
+   "list": "appendix"
+  },
+  {
+   "path": "config/locales/server.en.yml",
+   "line": 1852,
+   "severity": "Minor",
+   "claim": "The 28 other server.*.yml locales keep the old unsubscribe_link string, so non-English users never see the per-topic link.",
+   "evidence": "superpowers finding 6. open-code-review noted the same gap but chose not to report it ('translation gap, not a crash'). mattpocock did not compare locales.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. A translation gap, normally handled by the translation workflow.",
+   "list": "appendix"
+  },
+  {
+   "path": "lib/email/message_builder.rb",
+   "line": 107,
+   "severity": "Minor",
+   "claim": "The List-Unsubscribe header still points to user preferences, not the per-topic URL.",
+   "evidence": "mattpocock finding 12 addendum. Reasoned.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat, advisory.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/topics_controller.rb",
+   "line": 102,
+   "severity": "Minor",
+   "claim": "status: 301 on a URL with side effects is a permanent, cacheable redirect. After a slug change, browsers follow the cached stale redirect and pay an extra hop through slugs_do_not_match; 302 is safer.",
+   "evidence": "superpowers finding 8. Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/topic_user.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Format-only and out-of-scope edits are mixed into a feature PR: about 100 of 225 changed lines. This breaches CONTRIBUTING.md \u00a72 (one feature per branch) and the \u00a74 note on style changes. Affected: topic_user.rb (all hunks), routes/topic-from-params.js.es6 (all hunks), views/email/notification.html.erb:1-29, lib/email/message_builder.rb:24-39,60,68, app/mailers/user_notifications.rb:310, the config/routes.rb:437-442 reorder, and the client.en.yml:1019 blank line.",
+   "evidence": "mattpocock findings 6 and 8 (the scope part), and ponytail finding 3 with line counts from git diff --stat. superpowers confirms topic_user.rb and notification.html.erb have no logic change.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats, both advisory. Could be addressed later by moving these edits into a separate style commit.",
+   "list": "appendix"
+  },
+  {
+   "path": "config/routes.rb",
+   "line": 439,
+   "severity": "Minor",
+   "claim": "A hidden behaviour change in the route reorder: the post_number: /\\d+/ constraint was dropped from both summary routes.",
+   "evidence": "mattpocock finding 8 calls this an unrelated behaviour change. ponytail says neither summary path has a :post_number segment, so the constraint was inert. superpowers checked it and found the removal harmless because those routes have no such segment.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "reject",
+   "reason": "The behaviour-change claim is disproved by the ponytail and superpowers reports: the constraint applied to a segment the routes do not have, so dropping it changes nothing. The out-of-scope part of the same edit is kept in the reformatting appendix entry.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/topic_user.rb",
+   "line": 10,
+   "severity": "Minor",
+   "claim": "The rewritten tracking scope uses 3- and 5-space indents where the file uses 2-space nesting. This breaches CONTRIBUTING.md \u00a73 (follow existing conventions).",
+   "evidence": "mattpocock finding 7.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat, advisory.",
+   "list": "appendix"
+  },
+  {
+   "path": "config/routes.rb",
+   "line": 440,
+   "severity": "Minor",
+   "claim": "constraints: {topic_id: /\\d+/} has no spaces inside the braces, breaching CONTRIBUTING.md \u00a74.",
+   "evidence": "mattpocock finding 9. The neighbouring lines share the same style, so this follows local precedent.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat, advisory, and consistent with local precedent.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6",
+   "line": 5,
+   "severity": "Minor",
+   "claim": "stopNotificiationsText is misspelled, and the typo appears in both the controller and templates/topic/unsubscribe.hbs:3.",
+   "evidence": "mattpocock finding 10; ponytail finding 1 notes the misspelling.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. It would disappear if ponytail's controller deletion is ever taken.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6",
+   "line": 9,
+   "severity": "Minor",
+   "claim": "The module ends with '})' and no semicolon, unlike every sibling .js.es6 controller.",
+   "evidence": "mattpocock finding 11.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat, advisory.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6",
+   "line": 1,
+   "severity": "Minor",
+   "claim": "The controller exists only to format one string. The i18n helper already accepts named params, so the template could use {{{i18n 'topic.unsubscribe.stop_notifications' title=model.fancyTitle}}} directly.",
+   "evidence": "helpers/i18n.js.es6 and register-unbound.js.es6:30 resolve hash params. templates/modal/change-owner.hbs:2 already uses the pattern. Whether this behaves the same after an in-place model change was not checked.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat, advisory (over-engineering).",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/views/topic-unsubscribe.js.es6",
+   "line": 1,
+   "severity": "Minor",
+   "claim": "The view exists only to add classNames ['topic-unsubscribe']. The template's wrapper div (unsubscribe.hbs:1) could carry the class instead.",
+   "evidence": "The SCSS at common/base/topic.scss:67 only needs an ancestor with .topic-unsubscribe. The seat itself calls this a judgement call, since Discourse often pairs routes with views.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat, advisory, and self-described as a judgement call.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate: not run (benchmark mode), so no finding is anchored by executed checks and the review is unanchored. No seat ran any test, so every failing test cited is a proposal, not a result. Spec: none was given; seats used the PR title 'FEATURE: per-topic unsubscribe option in emails' as the implicit spec. Standards: only CONTRIBUTING.md ('Code' and 'Coding Conventions'); there are no other standards docs. Files: every seat reports reading all 18 patch files, with these limits. mattpocock reviewed app/assets/stylesheets/common/base/topic.scss and views/topic-unsubscribe.js.es6 only lightly, did not render the Ember/Handlebars templates, and did not compare other-language locale files (outside the patch). open-code-review's tool excluded six .js.es6 files (unsupported_ext) and spec/components/email/message_builder_spec.rb (default_path); the seat reviewed them manually from the patch. superpowers checked app/models/topic_user.rb, app/views/email/notification.html.erb, topic.scss and views/topic-unsubscribe.js.es6 only for behaviour change. ponytail reviewed for over-engineering only. Axes and process: no reviewer from another model family took a correctness seat. ponytail's five 'outside my lane, not assessed' pointers were not counted as raising seats. No fresh verifier was dispatched (no agent access), but no correctness-seat Critical or Important finding was rejected, so none was needed. The only rejection is an advisory Minor claim disproved by two other seats' reports. Steps 5 and 6 (fix, re-review) were not run by instruction, so nothing has converged and all five main-list items remain open."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/salesforce/lib/CalendarService.ts:75-99, the patch adds an unconditional POST to the Salesforce refresh-token endpoint inside getClient, followed by a credential update. The constructor calls getClient every time (line 57), and nothing checks token expiry first.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23727610000000002
+}

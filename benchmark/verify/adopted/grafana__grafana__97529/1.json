@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch now runs s.Init eagerly in NewResourceServer (pkg/storage/unified/resource/server.go:258). That calls the lifecycle hook backend.Init, then dbProvider.Init (pkg/storage/unified/sql/backend.go:94, sql/server.go:56), which builds the DB connection from the [resource_api] db_host. For postgres the test hardcodes db_host=localhost (module_server_test.go:76), but Drone runs postgres at POSTGRES_HOST=postgres (.drone.yml:1155). Before the patch, Init only ran on a request and this test only fetches /metrics, so startup did not touch the DB. The new skip at module_server_test.go:35-38 hides that startup failure instead of fixing the host setting the way the mysql branch does (lines 81-87).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.18459740000000002
+}

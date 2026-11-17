@@ -1,0 +1,82 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In fetch_error_details, error_ids are zipped with events.values() from nodestore get_multi(). That dict does not preserve input order: it dedupes ids, merges cached items after fetched ones, and omits missing entries. As a result, error IDs get paired with the wrong event data.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When the use-table-widget-visualization feature flag is enabled, TableWidgetVisualization is rendered with columns=[] and empty tableData. The actual results and loading state are ignored, so the table is always blank.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The age/timestamp mutual-exclusion validators in BrowserReportSerializer use the truthiness of self.initial_data.get(...). A value of 0 is therefore treated as absent, and age=0 combined with timestamp passes validation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Both age and timestamp are required=False with only field-level validators, so a report with neither field is accepted. The docstrings say one of them must be present.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The useGetTraceItemAttributeValues call defaults to page filters instead of using the provided projectIds prop.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i38",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requests.post call to Snuba in tests has no timeout.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i46",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The refactor changes behaviour: it drops staleTime:0/retry:false, makes isLoading reflect isFetching, and discards responseJSON in the thrown Error. It also makes useMemos recompute every render because projectIds is a fresh array, builds options twice, and leaves the search parameter with no caller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

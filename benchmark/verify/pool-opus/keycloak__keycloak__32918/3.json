@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In InfinispanIdentityProviderStorageProvider.java:146-150 the predicate runs on `original`, which comes from getById() (lines 135-141). That object is wrapped by createOrganizationAwareIdentityProviderModel (lines 432-446), so isEnabled() returns false while the linked organization is disabled. `updated` is the unwrapped model from RepresentationToModel.toModel (IdentityProviderResource.java:191). So if an admin sets hideOnLogin, linkOnly or non-public on that IdP while its organization is disabled, both checks fail and the method returns early. The login caches are never invalidated, because their ID sets come from a DB query that ignores whether the organization is enabled (IdentityProviderStorageProvider.java:165-182), and nothing invalidates the .idp.login keys when an organization changes. After the organization is re-enabled, getForLogin (lines 244-254) and the bean's isEnabled-only filter (OrganizationAwareIdentityProviderBean.java:75,80) show the stale IdP.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3138996
+}

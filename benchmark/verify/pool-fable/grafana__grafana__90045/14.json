@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The failing case does register its stub through `setupLegacyFn` (pkg/apiserver/rest/dualwriter_mode3_test.go:40-42), but both mocks share one `mock.Mock` (lines 51-54), so `storageMock.Create` (storage_mocks_test.go:96-105) matches that same \"Create\" expectation and returns the error. `Storage.Create` therefore fails first at dualwriter_mode3.go:42-46 and the unified-store-failure path is exercised; only the setup field name is misleading.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4775404
+}

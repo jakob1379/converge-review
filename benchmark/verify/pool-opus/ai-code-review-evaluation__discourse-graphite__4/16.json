@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "TopicEmbed.import_remote (app/models/topic_embed.rb:44-52 in the patch) passes the URL straight to `open(url).read` with no format or scheme check. The `/^https?:\\/\\//` check only runs later inside TopicEmbed.import (line 11), after the fetch. The TopicRetriever caller only checks that the host matches embeddable_host (lib/topic_retriever.rb:15), not the scheme, and the disqus.thor caller passes t[:link] unchecked.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15668949999999998
+}

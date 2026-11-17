@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "getIsProvisioned (RuleActionsButtons.V2.tsx, patch lines 1340-1350) is 11 lines of if/return that could be one ternary: `rule ? isProvisionedRule(rule) : !!promRule && isProvisionedPromRule(promRule)`. In getEditableIdentifier, the logWarning/undefined fallback (patch lines 1368-1372) is never reached by current callers: StateView.tsx:131, DataSourceRuleLoader.tsx:59 and DataSourceGroupLoader.tsx:196 always pass a rulerRule. GrafanaRuleListItem passes only promRule, but it uses those action buttons only for alerting and recording rules, where prometheusRuleType.grafana.rule is true; unknown rule types go to UnknownRuleListItem, which doesn't render them.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3996399
+}

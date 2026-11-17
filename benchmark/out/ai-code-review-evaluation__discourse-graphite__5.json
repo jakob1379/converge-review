@@ -1,0 +1,249 @@
+{
+  "findings": [
+    {
+      "path": "app/assets/stylesheets/common/base/header.scss",
+      "line": 17,
+      "severity": "Important",
+      "claim": "Making .d-header .contents a flex container (floats removed) breaks long-title handling in the docked desktop header: the extra-info flex item keeps min-width:auto / default flex-shrink, so a long nowrap .topic-link no longer ellipsizes and either squeezes .panel until its floated icons wrap inside the fixed 60px header, or pushes .panel past the right edge (IE10 -ms-flex 0 0 auto).",
+      "evidence": "Reasoned, not rendered (headless Chromium blocked by sandbox in both seats). .topic-link is white-space:nowrap (desktop/topic-post.scss:518-538); header-extra-info component renders an untagged ember-view wrapping .extra-info-wrapper (components/header-extra-info.js.es6, templates/components/header-extra-info.hbs:1); previously floats + overflow:hidden on .extra-info-wrapper bounded the title. Seats differ on exact mechanism (which element is the flex item; overflow vs squeeze) but agree on the regression. Repro page left in OCR seat scratchpad (hdr.html).",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Correctness regression on every desktop topic with a long title once the header docks; two correctness seats independently. Suggested fix: min-width:0 + flex:1 1 auto on the actual flex item (give header-extra-info a class), or flex-shrink:0 on .title/.panel. Needs a red repro (rendered layout check) before fixing."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/topic-post.scss",
+      "line": 280,
+      "severity": "Important",
+      "claim": "Replacing .small-action-desc padding 0.5em 0 0.5em 4em with 0 1.5% leaves the untouched mobile override .small-action .custom-message { margin-left: -40px } pulling the custom message ~40px left over the now-adjacent .topic-avatar icon.",
+      "evidence": "Reasoned. mobile/topic-post.scss:520-522 offset was sized for the old 4em left padding with a floated avatar; patch does not touch the mobile stylesheet.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Visible overlap on mobile small-action posts with custom messages. Raised Important by superpowers, Minor by OCR, noted out-of-scope by ponytail and mattpocock; normalised to Important. Fix with the patch (drop/retune the -40px offset)."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/topic-post.scss",
+      "line": 264,
+      "severity": "Important",
+      "claim": ".small-action is now a flex container and .small-action-desc a flex item without flex-grow, so it shrink-wraps its text; the float:right edit/delete buttons inside it (topic-post.scss:309) now sit next to the text instead of at the right edge of the row.",
+      "evidence": "Reasoned. Buttons are children of .small-action-desc per templates/components/small-action.hbs:3-8; row is 755px on desktop (desktop/topic-post.scss:730). Superpowers rated Important, OCR Minor.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Visible desktop layout regression for staff controls; one-line fix (flex:1 on .small-action-desc). Normalised to Important."
+    },
+    {
+      "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+      "line": 121,
+      "severity": "Minor",
+      "claim": "-ms-align-items is not a real CSS property in any IE/Edge version; IE10 uses -ms-flex-align (already on line 120). Dead output.",
+      "evidence": "Vendor property tables; reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Trivial deletion; all four seats agree."
+    },
+    {
+      "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+      "line": 120,
+      "severity": "Minor",
+      "claim": "Trailing whitespace after -ms-flex-align: $alignment;.",
+      "evidence": "grep -nE ' +$' app/assets/stylesheets/common/foundation/mixins.scss prints line 120; breaches CONTRIBUTING.md coding conventions and .editorconfig trim_trailing_whitespace.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented-standard breach, mechanically verifiable, trivial."
+    },
+    {
+      "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+      "line": 122,
+      "severity": "Minor",
+      "claim": "align-items:$alignment; lacks a space after the colon.",
+      "evidence": "CONTRIBUTING.md coding conventions require spaces after colons; every other declaration in the patch has one.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented-standard breach, trivial. (superpowers seat explicitly declined to judge formatting.)"
+    },
+    {
+      "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+      "line": 117,
+      "severity": "Minor",
+      "claim": "align-items mixin body indented 4 spaces while the other new mixins use 2.",
+      "evidence": "CONTRIBUTING.md 'two spaces' and .editorconfig indent_size=2; mitigated by pre-existing clearfix mixin (lines 38-47) also using 4.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented-standard breach in new code, trivial."
+    },
+    {
+      "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+      "line": 117,
+      "severity": "Minor",
+      "claim": "'All prefixes' is incomplete: align-items() emits no -moz-box-align although flexbox() emits display:-moz-box, so old-box-model Firefox stretches instead of centring.",
+      "evidence": "Reasoned from mixins.scss:100-123.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: Firefox 16-19 -moz-box era is marginal; add only if those browsers are actually still supported (README.md:40-47 lists Firefox 16+)."
+    },
+    {
+      "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+      "line": 117,
+      "severity": "Minor",
+      "claim": "Mixins pass values straight through to legacy properties: -webkit-box-align/-ms-flex-align need start/end not flex-start/flex-end, and -webkit-box-ordinal-group must be >=1, so future align-items(flex-start) or order(0) calls emit invalid legacy CSS.",
+      "evidence": "Reasoned; current callers (center, baseline, 2, 3) are valid.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: no current caller is affected; do not add value-mapping logic for speculative calls."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/header.scss",
+      "line": 37,
+      "severity": "Minor",
+      "claim": "In the 2009 display:-webkit-box model (Safari 5.1, Android <=4.3, iOS <=6) auto margins are not honoured, so margin-left:auto on .panel no longer right-aligns it, and the float:right fallback was removed.",
+      "evidence": "Reasoned; README.md:40-47 lists Safari 5.1 / Android 4.1 as supported.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: low-impact legacy-browser issue; settle with a real-device check on a -webkit-box-only browser before acting."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/topic.scss",
+      "line": 30,
+      "severity": "Minor",
+      "claim": "@include order(2) on .extra-info-wrapper is ineffective/redundant: .extra-info-wrapper is not itself a flex item (it sits inside the header-extra-info ember-view), and visual order comes out right solely because .panel has order(3).",
+      "evidence": "templates/components/header-extra-info.hbs:1; header.hbs lines 4, 6, 92-94 for DOM order.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: dead declaration; remove when touching the header fix for the long-title finding."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/header.scss",
+      "line": 39,
+      "severity": "Minor",
+      "claim": "The order mixin and both order() calls could be replaced by moving the header-extra-info block above .panel in header.hbs; CSS reordering also makes Tab order differ from visual order.",
+      "evidence": "Reasoned from header.hbs DOM order.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: advisory simplification touching the template; not blocking."
+    },
+    {
+      "path": "app/assets/stylesheets/mobile/topic-post.scss",
+      "line": 531,
+      "severity": "Minor",
+      "claim": ".small-action.time-gap .topic-avatar { margin-top: -5px } (added in the base commit for float layout) now shifts the clock icon 5px above centre under align-items:center.",
+      "evidence": "Reasoned; untouched rule at mobile/topic-post.scss:530-532.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: 5px cosmetic offset; verify on mobile render then drop the override."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/topic-post.scss",
+      "line": 263,
+      "severity": "Important",
+      "claim": "Scope creep: commit message says 'adding flexbox to header' but the patch also re-lays out .small-action (post-stream action rows) and rewrites its spacing, contrary to CONTRIBUTING.md one-feature-per-branch.",
+      "evidence": "Diff hunk topic-post.scss:263-303 vs commit message; CONTRIBUTING.md section on branches.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory seat; no spec exists, commit message is not a spec. The concrete regressions this hunk causes are tracked as separate fix findings; splitting the commit is a process call for the author."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/topic-post.scss",
+      "line": 270,
+      "severity": "Minor",
+      "claim": "float:left on .small-action .topic-avatar is now dead because floats are ignored on flex items.",
+      "evidence": "CSS flex spec: float has no effect on flex items.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: dead line, delete opportunistically."
+    },
+    {
+      "path": "app/assets/stylesheets/mobile/topic-post.scss",
+      "line": 518,
+      "severity": "Minor",
+      "claim": "Mobile override .small-action-desc p { padding-top: 0 } is now dead since the patch removed the base p { padding-top: 4px } it cancelled.",
+      "evidence": "Base rule removed in topic-post.scss hunk; override at mobile/topic-post.scss:516-519.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: dead override, delete opportunistically."
+    },
+    {
+      "path": "app/assets/javascripts/discourse/templates/header.hbs",
+      "line": 2,
+      "severity": "Minor",
+      "claim": "clearfix on .contents is now dead weight; its ::before/::after (display:table) become empty flex items, a trap if justify-content:space-between is added later.",
+      "evidence": "foundation/helpers.scss:53-62. OCR seat assessed it as harmless today.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: harmless today (seats agree on zero-width); remove the class when convenient."
+    },
+    {
+      "path": null,
+      "line": null,
+      "severity": "Minor",
+      "claim": "Commit 5b229316ee message is a summary line only, no body, while it also changes small-action spacing and badge margins.",
+      "evidence": "CONTRIBUTING.md commit section asks for a blank line and detailed description.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Commit metadata, not code; address when the commit is reworded/split."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/header.scss",
+      "line": 15,
+      "severity": "Minor",
+      "claim": "Third-party themes/plugins relying on .d-header .title {float:left} / .panel {float:right} or adding floated children to .contents will change layout because floats are ignored in a flex container.",
+      "evidence": "Reasoned; no actual themes checked.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: unverified ecosystem risk; settle by checking popular themes before release."
+    }
+  ],
+  "coverage": "Files: all 5 patch files reviewed by all four seats (header.scss, topic-post.scss, topic.scss, badges.css.scss, mixins.scss); none skipped. Untracked harness dotfiles in the worktree (.bashrc, .claude/, .mcp.json, etc.) were excluded from the pinned patch as not part of the PR head. Axes not run: gate not run (benchmark mode: no dependency install, no SCSS compile, no QUnit/rspec/lint); no spec (spec axis judged against commit message only); no rendering verification - headless Chromium blocked by sandbox in two seats, so every layout claim is reasoned, none made red; no cross-family reviewer (all four seats same model family); only documented standards found were CONTRIBUTING.md and .editorconfig (no SCSS lint config). Rejections: none - no Critical/Important correctness finding was rejected, so no verifier dispatch was needed. Stopped after merge per benchmark mode (no fixes, no rounds 2+)."
+}

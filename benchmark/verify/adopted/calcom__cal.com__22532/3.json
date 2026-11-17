@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "deleteCache.handler.ts:25 throws a plain `new Error(...)`. tRPC turns any non-TRPCError into INTERNAL_SERVER_ERROR, and nothing here maps it to another code: errorFormatter.ts:25-38 only special-cases ZodError, and the authedProcedure middleware does not catch it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.17356929999999998
+}

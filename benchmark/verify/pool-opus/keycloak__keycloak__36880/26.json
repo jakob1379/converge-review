@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The @AfterEach in PermissionClientTest (patch lines 792-797) removes only scope permissions, and ManagedRealm.runCleanup (test-framework/.../ManagedRealm.java:66-72) runs only registered cleanup tasks, so the realm, which is shared by the class (InjectRealm lifecycle CLASS), keeps the leftovers. testManageOnlyOneClient renames myclient and moves a default scope to optional (patch 857-869), and testMapRolesAndCompositesOnlyOneClient creates roles, a user mapping and a composite (patch 1022-1055), with no cleanup. However, I found no existing assertion in this class that changes with test order, so the order dependence is a risk, not a failure that happens today.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.30754250000000005
+}

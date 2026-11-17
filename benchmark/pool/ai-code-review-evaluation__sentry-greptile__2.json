@@ -1,0 +1,511 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2",
+ "cost_usd": 0.10443119999999999,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review",
+   "text": "Privilege gate uses raw request.user.is_superuser instead of is_active_superuser(request), granting access without an active superuser session"
+  },
+  {
+   "id": "c2",
+   "source": "claude-code",
+   "text": "OptimizedCursorPaginator.get_item_key calls math.floor()/math.ceil() directly on datetime objects from AuditLogEntry, which raises TypeError since math.floor() doesn't work on datetime objects"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "The 'advanced' negative-offset branch slices queryset with negative index which raises ValueError in Django 5.2.1, causing 500 errors that aren't caught by the BadPaginationError handler"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review-replay",
+   "text": "BasePaginator silently clamps negative offsets on next cursors to 0 while build_cursor and line 192 still use the unclamped offset, causing inconsistent next/prev cursors"
+  },
+  {
+   "id": "c5",
+   "source": "golden",
+   "text": "OptimizedCursorPaginator's negative-offset branch in get_result() passes cursor.offset directly as start_offset to queryset slicing when enable_advanced_features is True and cursor.offset < 0."
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "OptimizedCursorPaginator negative-offset branch causes 500 errors instead of 400 because Django raises ValueError on negative indexing (qs[-n:m]) and paginate() only catches BadPaginationError"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "max_segment_spans (default 1001) is still accepted and stored but never read; the cap is hard-coded as 1000 in add-buffer.lua, so tuning it silently does nothing"
+  },
+  {
+   "id": "c8",
+   "source": "golden",
+   "text": "Accessing .has_global_access on organization_context.member can raise an AttributeError when organization_context is None, particularly for non-superuser non-member users."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "zunionstore defaults to AGGREGATE SUM instead of AGGREGATE MAX, so redelivered payloads get doubled scores and are effectively never evicted"
+  },
+  {
+   "id": "c10",
+   "source": "augment",
+   "text": "ZUNIONSTORE defaults to AGGREGATE SUM, so if the same span payload exists in both inputs its score will be summed (doubling timestamps), which can skew ordering and the subsequent ZPOPMIN eviction behavior"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "zpopmin keeps 1000 latest-ending spans, so a segment/root span that ends before its children can be evicted while has_root_span stays true"
+  },
+  {
+   "id": "c12",
+   "source": "augment",
+   "text": "The eviction threshold is hard-coded to 1000 in the Lua script, but SpansBuffer is configured with max_segment_spans (default 1001); this mismatch can cause unexpected eviction/data loss and makes the Python-side limit effectively ignored"
+  },
+  {
+   "id": "c13",
+   "source": "cubic-v2",
+   "text": "OptimizedCursorPaginator cannot paginate the datetime sort key in organization_auditlogs.py - optimized requests will raise when it tries to floor/ceil an AuditLogEntry.datetime value. Should use DateTimePaginator instead."
+  },
+  {
+   "id": "c14",
+   "source": "claude-code",
+   "text": "The comment about negative offset handling being for 'authorized administrators' is misleading since has_global_access defaults to True for all org members, exposing the buggy paginator to more users than intended"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "Comment-only hunk describes negative offset behaviour that Cursor does not actually implement"
+  },
+  {
+   "id": "c16",
+   "source": "claude-code",
+   "text": "OptimizedCursorPaginator passes negative cursor.offset directly to Django queryset slicing, but Django raises AssertionError for negative slice indices despite the comment claiming Django handles negative slicing"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Trailing whitespace at organization_auditlogs.py:72,89 and paginator.py:824,827,829; blank line at EOF in paginator.py; three blank lines before class OptimizedCursorPaginator (flake8 E303)"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "No tests cover the new behaviour: span eviction beyond 1000, OptimizedCursorPaginator, the endpoint's optimized_pagination branch, or the BasePaginator negative-offset change"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "BasePaginator still passes negative offsets through on prev cursors (is_prev=true), causing crashes with the same Django ValueError"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "OptimizedCursorPaginator.get_item_key/value_from_cursor calls math.floor/ceil on a datetime, causing TypeError and 500 errors on every non-empty page with ?optimized_pagination=true"
+  },
+  {
+   "id": "c21",
+   "source": "qodo-extended-v2",
+   "text": "OptimizedCursorPaginator allows negative offsets when enable_advanced_features=True, but Django QuerySets don't support negative indexing and will raise AssertionError"
+  },
+  {
+   "id": "c22",
+   "source": "claude-code",
+   "text": "Users with org:write scope can trigger a 500 error by crafting a cursor with negative offset (e.g., '0:-5:0'), creating a denial-of-service vector for the audit logs feature"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review-replay",
+   "text": "span-buf:s:* keys change from Redis SET to ZSET with no migration, key-prefix bump or dual-read, causing WRONGTYPE errors during rolling deploy that can crash-loop processes and flush consumers for up to redis_ttl (3600s)"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review-replay",
+   "text": "Privilege check uses raw request.user.is_superuser flag instead of is_active_superuser(request), granting elevated path without active superuser session"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "OptimizedCursorPaginator.value_from_cursor passes a raw int into the datetime <= %s comparison, breaking follow-up pages"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "enable_advanced = request.user.is_superuser or organization_context.member.has_global_access raises AttributeError when organization_context.member is None for non-member callers (e.g. legacy org ApiKey / org token with AnonymousUser), causing 500 on audit-log listing"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review-replay",
+   "text": "OptimizedCursorPaginator.get_result is a near line-for-line copy of BasePaginator.get_result with no actual optimization, will drift from original"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "span-buf:s:* keys change type from Redis SET to ZSET with no key-prefix bump, migration or dual-read, causing WRONGTYPE errors during rolling deploy and potential span loss"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review-replay",
+   "text": "Added comment describes negative offset behavior that does not exist in Cursor class"
+  },
+  {
+   "id": "c30",
+   "source": "qodo-extended-v2",
+   "text": "Span buffer segment keys changed from SET to ZSET without migration layer while keeping same key namespace, causing WRONGTYPE errors during rolling deploys when old SET-typed keys still exist"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review-replay",
+   "text": "enable_advanced check runs on every request and raises AttributeError (500) when organization_context.member is None, breaking audit-log listing for superusers via is_active_superuser path and ApiKey/org token authentication"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review-replay",
+   "text": "max_segment_spans config parameter is now dead code - its only reader was removed and the cap is hard-coded as 1000 in add-buffer.lua, making the parameter silently ineffective"
+  },
+  {
+   "id": "c33",
+   "source": "cubic-v2",
+   "text": "Django QuerySet does not support negative indexing - queryset[negative:stop] raises AssertionError. This code path will crash at runtime whenever enable_advanced_features=True and cursor.offset < 0. The comment claiming Django handles this automatically is incorrect."
+  },
+  {
+   "id": "c34",
+   "source": "converge-review-replay",
+   "text": "Redirect-walk limit dropped from 10000 to 1000 with no justification and deleted comment, causing segment trees deeper than 1000 to not be joined correctly"
+  },
+  {
+   "id": "c35",
+   "source": "qodo-extended-v2",
+   "text": "OptimizedCursorPaginator uses math.floor/ceil on datetime field values when used with order_by='-datetime' for audit logs, causing runtime exception since datetime is not numeric"
+  },
+  {
+   "id": "c36",
+   "source": "qodo-extended-v2",
+   "text": "ZUNIONSTORE in span buffer Lua script uses default SUM aggregation instead of MAX/MIN, corrupting timestamp scores when duplicate payload members exist across merged sets"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review",
+   "text": "Module docs still describe span-buf:s:* as 'set keys' after the switch to sorted sets"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "zpopmin eviction is silent with no metric or logging for dropped spans, making segment truncation invisible"
+  },
+  {
+   "id": "c39",
+   "source": "qodo-extended-v2",
+   "text": "Removed max_segment_spans safety check in _load_segment_data method, allowing pre-existing oversized Redis sorted sets to be processed without Python-side protection during rolling deployment"
+  },
+  {
+   "id": "c40",
+   "source": "claude-code",
+   "text": "OptimizedCursorPaginator.value_from_cursor returns raw cursor value without converting back to datetime, causing invalid SQL when comparing a number to a DateTimeField on subsequent pages"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review",
+   "text": "BasePaginator change (start_offset = max(0, offset) if not cursor.is_prev else offset) alters every paginated endpoint: non-prev negative offsets silently clamp to 0 while cursor.offset stays negative, creating inconsistent next/prev cursors; is_prev negatives still cause 500"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review-replay",
+   "text": "OptimizedCursorPaginator.value_from_cursor passes a raw int into datetime SQL comparisons, breaking follow-up pages"
+  },
+  {
+   "id": "c43",
+   "source": "cubic-v2",
+   "text": "math.floor and math.ceil will raise TypeError if the key attribute is a datetime. Unlike DateTimePaginator, this method does not convert datetime values to a numeric representation before applying floor/ceil."
+  },
+  {
+   "id": "c44",
+   "source": "qodo-extended-v2",
+   "text": "Audit log endpoint exposes OptimizedCursorPaginator to org admins via has_global_access check, allowing any org admin to trigger 500 errors with crafted negative cursor offsets"
+  },
+  {
+   "id": "c45",
+   "source": "augment",
+   "text": "OptimizedCursorPaginator.get_item_key assumes the ordered field is numeric and applies math.floor/ceil, but for common order_by values like -datetime this will be a datetime object and will raise a TypeError at runtime"
+  },
+  {
+   "id": "c46",
+   "source": "converge-review-replay",
+   "text": "Spans stored in old SET-type keys are lost during flushing when switching to ZSET"
+  },
+  {
+   "id": "c47",
+   "source": "augment",
+   "text": "start_offset can still be negative when cursor.is_prev is true, and Django QuerySet slicing does not support negative indices (it asserts), so a crafted/invalid cursor could crash pagination"
+  },
+  {
+   "id": "c48",
+   "source": "converge-review-replay",
+   "text": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil on a DateTimeField value, which raises TypeError because datetime objects are not real numbers, causing every non-empty page on ?optimized_pagination=true to return 500"
+  },
+  {
+   "id": "c49",
+   "source": "converge-review-replay",
+   "text": "BasePaginator comment claiming 'allow negative offsets' and 'underlying queryset will handle boundary conditions' is false"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review",
+   "text": "factory.py indexes val['end_timestamp_precise'] directly; if the field is optional, missing it raises KeyError and fails the batch"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "Redirect-walk depth limit dropped from 10000 to 1000 with no recorded rationale, potentially breaking deeper segment tree joins"
+  },
+  {
+   "id": "c52",
+   "source": "augment",
+   "text": "Code branch relies on negative queryset slicing but Django explicitly rejects negative slicing on QuerySet, so cursor.offset < 0 with enable_advanced_features is likely to raise at runtime"
+  },
+  {
+   "id": "c53",
+   "source": "converge-review",
+   "text": "OptimizedCursorPaginator is a near line-for-line copy of BasePaginator.get_result with wrongly-copied Paginator key logic and provides no actual optimization - should be deleted"
+  },
+  {
+   "id": "c54",
+   "source": "converge-review",
+   "text": "has_global_access is true for every member of open-membership orgs, making the privilege gate far wider than intended 'authorized administrators'"
+  },
+  {
+   "id": "c55",
+   "source": "golden",
+   "text": "In BasePaginator.get_result(), when cursor.is_prev is True, it sets start_offset = offset without clamping, allowing negative offset values to be passed to queryset slicing."
+  },
+  {
+   "id": "c56",
+   "source": "golden",
+   "text": "OptimizedCursorPaginator.get_item_key uses floor/ceil on a datetime key (order_by='-datetime'), causing TypeError."
+  },
+  {
+   "id": "c57",
+   "source": "converge-review-replay",
+   "text": "BasePaginator change is unscoped and affects all subclasses (Paginator, DateTimePaginator, etc.)"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The privilege gate for advanced pagination checks the raw request.user.is_superuser flag instead of is_active_superuser(request), so it grants access without an active superuser session.",
+   "path": "organization_auditlogs.py",
+   "members": [
+    "c1",
+    "c24"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil on the sort key without converting it, but for audit logs ordered by -datetime the key is a datetime object. This raises TypeError, so every non-empty page with ?optimized_pagination=true returns 500.",
+   "path": "paginator.py",
+   "members": [
+    "c2",
+    "c13",
+    "c20",
+    "c35",
+    "c43",
+    "c45",
+    "c48",
+    "c56"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "OptimizedCursorPaginator.value_from_cursor returns the raw numeric cursor value without converting it back to a datetime, so follow-up pages compare an int against the DateTimeField in SQL.",
+   "path": "paginator.py",
+   "members": [
+    "c25",
+    "c40",
+    "c42"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "When enable_advanced_features is True and cursor.offset < 0, OptimizedCursorPaginator.get_result passes the negative offset directly into queryset slicing. Django rejects negative QuerySet indexing, and paginate() only catches BadPaginationError, so the error surfaces as a 500. The comment saying Django handles negative slicing is incorrect, and a crafted cursor (e.g. '0:-5:0') from users who pass the gate can trigger this.",
+   "path": "paginator.py",
+   "members": [
+    "c3",
+    "c5",
+    "c6",
+    "c16",
+    "c21",
+    "c22",
+    "c33",
+    "c44",
+    "c52"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "In BasePaginator.get_result, negative offsets on non-prev cursors are clamped to 0 for start_offset, while cursor.offset and build_cursor still use the unclamped value, producing inconsistent next/prev cursors.",
+   "path": "paginator.py",
+   "members": [
+    "c4",
+    "c41"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "In BasePaginator.get_result, when cursor.is_prev is True, start_offset = offset is not clamped, so negative offsets still reach queryset slicing and crash.",
+   "path": "paginator.py",
+   "members": [
+    "c19",
+    "c47",
+    "c55"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The BasePaginator change to offset handling is unscoped and alters behavior for every subclass (Paginator, DateTimePaginator, etc.) and every paginated endpoint.",
+   "path": "paginator.py",
+   "members": [
+    "c57"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The BasePaginator comment claiming it allows negative offsets and that the underlying queryset will handle boundary conditions is false.",
+   "path": "paginator.py",
+   "members": [
+    "c49"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "An added comment describes negative-offset behavior that the Cursor class does not implement.",
+   "path": null,
+   "members": [
+    "c15",
+    "c29"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The gate uses has_global_access, which is true for all members of open-membership orgs, so the comment's 'authorized administrators' is misleading and the advanced paginator is exposed far more widely than intended.",
+   "path": "organization_auditlogs.py",
+   "members": [
+    "c14",
+    "c54"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The enable_advanced computation accesses organization_context.member.has_global_access on every request. It raises AttributeError (500) when member is None, e.g. for non-member callers, ApiKey/org-token auth, or superusers who are not members.",
+   "path": "organization_auditlogs.py",
+   "members": [
+    "c8",
+    "c26",
+    "c31"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "max_segment_spans (default 1001) is still accepted and stored but never read, because the cap is hard-coded as 1000 in add-buffer.lua; the Python-side limit is ignored and the two values disagree.",
+   "path": "add-buffer.lua",
+   "members": [
+    "c7",
+    "c12",
+    "c32"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The max_segment_spans safety check in _load_segment_data was removed, so pre-existing oversized Redis sets are processed without Python-side protection.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "ZUNIONSTORE in the span buffer Lua script uses the default AGGREGATE SUM, so a payload present in both inputs gets its timestamp score summed (doubled), corrupting ordering and ZPOPMIN eviction.",
+   "path": "add-buffer.lua",
+   "members": [
+    "c9",
+    "c10",
+    "c36"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "ZPOPMIN keeps the 1000 latest-ending spans, so a segment/root span that ends before its children can be evicted while has_root_span remains true.",
+   "path": "add-buffer.lua",
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "ZPOPMIN eviction drops spans silently, with no metric or logging.",
+   "path": "add-buffer.lua",
+   "members": [
+    "c38"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "span-buf:s:* keys change from Redis SET to ZSET in the same key namespace with no migration, prefix bump, or dual-read. During a rolling deploy this causes WRONGTYPE errors and loss of spans stored in old SET keys.",
+   "path": null,
+   "members": [
+    "c23",
+    "c28",
+    "c30",
+    "c46"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "Module docs still describe span-buf:s:* as set keys after the switch to sorted sets.",
+   "path": null,
+   "members": [
+    "c37"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "The redirect-walk depth limit was reduced from 10000 to 1000 and its explanatory comment was deleted, so segment trees deeper than 1000 are not joined correctly.",
+   "path": null,
+   "members": [
+    "c34",
+    "c51"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "OptimizedCursorPaginator.get_result is a near line-for-line copy of BasePaginator.get_result, with key logic wrongly copied from Paginator and no actual optimization.",
+   "path": "paginator.py",
+   "members": [
+    "c27",
+    "c53"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "factory.py indexes val['end_timestamp_precise'] directly, so a missing field raises KeyError and fails the batch.",
+   "path": "factory.py",
+   "members": [
+    "c50"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "No tests cover span eviction beyond 1000, OptimizedCursorPaginator, the endpoint's optimized_pagination branch, or the BasePaginator negative-offset change.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "Style issues: trailing whitespace at organization_auditlogs.py:72,89 and paginator.py:824,827,829, a blank line at EOF in paginator.py, and three blank lines before class OptimizedCursorPaginator (E303).",
+   "path": "paginator.py",
+   "members": [
+    "c17"
+   ]
+  }
+ ]
+}

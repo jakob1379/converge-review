@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Every caller passes Symbols. `I18n.locale` and `config.locale` are always Symbols because I18n converts them with `to_sym` (translate_accelerator.rb:68), and `FallbackLocaleList#[]` builds `[I18n.locale, SiteSetting.default_locale.to_sym, :en]` (config/initializers/i18n.rb:17-21), so String and Symbol entries never get mixed in @loaded_locales (translate_accelerator.rb:48,58,64).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0651396
+}

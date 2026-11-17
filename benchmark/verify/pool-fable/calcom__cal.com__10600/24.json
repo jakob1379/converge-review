@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new backup-code branch does throw on a missing key (`apps/web/pages/api/auth/two-factor/totp/disable.ts:49-52`), while the file's other 500 path returns `res.status(500).json({ error: ErrorCode.InternalServerError })` (line 23). However, \"like the rest of the file\" is overstated: the pre-existing TOTP branch throws the same error for the same condition (lines 77, 82, 90), so the new code copies an existing pattern.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3696608
+}

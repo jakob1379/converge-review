@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Every part checks out. There is trailing whitespace at organization_auditlogs.py:72 and :89 and in the docstring at paginator.py:824, 827 and 829. The patch adds three blank lines (paginator.py:818-820) before `class OptimizedCursorPaginator` at line 821, which is E303, and a blank line at the end of the file after `return cursor` (paginator.py:912, W391).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.13200920000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Every endpoint the patch's tests pass to `handleCreatedResponse` sets a Location header whenever it returns 201: `GroupsResource.java:206` and `GroupResource.java:226` call `builder.status(201).location(uri)`, and `UsersResource.java:160` uses `Response.created(uri)`. The assertion at `ApiUtil.java` also runs before `getLocation()`, so a null Location with a 201 cannot happen in this code.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0730213
+}

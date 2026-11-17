@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/email/message_builder.rb:107 still sets List-Unsubscribe to template_args[:user_preferences_url]. The unsubscribe_url the patch passes in (user_notifications.rb:295, and the List-Unsubscribe header spec at message_builder_spec.rb) only reaches the body text, not this header.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1186228
+}

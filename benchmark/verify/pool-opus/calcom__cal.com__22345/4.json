@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "getAuthorizationConditions() (packages/lib/server/service/insightsBooking.ts:83-88) returns the result of buildAuthorizationConditions(), and every path there returns a Prisma.Sql object: NOTHING_CONDITION, Prisma.sql`...`, or the org/team builders. A Prisma.Sql object is always truthy, so the `else if (filterConditions)` and `else return NOTHING_CONDITION` branches at lines 76-80 can never run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09187809999999999
+}

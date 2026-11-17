@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Under V2, ClientPermissionsV2.hasPermission (patch lines 493-508) falls back to the all-clients resource whenever a client has no resource of its own, so canMapRoles and canMapCompositeRoles also return true for the realm-management client. RolePermissions.canMapRole (RolePermissions.java:307-308) and canMapComposite (RolePermissions.java:397-398) return true straight away in that case, without calling checkAdminRoles (lines 149-287), so an admin holding that grant can map admin roles such as realm-admin.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.30481969999999997
+}

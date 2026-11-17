@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The two abstract methods are inconsistent, but in the opposite direction to the claim's wording: src/sentry/integrations/mixins/issues.py:411-418 adds `assignment_source` to abstract `sync_status_outbound` (never passed by any caller), while abstract `sync_assignee_outbound` at issues.py:397-403 does not declare it, even though src/sentry/integrations/tasks/sync_assignee_outbound.py:59-61 passes `assignment_source=` to it and it is only absorbed by `**kwargs`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.31682
+}

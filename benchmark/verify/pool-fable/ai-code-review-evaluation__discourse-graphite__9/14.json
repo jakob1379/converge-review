@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`set_locale` is a `before_filter` in `ApplicationController` (app/controllers/application_controller.rb:36) and the patch adds `I18n.fallbacks.ensure_loaded!` to it at line 159, so it runs on every request. The cost is small: once locales are loaded it is a short array build plus `@loaded_locales.include?` checks for at most three locales (config/initializers/i18n.rb:20-21, lib/freedom_patches/translate_accelerator.rb:62-64).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1717711
+}

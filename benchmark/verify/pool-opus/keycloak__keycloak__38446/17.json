@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In CredentialHelper.createRecoveryCodesCredential (patch lines 60-65), local createCredential is only called when updateCredential returns false. That call is the only place old stored recovery codes get deleted (RecoveryAuthnCodesCredentialProvider.java:39-40). UserCredentialManager.isValid (model/storage/.../UserCredentialManager.java:66-79) falls back to the local RecoveryAuthnCodesCredentialProvider.isValid (:101), so leftover local codes still pass authentication.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2505206
+}

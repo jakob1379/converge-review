@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The nested `_handle_regex_match` in `parametrize_w_experiments` is still defined at src/sentry/grouping/parameterization.py:335-343, but the patch removed its only use (the `else: content = experiment.run(content, _handle_regex_match)` branch); the loop at lines 345-349 now only passes `_incr_counter`. The reference at line 320 is to a separate nested function of the same name inside `parametrize_w_regex`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2437161
+}

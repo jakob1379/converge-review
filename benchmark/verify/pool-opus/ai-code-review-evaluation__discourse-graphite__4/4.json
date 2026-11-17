@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/embed.js:17 checks the origin with `discourseUrl.indexOf(e.origin) === -1`, so any origin that appears as a substring of discourseUrl passes. For example, `https://forum.example.co` passes when discourseUrl is `https://forum.example.com/`. The handler (lines 19-22) only sets the iframe height, so a spoofed message can only resize the embed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.054782199999999996
+}

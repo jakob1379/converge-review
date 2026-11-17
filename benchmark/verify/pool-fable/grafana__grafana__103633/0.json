@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/authz/rbac/cache.go:31 builds the denial key as namespace + \".perm_\" + userUID + \"_\" + action + \"_\" + name + \"_\" + parent with no escaping, and service.go:116-120 passes the raw request Name and Folder (service.go:226-227) and denies on any hit; Grafana UIDs allow '_' (pkg/util/shortid_generator.go:33), so (name=\"a_b\", parent=\"c\") and (name=\"a\", parent=\"b_c\") share one key and a cached denial for one denies the other until the short TTL expires.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21093800000000001
+}

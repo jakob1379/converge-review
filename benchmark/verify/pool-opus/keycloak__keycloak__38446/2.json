@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "CredentialHelper.java:54-60 (createRecoveryCodesCredential) passes the plaintext codes as a JSON list to updateCredential, and RecoveryAuthnCodesUtils.getCredential (lines 101-106) returns the federated credential to RecoveryAuthnCodeInputLoginBean and RecoveryAuthnCodesFormAuthenticator, which read it with RecoveryAuthnCodesCredentialModel.createFromCredentialModel. That method expects Keycloak's hashed credentialData/secretData format (RecoveryAuthnCodesCredentialModel.java:87-95), which is why the test provider has to rebuild it with createFromValues. No javadoc, no change to docs/documentation/server_development, and no other docs in the patch describe this split contract.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.20898689999999998
+}

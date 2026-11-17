@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Searching the whole repo finds `_create_process_for_shard` only at its definition (src/sentry/spans/consumers/process/flusher.py:127). Nothing calls it: `_create_processes` and `_ensure_processes_alive` both call `_create_process_for_shards` directly. The method only loops over the shard map and hands off to `_create_process_for_shards`, so it is dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0948736
+}

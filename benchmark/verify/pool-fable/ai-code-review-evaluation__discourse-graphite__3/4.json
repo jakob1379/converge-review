@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/blocked_email.rb:12-16 loads the record, does `record.match_count += 1` in Ruby and calls `record.save` with no lock, optimistic locking column or SQL-side increment, so two concurrent `should_block?` calls for the same email can both write the same value and lose an increment.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.087046
+}

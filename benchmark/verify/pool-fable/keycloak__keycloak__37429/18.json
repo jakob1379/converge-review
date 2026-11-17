@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`normalizeValue` at misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:124-126 replaces the whole `\\{[0-9]+,choice,[^}]*}` block with \"...\" for `linkExpirationFormatter.timePeriodUnit*` and `error-invalid-multivalued-size`, and it is applied to the translated value at line 84 before `policy.sanitize(value)` at line 92. Any markup without a `}` inside a choice branch (e.g. `1#<img src=x onerror=...>`) is therefore removed before the comparison and never reported.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5390713
+}

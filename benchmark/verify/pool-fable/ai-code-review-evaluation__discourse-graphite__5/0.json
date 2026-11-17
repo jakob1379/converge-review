@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/common/foundation/mixins.scss:121 emits `-ms-align-items: $alignment;` right after `-ms-flex-align` on line 120. No IE/Edge version implements `-ms-align-items` (IE10 uses `-ms-flex-align`, IE11 and Edge the unprefixed `align-items`), so the line is ignored by every browser; this rests on known browser behaviour, not a test run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09406439999999999
+}

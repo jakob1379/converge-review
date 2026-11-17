@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The constructor calls `this.getClient(credential)` at packages/app-store/salesforce/lib/CalendarService.ts:57, and `getClient` unconditionally POSTs a `grant_type: refresh_token` request to Salesforce at lines 75-84 with no expiry check, then writes the credential to the database at lines 96-99.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4756793
+}

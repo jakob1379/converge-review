@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In VerifyMessageProperties.java (patch lines 159-179), normalizeValue removes `CLAIM.<[A-Z]*>` for templateHelp, `<Extensions>` for optimizeLookupHelp, and `{n,choice,...}` blocks for linkExpirationFormatter.timePeriodUnit* and error-invalid-multivalued-size. For files under email it also removes ` style=\"direction: rtl;\"`. All of this happens before the value is checked against the OWASP policy, so those parts are never sanitized.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0903545
+}

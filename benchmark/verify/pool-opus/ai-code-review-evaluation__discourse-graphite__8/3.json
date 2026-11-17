@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The claim holds, though it causes no bug. Several functions can return undefined: the new `findMembers` early exit is now a bare `return ;` where it used to return `Ember.RSVP.resolve([])` (app/assets/javascripts/discourse/models/group.js:21). The new `addMembers` action ends without a return statement (admin-group.js.es6:87-91), and `userCountDisplay` returns nothing when the count is 0 or less (group.js:14-18). No caller uses the result of `findMembers` (both routes and group.js:47,58 call it and ignore it), so nothing breaks today.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.15993999999999997
+}

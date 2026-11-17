@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes the \"Caching\" describe block (change.patch:174-236) and adds nothing in its place, while the memoisation is still in the code at insightsBooking.ts:49-50 and 84-94. The test file now only checks single calls to getAuthorizationConditions/getFilterConditions (insightsBooking.integration-test.ts:209-428), so nothing covers the caching any more.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0606006
+}

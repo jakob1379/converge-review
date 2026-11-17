@@ -1,0 +1,27 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "pkg/server/wire.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "pkg/server/wire.go (lines 374-375) still registers anonstore.ProvideAnonDBStore and binds AnonStore. ProvideAnonDBStore now requires an int64 parameter that no Wire provider supplies, and ProvideAnonymousDeviceService builds its own store instead of receiving AnonStore, so wire generation fails or the binding is dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "tagDeviceUI writes the device ID to localCache before calling CreateOrUpdateDevice and does not evict it on ErrDeviceLimitReached. Later requests from a rejected device hit the cache, TagDevice returns nil, and the device bypasses the limit until the cache entry expires.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

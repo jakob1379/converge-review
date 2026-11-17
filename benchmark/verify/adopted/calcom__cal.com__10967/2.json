@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "When neither the event type nor the organizer has a destination calendar, handleNewBooking.ts:1063-1067 sets evt.destinationCalendar to null, so the optional-chained push of teamDestinationCalendars at handleNewBooking.ts:1078 does nothing. createAllCalendarEvents then falls to the else branch at EventManager.ts:384-396, which writes only to the organizer's first connected calendar, so the other hosts' calendars are silently dropped.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23614259999999998
+}

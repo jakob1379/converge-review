@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At paginator.py:182-184 the patch clamps only the slice start (`start_offset = max(0, offset)`), but build_cursor (paginator.py:198) is still given the original cursor. In cursors.py:116/141 the next offset is computed as `cursor.offset + limit`, a negative base when rows are actually read from 0, and cursors.py:187 marks has_prev true because the offset is non-zero, so the next/prev cursors don't match the rows returned.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1755604
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/webhook/app-credential.ts:17-93 (a new file in this patch), the default-export handler never checks req.method and isn't wrapped in a method-restricting helper. Any HTTP method that passes the feature-flag and secret checks (lines 19-29) goes on to create or update credentials (lines 72-91), and nothing returns 405.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0601306
+}

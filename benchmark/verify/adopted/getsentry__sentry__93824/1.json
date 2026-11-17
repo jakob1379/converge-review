@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At flusher.py:346, `isinstance(process, multiprocessing.Process)` is False for the `SpawnProcess` objects created by `self.mp_context.Process` (flusher.py:105). In CPython, `multiprocessing.Process` is `context.Process`, and `SpawnProcess` inherits only from `process.BaseProcess`, so `terminate()` at :347 is never called. The same check existed before the patch (pre-patch `isinstance(self.process, multiprocessing.Process)`), and the patch moved it into the per-process loop. In practice a flusher usually exits on its own once the `stopped` flag is set, and it is a daemon process, so only one that is still running at the deadline is left alive.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1536123
+}

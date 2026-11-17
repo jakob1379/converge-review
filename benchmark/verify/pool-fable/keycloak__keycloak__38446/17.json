@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:125-130` the user-storage branch only logs, so the delete-existing step in `RecoveryAuthnCodesCredentialProvider.createCredential` (`services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:39-40`) never runs. `UserCredentialManager.isValid` (`model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:66-77`) falls through to the local provider when the storage validator rejects the input, so a leftover local credential's codes still authenticate.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6004392000000001
+}

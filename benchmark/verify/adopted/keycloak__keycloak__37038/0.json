@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.java:70 makes canManage() return hasPermission(null, VIEW, MANAGE), so an all-groups VIEW-only permission passes requireManage() (GroupPermissions.java:279-283). GroupsResource.addTopLevelGroup is guarded only by that check (GroupsResource.java:181) and with rep.id set calls realm.moveGroup(child, null) (line 198). MgmtPermissionsV2.java:60 wires in GroupPermissionsV2, and the new Javadoc on canManage() (GroupPermissionEvaluator.java ~78-81) repeats the 'VIEW or MANAGE' wording, unlike canManage(GroupModel), which requires MANAGE only (GroupPermissionsV2.java:79).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2244291
+}

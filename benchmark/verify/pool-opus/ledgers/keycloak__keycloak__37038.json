@@ -1,0 +1,563 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requireManageMembers() Javadoc references canManage() when it should reference canManageMembership(GroupModel).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In change.patch lines 404-407, the requireManageMembers(GroupModel) Javadoc in GroupPermissionEvaluator already says \"Throws ForbiddenException if {@link #canManageMembership(GroupModel)} returns false\". It does not mention canManage(). If anything is wrong, it is that it should probably point to canManageMembers(GroupModel), which is a different issue from the one claimed.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0427502
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requireManageMembers Javadoc says it throws when canManageMembership(GroupModel) is false, but the implementation checks canManageMembers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The Javadoc the patch adds at GroupPermissionEvaluator.java:132-135 says requireManageMembers throws when canManageMembership(GroupModel) is false, but the only implementation, at GroupPermissions.java:376-379, checks !canManageMembers(group). The Javadoc looks like a copy-paste of the requireManageMembership comment just above it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0620255
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RealmAdminPermissionsConfig adds AdminRoles.QUERY_GROUPS to the shared test fixture. This can hide regressions in the Groups resource-type permission path for tests that should not satisfy the group list gate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The shared fixture (RealmAdminPermissionsConfig.java:34-36, used by AbstractPermissionTest.java:48) now gives myadmin QUERY_GROUPS alongside the existing QUERY_USERS, and that is how the tests were designed: GroupResourceTypeEvaluationTest.testViewGroups (patch lines 1336-1366) needs myadmin past the requireList() gate (GroupsResource.java:97) so it can check that results are filtered per group. No test here is meant to fail the list gate, and the per-group VIEW/MANAGE checks (GroupPermissionsV2 canView/canManage) are still tested, so no regression is hidden.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.328648
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.getGroupIdsWithViewPermission() passes groupResource.getId() to hasPermission() and adds it to the result. That is the authorization resource ID, not the group ID (groupResource.getName()). hasPermission() resolves by name, so the per-group lookup fails, and the returned IDs do not match group IDs used in user filtering and counts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At GroupPermissionsV2.java:122-123, `groupResource.getId()` is passed to `hasPermission()` and added to `granted`. But `hasPermission()` looks the resource up with `resourceStore.findByName(server, groupId)` (line 141), and group resources are named after the group ID (AdminPermissionsSchema.java:109,118-121, where `resolveGroup` returns `group.getId()`). So the lookup by resource ID misses and falls back to the all-groups resource, and the returned set holds generated resource IDs instead of group IDs.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1306417
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Per-group resources are created without a type, because getOrCreateResource() never calls setType. As a result, findByType(server, 'Groups', ...) returns only the all-groups type resource and not the per-group resources.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "getOrCreateResource creates per-group resources with resourceStore.create(resourceServer, name, owner) and only calls updateScopes, never setType (AdminPermissionsSchema.java:120-127); JPAResourceStore.create:62-77 sets no type either. Only init() sets a type, and only on the all-groups 'Groups' resource (AdminPermissionsSchema.java:274), so GroupPermissionsV2.getGroupIdsWithViewPermission's findByType(server, GROUPS_RESOURCE_TYPE, ...) (patch line 648) returns only that resource and skips per-group VIEW_MEMBERS/MANAGE_MEMBERS grants.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.38811979999999996
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "With only per-group VIEW_MEMBERS permission in V2, getGroupIdsWithViewPermission() returns an empty set. users().count()/getUsersCount then returns 0 while /users returns members through the post-filter. Pagination is applied before the canView post-filter, which produces short pages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupPermissionsV2.getGroupIdsWithViewPermission (patch lines 633-655) only scans resources typed 'Groups'. Per-group resources get no type (AdminPermissionsSchema.java:121), and it calls hasPermission(resource.getId()), whose findByName needs a group id. So with only per-group VIEW_MEMBERS it falls back to the all-groups resource and returns an empty set. getUsersCount(realm, emptySet) then returns 0 (JpaUserProvider.java:600-601), while /users fetches an unfiltered page first (UsersResource.java:453) and only then applies the canView post-filter (UsersResource.java:460), which grants members through canViewMembers, so pages come back short.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.42454109999999995
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The getGroupIdsWithViewPermission Javadoc says '@return Stream of IDs', but the method returns Set<String>.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The Javadoc this patch adds at GroupPermissionEvaluator.java:145 says '@return Stream of IDs of groups with view permission.', but the method at line 147 is declared as returning Set<String>. The comment on line 143 of the same Javadoc already says it 'returns empty set'.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0737254
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The getGroupIdsWithViewPermission Javadoc does not mention that V2 returns the type-resource ID instead of actual group IDs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's Javadoc at GroupPermissionEvaluator.java:~142-147 says the method returns \"IDs of groups with view permission\" and does not mention any V2 exception. But GroupPermissionsV2.java:121-123 returns `groupResource.getId()` for resources found by `findByType(GROUPS_RESOURCE_TYPE)`, and only the \"Groups\" type resource has a type set (AdminPermissionsSchema.java:271-275). So V2 returns that resource's internal ID, not group IDs.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.128242
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.canManage() (no-arg) falls back to hasPermission(null, VIEW, MANAGE). An admin with only all-groups VIEW permission therefore passes requireManage(). This lets them create top-level groups and move groups to top level in GroupsResource.addTopLevelGroup, which is guarded only by requireManage().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupPermissionsV2.canManage() (GroupPermissionsV2.java:65-71, added by the patch) returns hasPermission(null, VIEW, MANAGE), so an all-groups VIEW grant is enough to pass it. GroupPermissions.requireManage() (GroupPermissions.java:279-283) relies only on canManage(), and GroupsResource.addTopLevelGroup (GroupsResource.java:181-202) checks nothing else before createGroup or moveGroup(child, null).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1213904
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The canManage() Javadoc states that V2 VIEW permission is enough to manage groups.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new Javadoc for GroupPermissionEvaluator.canManage() (change.patch:340-346) says that in V2 a permission to VIEW or MANAGE groups is enough. GroupPermissionsV2.canManage() does the same with hasPermission(null, VIEW, MANAGE) (change.patch:592-598), and GroupsResource.java:181 uses requireManage() to gate group creation, so an admin with only VIEW can create top-level groups.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1349647
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The canViewGlobal short-circuit was removed from group listing in GroupsResource and GroupResource getSubGroups, so every listing goes through canView(g), which lacks the realm-wide canView() check. Admins with global Groups VIEW/MANAGE but no per-group grants get empty listings.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "V1 GroupPermissions.canView(group) (GroupPermissions.java:254-257) calls canView()/canManage() first. V2 GroupPermissionsV2.canView(group) calls hasPermission(group.getId(), VIEW, MANAGE), and when the group has no resource of its own, hasPermission falls back to the 'Groups' resource-type resource and evaluates the all-groups permissions (GroupPermissionsV2.java hasPermission, patch lines ~668-679), so admins with only global Groups VIEW/MANAGE still see the groups and listings are not empty.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.229802
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The V1 feature check was moved from event time to listener registration time. Runs that enable V1 at runtime with skipRestart=true never register the role/client/group-removed cleanup listener.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AdminPermissions.java:74 now checks Profile.isFeatureEnabled(ADMIN_FINE_GRAINED_AUTHZ) once, before manager.register(...). It is called only at session-factory init (DefaultKeycloakSessionFactory.java:122, QuarkusKeycloakSessionFactory.java:88), so tests that turn V1 on at runtime with skipRestart=true (e.g. UsersTest.java:228, StandardTokenExchangeV1Test.java:31) never get the role/client/group-removed cleanup listener.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2812131
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The AdminPermissions cleanup listener for role/client/group removal is registered only when ADMIN_FINE_GRAINED_AUTHZ (V1) is enabled. In V2-only deployments, removed roles, clients and groups leave orphaned authorization resources and permissions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AdminPermissions.java:73-98 registers the remove listener only when ADMIN_FINE_GRAINED_AUTHZ (V1) is enabled, and nothing else cleans up V2 data. No V2 handler exists for GroupRemovedEvent, and ClientApplicationSynchronizer.java:49-75 only deletes the removed client's own resource server. So in V2-only deployments, Groups/Clients resources and permissions in the admin-permissions client are left behind; roles have no V2 resource type, so that part does not apply. The patch only moved the V1 check from inside onEvent to around manager.register, which behaves the same, so the gap existed before; the patch does add V2 group resources that can now be orphaned.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.31676279999999996
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "response.getLocation() can be null even with a 201 status, which causes an NPE when parsing the path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Every endpoint the patch's tests pass to `handleCreatedResponse` sets a Location header whenever it returns 201: `GroupsResource.java:206` and `GroupResource.java:226` call `builder.status(201).location(uri)`, and `UsersResource.java:160` uses `Response.created(uri)`. The assertion at `ApiUtil.java` also runs before `getLocation()`, so a null Location with a 201 cannot happen in this code.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0730213
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "UserPermissionsV2 dropped the AdminRoles.ADMIN fast-path. Users with only the umbrella admin role fail the canView/canManage/canMapRoles/canManageGroupMembership checks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "MgmtPermissions.hasOneAdminRole (MgmtPermissions.java:163-173) only checks roles on the realm's admin client, and 'admin' is a master-realm role, not a client role, so the removed ADMIN argument never matched. Users with the umbrella 'admin' role still pass the MANAGE_USERS/VIEW_USERS checks because that role includes every per-realm admin-client role (RealmManager.java:362-366).",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.32174660000000005
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The switch(resourceType) throws NullPointerException for a null resource type, where the previous if-chain threw IllegalStateException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AdminPermissionsSchema.java:107 now runs `switch (resourceType)` on a String, and Java throws a NullPointerException when that value is null. The old if-chain called `USERS.getType().equals(resourceType)`, which handles null safely, so name stayed null and line 115 threw IllegalStateException. Callers pass user-supplied `representation.getResourceType()` and `policy.getResourceType()` (AuthorizationProvider.java:304, RepresentationToModel.java:1423), and these can be null.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0776718
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new Groups resource type and its scopes (manage-membership, manage-members, view-members) have no documentation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the GROUPS resource type with manage-membership/manage-members/view-members (AdminPermissionsSchema.java, patch lines 63-75) but no Javadoc or doc file. In docs/ the only matches are the V1 group scopes (fine-grain.adoc:293-297); nothing covers the V2 resource types, so the existing Users and Clients types are undocumented too.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0998485
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getResourceName is not extended for GROUPS. Group permission resources show a null display name, and the type resource has no 'All groups' label.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AdminPermissionsSchema.java:328-350 only special-cases USERS ('All users' or the username) and otherwise returns resource.getDisplayName(). Group resources are created by name only (line 121), and the 'Groups' type resource is built with ResourceRepresentation(name, scopes), which never sets displayName (lines 270-276), so PolicyResourceService.java:218 returns a null display name for groups and there is no 'All groups' label.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.19369719999999999
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new test file has a copyright year of 2024.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a new file, tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java (patch line 1082 marks it as new), and its header reads \"Copyright 2024 Red Hat, Inc. and/or its affiliates\" (patch line 1088). The other new file in the same patch, GroupPermissionsV2.java, uses 2025 (patch line 529).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.033758899999999994
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In GroupPermissionsV2.hasPermission, getResourceTypeResource can return null, and the result is passed directly to policyStore.findByResource(server, null). This causes an NPE (HTTP 500) on group checks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "GroupPermissionsV2.java:144-147 does pass the result of getResourceTypeResource straight to findByResource, but that call only returns null if the server is not the admin-permissions client or the feature is off (AdminPermissionsSchema.java:134-150). In GroupPermissionsV2 the server is the admin-permissions client, and AdminPermissionsSchema.init (lines 270-278) always creates the 'Groups' resource, so normal group checks never pass null. UserPermissionsV2:109-111 and ClientPermissionsV2:217-219 use the same pattern.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.260388
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is a stray ';;' at line 68 of the new test file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Line 68 of the new test file tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java reads `private final GroupRepresentation topGroup = new GroupRepresentation();;`, which ends in a stray double semicolon. The patch adds this file.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.036904400000000004
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No migration adds the Groups type resource and the new scopes to realms whose admin-permissions client already exists, because init() returns early in that case.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`AdminPermissionsSchema.init()` returns as soon as `realm.getAdminPermissionsClient()` is not null (server-spi-private/.../AdminPermissionsSchema.java:248-252), so only newly created admin-permissions clients get the `Groups` resource and the `manage-membership`/`manage-members`/`view-members` scopes (lines 263-278). `init()` is only called from the `ADMIN_PERMISSIONS_ENABLED` listener (model/jpa/.../JpaClientProviderFactory.java:70-73), and the patch adds no migration. On existing realms, `GroupPermissionsV2.hasPermission` gets a null `Groups` resource and `getOrCreateResource` fails with 'No scopes found.'.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3154853
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "hasPermission evaluates either the per-group resource or the all-groups type resource, never both. Once a per-group permission exists for a group, all-groups grants no longer apply to it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In GroupPermissionsV2.hasPermission (patch lines 668-679), the all-groups type resource is used only when no per-group resource is found by name, so evaluation runs against just one of the two. The per-group resource is created without a type (AdminPermissionsSchema.java:118-128), so DefaultPolicyEvaluator.java:73-80 never pulls in the all-groups policies, which means all-groups grants no longer apply to that group.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.14663669999999998
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.hasPermission lacks the resourceId filter that UserPermissionsV2.hasPermission uses to prevent permission leakage across resources.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "GroupPermissionsV2.hasPermission (GroupPermissionsV2.java:156-162) does lack the `permission.getResourceId().equals(resource.getId())` check that UserPermissionsV2.java:123 has, but no leakage results from it: it evaluates one non-null ResourcePermission, and DecisionPermissionCollector.grantPermission (DecisionPermissionCollector.java:187-194) builds every returned Permission from that same resource, so the filter is redundant.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2591489
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.hasPermission is a third near-copy of the V2 evaluator in UserPermissionsV2 and ClientPermissionsV2, and the copies have already diverged.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new private GroupPermissionsV2.hasPermission (patch lines 657-692) follows the same steps as UserPermissionsV2.hasPermission (UserPermissionsV2.java:94-133) and ClientPermissionsV2.hasPermission (ClientPermissionsV2.java:207-235): realm check, resource lookup, fallback to the all-resources resource, then evaluation and a scope match. The copies already differ. Only the Users copy checks `permission.getResourceId().equals(resource.getId())` (UserPermissionsV2.java:123) and accepts an EvaluationContext. Only the Clients copy calls `findByName` with `server.getId()` and gets the policy store through `authz.getStoreFactory()` (ClientPermissionsV2.java:214,219).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2637616
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test wraps the call in try(Response) and assertEquals(CREATED) before ApiUtil.handleCreatedResponse. This is redundant, since handleCreatedResponse already asserts 201 and closes the response.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ApiUtil.handleCreatedResponse (test-framework/core/.../util/ApiUtil.java:8-14) already asserts the status is 201 and closes the response with try(response). The new GroupResourceTypeEvaluationTest.java still wraps add() in try(Response), checks CREATED with assertThat and then calls handleCreatedResponse, in onBefore and in two of the tests (patch lines 1159-1161, 1281-1283, 1347-1349), so that wrapping and check are redundant.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0588703
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When a group has no per-group resource, evaluating the all-groups type resource pulls in every per-group permission. A VIEW permission on one group therefore grants VIEW on every group that lacks its own resource.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "When a group has no resource of its own, GroupPermissionsV2.java:668-679 evaluates the 'Groups' type resource, whose type is 'Groups' (AdminPermissionsSchema.java:274). DefaultPolicyEvaluator.java:74 then calls findByResourceType, which loads every permission with defaultResourceType=Groups, including per-group ones (RepresentationToModel.java:1234, PolicyEntity.java:64). DecisionPermissionCollector.java:81-91 grants their scopes without checking which resource they belong to, so a VIEW on one group gives VIEW on every group without a resource (and on canView()). This only happens when at least one all-groups permission exists, because of the guard at GroupPermissionsV2.java:674.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.7721471000000001
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The @BeforeEach comment contains the typo 'initializaed'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The comment at tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java:70 reads \"@BeforeEach // cannot use @BeforeAll, realm is not initializaed yet\". 'initializaed' is a misspelling of 'initialized', and this patch adds that line.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0305953
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The canView() Javadoc says 'Or if it has a permission to VIEW or MANAGE groups' without the 'For V2 only' qualifier, but V1 canView() checks roles only.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The canView() Javadoc at GroupPermissionEvaluator.java:85-91 says 'Or if it has a permission to VIEW or MANAGE groups' and does not say 'For V2 only', unlike canList() and canManage(). But V1 GroupPermissions.java:286-287 returns only root.hasOneAdminRole(MANAGE_USERS, VIEW_USERS), and only GroupPermissionsV2.java:47-51 also checks permissions.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1107243
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There are no tests for all-groups VIEW_MEMBERS/MANAGE_MEMBERS, users().count(), VIEW-only write attempts, or mixed all-groups and per-group permissions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In GroupResourceTypeEvaluationTest.java (patch lines 1176-1393), createAllGroupsPermission is only called with MANAGE (testManageAllGroups) or VIEW (testViewGroups). No test calls users().count() or tries a write with only VIEW, and grep finds no other test that uses GROUPS_RESOURCE_TYPE. One part is overstated: testViewGroups does combine a per-group VIEW with an all-groups VIEW (patch ~1354-1366), but only for VIEW and not for member scopes.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.33060979999999995
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "canMapRole() checks root.hasOneAdminRole(AdminRoles.MANAGE_USERS) and then calls checkAdminRoles(role) instead of returning true, which removes the users-manage shortcut.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "RolePermissions.java:302 does call checkAdminRoles(role), but the old line (`if (root.users().canManageDefault()) return checkAdminRoles(role);`, patch line 773) already did that, so the patch only changes the condition and keeps the manage-users shortcut. The checkAdminRoles call is a deliberate guard against granting admin roles the caller does not hold (lines 290-291), not a lost shortcut.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0906197
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

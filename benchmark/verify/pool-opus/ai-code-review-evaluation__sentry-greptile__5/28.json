@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py, get() calls query_replay_instance() and process_raw_response() to collect error_ids (patch lines 680-694) before it reads enable_error_context (lines 697-699), so the Snuba query runs even when the flag is false and its result is then thrown away.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23827759999999998
+}

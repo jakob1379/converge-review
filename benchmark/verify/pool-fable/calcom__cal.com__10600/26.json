@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `mockUser: User` literal at packages/trpc/server/routers/viewer/teams/inviteMember/inviteMemberUtils.test.ts:65-101 has no `backupCodes`, which the patch adds to the User model at packages/prisma/schema.prisma:205. packages/trpc/package.json:9-12 has no type-check script and apps/web/tsconfig.json:19-28 only includes its own files, so nothing type-checks this unimported test file (it already omits the pre-existing `allowSEOIndexing` too).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3796002
+}

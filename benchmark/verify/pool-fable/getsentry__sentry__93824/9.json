@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/spans/consumers/process/flusher.py:51 defaults max_processes to len(buffer.assigned_shards) and :60 clamps it again with min(..., len(buffer.assigned_shards)); self.max_processes is read only at :60 and in tests/sentry/spans/consumers/process/test_consumer.py:116; _create_processes (:81-84) is a two-line loop called only from __init__ at :79.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2643044
+}

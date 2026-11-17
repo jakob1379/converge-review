@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds configureBrowserFlowWithRecoveryAuthnCodes(KeycloakTestingClient testingClient, long delay) at BackwardsCompatibilityUserStorageTest.java:123-143, near-identical to RecoveryAuthnCodesAuthenticatorTest.java:123-144, including the \"delayed-authenticator\" execution and \"delayed-suthenticator-config\" alias (lines 134-137). Its only caller passes the inherited testingClient field and a delay of 0 (line 243), while other methods in the class use that field directly (lines 440-457).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2140869
+}

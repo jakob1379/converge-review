@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic.rb:868-870 now returns only `SiteSetting.embed_truncate? && has_topic_embed?` (the patch removed `SiteSetting.embeddable_hosts.present?`), so the spec at spec/models/topic_spec.rb:1403-1405 passes only because embed_truncate defaults to false and has_topic_embed? is unstubbed on an unsaved topic. The `Fabricate(:embeddable_host)` at spec/models/topic_spec.rb:1409 likewise has no effect on the result, so no spec exercises host presence.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.22173400000000001
+}

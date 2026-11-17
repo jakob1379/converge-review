@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At services/src/main/java/org/keycloak/protocol/oidc/encode/AccessTokenContext.java:73, the check with the message \"Null rawTokenId not allowed\" tests `grantType` again, so a null rawTokenId gets through and is stored at line 77. DefaultTokenContextEncoderProvider.java:117 then appends it after ':', which gives '<prefix>:null'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0891982
+}

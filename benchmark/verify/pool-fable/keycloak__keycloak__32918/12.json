@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "InfinispanIdentityProviderStorageProvider.java:246 does call session.identityProviders().getById(id) inside getForLogin(), and that resolves to the default (caching) provider, so the lookup goes back through the cached getById() at :123-142. This looks intentional rather than a defect: only IDs are cached in the list query, getById() never calls getForLogin() so there is no recursion, and the pre-existing getByOrganization() does the same at :202.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3825288
+}

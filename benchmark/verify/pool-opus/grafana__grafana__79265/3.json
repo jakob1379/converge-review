@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The claim names the wrong file: in grafana-data/src/types/config.ts:200 the interface field is correctly typed `number | undefined`. The real problem is in GrafanaBootConfig at packages/grafana-runtime/src/config.ts:97, where `anonymousDeviceLimit = undefined;` has no type annotation; with `strict: true` (tsconfig.json:8), TypeScript types it as just `undefined`, so `config.anonymousDeviceLimit` cannot be used as a number even though the backend sends an int64 (pkg/api/dtos/frontend_settings.go:195).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15705180000000002
+}

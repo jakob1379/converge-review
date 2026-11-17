@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch drops the computed `websiteName` (`controllers/user.js.es6`), so `user.hbs:66-71` now shows `model.website_name`, which only the serializer fills in. Preferences edit that same user model (`routes/preferences.js.es6:6`), but `User.save` (`models/user.js.es6:209-213`) copies back only `bio_excerpt` and never refreshes `website_name`. Going back to the profile stays inside the parent `user` route, so `findDetails` (`routes/user.js.es6:50-58`) does not run again and the old name stays on screen until a reload.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1070664
+}

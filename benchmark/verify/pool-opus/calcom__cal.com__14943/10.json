@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "scheduleWhatsappReminders.ts:90-98 calls twilio.scheduleSMS(..., true), and when that fails it only updates on success (100-110) or logs (112-114). retryCount never appears in that file (it does not select, increment or delete by it), so failing WhatsApp reminders are retried on every cron run until their scheduledDate passes. scheduleSMSReminders.ts got that handling at patch lines 47-66.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0670286
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`OAuthLoginView` sends and checks `pipeline.signature` as the OAuth state (src/sentry/integrations/github/integration.py:402, :412), and that value is only an MD5 of the pipeline view class names (src/sentry/pipeline/base.py:132-133), so it is the same constant for every user and session. A forged callback carrying the attacker's `code` and `installation_id` therefore passes the state check and binds both into the victim's pipeline (integration.py:397-399, :438).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2818364
+}

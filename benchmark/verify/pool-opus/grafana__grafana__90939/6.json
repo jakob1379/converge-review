@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a package-level `entryPointAssetsCacheMu sync.RWMutex` next to the existing global `entryPointAssetsCache` (pkg/api/webassets/webassets.go:35-38 in the patch), which adds to global state. contribute/backend/style-guide.md:187 and recommended-practices.md:46-52 say to avoid global state, though the mutex only guards a global that already existed and the patch adds a TODO to remove it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0395751
+}

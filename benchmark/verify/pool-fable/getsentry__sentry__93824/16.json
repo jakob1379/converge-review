@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "CLAUDE.md:448-458 adds generic hasattr-vs-isinstance guidance for union types to the repo-wide agent doc, which has no functional connection to the per-shard flusher change in src/sentry/spans/consumers/process/flusher.py. The only link is thematic: the flusher narrows a `SpawnProcess | threading.Thread` union with isinstance at flusher.py:254 and :346.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.14187470000000002
+}

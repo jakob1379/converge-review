@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "DefaultTokenContextEncoderProviderFactory.init loops over every SessionType and TokenType value, so the UNKNOWN entries with shortcut \"un\" (AccessTokenContext lines 174 and 190 of the patch) end up in the lookup maps, and \"na\" is added to the grant map in postInit. As a result, getTokenContextFromTokenId accepts \"ununna:x\", while encodeTokenId throws for an UNKNOWN session or token type (DefaultTokenContextEncoderProvider.encodeTokenId, patch lines 337-342).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2410221
+}

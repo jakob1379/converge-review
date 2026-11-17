@@ -1,0 +1,137 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TestLogger.FromContext returns a new instance via NewTestLogger() instead of the receiver f. Logs written through FromContext(ctx), such as those from LoggerMiddleware, go to a throwaway logger, so tests asserting on the original TestLogger see no calls.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no test for LoggerMiddleware's log output; clientmiddleware/ has no logger_middleware_test.go.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "contextual_logger_middleware.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new ContextualLoggerMiddleware has no tests. The egress-log fields it now provides, along with grafanaInfraLogWrapper.FromContext, are not pinned by any test.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "metrics_middleware.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'should live at the top of the middleware stack' comment was removed from metrics_middleware.go and nothing replaces it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ContextualLoggerMiddleware's QueryData, CallResource, CheckHealth and CollectMetrics dereference req.PluginContext with no nil check on req, so a nil request panics. Other middlewares, including LoggerMiddleware, guard against nil requests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "LoggerMiddleware no longer adds pluginId, endpoint, uname, dsName, dsUID and traceID to its 'Plugin Request Completed' log line. It relies on ContextualLoggerMiddleware being earlier in the CreateMiddlewares chain, so reordering or omitting it drops those fields with no error, and this is neither documented nor tested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "LoggerMiddleware depends on a traceID log provider being registered globally, and this is neither documented nor tested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The rename from Instrumentation to Metrics is incomplete: the test function is still named TestInstrumentationMiddleware, and the local variable in NewMetricsMiddleware is still named 'imw'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The exported type ContextualLoggerMiddleware and its exported methods have no doc comments.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "traceID is no longer added to plugin request logs. The tracing extraction was removed from LoggerMiddleware, and ContextualLoggerMiddleware does not add traceID from tracing.TraceIDFromContext to its contextual attributes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The helper function in ContextualLoggerMiddleware is still named instrumentContext, the old instrumentation-middleware name.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The doc comment on Logger.FromContext is copied from New and does not describe that attributes come from context.Context via registered log providers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

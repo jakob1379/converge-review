@@ -1,0 +1,104 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In getAuthorizationConditions for org scope, userIdsFromOrg is fetched only when teamsFromOrg.length > 0. For orgs with no child teams, org-level members' personal bookings are excluded, even though teamIds already includes orgId.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The integration tests for team and org scope conditions only compare the generated Prisma.Sql structure with toEqual and never run the queries against Postgres. The ANY(...) array-parameter binding paths are therefore untested at runtime.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The hand-written InsightsBookingServicePublicOptions type flattens the zod discriminated union and makes teamId optional for all scopes. A team-scope call without teamId compiles, fails safeParse at runtime and silently returns empty results; this is also inconsistent with InsightsRoutingService's strict union type.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test fixtures userEventType and userBooking are cleaned up only after the assertions, not in try/finally. A failing query or expectation leaves those rows in the integration database.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In getBaseConditions(), the `else if (filterConditions)` and final `else return NOTHING_CONDITION` branches are unreachable. This is because getAuthorizationConditions() always returns a truthy Prisma.Sql.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The org-scope test assertion depends on the order of ids inside ANY(...) arrays. Those ids come from repository queries (findAllByParentId, MembershipRepository.findAllByTeamIds) without orderBy, so the SQL-fragment equality is nondeterministic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": "insightsBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'Caching' describe block test was deleted, but the memoisation code it covered (cachedAuthConditions / cachedFilterConditions) remains and is now untested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "buildOrgAuthorizationCondition/buildTeamAuthorizationCondition produce top-level OR expressions without outer parentheses, and getBaseConditions() returns them directly. When callers compose them with AND, operator precedence lets rows matching the first OR branch bypass additional filters.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The same AND/OR reduce fold is hand-written three times instead of using Prisma.join or a direct expression.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In lib/topic_retriever.rb:27-28, `$redis.setnx(retrieved_key, \"1\")` and `$redis.expire(retrieved_key, 60)` are two separate calls that are not atomic. If the process or Redis connection fails between them, `retrieved:<url>` stays with no TTL, so `retrieved_recently?` returns true forever and `retrieve` (line 9) never fetches that URL. The only exception is callers that pass `no_throttle`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0500975
+}

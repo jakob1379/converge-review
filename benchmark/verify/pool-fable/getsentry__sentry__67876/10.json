@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/github/integration.py:408 sends redirect_uri in the authorize URL, but the token exchange body at lines 416-420 contains only code, client_id and client_secret, unlike OAuth2CallbackView.get_token_params (src/sentry/identity/oauth2.py:273-277) which includes it. GitHub's token endpoint is not known to require redirect_uri, so this is an RFC 6749 \u00a74.1.3 deviation and not a demonstrated functional failure.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2333517
+}

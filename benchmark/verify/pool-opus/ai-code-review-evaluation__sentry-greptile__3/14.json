@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch defines upsampled_count as toInt64(sum(sample_weight)) with no ifNull or default value (src/sentry/search/events/datasets/discover.py, patch lines 280-284), and its comments (patch lines 211-212, 278-279) say null handling was left out on purpose. Under SQL sum semantics a missing or NULL weight adds nothing, so those errors count as 0. If every row lacks it, the result could be NULL instead of 0, but the Snuba column schema is not in this repo to check.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.07313220000000001
+}

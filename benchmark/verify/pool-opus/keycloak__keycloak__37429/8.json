@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch hard-codes owasp-java-html-sanitizer at version 20240325.1 in misc/theme-verifier/pom.xml:76-79 (and commons-text at 1.13.0, :80-85). That repeats the value of the root property owasp.html.sanitizer.version (pom.xml:119, used in dependencyManagement at pom.xml:559-561), so the two can drift apart. One mitigating point: the module declares no <parent> (misc/theme-verifier/pom.xml:21-25) and hard-codes every other dependency too, so it cannot inherit the root property without a parent being added.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2609049
+}

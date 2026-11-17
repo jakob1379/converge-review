@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`website_name` is added as a plain attribute (app/serializers/user_serializer.rb:43) but is absent from `untrusted_attributes` (lines 105-111), and its only guard is `include_website_name` without the `?` (line 153), which the serializer never calls and which does not check `restrict_user_fields?` anyway. The method reads `object.user_profile.website` directly (lines 133-151), so an anonymous viewer of a TL0 user gets the website host (plus path when the domain matches the forum's) even though `website` itself is hidden.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2098725
+}

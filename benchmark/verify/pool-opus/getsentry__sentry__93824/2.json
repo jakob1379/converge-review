@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py:346-347, join() only calls terminate() when isinstance(process, multiprocessing.Process) is true. The processes come from get_context(\"spawn\").Process, a SpawnProcess. In CPython both SpawnProcess and multiprocessing.Process subclass BaseProcess, but neither subclasses the other, so the check is always False and terminate() never runs; the same check was already there before the patch (old self.process check, patch lines 375-376).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1358612
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/googlecalendar/lib/CalendarService.ts:1024 calls updateManyByCredentialId(this.credential.id, {}) on every fetchAvailabilityAndSetCache run, and nothing consumes SelectedCalendar.updatedAt (only selected at packages/lib/server/repository/user.ts:899; the UI reads CalendarCache.updatedAt via connectedCalendars.handler.ts:31), so the call is wasted work either way. That an empty-data updateMany skips @updatedAt in Prisma 5.4.2 (pinned in yarn.lock) is from my knowledge of the engine, not checkable in this repo, and the engine may short-circuit without emitting an actual SQL UPDATE.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6864992000000001
+}

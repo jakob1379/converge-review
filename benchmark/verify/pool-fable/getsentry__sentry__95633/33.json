@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch does use `queue.ShutDown` (src/sentry/remote_subscriptions/consumers/queue_consumer.py:132,142) and `q.shutdown(immediate=False)` (:238), which are 3.13+ APIs, but the repo only supports Python 3.13+ (setup.cfg:24 `python_requires = >=3.13`, `.python-version` 3.13.1, pyproject.toml:47), so there is no earlier supported version for it to fail on.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.47553029999999996
+}

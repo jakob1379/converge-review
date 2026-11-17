@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a loop at app/controllers/uploads_controller.rb:65-69 that calls OptimizedImage.downsize up to 5 times while the image exceeds max_image_size_kb; each call shells out to `convert` (gifsicle for animated GIFs) and then runs ImageOptim.new.optimize_image! in convert_with (app/models/optimized_image.rb:160-164). The 10 MB bound comes from the URL download cap at uploads_controller.rb:55, the client check in utilities.js and nginx client_max_body_size 10m (config/nginx.sample.conf:61).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1823681
+}

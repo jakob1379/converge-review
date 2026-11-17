@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched database.go, CreateOrUpdateDevice calls CountDevices with time.Now().UTC() minus/plus the window (patch line 123), while updateDevice uses device.UpdatedAt.UTC().Add(-anonymousDeviceExpiration) and device.UpdatedAt.UTC().Add(time.Minute) (patch line 94). The mismatch is harmless in practice because the only production caller sets UpdatedAt to time.Now() (pkg/services/anonymous/anonimpl/impl.go:141).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.10322
+}

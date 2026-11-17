@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:555-558 the migration splits the old setting on \"\\n\" only and puts each raw `h` straight into an INSERT. Nothing strips the values, and raw SQL skips the EmbeddableHost before_validation cleanup, so any trailing \\r or whitespace is stored. Such a host will then never match `lower(host) = ?` in app/models/embeddable_host.rb:347.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0809776
+}

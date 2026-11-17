@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The failing case does register only one stub, and it is in setupLegacyFn (dualwriter_mode3_test.go:403-405). But legacyStoreMock and storageMock share the same mock.Mock `m`, and both call m.Called under the method name \"Create\" (storage_mocks_test.go:33,97). So Storage.Create, which runs first (dualwriter_mode3.go:101), matches that stub and returns the error, and the unified-store failure path does run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.19665559999999999
+}

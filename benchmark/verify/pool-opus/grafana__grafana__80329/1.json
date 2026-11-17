@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the ticker to 1 minute (cleanup.go:77) but leaves `const timeout = 9 * time.Minute` (cleanup.go:89), so the per-run limit is now nine times the cadence. Runs cannot truly overlap because `clean` is called synchronously in the loop (cleanup.go:80-81). But a run longer than 1 minute leaves a buffered tick, so the next run starts right after it, and cleanup can run back-to-back nearly nonstop.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12013870000000001
+}

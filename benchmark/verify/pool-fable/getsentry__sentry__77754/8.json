@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "src/sentry/integrations/example/integration.py:161 does lack **kwargs, but no TypeError is reachable: the only production caller, src/sentry/integrations/tasks/sync_status_outbound.py:44-46, passes three positional args and never assignment_source. The patch only passes assignment_source to sync_assignee_outbound (tasks/sync_assignee_outbound.py:59-61), which ExampleIntegration accepts via **kwargs at integration.py:152-158; what remains is a latent signature mismatch with the abstract method at mixins/issues.py:411-418.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3104925
+}

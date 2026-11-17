@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "There is no explicit None check, but none is needed. At src/sentry/integrations/github/integration.py:235-239, a None value from fetch_state fails the `!=` comparison against the installer's login string, so the code returns error(), refusing the request instead of letting it through.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.092466
+}

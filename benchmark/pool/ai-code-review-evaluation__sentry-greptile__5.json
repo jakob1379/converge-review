@@ -1,0 +1,782 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/5",
+ "cost_usd": 0.12873089999999998,
+ "items": [
+  {
+   "id": "c1",
+   "source": "coderabbit",
+   "text": "useGetTraceItemAttributeValues call defaults to page filters instead of using provided projectIds prop, returning results from wrong project scope"
+  },
+  {
+   "id": "c2",
+   "source": "qodo-extended-v2",
+   "text": "In fetch_error_details, zip(error_ids, events.values()) assumes the dict returned by nodestore.backend.get_multi() preserves the same iteration order as the input node_ids list, but this is not guaranteed - the Django backend returns results in arbitrary DB order and omits missing entries, and get_multi merges cache hits via items.update(cache_items), causing error IDs to be paired with wrong event data"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "enabled: Boolean(normalizedDateRange) is always true because normalizeDateTimeParams returns an object, so it gates nothing"
+  },
+  {
+   "id": "c4",
+   "source": "coderabbit",
+   "text": "Typo in comment: 'segements' should be 'segments'"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "PR-comment format change (environment added, culprit dropped, link style changed) ships with no feature flag and thin tests: _truncate_title (>50 chars) and get_environment_info's exception branch are never exercised"
+  },
+  {
+   "id": "c6",
+   "source": "coderabbit",
+   "text": "Feature-flag path passes empty columns and empty tableData to TableWidgetVisualization, causing blank tables even when results exist"
+  },
+  {
+   "id": "c7",
+   "source": "coderabbit",
+   "text": "Missing events (where data is None) are filtered out but corresponding error_ids are still zipped, causing misalignment"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review",
+   "text": "ErrorDetectorValidator inherits the new owner field from BaseDetectorTypeValidator but its create() override never persists it, so owner is silently ignored when creating error detectors"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review-replay",
+   "text": "Both age and timestamp fields are required=False, allowing reports with neither field to be accepted despite docstrings stating one must be present"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "analytics.record('preprod_artifact.api.assemble') runs before the organizations:preprod-artifact-assemble feature check at :88, so orgs without the feature emit the event while receiving 404; no test covers the event"
+  },
+  {
+   "id": "c11",
+   "source": "cubic-v2",
+   "text": "`attempts` should allow `0`; the Reporting API sends first-delivery reports with `attempts: 0`, so this validation rejects valid browser reports"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "New styled component SummaryListContainer gets inline style={{gridArea: 'list'}} instead of using Emotion styled"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review",
+   "text": "Replaced FlexCenter had overflowEllipsis on the grid cell; plain <Flex> does not, so long attachment names may widen the 1fr column instead of truncating"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "Every paginated page's Seer request receives the full error list (functools.partial with all error_events); unemitted errors are appended at the end of each page, so errors repeat across pages in the wrong context"
+  },
+  {
+   "id": "c15",
+   "source": "cubic-v2",
+   "text": "This feature-flagged path drops the real table results and always renders an empty table for flagged organizations"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "New useTraceItemAttributeKeys hook has no colocated spec; the substringMatch/queryString path is never exercised"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Rewritten tests no longer post content_type='application/reports+json'; the custom BrowserReportsJSONParser has no positive-path coverage, only the 415 negative test"
+  },
+  {
+   "id": "c18",
+   "source": "golden",
+   "text": "Validation logic incorrectly uses .get('timestamp'), which treats a timestamp of 0 as absent. It should directly check 'timestamp' in self.initial_data to ensure proper field presence detection, preventing both 'age=0' and 'timestamp' from passing mutual-exclusion validation."
+  },
+  {
+   "id": "c19",
+   "source": "coderabbit",
+   "text": "Meta is missing the 'id' column - rows include 'id' but meta.fields/meta.units don't list it, leading to undefined metadata lookups"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "New feedbackSummary component and useFeedbackSummary hook have no colocated .spec.tsx; tooFewFeedbacks logic and hide/placeholder states are untested"
+  },
+  {
+   "id": "c21",
+   "source": "augment",
+   "text": "Override detection uses 'if (cell)' which ignores valid ReactNodes like 0, empty string, or null and falls back to default renderer unexpectedly - should check 'cell !== undefined' instead (same issue in body-cell renderer)"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "fit, frameless, scrollable props (and FRAMELESS_STYLES) have no caller; required tableData is read with optional chaining"
+  },
+  {
+   "id": "c23",
+   "source": "coderabbit",
+   "text": "events.values() order from nodestore.backend.get_multi() may not align with error_ids order, causing wrong event data to be associated with wrong IDs when zipping"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "HIDDEN_ATTRIBUTES (is_segment, project_id, received) is applied only after the early 'if (!searchQuery.trim()) return sorted;', so in the default no-search view the attributes are still shown; they are hidden only while searching"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "useProjectFromId returns undefined while the projects store loads (or project not in the user's store), so the page shows 'Project not found. Unable to load AI summary.' instead of a loading state"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "Test sets max_segment_id: None but delete_matched_rows is mocked, so the new None guard in src/sentry/replays/usecases/delete.py:89 is never exercised; the 0 case was removed from the fixture"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "After the single-yAxis refactor, several sites keep 'const dedupedYAxes = [visualize.yAxis]' and map over a one-element array; Visualize.stack is always 'all' yet typed optional and computed"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "Error node ids are built with the replay's project_id, so errors from other projects in the replay's error_ids (e.g. backend) are silently dropped"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "The Snuba replay query for error ids runs even when enable_error_context is false"
+  },
+  {
+   "id": "c30",
+   "source": "golden",
+   "text": "Hardcoded empty data passed to TableWidgetVisualization causes it to always render an empty table instead of displaying actual results when the feature flag is enabled."
+  },
+  {
+   "id": "c31",
+   "source": "augment",
+   "text": "_truncate_title slices to max_length and then appends '...', so the returned string can exceed ISSUE_TITLE_MAX_LENGTH by 3 characters"
+  },
+  {
+   "id": "c32",
+   "source": "augment",
+   "text": "When use-table-widget-visualization is enabled, TableWidgetVisualization renders with columns=[] and empty tableData, so the table will always appear blank even when result.data/meta are present"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "Serializer makes destination and attempts required, but browsers POST only age/type/url/user_agent/body (W3C Reporting 'serialize reports'); real browser payloads get 422 and one bad report rejects the whole batch"
+  },
+  {
+   "id": "c34",
+   "source": "coderabbit",
+   "text": "Broad exception catch (Exception) may hide underlying issues - should catch more specific exceptions like NodeStoreError, KeyError"
+  },
+  {
+   "id": "c35",
+   "source": "coderabbit",
+   "text": "Typo in story text: duplicated 'the' in 'Below is the the most basic example'"
+  },
+  {
+   "id": "c36",
+   "source": "coderabbit",
+   "text": "request.user.id may raise an error if the user is anonymous when recording analytics"
+  },
+  {
+   "id": "c37",
+   "source": "golden",
+   "text": "Analytics events are recorded before the feature flag check, resulting in analytics being logged for all requests, including those that return 404 due to the feature being disabled. This can lead to misleading analytics data."
+  },
+  {
+   "id": "c38",
+   "source": "coderabbit",
+   "text": "When useApiQuery is disabled or idle, data can be undefined, so data.summary will throw and break the page for orgs without the feature flag"
+  },
+  {
+   "id": "c39",
+   "source": "golden",
+   "text": "Using zip(error_ids, events.values()) assumes the get_multi result preserves the input order; dict value order is not guaranteed to match error_ids, so event data can be paired with the wrong ID (missing nodes also shift alignment)."
+  },
+  {
+   "id": "c40",
+   "source": "converge-review-replay",
+   "text": "fetch_error_details uses zip to pair error_ids with events.values(), but nodestore get_multi doesn't guarantee order preservation (dedupes IDs, returns fetched items before cached items), causing error IDs to be attached to wrong event data"
+  },
+  {
+   "id": "c41",
+   "source": "coderabbit",
+   "text": "Custom renderers that return falsy React nodes (0, '', false, null) are treated as 'no render' due to truthy check - should use explicit undefined check"
+  },
+  {
+   "id": "c42",
+   "source": "coderabbit",
+   "text": "HIDDEN_ATTRIBUTES filter is only applied when searchQuery is present - when searchQuery is empty, hidden attributes like is_segment, project_id, received will still be visible"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review",
+   "text": "get_environment_info calls issue.get_recommended_event() per issue in the PR-comment task: an extra Snuba query (plus nodestore/DB) per issue, N+1 pattern"
+  },
+  {
+   "id": "c44",
+   "source": "coderabbit",
+   "text": "Analytics event is recorded before feature flag check, meaning analytics will be recorded for all requests including those that return 404 due to feature being disabled"
+  },
+  {
+   "id": "c45",
+   "source": "cubic-v2",
+   "text": "Truthiness check on `.get(\"age\")` will miss `age=0` (a valid value meaning \"just generated\"), allowing both `timestamp` and `age` to coexist. Use `\"age\" in self.initial_data` to test for key presence instead of relying on the value being truthy"
+  },
+  {
+   "id": "c46",
+   "source": "converge-review",
+   "text": "Error/breadcrumb interleave compares nodestore error timestamps (float seconds) against rrweb event timestamps (milliseconds), so error_ts < event_ts is always true and every error is emitted before the first breadcrumb instead of in chronological order"
+  },
+  {
+   "id": "c47",
+   "source": "converge-review",
+   "text": "New 'use-table-widget-visualization' branch renders TableWidgetVisualization with columns=[] and empty data, ignoring tableResults/loading; the flag is not registered in src/sentry/features/temporary.py, so the branch and the new component have no live caller"
+  },
+  {
+   "id": "c48",
+   "source": "coderabbit",
+   "text": "Mutual-exclusion validation for age/timestamp uses truthy-based check with self.initial_data.get(...) which treats 0 as falsey - should use key presence check instead"
+  },
+  {
+   "id": "c49",
+   "source": "claude-code",
+   "text": "BrowserReportSerializer allows reports with neither age nor timestamp since both fields are required=False and field-level validators only run when their respective field is present; need object-level validate() method to ensure at least one field is provided"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review",
+   "text": "_handle_regex_match inside parametrize_w_experiments is dead after the regex experiment removal; its only caller branch was deleted"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "Issue title is interpolated into markdown link text [**{title}**]({url}) without escaping; titles containing ']' break the link"
+  },
+  {
+   "id": "c52",
+   "source": "golden",
+   "text": "The BrowserReportingCollectorEndpoint returns HttpResponse objects but the endpoint inherits from Endpoint which expects rest_framework.response.Response objects."
+  },
+  {
+   "id": "c53",
+   "source": "coderabbit",
+   "text": "_truncate_title can return a string longer than max_length because it adds '...' after slicing - should slice to max_length - 3 before appending ellipsis"
+  },
+  {
+   "id": "c54",
+   "source": "coderabbit",
+   "text": "requests.post call lacks a timeout, which could cause tests to hang indefinitely if Snuba is unresponsive"
+  },
+  {
+   "id": "c55",
+   "source": "converge-review",
+   "text": "fetch_error_details zips error_ids with events.values() from nodestore.get_multi, which dedupes ids, returns uncached items first then cached ones, and omits missing ids; error ids get paired with the wrong event's title/message/timestamp"
+  },
+  {
+   "id": "c56",
+   "source": "converge-review-replay",
+   "text": "Feature flag 'use-table-widget-visualization' is not registered in src/sentry/features/temporary.py, making the new branch dead code that would render an empty table ignoring tableResults and loading if enabled"
+  },
+  {
+   "id": "c57",
+   "source": "converge-review",
+   "text": "Pending/error/success branches build the same return object three times; one return expression suffices. Feature flag is also checked both here and in feedbackSummary.tsx"
+  },
+  {
+   "id": "c58",
+   "source": "augment",
+   "text": "zip(error_ids, events.values()) can misassociate event_id to data because get_multi() returns a dict whose value order isn't guaranteed to match error_ids/node_ids, and missing keys will silently drop IDs, leading to incorrect error context in Seer prompt"
+  },
+  {
+   "id": "c59",
+   "source": "converge-review",
+   "text": "age/timestamp mutual-exclusion validators use truthiness (initial_data.get), so age:0 with timestamp passes, and a report with neither field passes despite the docstrings; validate_timestamp/validate_age are duplicate code replaceable by one validate()"
+  },
+  {
+   "id": "c60",
+   "source": "converge-review",
+   "text": "Owner-to-owner_user_id/owner_team_id mapping duplicated between update (:66-79) and create (:120-128)"
+  },
+  {
+   "id": "c61",
+   "source": "coderabbit",
+   "text": "UseGetTraceItemAttributeValuesProps extends UseTraceItemAttributeBaseProps which provides projects?: Project[], but hook uses projectIds?: PageFilters['projects'] (number[]) - incompatible types"
+  },
+  {
+   "id": "c62",
+   "source": "coderabbit",
+   "text": "TriggerLabelWrap renders a span while Flex renders a div - nesting div inside span can break inline layout/ellipsis behavior"
+  },
+  {
+   "id": "c63",
+   "source": "converge-review-replay",
+   "text": "enabled: Boolean(normalizedDateRange) is always true because normalizeDateTimeParams returns an object (always truthy), so the gate is ineffective"
+  },
+  {
+   "id": "c64",
+   "source": "converge-review",
+   "text": "format_comment_subtitle in github and gitlab integrations lost its only caller (dead code); _truncate_title's max_length parameter is never passed"
+  },
+  {
+   "id": "c65",
+   "source": "converge-review",
+   "text": "ErrorEvent.category is always 'error' and never read; generate_error_log_message uses only title, message, timestamp"
+  },
+  {
+   "id": "c66",
+   "source": "cubic-v2",
+   "text": "The error response for invalid reports now includes a JSON body (`{\"error\": ..., \"details\": ...}`) where the old code returned an empty-body `HttpResponse(status=422)`. This is a breaking change in the API contract \u2014 the non-list branch still returns a body-less `Response(status=422)`, creating inconsistent error formats within the same endpoint"
+  },
+  {
+   "id": "c67",
+   "source": "qodo-extended-v2",
+   "text": "In BrowserReportSerializer.validate_timestamp and validate_age, the check uses Python truthiness (self.initial_data.get('age') and self.initial_data.get('timestamp')), so age=0 or timestamp=0 (valid values) are treated as absent, breaking the mutual exclusion invariant when both fields are zero - should use 'age' in self.initial_data instead"
+  },
+  {
+   "id": "c68",
+   "source": "converge-review",
+   "text": "Refactor changes behaviour and adds dead weight: staleTime:0/retry:false dropped for queryClient defaults; isLoading now reflects isFetching; thrown Error stringifies and discards responseJSON; useMemos recompute every render because projectIds is a fresh array; options built twice; search parameter has no caller"
+  },
+  {
+   "id": "c69",
+   "source": "converge-review-replay",
+   "text": "Validation checks for mutually exclusive age and timestamp use truthiness (.get()), so age: 0 (fresh report) combined with timestamp incorrectly passes validation"
+  },
+  {
+   "id": "c70",
+   "source": "claude-code",
+   "text": "HIDDEN_ATTRIBUTES filter is only applied when searchQuery is non-empty; when searchQuery is empty (default state), internal attributes (is_segment, project_id, received) are visible to users because the early return at line 62 returns sorted directly without filtering"
+  },
+  {
+   "id": "c71",
+   "source": "converge-review-replay",
+   "text": "get_environment_info calls issue.get_recommended_event() for each issue causing N+1 queries (Snuba query plus nodestore/DB fetch per issue)"
+  },
+  {
+   "id": "c72",
+   "source": "augment",
+   "text": "validate_timestamp/validate_age use self.initial_data.get(...) which treats 0 as 'absent', allowing both age=0 and timestamp to pass the mutual-exclusion rule - should check key presence or 'is not None' instead of truthiness"
+  },
+  {
+   "id": "c73",
+   "source": "golden",
+   "text": "In BaseDetectorTypeValidator.update(), the validator incorrectly updates instance.type using validated_data.get('detector_type') instead of validated_data.get('type')."
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In fetch_error_details, error_ids are zipped with events.values() from nodestore get_multi(). That dict does not preserve input order: it dedupes ids, merges cached items after fetched ones, and omits missing entries. As a result, error IDs get paired with the wrong event data.",
+   "path": null,
+   "members": [
+    "c2",
+    "c7",
+    "c23",
+    "c39",
+    "c40",
+    "c55",
+    "c58"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "When the use-table-widget-visualization feature flag is enabled, TableWidgetVisualization is rendered with columns=[] and empty tableData. The actual results and loading state are ignored, so the table is always blank.",
+   "path": null,
+   "members": [
+    "c6",
+    "c15",
+    "c30",
+    "c32",
+    "c47"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The feature flag 'use-table-widget-visualization' is not registered in src/sentry/features/temporary.py, so the new branch is dead code.",
+   "path": "src/sentry/features/temporary.py",
+   "members": [
+    "c56"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The age/timestamp mutual-exclusion validators in BrowserReportSerializer use the truthiness of self.initial_data.get(...). A value of 0 is therefore treated as absent, and age=0 combined with timestamp passes validation.",
+   "path": null,
+   "members": [
+    "c18",
+    "c45",
+    "c48",
+    "c59",
+    "c67",
+    "c69",
+    "c72"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "Both age and timestamp are required=False with only field-level validators, so a report with neither field is accepted. The docstrings say one of them must be present.",
+   "path": null,
+   "members": [
+    "c9",
+    "c49"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "enabled: Boolean(normalizedDateRange) is always true because normalizeDateTimeParams returns an object, so it gates nothing.",
+   "path": null,
+   "members": [
+    "c3",
+    "c63"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "analytics.record('preprod_artifact.api.assemble') runs before the organizations:preprod-artifact-assemble feature check, so the event is recorded for requests that return 404.",
+   "path": null,
+   "members": [
+    "c10",
+    "c37",
+    "c44"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The HIDDEN_ATTRIBUTES filter (is_segment, project_id, received) is applied only after the early return for an empty searchQuery. In the default no-search view, those attributes are still shown.",
+   "path": null,
+   "members": [
+    "c24",
+    "c42",
+    "c70"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "Renderer override detection uses a truthy check ('if (cell)'), so custom renderers that return falsy React nodes (0, '', false, null) fall back to the default renderer. The body-cell renderer has the same check.",
+   "path": null,
+   "members": [
+    "c21",
+    "c41"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "_truncate_title slices to max_length and then appends '...', so the result can exceed max_length (ISSUE_TITLE_MAX_LENGTH) by 3 characters.",
+   "path": null,
+   "members": [
+    "c31",
+    "c53"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "get_environment_info calls issue.get_recommended_event() for each issue in the PR-comment task. This adds a Snuba query plus a nodestore/DB fetch per issue, an N+1 pattern.",
+   "path": null,
+   "members": [
+    "c43",
+    "c71"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The useGetTraceItemAttributeValues call defaults to page filters instead of using the provided projectIds prop.",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "A comment contains the typo 'segements' instead of 'segments'.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The PR-comment format change (environment added, culprit dropped, link style changed) ships without a feature flag. Tests do not exercise _truncate_title for titles over 50 chars or get_environment_info's exception branch.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "ErrorDetectorValidator's create() override does not persist the owner field inherited from BaseDetectorTypeValidator.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "Validation requires attempts to be nonzero, but the Reporting API sends first-delivery reports with attempts: 0.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "SummaryListContainer is given an inline style={{gridArea: 'list'}} instead of having the style defined via Emotion styled.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "The plain <Flex> that replaced FlexCenter lacks overflowEllipsis, so long attachment names can widen the 1fr column instead of truncating.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "Each paginated page's Seer request receives the full error list via functools.partial with all error_events. Unemitted errors are appended at the end of every page, so errors repeat across pages.",
+   "path": null,
+   "members": [
+    "c14"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "The new useTraceItemAttributeKeys hook has no colocated spec, and its substringMatch/queryString path is not exercised.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The rewritten tests no longer post content_type='application/reports+json', so BrowserReportsJSONParser has no positive-path test coverage.",
+   "path": null,
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "Rows include an 'id' column, but meta.fields/meta.units do not list it.",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "The feedbackSummary component and useFeedbackSummary hook have no colocated .spec.tsx, so the tooFewFeedbacks logic and the hide/placeholder states are untested.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "The fit, frameless and scrollable props (and FRAMELESS_STYLES) have no caller, and the required tableData prop is read with optional chaining.",
+   "path": null,
+   "members": [
+    "c22"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "useProjectFromId returns undefined while the projects store loads, so the page shows 'Project not found. Unable to load AI summary.' instead of a loading state.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The test sets max_segment_id: None but mocks delete_matched_rows, so the None guard in delete.py is never exercised; the 0 case was removed from the fixture.",
+   "path": "src/sentry/replays/usecases/delete.py",
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "After the single-yAxis refactor, several sites still build 'const dedupedYAxes = [visualize.yAxis]' and map over a one-element array. Visualize.stack is always 'all' but is typed optional and computed.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "Error node ids are built with the replay's project_id, so errors from other projects in the replay's error_ids are dropped.",
+   "path": null,
+   "members": [
+    "c28"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "The Snuba replay query for error ids runs even when enable_error_context is false.",
+   "path": null,
+   "members": [
+    "c29"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "The code uses a broad 'except Exception' catch instead of catching specific exceptions.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "The story text contains a duplicated 'the' in 'Below is the the most basic example'.",
+   "path": null,
+   "members": [
+    "c35"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "Recording analytics with request.user.id may raise an error for anonymous users.",
+   "path": null,
+   "members": [
+    "c36"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "When useApiQuery is disabled or idle, data can be undefined, so accessing data.summary throws.",
+   "path": null,
+   "members": [
+    "c38"
+   ]
+  },
+  {
+   "id": "i34",
+   "claim": "The error/breadcrumb interleave compares nodestore error timestamps (seconds) against rrweb event timestamps (milliseconds). As a result, every error is emitted before the first breadcrumb.",
+   "path": null,
+   "members": [
+    "c46"
+   ]
+  },
+  {
+   "id": "i35",
+   "claim": "_handle_regex_match inside parametrize_w_experiments is dead code after its only caller branch was deleted.",
+   "path": null,
+   "members": [
+    "c50"
+   ]
+  },
+  {
+   "id": "i36",
+   "claim": "The issue title is interpolated unescaped into markdown link text [**{title}**]({url}), so titles containing ']' break the link.",
+   "path": null,
+   "members": [
+    "c51"
+   ]
+  },
+  {
+   "id": "i37",
+   "claim": "BrowserReportingCollectorEndpoint returns HttpResponse objects although it inherits from Endpoint, which expects rest_framework Response objects.",
+   "path": null,
+   "members": [
+    "c52"
+   ]
+  },
+  {
+   "id": "i38",
+   "claim": "The requests.post call to Snuba in tests has no timeout.",
+   "path": null,
+   "members": [
+    "c54"
+   ]
+  },
+  {
+   "id": "i39",
+   "claim": "The pending/error/success branches build the same return object three times, and the feature flag is checked both here and in feedbackSummary.tsx.",
+   "path": null,
+   "members": [
+    "c57"
+   ]
+  },
+  {
+   "id": "i40",
+   "claim": "The owner-to-owner_user_id/owner_team_id mapping is duplicated between update and create.",
+   "path": null,
+   "members": [
+    "c60"
+   ]
+  },
+  {
+   "id": "i41",
+   "claim": "UseGetTraceItemAttributeValuesProps extends UseTraceItemAttributeBaseProps, which provides projects?: Project[], while the hook uses projectIds?: number[]. The two types are incompatible.",
+   "path": null,
+   "members": [
+    "c61"
+   ]
+  },
+  {
+   "id": "i42",
+   "claim": "TriggerLabelWrap renders a span that wraps Flex's div, nesting a div inside a span.",
+   "path": null,
+   "members": [
+    "c62"
+   ]
+  },
+  {
+   "id": "i43",
+   "claim": "format_comment_subtitle in the github and gitlab integrations has no remaining caller, and _truncate_title's max_length parameter is never passed.",
+   "path": null,
+   "members": [
+    "c64"
+   ]
+  },
+  {
+   "id": "i44",
+   "claim": "ErrorEvent.category is always 'error' and is never read; generate_error_log_message uses only title, message and timestamp.",
+   "path": null,
+   "members": [
+    "c65"
+   ]
+  },
+  {
+   "id": "i45",
+   "claim": "Invalid list reports now return a 422 with a JSON body, where the old response had an empty body. The non-list branch still returns a body-less Response(status=422), so error formats are inconsistent.",
+   "path": null,
+   "members": [
+    "c66"
+   ]
+  },
+  {
+   "id": "i46",
+   "claim": "The refactor changes behaviour: it drops staleTime:0/retry:false, makes isLoading reflect isFetching, and discards responseJSON in the thrown Error. It also makes useMemos recompute every render because projectIds is a fresh array, builds options twice, and leaves the search parameter with no caller.",
+   "path": null,
+   "members": [
+    "c68"
+   ]
+  },
+  {
+   "id": "i47",
+   "claim": "BaseDetectorTypeValidator.update() sets instance.type from validated_data.get('detector_type') instead of validated_data.get('type').",
+   "path": null,
+   "members": [
+    "c73"
+   ]
+  },
+  {
+   "id": "i48",
+   "claim": "The serializer makes destination and attempts required, but browsers do not send them, and one invalid report rejects the whole batch.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  }
+ ]
+}

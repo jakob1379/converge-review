@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:13 calls `contents << \"...\"` with only a URL check before it (line 11), so a nil `contents` raises NoMethodError. No caller in the repo is shown to pass nil, though: app/jobs/scheduled/poll_feed.rb:35 would already fail on `i.content.scrub`, and app/models/topic_embed.rb:52 passes Readability's `doc.content`, whose gem source is not in the repo to check.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3779773
+}

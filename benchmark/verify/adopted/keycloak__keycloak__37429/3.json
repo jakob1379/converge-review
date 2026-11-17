@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes messages_lt.properties:71 so that loginTotpStep1 reads \"Installa una delle seguenti applicazioni sul tuo cellulare:\", which is Italian. login-config-totp.ftl:10 shows this key with msg(\"loginTotpStep1\"), so Lithuanian users see Italian. One detail in the evidence is off: the text is not word-for-word the same as messages_it.properties:92, which says \"dispositivo mobile\" instead of \"cellulare\".",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0468375
+}

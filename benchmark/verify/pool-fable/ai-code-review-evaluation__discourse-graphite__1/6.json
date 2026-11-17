@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/lib/utilities.js:245-246 has `case 413:` followed directly by `var maxSizeKB = 10 * 1024;` with no braces, so the declaration is visible to `case 422` and the rest of the function. It is harmless in practice: `var` is function-scoped anyway, no other case uses the name, and the unbraced declaration existed before the patch, which only changed the initializer.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1238365
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In GroupResourceTypeEvaluationTest.java (patch lines 1176-1393), createAllGroupsPermission is only called with MANAGE (testManageAllGroups) or VIEW (testViewGroups). No test calls users().count() or tries a write with only VIEW, and grep finds no other test that uses GROUPS_RESOURCE_TYPE. One part is overstated: testViewGroups does combine a per-group VIEW with an all-groups VIEW (patch ~1354-1366), but only for VIEW and not for member scopes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.33060979999999995
+}

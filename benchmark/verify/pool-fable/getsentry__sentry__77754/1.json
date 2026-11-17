@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`to_dict()` does return `asdict(self)` with `queued` still a `datetime` (src/sentry/integrations/services/assignment_source.py:27-28), but task kwargs are not JSON-serialized: Celery is configured with `CELERY_TASK_SERIALIZER = \"pickle\"` and `CELERY_ACCEPT_CONTENT = {\"pickle\"}` (src/sentry/conf/server.py:739-741). A `datetime` pickles fine and passes the bad-pickle guard, which rejects only Django models and `sentry.`/`getsentry.` classes (src/sentry/celery.py:49-56), so no TypeError is raised.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.343193
+}

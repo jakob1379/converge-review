@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The shared fixture (RealmAdminPermissionsConfig.java:34-36, used by AbstractPermissionTest.java:48) now gives myadmin QUERY_GROUPS alongside the existing QUERY_USERS, and that is how the tests were designed: GroupResourceTypeEvaluationTest.testViewGroups (patch lines 1336-1366) needs myadmin past the requireList() gate (GroupsResource.java:97) so it can check that results are filtered per group. No test here is meant to fail the list gate, and the per-group VIEW/MANAGE checks (GroupPermissionsV2 canView/canManage) are still tested, so no regression is hidden.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.328648
+}

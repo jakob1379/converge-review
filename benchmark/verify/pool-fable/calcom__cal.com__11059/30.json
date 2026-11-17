@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:17-93 exports a bare default handler that never inspects req.method and has no 405 path, and apps/web/middleware.ts adds no method restriction; any method carrying the correct secret header and a parseable body reaches the credential update/create at lines 72-92.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.20303190000000002
+}

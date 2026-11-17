@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the callers' `deleteMany({where:{id}})` (handleCancelBooking.ts, bookings.tsx, workflows.tsx) and switches to `prisma.workflowReminder.delete`, which throws P2025 when the row is missing. The new calls are in emailReminderManager.ts `deleteScheduledEmailReminder`, smsReminderManager.ts `deleteScheduledSMSReminder` and scheduleEmailReminders.ts. In workflows.tsx:214-220 the helpers run without being awaited, right before `workflow.deleteMany`, whose cascade can remove the rows first. The helpers' try/catch catches the P2025 and only logs it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1562212
+}

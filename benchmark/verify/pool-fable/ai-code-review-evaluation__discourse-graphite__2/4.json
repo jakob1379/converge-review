@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/topics_controller.rb:105 assigns `tu = TopicUser.find_by(user_id: current_user.id, topic_id: params[:topic_id])`, which returns nil when no row exists, and line 107 calls `tu.notification_level` with no nil guard. `TopicView.new` at line 99 only reads topic_users (lib/topic_view.rb:238-241) and application_controller.rb has no rescue_from for NoMethodError, so a logged-in user who has never visited the topic gets a 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1698596
+}

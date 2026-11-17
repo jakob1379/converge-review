@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`packages/types/Calendar.d.ts:221` now declares `createEvent(event, credentialId)`, but `packages/app-store/larkcalendar/lib/CalendarService.ts:125`, `packages/app-store/office365calendar/lib/CalendarService.ts:72` and `packages/lib/CalendarService.ts:125` still take only `event` and use the first destination calendar (`packages/lib/CalendarService.ts:156`). Since `packages/core/EventManager.ts:370` now calls `createEvent` once per destination calendar, every non-Google host's credential targets the first host's calendar; this compiles, so it is a behavioural gap, not a type error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3256488
+}

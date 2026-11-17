@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In queue_consumer.py, `FixedQueuePool.shutdown` (patch lines 259-271) sets `worker.shutdown = True` before calling `q.shutdown(immediate=False)`, and `OrderedQueueWorker.run` (patch lines 155-161) checks `while not self.shutdown` before each `get()`, so a busy worker stops after its current item and leaves queued items unprocessed and their offsets uncommitted. The patch makes this worse: `close()` stops the commit thread before calling the pool's shutdown (patch lines 363-366), so even items that do finish are not committed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1235657
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the exit codes at CompatibilityResult.java:34-35 (recreate is now 3, feature-disabled is 4), but UpdateCommandDistTest.java never checks either value: testFeatureNotEnabled (lines 46-50) and the incompatible-version test, which is actually named testWrongVersions (lines 86-107), only check message text, and the file's only exit-code check is assertEquals(0, ...) at line 75. No other test refers to RECREATE_UPGRADE_EXIT_CODE or FEATURE_DISABLED.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1407528
+}

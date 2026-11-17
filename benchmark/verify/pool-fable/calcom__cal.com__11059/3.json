@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/salesforce/lib/CalendarService.ts:96 calls `prisma.credential.update` (added by the patch) but the file's imports (lines 1-20) never import prisma, so it resolves only to the global declared in packages/prisma/index.ts:6-9. That global is assigned only under `process.env.NODE_ENV !== \"production\"` (packages/prisma/index.ts:58-60), so in production `getClient` throws a ReferenceError after the token refresh.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2122889
+}

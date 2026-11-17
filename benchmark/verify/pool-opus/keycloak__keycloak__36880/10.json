@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In PermissionClientTest.testManageOnlyOneClient (change.patch:862-865), the test only asserts `not(empty())` and then calls `defaultClientScopes.get(1)`, so nothing checks that the list has two elements. Line 839 also calls `.get(1)` inside a try block that expects ForbiddenException. In practice a realm's built-in default scopes (profile, email, roles, web-origins and others) make the list long enough, so the risk is small.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08707219999999999
+}

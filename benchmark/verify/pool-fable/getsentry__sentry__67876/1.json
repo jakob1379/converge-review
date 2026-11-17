@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/github/integration.py:407-408 builds the authorize redirect with an f-string and no urlencode for client_id, state or redirect_uri. Today's values are benign (state is an md5 hexdigest from src/sentry/pipeline/base.py:133, client_id is the github-app.client-id option, redirect_uri is a fixed reversed path with no query), so the malformed-URL outcome is latent rather than reachable.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2577258
+}

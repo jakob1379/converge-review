@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds misc/theme-verifier/src/test/resources/illegalHtmlTag_en.properties:17 as `key=Some <div>tag</div` with no closing `>` (change.patch:326). The only consumer, VerifyMessagePropertiesTest.java:38-39, just asserts an \"Illegal HTML\" message, so the test probably still passes (not run), but may not isolate the illegal-tag case.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1758077
+}

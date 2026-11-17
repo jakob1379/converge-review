@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In uploads_controller.rb:63-67 the patch adds a loop that runs at most 5 times, calling OptimizedImage.downsize(..., \"80%\") while the file is still over max_image_size_kb. Each call goes through optimize/convert_with (optimized_image.rb:153-165), which runs a `convert` shell command (gifsicle for animated GIFs) and then ImageOptim.optimize_image!. The upload size limit is now a hardcoded 10 MB in utilities.js:182/246 and in FileHelper.download at uploads_controller.rb:55.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0635347
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The early `if (updateStrategy == null) return kc;` at UpgradeTest.java:105-107 was already there before this patch. A null strategy goes to RecreateOnImageChangeUpgradeLogic (UpgradeLogicFactory.java:37-38), which picks rolling vs. recreate only by comparing images (RecreateOnImageChangeUpgradeLogic.java:53-57) and never checks the rolling-updates feature, so testCacheMaxCount with null still covers the rolling path.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1846276
+}

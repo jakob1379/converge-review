@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 evaluates `organization_context.member.has_global_access` on every request, before checking `use_optimized`, and `member` is typed `RpcOrganizationMember | None` (organizations/services/organization/model.py:346). Any caller without a membership whose user is not a superuser (e.g. ApiKey or org-token auth, where request.user is anonymous) gets an AttributeError and a 500. The claim's superuser example is wrong, though: the `or` stops at `request.user.is_superuser`, so `member` is never read for superusers.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1443383
+}

@@ -1,0 +1,184 @@
+{
+ "findings": [
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go",
+   "line": 49,
+   "severity": "Minor",
+   "claim": "LoggerMiddleware no longer builds pluginId/endpoint/uname/dsName/dsUID itself and gets them only through m.logger.FromContext(ctx). It therefore depends on ContextualLoggerMiddleware sitting above it in the chain. Nothing documents or enforces that dependency. If the chain is reordered, or LoggerMiddleware is used alone, the grafana-data-egress 'Plugin Request Completed' line silently loses those fields.",
+   "evidence": "logger_middleware.go:58 logs only via FromContext. pluginsintegration.go:158-161 (CreateMiddlewares) is the only place that wires the chain, and its current order (Tracing \u2192 Metrics \u2192 ContextualLogger \u2192 Logger, because decorator.go:106 reverses the list) is correct. The old 'should live at the top of the middleware stack' comment was deleted from metrics_middleware.go and no ordering note replaced it. No doc on NewLoggerMiddleware states the requirement. All three seats marked this reasoned, with no failing command.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Document the ordering requirement on NewLoggerMiddleware and ContextualLoggerMiddleware, and enforce it with the contract test from the coverage finding. Severity normalised to Minor: both correctness seats verified that production order and field parity are correct today, so this is a latent hazard. mattpocock's Important rating rests on the missing-test standard, which is tracked as its own finding. The seats themselves disprove mattpocock's inclusion of traceID among the fields lost on reorder: traceID comes from the tracing log provider (tracing.go:91), not from ContextualLoggerMiddleware. It is excluded from this claim.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new ContextualLoggerMiddleware has no test, and nothing tests the fields LoggerMiddleware emits on the egress log line. The refactor moves where pluginId/endpoint/uname/dsName/dsUID come from, and no test pins them.",
+   "evidence": "There is no contextual_logger_middleware_test.go or logger_middleware_test.go in clientmiddleware/. metrics_middleware_test.go has never asserted on context attributes or logs, at base or head. mattpocock cites contribute/backend/style-guide.md:28 ('covered by unit tests').",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Add a contract test that runs the CreateMiddlewares stack and asserts the fields on 'Plugin Request Completed', plus a unit test for ContextualLoggerMiddleware. The added test is the guard; production behaviour is reported correct, so no behavioural red exists on the pinned code. The test depends on the fake.go:46 fix to observe FromContext logs. Severity normalised to Minor, because both correctness seats verified production parity. mattpocock rated the combined point Important.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/plugins/log/fake.go",
+   "line": 46,
+   "severity": "Minor",
+   "claim": "TestLogger.FromContext returns a fresh NewTestLogger() instead of f. Anything logged through FromContext never reaches the injected fake, so a test of LoggerMiddleware always sees InfoLogs.Calls == 0.",
+   "evidence": "The code reads 'return NewTestLogger()'. LoggerMiddleware logs only via FromContext (logger_middleware.go:58). No current test wires a TestLogger into LoggerMiddleware, so nothing fails today. superpowers notes it mirrors the existing TestLogger.New behaviour. mattpocock raised the same defect as part of its Important point. All seats call it reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted: return f. Red test: a LoggerMiddleware test with an injected TestLogger asserting InfoLogs.Calls == 1 fails on the pinned code and passes after the fix. It is a prerequisite for the coverage finding.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/plugins/log/logger.go",
+   "line": 50,
+   "severity": "Minor",
+   "claim": "The '!ok' fallback (return d.New()) in grafanaInfraLogWrapper.FromContext is unreachable, because the type assertion to *log.ConcreteLogger cannot fail. If it ever ran, it would silently drop the context fields.",
+   "evidence": "ConcreteLogger.FromContext (pkg/infra/log/log.go:203-217) returns only cl or cl.New(...), both *ConcreteLogger. mattpocock and open-code-review observed the same fact but classed it as fine, not as a defect.",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats (<3). Not reported as a review comment and not fixed. ponytail: candidate simplification (~-3 lines).",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/plugins/log/ifaces.go",
+   "line": 22,
+   "severity": "Minor",
+   "claim": "The doc comment on the new FromContext interface method was copied from New ('plus the given context'). It does not say that attributes come from the context.Context log providers.",
+   "evidence": "Compare ifaces.go L6 and L22.",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats (<3). Not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/plugins/log/ifaces.go",
+   "line": 9,
+   "severity": "Minor",
+   "claim": "About 15 lines in ifaces.go only swap interface{} for any. The change is unrelated to the feature and inflates the diff.",
+   "evidence": "The ifaces.go diff, L9-39. mattpocock called the swap mechanical and fine.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat. Not reported and not fixed. ponytail: split into its own commit or drop.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/metrics_middleware_test.go",
+   "line": 21,
+   "severity": "Minor",
+   "claim": "The rename is incomplete: the test function is still named TestInstrumentationMiddleware.",
+   "evidence": "metrics_middleware_test.go:21. open-code-review and ponytail noticed it but explicitly did not raise it (cosmetic / naming nit).",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats (<3). Not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/metrics_middleware.go",
+   "line": 77,
+   "severity": "Minor",
+   "claim": "The rename is incomplete: the local variable in NewMetricsMiddleware is still named imw.",
+   "evidence": "metrics_middleware.go:77-80. ponytail noticed it but did not report it.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat. Not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go",
+   "line": 26,
+   "severity": "Minor",
+   "claim": "The helper instrumentContext keeps the old instrumentation-middleware name. Out of context it reads as a metrics or tracing function.",
+   "evidence": "contextual_logger_middleware.go:26.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat. Not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go",
+   "line": 22,
+   "severity": "Minor",
+   "claim": "The exported type ContextualLoggerMiddleware and its exported methods (L39-67) have no doc comments.",
+   "evidence": "style-guide.md:8 adopts Go Code Review Comments ('Doc Comments'). The constructor at L12 has one. golangci-lint was not run, so whether the linter flags this is unconfirmed.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat. Not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go",
+   "line": 53,
+   "severity": "Minor",
+   "claim": "The log key time_before_plugin_request is snake_case, against the camelCase log-key convention.",
+   "evidence": "instrumentation.md, Logs \u2192 Naming conventions. The key predates the patch, but it sits in the logParams literal the patch rewrote. Renaming it changes emitted log output.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat. Not reported and not fixed. Pre-existing key; a rename belongs in a separate change.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go",
+   "line": 49,
+   "severity": "Minor",
+   "claim": "The key order of the egress log line changes: context fields now come before status/duration. This would break any downstream consumer that parses the line by position.",
+   "evidence": "superpowers finding 3. Reasoned; no known positional consumer was identified.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat. Not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go",
+   "line": 49,
+   "severity": "Minor",
+   "claim": "traceID on the egress log line now depends, without documentation, on tracing.ProvideService having globally registered the traceID contextual log provider. LoggerMiddleware no longer adds it itself.",
+   "evidence": "pkg/infra/tracing/tracing.go:91 registers the provider. mattpocock and superpowers confirm traceID is still logged in production, so this is an undocumented dependency, not a current loss.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat. Not reported and not fixed.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate not run (benchmark mode): no executed checks anchor this review, so every finding is reasoned and no seat supplied a failing command. No seat built, tested, linted or gofmt-ed the code (gofmt was not installed for superpowers; golangci-lint was not run), so whether the patch compiles is unconfirmed. Files skipped: open-code-review excluded pkg/services/pluginsintegration/clientmiddleware/metrics_middleware_test.go by its default path rule (it read the one-line diff anyway). mattpocock, ponytail and superpowers reviewed all 8 files. Spec axis did not run for any seat: there was no spec, and intent was inferred from the branch name and commit messages. Standards axis ran against contribute/backend/style-guide.md, contribute/backend/instrumentation.md, CONTRIBUTING.md and .golangci.toml; there is no AGENTS.md or CODING_STANDARDS.md. mattpocock skipped its Fowler smell baseline per the override block. No reviewer from another model family held a seat. Rounds 2+ and fixes were not performed (step 4 replay only)."
+}

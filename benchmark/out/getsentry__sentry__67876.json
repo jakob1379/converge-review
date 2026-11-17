@@ -1,0 +1,150 @@
+{
+  "findings": [
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 402,
+      "severity": "Important",
+      "claim": "OAuth state is pipeline.signature, a constant md5 of view class names identical for every user/session, so the state check at :412 provides no CSRF protection; an attacker can forge the setup callback (code + state, and installation_id which OAuthLoginView binds from request.GET) into a victim's in-progress pipeline, binding the attacker's GitHub login so the new user-match check passes.",
+      "evidence": "pipeline/base.py:132-133 computes signature as md5_text of view FQNs; tests hardcode state=9cae5e88803f35ed7970fc131e6e65d3 across different users/orgs; ponytail seat reproduced that value with a python md5 one-liner; identity/oauth2.py:245-252,318-325 uses secrets.token_hex() bound to pipeline state. Exploit path reasoned, not run.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three seats independently; constant value confirmed by command. Fix: random state bound via bind_state and compared to fetch_state (or reuse OAuth2LoginView)."
+    },
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 503,
+      "severity": "Important",
+      "claim": "integration.metadata['sender']['login'] raises KeyError (HTTP 500) when the Integration has no 'sender' metadata, which is the normal state for pipeline-created or pre-existing integrations on the reinstall path (Integration exists, OrganizationIntegration does not).",
+      "evidence": "build_integration writes sender only if state.get('sender') (integration.py:376-377); webhook.py:202-209 is the only writer; ensure_integration (integration pipeline.py:38-42) overwrites metadata; test_integration.py:302-308 asserts pipeline-created integration lacks sender; installation.py:44 guards 'sender' not in metadata. Existing reinstall test deletes Integration too so never hits this branch. Reasoned, not run.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three seats with source citations. Red test: create Integration without sender and no OrganizationIntegration, run init + setup with valid state, expect error page not KeyError."
+    },
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 481,
+      "severity": "Important",
+      "claim": "The authenticated-user == installer check is skipped entirely when no Integration row exists yet (except Integration.DoesNotExist -> next_step()); build_integration then resolves any installation_id via the app JWT, so anyone knowing an installation id can claim it into their org until the installation webhook is processed.",
+      "evidence": "integration.py:481 path has no github_authenticated_user comparison; Integration row is created by installation webhook (webhook.py:200-209), which can be delayed or race the user redirect. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Correctness seats agree on the gap (superpowers Important, OCR Minor); no evidence to reject. Normalised to Important since it leaves the patch's stated security goal open in the race window."
+    },
+    {
+      "path": "tests/sentry/integrations/github/test_integration.py",
+      "line": 379,
+      "severity": "Important",
+      "claim": "test_installation_not_found now passes for the wrong reason: it sends state=ddd023d87a913d5226e2a882c4c4cc05 (not the pipeline signature), so OAuthLoginView rejects at the state check before build_integration runs; the 404 stub is never hit and the 'installation could not be found' path is untested.",
+      "evidence": "test_integration.py:392 uses ddd023d8...; other tests use 9cae5e88...; integration.py:412-413 returns error() on state mismatch; assertion changed from b'The GitHub installation could not be found.' to generic b'Invalid installation request.'. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two seats; test no longer guards the behaviour it is named for."
+    },
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 423,
+      "severity": "Minor",
+      "claim": "Token-exchange/user-fetch failures are mishandled: safe_urlopen and get_user_info (raise_for_status) are outside the try, so network errors or GitHub 4xx/5xx give a 500 instead of the error page; meanwhile the broad except Exception around safe_urlread/parse silently swallows errors with no logging.",
+      "evidence": "integration.py:423 safe_urlopen outside try; :428 except Exception: payload = {}; :434 get_user_info -> identity/github/provider.py:16 resp.raise_for_status(); oauth2.py logs SSL/connection/decode errors separately. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Small, contained; route failures to error() and log."
+    },
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 408,
+      "severity": "Minor",
+      "claim": "Authorize URL built by f-string without URL-encoding client_id, state, redirect_uri.",
+      "evidence": "integration.py:408 f-string; identity/oauth2.py:250 uses urlencode(params); works today only because setup URL contains no &, ?, #.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Trivial switch to urlencode; test asserting raw form must be updated."
+    },
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 141,
+      "severity": "Minor",
+      "claim": "error() calls _(error_short) on a variable while call sites now pass plain literals, so makemessages no longer extracts these strings and existing translations will drop on the next catalog rebuild.",
+      "evidence": "integration.py:141; previously _('GitHub installation pending deletion.') etc.; strings exist in src/sentry/locale catalogs; Makefile:61 makemessages workflow.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Wrap literals in _() at call sites, drop _() inside error()."
+    },
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 494,
+      "severity": "Minor",
+      "claim": "Integration is fetched twice with inconsistent filters (first at :478 without status, second at :494 with status=ACTIVE): an extra query, and a non-active Integration without OrganizationIntegration now gets the generic error where it previously proceeded to next_step/ensure_integration.",
+      "evidence": "integration.py:478 Integration.objects.get(external_id=...) result discarded; :494 re-fetch with status=ObjectStatus.ACTIVE.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Reuse first result; decide intended behaviour for non-active rows explicitly."
+    },
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 503,
+      "severity": "Minor",
+      "claim": "Identity check compares mutable GitHub login strings instead of stable user id; a user who renamed their account between install and link is wrongly rejected.",
+      "evidence": "webhook.py:205 stores sender.id; get_user_info returns id.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Single seat but cited; low-cost change folded into the KeyError fix at the same line."
+    },
+    {
+      "path": "src/sentry/integrations/github/integration.py",
+      "line": 389,
+      "severity": "Important",
+      "claim": "OAuthLoginView hand-rolls an OAuth2 flow that already exists (OAuth2LoginView/OAuth2CallbackView via NestedPipelineView + IdentityProviderPipeline with the registered 'github' identity provider, as Slack and VSTS do); the copy lost the random state, urlencode and error logging.",
+      "evidence": "identity/oauth2.py:210-357; slack/integration.py:126 and vsts/integration.py:433 use NestedPipelineView; identity/github/provider.py registers 'github'; code comments say 'similar to OAuth2CallbackView'. Seat raised as Critical; normalised to Important because the security consequences are tracked separately (state, error handling, encoding).",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: advisory over-engineering; replacement is reasoned not run and depends on the GitHub app callback URL accepting the nested identity pipeline redirect. Fixing the state/encoding/error findings in place resolves the risk; revisit reuse separately."
+    },
+    {
+      "path": "tests/sentry/integrations/github/test_integration.py",
+      "line": 236,
+      "severity": "Minor",
+      "claim": "The setup_path + urlencode({code, state=<md5>}) block is copy-pasted six times with the magic state hash hardcoded each time.",
+      "evidence": "test_integration.py:236-245, 335-340, 388-395, 434-447, 701-711, 733-740.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: advisory test duplication; becomes mandatory cleanup when the state fix makes state random."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode: no dependency install, no project checks); all findings are reasoned or source-cited, only the constant-state value was confirmed by command. No spec: spec axis did not run (mattpocock seat used commit messages only as intent context). Standards: no CLAUDE.md/AGENTS.md/coding-standards docs in repo; .github/CONTRIBUTING.md links to external docs.sentry.io/internal which was not fetched; tool-enforced lint/format/type rules not re-checked. open-code-review seat skipped tests/sentry/integrations/github/test_integration.py (OCR default_path rule), read it only as evidence; other three seats reviewed all 3 files. Untracked harness dotfiles in the worktree (.bashrc, .claude/, etc.) excluded from the pinned patch as not part of the change. No cross-family reviewer available (no codex CLI). No rejections; Rejections rule not triggered. Not verified by any seat: GitHub App callback URL configuration for /extensions/github/setup/, HTTP_X_HUB_SIGNATURE in test_github_user_mismatch."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "model/jpa/src/main/java/org/keycloak/models/jpa/entities/RevokedTokenEntity.java:34 declares `@Column(name=\"ID\", length = 36)`, while the patched TokenManager.initToken now produces 43-character IDs (6-char prefix + ':' + 36-char UUID, DefaultTokenContextEncoderProvider.encodeTokenId) that reach this entity via TokenRevocationEndpoint.java:271. The mismatch is nominal only: the real column is VARCHAR(255) (jpa-changelog-26.0.0.xml:60) and I found no hbm2ddl/schema-generation setting that would apply the annotation length, so nothing truncates or fails.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.8079852
+}

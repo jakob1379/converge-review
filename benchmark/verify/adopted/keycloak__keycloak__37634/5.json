@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OAuth2GrantTypeFactory.java:33 declares `String getShortcut();` as abstract with no default. DefaultTokenContextEncoderProviderFactory.postInit (patch lines 437-441) calls gtf.getShortcut() on every registered grant factory, so an old compiled factory would throw AbstractMethodError there, and a null return would make ConcurrentHashMap.put throw an NPE.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.075116
+}

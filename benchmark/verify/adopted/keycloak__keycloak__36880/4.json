@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java is a new file in this patch. The private getEvaluationContext at lines 262-272 is never called, the logger at line 51 and the TOKEN_EXCHANGE import at line 46 are never used, and the Scope import at line 27 has no use either. ClientModelIdentity, DefaultEvaluationContext and EvaluationContext (lines 22, 23, 29) are used only inside that dead method, while canExchangeTo (lines 148-150) throws UnsupportedOperationException(\"Not supported in V2\").",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0698278
+}

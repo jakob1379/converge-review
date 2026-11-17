@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/mobile/modal.scss:102 changes the original `scale-color($primary, $lightness: 70%)` to `dark-light-choose(scale-color($primary, $lightness: 30%), scale-color($secondary, $lightness: 70%))`, while app/assets/stylesheets/desktop/modal.scss:94 uses (70%, 30%) for the same selector, so the mobile light-theme colour is altered and the two files disagree.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0895047
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/models/topic_embed.rb:13, `url` is placed unescaped into `<a href='#{url}'>#{url}</a>`. Nokogiri in absolutize_urls (lines 76-96) re-parses and keeps any injected attributes or tags. Because the post is created with cook_method raw_html (line 22), Post#cook returns raw unsanitized (app/models/post.rb:309), and app/views/embed/best.html.erb:427 outputs it with `raw post.cooked`. A `'` passes both URI() and the `^https?://` check, so a crafted embed_url can inject HTML.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.162823
+}

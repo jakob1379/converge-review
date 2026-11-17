@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`website_name` is computed from `website` (app/serializers/user_serializer.rb:137-140 returns nil unless `URI(website).host` exists), and `website` is always serialized with no `include_website?` filter (line 133). So whenever the template's `model.website_name` check passes, `model.website` is present and is a URL with a host.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.04058830000000001
+}

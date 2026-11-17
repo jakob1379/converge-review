@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "RulesTable.test.tsx does mock the whole useAbilities module (line 20), but GrafanaGroupLoader.test.tsx (patch lines 662-870) does not. It renders GrafanaGroupLoader \u2192 GrafanaRuleListItem \u2192 RuleActionsButtons.V2 \u2192 AlertRuleMenu with only a promRule, using real folder access control, and checks the Edit button and menu items. That runs the OR-merge, useAllGrafanaPromRuleAbilities and useIsGrafanaPromRuleEditable without mocks.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3119801
+}

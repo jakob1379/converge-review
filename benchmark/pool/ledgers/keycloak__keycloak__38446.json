@@ -1,0 +1,258 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BackwardsCompatibilityUserStorage.isValid() (the fixture provider) accepts any stored recovery code in any order and never consumes it. Federated recovery codes are therefore reusable, the sequential 'code #N' behaviour is not enforced, and the exhausted-credential cleanup path is never reached.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Core Keycloak does not enforce single use for recovery codes stored through the generic user-storage path. It leaves consuming a used code entirely to the user-storage provider, with no guidance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The changed User Storage SPI contract for recovery codes is not documented anywhere. getCredentials must return Keycloak's internal hashed RecoveryAuthnCodesCredentialModel format, while updateCredential receives plaintext codes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "updateCredential receives the recovery codes as a plaintext JSON list in challengeResponse, whereas the local store keeps them hashed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RecoveryAuthnCodesFormAuthenticator takes the credential returned by getCredential(), which may come from user storage, makes the allCodesUsed decision on it, and calls removeStoredCredentialById(). That method only removes local/fed-storage credentials, so the provider's copy is not removed. When local and federated credentials both exist, the authenticator inspects or removes a different credential from the one that validated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Recovery-code credentials from federated user storage are now read before local ones, which changes the order of precedence.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the fixture's getCredentials(), the recovery-codes model is rebuilt with RecoveryAuthnCodesCredentialModel.createFromValues(), which does not set an id. The returned credential has a null id and the codes are renumbered, so removal by id (removeStoredCredentialById, admin/account deletion) fails.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "disableCredentialType() and getDisableableCredentialTypesStream() in the fixture provider do not handle the recovery-codes credential type, so recovery codes cannot be disabled or removed for federated users.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The fixture's getCredentials dereferences getMyUser(user) without a null check, so myUser.recoveryCodes throws NullPointerException for an unknown user.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RecoveryAuthnCodeInputLoginBean calls .get() on the Optionals from RecoveryAuthnCodesUtils.getCredential(user) and getNextRecoveryAuthnCode() without checking presence. This throws NoSuchElementException (500) when no credential is available, e.g. for a storage provider that does not override getCredentials.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new getCredentials override in BackwardsCompatibilityUserStorage also returns the OTP credential, with a generated id. This reroutes existing tests (Issue 19575 regression, testOTPSetupAndRemoveThroughAccountMgmtAndLogin) away from the backwards-compat / 'otp-id' / '-id' fallback paths, which lose test coverage.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch adds post-4.8.3 features (var, recovery-code branches) to a provider whose javadoc says it must stay unchanged.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The diff includes unrelated whitespace/formatting changes in CredentialHelper, BackwardsCompatibilityUserStorage, BackwardsCompatibilityUserStorageTest and RecoveryAuthnCodesAction.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new test performs one login using code #0 only and checks neither single use nor the advancing 'code #N' prompt.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The storage path forwards only the codes; userLabel and generatedAt from the credential model are dropped for storage-backed credentials.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RecoveryAuthnCodesUtils.getCredential queries getFederatedCredentialsStream for every federated user, including LDAP, which adds an LDAP round trip per challenge render and submit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test helpers setupRecoveryKeysForUserWithRequiredAction(logoutOtherSessions) and assertUserHasRecoveryKeysCredentialInUserStorage(boolean) are each called once with true, leaving dead branches.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When createRecoveryCodesCredential stores codes in user storage (updateCredential returns true), it returns without calling recoveryCodeCredentialProvider.createCredential(), so existing local recovery-code credentials are not deleted and old codes remain valid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Credentials returned from user storage via getCredentials are passed to RecoveryAuthnCodesCredentialModel.createFromCredentialModel(), which throws at runtime if their credentialData/secretData are not in Keycloak's expected JSON format.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "LDAPStorageProvider.getCredentials throws IllegalStateException when the LDAP entry is missing, which breaks recovery-code login for imported users that previously used local codes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "configureBrowserFlowWithRecoveryAuthnCodes is copied from RecoveryAuthnCodesAuthenticatorTest with unused machinery: a delay parameter (only caller passes 0), a delayed-authenticator execution, the 'delayed-suthenticator-config' typo, and a redundant testingClient parameter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test calls TestAppHelper.logout(), which relies on a refreshToken set by completeLogin(), but never calls completeLogin() after submitting the recovery code, so logout may be a no-op and leave sessions behind.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit message lacks the required issue link ('Closes #NNNN').",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

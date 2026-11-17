@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The constructor caches `grantType` from `formParams` at server-spi-private/src/main/java/org/keycloak/protocol/oidc/grants/OAuth2GrantType.java:102, while `setFormParams()` at :105-107 only reassigns `formParams`, so `getGrantType()` (:173) would not follow a later change. This is latent only: a repo-wide search finds no caller of `setFormParams()`, and the single `Context` construction is at services/src/main/java/org/keycloak/protocol/oidc/endpoints/TokenEndpoint.java:149.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.586077
+}

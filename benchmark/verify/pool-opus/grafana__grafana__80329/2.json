@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In xorm_store.go, lines 534, 537, 554, 557, 576 and 579 call r.log.Error on every batch of each cleanup loop. They run without any error check, so empty and successful batches are also logged at Error level, along with the full id list and SQL condition. The patch adds all six calls (patch lines 239\u2013292).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0542903
+}

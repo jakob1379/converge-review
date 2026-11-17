@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `max_wait = 50` as a separate local in three tests in tests/sentry/uptime/consumers/test_results_consumer.py (lines 1718, 1765 and 1812), plus `max_wait = 20` in three more (lines 1860, 1912 and 1961). The value is a local variable in each test, not a shared module-level constant.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0521913
+}

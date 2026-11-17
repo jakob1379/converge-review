@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 gates the OptimizedCursorPaginator path on the raw `request.user.is_superuser` flag, whereas the endpoint's own permission class uses `is_active_superuser(request)` (src/sentry/api/bases/organization.py:124), which checks the active superuser session (src/sentry/auth/superuser.py:143-147). A superuser-flagged user who reaches the endpoint through ordinary org:write membership therefore gets the advanced path without an active superuser session.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2904477
+}

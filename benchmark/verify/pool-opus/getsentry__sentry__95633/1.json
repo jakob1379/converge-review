@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OffsetTracker lives on the factory's FixedQueuePool (queue_consumer.py:208, result_consumer.py:424), so it survives rebalances, and nothing ever prunes partitions. After close() stops the commit thread (queue_consumer.py:364-366), the drained workers complete offsets that never get committed. The next strategy's _commit_loop then passes the revoked partition to commit together with the live partitions (queue_consumer.py:306-317). arroyo's stage_offsets rejects unassigned partitions with ConsumerError; arroyo is not vendored here, so that step is from its known behaviour. The except at :318 swallows the error, mark_committed never runs, and the same failing dict is retried every second.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2799098
+}

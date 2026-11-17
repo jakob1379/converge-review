@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "MultiEmail does use `key={index}` (packages/ui/form/MultiEmail.tsx, patch line 644), but each row is a controlled EmailField with `value={field}`. InputField only keeps its own state for `type==\"search\"` (packages/ui/components/form/inputs/TextField.tsx:98,142-148), so removing a middle item with splice re-renders the correct values and no row state ends up on the wrong item.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1779836
+}

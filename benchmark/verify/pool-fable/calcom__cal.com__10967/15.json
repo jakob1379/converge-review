@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The same DB-fallback block (`findUnique` with `include: { app: { select: { slug } } }`, then building a credential with `appName`) appears verbatim at packages/core/EventManager.ts:342-367 and :515-540, while packages/features/bookings/lib/handleCancelBooking.ts:431-441 does a plain `findUnique` with no app include or `appName`. The divergence is harmless, since that copy feeds `getCalendar`, which takes a `CredentialPayload` without `appName` (packages/app-store/_utils/getCalendar.ts:26).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5361448000000001
+}

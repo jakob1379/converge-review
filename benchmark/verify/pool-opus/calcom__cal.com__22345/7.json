@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The builders do return OR expressions without outer parentheses (insightsBooking.ts:171-174 and 204-207), but getBaseConditions wraps both sides when it ANDs them (insightsBooking.ts:73). The only caller in the repo, the integration test, uses the result on its own in `WHERE ${baseConditions}` (insightsBooking.integration-test.ts:480-484), so no caller ANDs it and no rows can bypass a filter today; the risk is only for future callers.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1692805
+}

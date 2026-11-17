@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In lib/tasks/disqus.thor:162-163, the post attributes set both `raw: p[:cooked]` and `cooked: p[:cooked]`, so raw holds the HTML that Disqus exports. The patch only changes how the topic is created (line 148, `TopicEmbed.import_remote`) and does not touch these lines.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.05748930000000001
+}

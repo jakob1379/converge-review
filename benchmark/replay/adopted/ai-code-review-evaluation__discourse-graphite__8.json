@@ -1,0 +1,347 @@
+{
+ "findings": [
+  {
+   "path": "app/controllers/admin/groups_controller.rb",
+   "line": 90,
+   "severity": "Important",
+   "claim": "remove_member calls group.users.delete(user_id) instead of the existing Group#remove helper (app/models/group.rb:276), which skips the per-row cleanup. The removed user's primary_group_id is not cleared, so the group still shows as post flair via post_serializer.rb:96-102. groups.user_count (the counter_cache on GroupUser) is probably not decremented either. add_members uses group.add, so the two endpoints are also inconsistent.",
+   "evidence": "Reasoned, not run. A has_many :through delete removes the join rows with delete_all and runs no callbacks. The old path (usernames= -> destroy_deletions, group.rb:285-293) and Group#remove both destroy each row and null primary_group_id. The new spec at spec/controllers/admin/groups_controller_spec.rb:118-130 checks only a live group.users.count. The counter-cache part comes from the seats' memory of Rails 4.1.8 and was not checked against the gem source. OCR says it is certain about primary_group_id and less certain about the counter. Suggested red test: set user.update_columns(primary_group_id: group.id), call remove_member, then expect user.reload.primary_group_id to be nil and group.reload.user_count to be 0.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Four seats agree, and three hold it Important on correctness. Ponytail rated it Minor on the lean axis only. Before fixing, make the suggested spec red on the pinned code, then route the removal through Group#remove and add the primary_group_id reset there. The red test has not been executed (benchmark mode).",
+   "list": "main"
+  },
+  {
+   "path": "app/controllers/groups_controller.rb",
+   "line": 22,
+   "severity": "Important",
+   "claim": "The public /groups/:name/members endpoint now defaults to limit=50 for every group. Previously non-automatic groups returned all members and automatic groups returned 200. The public route and template (discourse/routes/group-members.js.es6:11, discourse/templates/group/members.hbs:6) have no pagination controls, so members after the 50th cannot be reached.",
+   "evidence": "Reasoned from the template and route. Only admin/templates/group.hbs:15-19 got next/previous controls, and no pagination actions or controller exist under discourse/controllers/group/.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree. Needs a red test before the fix, for example a public members request for a group with more than 50 members that expects them all to be reachable. The red test has not been executed (benchmark mode).",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/javascripts/admin/controllers/admin-group.js.es6",
+   "line": 13,
+   "severity": "Important",
+   "claim": "totalPages uses Math.floor(user_count / limit) + 1, which is off by one whenever user_count is an exact multiple of limit. With 50 members and limit 50 the pager shows 1/2, and Next loads an empty page at offset 50. The correct formula is Math.ceil(user_count / limit), which also removes the == 0 guard. Related: removing the last member on the last page leaves an empty page because findMembers keeps the old offset.",
+   "evidence": "Reasoned arithmetic: Math.floor(50/50)+1 === 2 while Math.ceil(50/50) === 1. There is no QUnit test in the patch.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Four seats agree. Severity was normalised to Important: the correctness seats split (open-code-review Important, superpowers Minor) and the higher rating was kept. Red test: a QUnit or arithmetic check that totalPages is 1 for 50 members at limit 50. Not executed (benchmark mode).",
+   "list": "main"
+  },
+  {
+   "path": "app/controllers/admin/groups_controller.rb",
+   "line": 22,
+   "severity": "Important",
+   "claim": "The patch breaks the public and admin API with no compatibility path and no documentation. create and update read top-level params[:name], params[:visible] and params[:alias_level] instead of group[...]. As a result, a legacy create gets a blank name and a 422, and a legacy update silently sets visible=false. group[usernames] is ignored. PATCH /admin/groups/:id with changes[add|delete] is gone. GET /groups/:name/members now returns {members, meta} instead of an array. The commit body is empty, which goes against CONTRIBUTING \u00a75's requirement for a detailed description, so the breaking change is documented nowhere.",
+   "evidence": "Reasoned. See admin/groups_controller.rb:22-41 and 65-99, groups_controller.rb:28-35 and config/routes.rb:49-51. Suggested red test: the old spec `xhr :patch, :update, id: group.id, changes: {add: user2.username}` no longer adds the user. Whether the discourse_api gem uses the PATCH changes shape was not checked.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree. Merged with mattpocock's finding on commit 060cda7772: same claim, an undocumented breaking admin API change, raised under the CONTRIBUTING commit-message standard. Make the legacy PATCH spec red first. The resolution is either a compat path or a documented breaking change in the commit body. Not executed (benchmark mode).",
+   "list": "main"
+  },
+  {
+   "path": "spec/controllers/groups_controller_spec.rb",
+   "line": 72,
+   "severity": "Minor",
+   "claim": "The patch implements pagination and changes the members response to {members, meta: {total, limit, offset}}, but leaves the existing pending 'ensures that membership can be paginated' spec pending and still parsing the old array shape. Nothing tests the new response contract that the client depends on (group.js:31-35). This file is not in the patch.",
+   "evidence": "Seat reading of spec/controllers/groups_controller_spec.rb:72-85 and of CONTRIBUTING 'Include tests'.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree. Severity was normalised to Minor: mattpocock rated it Important, while the two correctness seats treated it as a Minor test gap. Enable and update the spec for the {members, meta} shape.",
+   "list": "main"
+  },
+  {
+   "path": "spec/controllers/admin/groups_controller_spec.rb",
+   "line": 115,
+   "severity": "Minor",
+   "claim": "The 'cannot remove members from automatic groups' spec sends xhr :put, :remove_member, but the route is DELETE. It passes only because controller specs skip routing, so it tests the wrong verb.",
+   "evidence": "config/routes.rb:49 declares delete \"members\".",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree and the route citation backs the claim. Change the spec to xhr :delete.",
+   "list": "main"
+  },
+  {
+   "path": "app/controllers/admin/groups_controller.rb",
+   "line": 71,
+   "severity": "Important",
+   "claim": "add_members calls group.add(user) (users.push, which inserts at once) without checking membership. Adding a user who is already a member violates the unique index on group_users(group_id, user_id) and raises ActiveRecord::RecordNotUnique, which returns a 500. Users earlier in the list stay committed because the loop is not in a transaction. The UI never clears the input, which makes this easy to hit.",
+   "evidence": "Reasoned. See group.rb:272 and db/migrate/20130416004933_group_users.rb:9. Suggested red test: group.add(u), then xhr :put, :add_members with usernames: u.username, then response.should be_success.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats, below the three-seat threshold, so it is not reported or fixed in this loop. Both correctness seats rate it Important, so it should be prioritised for follow-up.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/groups_controller.rb",
+   "line": 22,
+   "severity": "Minor",
+   "claim": "limit and offset are not validated. Negative values give a PostgreSQL error and a 500, and there is no upper cap on limit for a public endpoint. The old code already took a user-supplied limit, but only for automatic groups.",
+   "evidence": "Reasoned. Suggested: xhr :get, :members, group_id: group.name, limit: -1.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/models/group.js",
+   "line": 59,
+   "severity": "Important",
+   "claim": "addMembers ends with '})' and no semicolon. jshint reports W033, and since `jshint .` runs in CI (.travis.yml:31-32), CI should fail.",
+   "evidence": "Reasoned against .jshintrc: lastsemic only relaxes one-line blocks. Suggested check: npx jshint app/assets/javascripts/discourse/models/group.js. Not run.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. The gate was not run (benchmark mode). If CI runs jshint, a gate run would settle this as ground truth and move it to the main list.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/models/group.js",
+   "line": 82,
+   "severity": "Minor",
+   "claim": "There is a stray semicolon after the block in `if (!this.get('id')) { return };` (jshint W032). Line 21 `{ return ; }` breaks the CONTRIBUTING spacing rule.",
+   "evidence": "Seat reading against .jshintrc and CONTRIBUTING.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/admin/controllers/admin-group.js.es6",
+   "line": 7,
+   "severity": "Minor",
+   "claim": "Lines 7 and 12 use `== 0`, which breaks .jshintrc eqeqeq: true.",
+   "evidence": "The seat itself notes that `jshint .` lints only .js files, so CI does not enforce this on the .es6 file.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/models/group.js",
+   "line": 83,
+   "severity": "Minor",
+   "claim": "`{type: \"DELETE\"}` breaks the CONTRIBUTING brace-spacing rule. Every other ajax call in the diff was reformatted to `{ type: ... }`.",
+   "evidence": "Seat reading against CONTRIBUTING.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "spec/controllers/admin/groups_controller_spec.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Spec coverage was dropped with no replacement: 'succeeds silently when adding non-existent users', updating members and name of a non-automatic group, and 'is able to create a group'. The new .update spec covers only the automatic-group branch.",
+   "evidence": "Seat comparison of removed and added specs.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "spec/controllers/admin/groups_controller_spec.rb",
+   "line": 55,
+   "severity": "Minor",
+   "claim": "Lines 55, 94 and 115 hardcode group id 1 (the built-in admins group) instead of using Fabricate(:group, automatic: true). There are also no specs for duplicate adds or for removal cleanup.",
+   "evidence": "Seat reading of the spec.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/admin/groups_controller.rb",
+   "line": 22,
+   "severity": "Minor",
+   "claim": "asJSON sends alias_level and the form shows the alias combo box on create, but create never reads params[:alias_level], so the value is dropped until a later save. This already happened before the patch.",
+   "evidence": "Seat reading of admin/groups_controller.rb:22-34 and group.js:62-68.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. Pre-existing behaviour carried over by the rewrite.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/admin/groups_controller.rb",
+   "line": 71,
+   "severity": "Minor",
+   "claim": "usernames.split(\",\") assumes a string. An array param (usernames[]=a&usernames[]=b) raises NoMethodError, which returns a 500.",
+   "evidence": "Reasoned.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/models/group.js",
+   "line": 40,
+   "severity": "Minor",
+   "claim": "removeMember and addMembers have no rejection handler, so a 422 or 500 gives the admin no feedback.",
+   "evidence": "Seat reading of group.js:40-59 and admin-group.js.es6:51-64.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/admin/controllers/admin-group.js.es6",
+   "line": 62,
+   "severity": "Minor",
+   "claim": "The username input is never cleared after Add. The patch leaves a `// TODO: should clear the input` that marks the work as unfinished.",
+   "evidence": "The TODO is at admin-group.js.es6:62. Ponytail also says the TODO breaks a 'no comments' rule, but none of the documented standards the seats cite (CONTRIBUTING, .jshintrc, .editorconfig) includes such a rule.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. Superpowers cites the TODO only as supporting evidence for the duplicate-add finding, not as its own claim.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/admin/controllers/admin-group.js.es6",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Fast Next/Previous clicks can let an older findMembers response overwrite a newer one.",
+   "evidence": "Reasoned.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/models/group.js",
+   "line": 25,
+   "severity": "Minor",
+   "claim": "findMembers builds the URL from the current, possibly unsaved, name bound to the admin form. If an admin edits the name and then pages, adds or removes before saving, the request goes to /groups/<unsaved-name>/members.json and returns 404.",
+   "evidence": "Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/admin/templates/group_member.hbs",
+   "line": 1,
+   "severity": "Minor",
+   "claim": "`{{#unless automatic}}` inside an itemView probably resolves against the member rather than the group in Ember 1.x, so the remove link would also show on automatic groups, where the server returns 422.",
+   "evidence": "Reasoned and outside the seat's lens. Severity was assigned by the merge because the seat gave none. The directory is inferred: the seat cited only group_member.hbs:1.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/group.rb",
+   "line": 244,
+   "severity": "Important",
+   "claim": "The patch removed the only production callers of the usernames= setter and the destroy_deletions after_save hack (group.rb:244-266, 287-296, after_save at :10), leaving them dead. About 35 lines can be deleted, provided the primary_group_id reset moves into Group#remove.",
+   "evidence": "The seat's grep finds callers only in spec/models/group_spec.rb:149,153 and spec/models/user_spec.rb:1011,1022. The usernames getter is still used by users_controller.rb:430.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. Advisory findings never block. ponytail: lean cleanup.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/admin/groups_controller.rb",
+   "line": 77,
+   "severity": "Minor",
+   "claim": "The group.save plus error branch after membership writes (lines 77-81 and 92-96) is a no-op, because push and delete already write immediately. Replace both with render json: success_json.",
+   "evidence": "Reasoned from standard Rails 4 has_many :through write-through on a saved owner. Not run.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. ponytail: lean cleanup.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/admin/controllers/admin-group.js.es6",
+   "line": 30,
+   "severity": "Minor",
+   "claim": "The offset is clamped three times: the next and previous guards, the Math.min/Math.max calls in the actions (lines 30, 33, 41, 44), and again in findMembers (group.js:23). One layer can be dropped.",
+   "evidence": "Seat reading.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat. ponytail: lean cleanup.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/templates/user-selector-autocomplete.raw.hbs",
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is unrelated formatting churn in a FIX commit. It covers user-selector-autocomplete.raw.hbs and admin-group-selector.hbs (whitespace only), re-indented protected/private methods (admin/groups_controller.rb:99-102, groups_controller.rb:38-44), ilike changed to ILIKE (admin/groups_controller.rb:8), and aliasLevelOptions brace spacing.",
+   "evidence": "Seat reading of whitespace-only and case-only hunks.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate not run (benchmark mode), so the review is unanchored: no build, rspec, jshint or QUnit result backs any finding. Every red test and command named above is a seat suggestion that has not been executed. No spec exists: findings were measured against the commit title and the prior behaviour. The standards axis did run, against CONTRIBUTING.md, .jshintrc and .editorconfig. Not verified: Rails 4.1.8 has_many :through delete and counter-cache semantics (all seats worked from memory), the request shape used by the discourse_api gem, and Ember template rendering (no browser check). Files skipped or reviewed shallowly: mattpocock did not review admin_base.scss, user-selector-autocomplete.raw.hbs or admin-group-selector.hbs in depth, and checked only that the new client.en.yml keys are used. superpowers did not review user-selector-autocomplete.raw.hbs or admin-group-selector.hbs in depth, and reviewed admin_base.scss for the .form-horizontal move only. ponytail did not review config/locales/client.en.yml and only skimmed spec/controllers/admin/groups_controller_spec.rb. open-code-review reviewed all 16 files, reviewing manually the 4 that its tool excluded (three .es6 files and the spec). Every file in the patch was therefore covered in depth by at least one seat. No rejections: nothing in the seat reports disproves another seat's claim, so no verifier was needed. No fix rounds were run, so nothing has converged."
+}

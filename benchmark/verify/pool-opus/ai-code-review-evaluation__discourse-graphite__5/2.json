@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new `align-items` mixin in app/assets/stylesheets/common/foundation/mixins.scss:137-143 passes `$alignment` unchanged to `-webkit-box-align` and `-ms-flex-align`, so `flex-start` or `flex-end` would produce invalid legacy values. However, every current call passes `center` (header.scss:18, topic-post.scss:265) or `baseline` (badges.css.scss:57), and both are valid in the legacy syntax, so nothing is broken today.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.05160130000000001
+}

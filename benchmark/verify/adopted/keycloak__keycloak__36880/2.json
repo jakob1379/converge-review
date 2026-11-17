@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Per-client resources come from AdminPermissionsSchema.getOrCreateResource, which calls resourceStore.create(resourceServer, name, owner) at AdminPermissionsSchema.java:104 and never sets a type. Only init() sets a type, on the all-clients 'Clients' resource (line 250). So findByType(server, CLIENTS_RESOURCE_TYPE) at ClientPermissionsV2.java:138 can only ever add 'Clients', and AvailableRoleMappingResource.java:230 would then call realm.getClientById('Clients').getRolesStream() and throw an NPE. That caller only runs when V1 ADMIN_FINE_GRAINED_AUTHZ is on (line 217), and V1 is a different version of the same feature as V2 (Profile.java:56-58), so the bug can't be hit yet.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3487882
+}

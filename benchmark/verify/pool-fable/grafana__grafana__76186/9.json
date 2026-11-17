@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The explicit extraction was removed, but `logRequest` now logs through `m.logger.FromContext(ctx)` (pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go:58), which runs every registered contextual log provider (pkg/infra/log/log.go:203-217). The tracing service registers one that appends `traceID` from `TraceIDFromContext(ctx, false)` (pkg/infra/tracing/tracing.go:91-97), so traceID is still on plugin request logs without `ContextualLoggerMiddleware` adding it.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4242695
+}

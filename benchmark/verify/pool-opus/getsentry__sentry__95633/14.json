@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`force` is indeed unused in the new `track_commits` helpers (test_results_consumer.py, patch lines 1110, 1160, 1212), but the repo does not use Ruff. It lints with flake8 (setup.cfg:86-109, .pre-commit-config.yaml:45), and flake8 has no unused-argument rule, so nothing is triggered. The parameter is also needed so the helper matches the commit callback signature.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0858247
+}

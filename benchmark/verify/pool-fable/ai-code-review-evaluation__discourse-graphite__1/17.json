@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:58,67 passes `file.tempfile.path` to `OptimizedImage.downsize`, and app/models/optimized_image.rb:155 only picks the animated (gifsicle) path when `from =~ /\\.GIF$/i`; otherwise it runs `convert #{from}[0]` (optimized_image.rb:129), keeping only the first frame. Gemfile.lock:231 pins rack 1.5.5, whose multipart parser (not vendored here, recalled from Rack source) creates `Tempfile.new(\"RackMultipart\")` with no extension, so oversized animated GIFs uploaded from a browser are flattened.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.276376
+}

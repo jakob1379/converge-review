@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds Group.removeMember and addMembers in app/assets/javascripts/discourse/models/group.js. Each one chains only .then() onto Discourse.ajax, and neither the model nor the controller actions in admin-group.js.es6 attach a catch or rejection handler. Discourse.ajax (discourse/mixins/ajax.js:51-67) only rejects on error and shows no message of its own, so a 422 or 500 response fails silently.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0681239
+}

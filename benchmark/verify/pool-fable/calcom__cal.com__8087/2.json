@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings.tsx:553-567 runs `bookingRefsFiltered.forEach(async ...)` with `await getCalendar` and discards the returned promises, so deletions are detached and rejections unhandled while line 570 goes on to send the reschedule email; the booking DB update at line 475 actually happens earlier, not after. The pre-patch code already discarded the `deleteEvent`/`deleteMeeting` promises from a non-async `forEach`, so the patch only adds the `getCalendar` step to the detached work.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.30283550000000004
+}

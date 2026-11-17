@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched loadUsers (handleNewBooking.ts:710-763), an empty dynamicUserList throws a plain Error that the catch turns into a generic 500 \"Unable to load users\". Prisma known-request errors are re-thrown as 400 with the raw message, other errors lose their message and become that generic 500, and the `organization: { select: { slug } }` select is gone even though IsFixedAwareUser (line 355) still declares `organization: { slug: string }`. One detail is overstated: before the patch an empty list did not clearly reach the 404 at lines 781-798, and nothing in this file reads organization.slug.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1187127
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the ticker to 1 minute at pkg/services/cleanup/cleanup.go:77 but leaves `const timeout = 9 * time.Minute` at cleanup.go:89, so a run may last up to 9 ticker periods. Runs cannot truly overlap, because `srv.clean(ctx)` is called synchronously in the ticker loop (cleanup.go:80-81), but a run longer than a minute is followed immediately by the next one via the buffered tick, so the back-to-back half of the claim holds.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23515950000000002
+}

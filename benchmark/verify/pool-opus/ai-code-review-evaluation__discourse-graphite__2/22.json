@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/views/email/notification.html.erb, line 6 (inside `if context_posts.present?`) and line 19 both output `%{respond_instructions}`, and the `gsub!` in lib/email/message_builder.rb:494 fills in both, so the instructions show twice when there are context posts. The patch only re-indented this: the old template already had the same two placeholders, and the repeat looks deliberate, once after the main post and once at the bottom.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.11815629999999999
+}

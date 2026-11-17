@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/components/settings/EnableTwoFactorModal.tsx:200-208 wraps a single `<div className=\"mt-5 grid ...\">` in a `<>...</>` fragment inside `WithStep`; the fragment has only that one child, so it is unnecessary (other `WithStep` uses at :171 and :210 pass a single element directly).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3024808
+}

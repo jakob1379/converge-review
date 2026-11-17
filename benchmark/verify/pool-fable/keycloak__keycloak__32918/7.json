@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/idp/InfinispanIdentityProviderStorageProvider.java, getForLogin (213-255) repeats the cache/query/resolve structure of getByOrganization (167-211) almost line for line; the bypass at line 173 is `isInvalid(cacheKey) || isInvalid(orgId)` while line 217 checks only `isInvalid(cacheKey)`. The difference looks behaviourally benign, since the model wrapper at 432-446 re-evaluates the organisation's enabled state on every read and the patch's bean re-checks `isEnabled()`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4230556
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The template uses triple-stash for stopNotificiationsText (templates/topic/unsubscribe.hbs:139), which fills in model.fancyTitle (controllers/topic-unsubscribe.js.es6:29). That value is already HTML-escaped on the server, because Topic#fancy_title calls ERB::Util.html_escape(title) (app/models/topic.rb:264), so user-controlled markup cannot get through.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0850974
+}

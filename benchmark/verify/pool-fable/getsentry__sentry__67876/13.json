@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `\"{}?{}\".format(self.setup_path, urlencode({\"code\": ..., \"state\": <md5>}))` block appears six times in tests/sentry/integrations/github/test_integration.py (lines 238-245, 335-340, 388-395, 442-447, 701-711, 733-740), each with a hardcoded state literal; five use 9cae5e88803f35ed7970fc131e6e65d3 and the one at line 392 uses ddd023d87a913d5226e2a882c4c4cc05. All six were added by this patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22000600000000003
+}

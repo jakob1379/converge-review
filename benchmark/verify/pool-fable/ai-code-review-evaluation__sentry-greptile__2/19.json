@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/paginator.py:845-911 repeats BasePaginator.get_result (136-215) except for a negative-offset slice branch (877-882), which is not an optimization. get_item_key/value_from_cursor (838-843) are verbatim from Paginator (222-227), yet the class is used with order_by=\"-datetime\" (organization_auditlogs.py:36-37), so math.floor would be applied to a datetime where DateTimePaginator's conversion (233-241) is needed.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.3873858
+}

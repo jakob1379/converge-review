@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The frontend still lists the SQL type when `sqlExpressions` is on (public/app/features/expressions/types.ts:71-74), but `enableSqlExpressions` returns false on every branch (pkg/expr/reader.go:194-200), so `ReadQuery` always errors at reader.go:129-132. The legacy path (pkg/expr/nodes.go:160) also fails, because `NewSQLCommand` calls `sql.TablesList`, which hits the stub `RunCommands` returning \"not implemented\" (pkg/expr/sql/db.go:17-19, pkg/expr/sql_command.go:30-35).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5424033
+}

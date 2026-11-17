@@ -1,0 +1,257 @@
+{
+ "findings": [
+  {
+   "path": "app/assets/javascripts/discourse/templates/user/user.hbs",
+   "line": 66,
+   "severity": "Important",
+   "claim": "Regression: the profile's website text goes stale, or is missing entirely, after the user edits their website in preferences, until a full page reload. The removed client-side computed websiteName tracked model.website live. The new server-computed model.website_name is set once and nothing on the client refreshes it. Results: the link text shows the old host while the href points to the new URL; a newly added website shows no globe or link; a cleared website still shows the old name.",
+   "evidence": "Reasoned by three seats; none reproduced it. User#save (models/user.js.es6 ~166-215, 206-213) copies back only bio_excerpt from the PUT response and ignores website_name, although users_controller#update returns the full UserSerializer. The preferences route reuses modelFor('user') (routes/preferences.js.es6:6). The user route's afterModel/findDetails (routes/user.js.es6:51-54) does not re-run between child routes. The preferences controller's .then (controllers/preferences.js.es6:117-123) refreshes only name and bio_cooked. Suggested repro: an acceptance test that sets the website in preferences, saves, visits the summary and asserts the link text.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree, and all three are correctness or spec seats. It is unverified until the suggested acceptance test is shown red on the pinned code. Step 5 must write that test first; if it cannot be made red, defer it as unverified with that test as the settling check. Fix direction from the seats: copy website_name back from the PUT response in save().then, or re-run findDetails after save.",
+   "list": "main"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": 153,
+   "severity": "Minor",
+   "claim": "include_website_name is dead code. It is missing the trailing '?', so active_model_serializers never calls it. website_name is therefore always serialized, as null when there is no website.",
+   "evidence": "Gemfile.lock:22 pins active_model_serializers 0.8.3, which only consults include_<attr>?. Every other guard in the file has the '?' (include_email? :117, include_card_image_badge_id? :161, include_stats?), as do 99 definitions across app/serializers. grep finds no caller of the '?'-less name. All four seats reasoned this independently; none executed it.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. All four seats agree and the seats themselves cite the evidence in the pinned dependency version. Preferred fix (ponytail): delete lines 153-155 and add :website_name to untrusted_attributes. That also gives the blank-website presence check through the existing generated include_<attr>? hooks. See the separate restricted-profile entry.",
+   "list": "main"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": 144,
+   "severity": "Minor",
+   "claim": "The sibling-subdomain branch over-matches across shared or public suffixes. Hosts with the same label count (more than 2) and equal labels after the first are treated as the same site. Examples: evil.co.uk vs forum.co.uk, a.github.io vs forum.github.io, hosted *.trydiscourse.com instances. Unrelated sites get the full path shown, contrary to the PR's stated rule.",
+   "evidence": "Reasoned from user_serializer.rb:143-146. Seats agree the impact is cosmetic: the displayed text is the real host and path, and it is HTML-escaped, so this is not a spoofing risk.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Accepted as valid, deferred: Minor and UX-only. A correct fix needs public-suffix awareness, which would add an abstraction no seat has shown to be needed. Mark with `ponytail: sibling-subdomain match over-matches shared public suffixes (co.uk, github.io); needs public-suffix-aware comparison`.",
+   "list": "main"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": 149,
+   "severity": "Minor",
+   "claim": "Same-domain matching is asymmetric and misses the most common case. With website http://www.example.com/u on instance example.com, the else branch checks whether the instance ends with '.' + website_host, which is the reverse direction. So it shows only 'www.example.com' without the path. The reverse pairing (website example.com, instance forum.example.com) does show the path.",
+   "evidence": "Reasoned by three seats from user_serializer.rb:143-149: the host has 3 labels and the instance 2, so the else branch is taken, and 'example.com'.ends_with?('.www.example.com') is false. Concrete repro from superpowers (not run): Discourse.stubs(:current_hostname).returns('example.com'); user.user_profile.website='http://www.example.com/u' \u2192 json[:website_name] == 'www.example.com', expected 'www.example.com/u'.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree and there is a ready serializer-spec repro. It directly contradicts the PR title (same domain should show the full path). Unverified until that spec runs red.",
+   "list": "main"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": 140,
+   "severity": "Minor",
+   "claim": "Host comparison is case-sensitive. URI#host preserves case, so http://Example.com/u does not match instance example.com.",
+   "evidence": "Reasoned; not executed. mattpocock hedges ('as far as I know'). open-code-review and superpowers make the same claim.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree and no report disproves it. It needs a red serializer spec with a mixed-case host before the fix. If URI turns out to downcase hosts, the spec stays green and the finding is rejected on that evidence.",
+   "list": "main"
+  },
+  {
+   "path": "spec/serializers/user_serializer_spec.rb",
+   "line": 76,
+   "severity": "Minor",
+   "claim": "The sibling-subdomain branch (www.example.com vs forum.example.com) has no spec. It is the most complex branch and the one carrying the over-match bug.",
+   "evidence": "Seats read spec lines 76-91, which cover only exact match, different domain, and website-is-parent-of-instance. ponytail notes the same gap but outside its lane and not as a finding.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree and CONTRIBUTING.md says 'Include tests'. Add a spec covering the sibling branch.",
+   "list": "main"
+  },
+  {
+   "path": "spec/serializers/user_serializer_spec.rb",
+   "line": 76,
+   "severity": "Minor",
+   "claim": "There is no spec for a nil or blank website, including that website_name is absent or nil. Such a spec would have caught the dead include_website_name filter.",
+   "evidence": "Spec lines 76-91 do not cover a missing website. open-code-review links the gap to the dead-filter finding.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree. This spec doubles as the red test for the include_website_name fix.",
+   "list": "main"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": 109,
+   "severity": "Important",
+   "claim": "Restricted-profile leak: :website is in untrusted_attributes, so it is hidden when scope.restrict_user_fields?(object) is true. :website_name is not in that list, so a restricted profile still sends website_name, which can carry the host and full path.",
+   "evidence": "Reasoned by ponytail from user_serializer.rb:25-33 and 105-111 (untrusted_attributes generates include_<attr>? with a presence check plus the restrict_user_fields? check) and :43 (website_name declared). ponytail flagged it as outside its lane and bundled it into a Minor finding. It is normalised here to Important as a data-exposure claim. No correctness seat raised it.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only one seat raised it, so it is not reported or fixed in this loop. No report disproves it, and it is unverified. It is a security-relevant claim from an advisory seat, so it warrants a fresh correctness verifier. The main-list include_website_name fix, done as ponytail proposes (add :website_name to untrusted_attributes), would close it anyway.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'complete URL path' drops the query string and fragment, because only URI#path is appended. http://example.com/u?id=1 shows example.com/u.",
+   "evidence": "Reasoned. The seat notes this may be intended.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat only, possibly intended behaviour.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The port is silently dropped when the path is shown: example.com:8080/u displays as example.com/u.",
+   "evidence": "Reasoned from user_serializer.rb:137-150.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat only.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "A same-domain URL whose path is '/' now renders with a trailing slash, as example.com/.",
+   "evidence": "Reasoned from user_serializer.rb:137-151.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat only.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": 137,
+   "severity": "Minor",
+   "claim": "website_name is over-built. It parses URI(website.to_s) three times, splits discourse_host repeatedly, and nests ternaries in an if/elsif/else whose branches never overlap and all end in the same two results. It flattens to one parse and a single OR condition (about 8 lines instead of 15).",
+   "evidence": "ponytail gives a flattened rewrite and argues the equal-label-count ends_with? case is unreachable after branch 1. mattpocock flags the repetition at :141,146,149 as possible Duplicated Code (judgement call).",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats, both advisory, and it does not change behaviour. Mark with `ponytail: website_name branches collapse to one parse + one boolean`. If the main-list matching fixes touch this method, they may adopt the flattened form.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/serializers/user_serializer.rb",
+   "line": 149,
+   "severity": "Minor",
+   "claim": "'\".\" << website_host' appends in place to a string literal. '\".\" + website_host' or interpolation would be clearer.",
+   "evidence": "Raised by ponytail as readability only. mattpocock and open-code-review both note it is correct on this Ruby, since there is no frozen_string_literal; mattpocock adds that it would raise if that pragma were enabled later. This does not disprove the readability claim, which never asserted breakage.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat, readability only. It is subsumed by the flattening suggestion above.",
+   "list": "appendix"
+  },
+  {
+   "path": "spec/serializers/user_serializer_spec.rb",
+   "line": 76,
+   "severity": "Minor",
+   "claim": "No spec covers an unparseable website URI (the rescue nil path).",
+   "evidence": "mattpocock lists the 'invalid website case' and superpowers the 'URI that won't parse'. superpowers notes that stored websites always carry a scheme (UserUpdater#format_url, app/services/user_updater.rb:105), which lowers the practical exposure.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "spec/serializers/user_serializer_spec.rb",
+   "line": 76,
+   "severity": "Minor",
+   "claim": "No spec covers the 'same label count but different domain' path.",
+   "evidence": "Seat's reading of spec lines 76-91.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat only.",
+   "list": "appendix"
+  },
+  {
+   "path": "spec/serializers/user_serializer_spec.rb",
+   "line": 76,
+   "severity": "Minor",
+   "claim": "No spec covers the reverse subdomain case (website www.example.com on instance example.com).",
+   "evidence": "Seat's reading of spec lines 76-91.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat only. The main-list asymmetry finding's red spec would cover it.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/templates/user/user.hbs",
+   "line": 66,
+   "severity": "Minor",
+   "claim": "No acceptance or integration test covers moving the website-name logic from a client computed property to a server field, which is where the stale-name regression slipped through.",
+   "evidence": "superpowers' test-gap finding.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat only. The red acceptance test required for the main-list stale-name fix would cover it.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/models/user.js.es6",
+   "line": 59,
+   "severity": "Minor",
+   "claim": "An unrelated change rides along: the @property doc tag is corrected from websiteName to profileBackground.",
+   "evidence": "mattpocock: harmless, but CONTRIBUTING.md asks for one feature or fix per branch. superpowers: the correction is right and carries no risk. open-code-review also saw it as a doc-comment-only fix and did not list it as a finding.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats, and both agree it is harmless.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats report reviewing all 5 patch files (controllers/user.js.es6, models/user.js.es6, templates/user/user.hbs, app/serializers/user_serializer.rb, spec/serializers/user_serializer_spec.rb). open-code-review's tool excluded three of them (two .es6 files by extension, the spec by path), but the seat reviewed them manually. Axes that did not run: (1) The gate did not run (benchmark mode), so the review is unanchored and no finding has executed ground truth. (2) No seat could execute anything: no Ruby binary was available and the JS/Ember behaviour was not run in a browser, so every finding is reasoned and none has a red test yet. (3) No spec: the spec axis was judged only against the commit title 'UX: show complete URL path if website domain is same as instance domain'. (4) Standards were taken from CONTRIBUTING.md, docs/TESTING.md, .editorconfig and .jshintrc, as found by mattpocock. (5) No other-model-family seat was available. (6) No verifier agent could be dispatched for the security claim. Not checked: mattpocock did not check whether other clients (user card, admin) need website_name; a grep found only user.hbs using it."
+}

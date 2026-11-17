@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/expressions/types.ts:73 still shows the SQL expression type whenever `config.featureToggles.sqlExpressions` is on. On the backend, the patch's `enableSqlExpressions` (pkg/expr/reader.go:213-219) returns false in every branch, so `ReadQuery` always fails with \"sqlExpressions is not implemented\". The other path also fails: `UnmarshalSQLCommand` \u2192 `NewSQLCommand` \u2192 `sql.TablesList` calls the new stub `DB.RunCommands`, which always returns \"not implemented\" (pkg/expr/sql/db.go:16; pkg/expr/sql_command.go:30-35).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.18452609999999997
+}

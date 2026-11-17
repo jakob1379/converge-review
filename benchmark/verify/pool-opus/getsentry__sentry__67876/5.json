@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "There is an `except Exception` at src/sentry/integrations/github/integration.py:425-429, but any failure leaves `payload` empty and returns an invalid-request error page (line 431-432), so nothing is wrongly accepted. Nothing in the code expects `parse_qsl()` to raise `ValueError`, so the second half of the claim criticises an expectation the code does not have.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1085046
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new file ClientPermissionsV2.java, the private getEvaluationContext at :262-272 is never called, the logger at :51 and the static TOKEN_EXCHANGE import at :46 are never used, and the Scope import at :27 is never referenced. The ClientModelIdentity, DefaultEvaluationContext and EvaluationContext imports (:22,:23,:29) are used only inside that dead method, so in practice they are dead too.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08641149999999999
+}

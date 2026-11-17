@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The facts hold: `Constants.GRANT_TYPE = OAuth2Constants.GRANT_TYPE` (server-spi-private/.../models/Constants.java:207), `OAuth2GrantType.Context` reads `formParams.getFirst(OAuth2Constants.GRANT_TYPE)` (OAuth2GrantType.java:102), and TokenManager.java:248, OAuth2GrantTypeBase.java:109 and ResourceOwnerPasswordCredentialsGrantType.java:134 write `Constants.GRANT_TYPE`. But the two names key different stores (HTTP form parameter vs clientSessionContext attribute, read back with the same constant at DefaultTokenContextEncoderProvider.java:57) and the values are identical, so there is no behavioural mismatch, only a naming nit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2250074
+}

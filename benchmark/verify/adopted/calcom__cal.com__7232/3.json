@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/workflows.tsx:9, `Prisma` is still in the value import from @prisma/client, but the only line that used it (`PrismaPromise<Prisma.BatchPayload>[]`) is gone, so `Prisma` now appears nowhere else in the file. packages/config/eslint-preset.js:22 sets unused-imports/no-unused-imports to \"error\", and no override for *.tsx turns it off.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.07489119999999999
+}

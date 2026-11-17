@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/adapters/rest.js.es6:22 calls `type.replace('_', '-')` with a string pattern, which replaces only the first underscore, so a type with two or more underscores would never match its hyphenated ADMIN_MODELS entry and would fall through to \"/\". The defect is latent: every entry in ADMIN_MODELS (rest.js.es6:1) has at most one hyphen, so no current type resolves wrongly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1373316
+}

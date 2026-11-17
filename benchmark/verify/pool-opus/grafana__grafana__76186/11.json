@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/plugins/log/ifaces.go:22 uses the same wording as New at line 7 (\"has this logger's context plus the given context\"). It does not say that the key/value attributes come from the context.Context through the registered context log providers. The patch copies the same pre-existing comment from pkg/infra/log/interface.go:33.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0537707
+}

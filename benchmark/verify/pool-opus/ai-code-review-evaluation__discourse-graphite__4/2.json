@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/embed/best.html.erb:6 (new file, patch line 414) closes the if/else with `<%- end if %>`. Ruby reads the next compiled statement, the output-buffer append, as the `if` modifier's condition. That append returns a truthy buffer, so the template likely still renders, but only by accident: the condition is a side effect that runs before the block, which reorders the output.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0605251
+}

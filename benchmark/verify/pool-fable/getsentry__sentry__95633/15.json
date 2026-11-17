@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The `timeout` parameter is indeed unused at src/sentry/remote_subscriptions/consumers/queue_consumer.py:344-345, but the repo has no Ruff configuration at all: linting is flake8 with bugbear and logging plugins (setup.cfg:86-95, .pre-commit-config.yaml:45-47, requirements-dev.txt:30-32), none of which flag unused arguments. The parameter is also required to match arroyo's `ProcessingStrategy.join` signature, so no linter fires.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.21769500000000006
+}

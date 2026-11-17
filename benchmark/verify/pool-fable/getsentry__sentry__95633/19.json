@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`SimpleQueueProcessingStrategy.close()`/`terminate()`/`join()` call `self.queue_pool.shutdown()` (src/sentry/remote_subscriptions/consumers/queue_consumer.py:335-345), which stops every worker and shuts down every queue (queue_consumer.py:231-243). That pool is built once in `ResultsStrategyFactory.__init__` (src/sentry/remote_subscriptions/consumers/result_consumer.py:133) and reused unchanged by every `create_thread_queue_parallel_worker` call (result_consumer.py:254-255), so the strategy created after a rebalance gets a dead pool; the failed put is swallowed and the offset marked complete (queue_consumer.py:317-325), so messages are dropped yet committed. Arroyo's close-on-revoke behaviour is from memory, not read here.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2861985
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The comment at src/sentry/api/paginator.py (OptimizedCursorPaginator.get_result, patch line 132) says \"The underlying Django ORM properly handles negative slicing automatically\", which is false: Django QuerySets raise \"Negative indexing is not supported.\" The same patch also adds the claims \"safe because permissions are checked at the queryset level\" (patch line 135), \"sophisticated pagination patterns\" (line 86) and \"safe because the underlying queryset will handle boundary conditions\" (line 63), which are unsupported or marketing-style.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0530577
+}

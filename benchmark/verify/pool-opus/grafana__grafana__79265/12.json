@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The same 30-day constant is defined separately in anonstore/database.go:16 (anonymousDeviceExpiration, added by this patch for limit enforcement), api/api.go:18 (anonymousDeviceExpiration, renamed from thirtyDays, for device listing) and impl.go:25 (thirtyDays, for usage stats). pkg/api/admin.go:67 also has a local thirtyDays, so there are actually four copies.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0989625
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/auth/two-factor/totp/disable.ts:58 and packages/features/auth/lib/next-auth-options.ts:139-141 call JSON.parse(symmetricDecrypt(user.backupCodes, ...)) with no try/catch or array check, so corrupted or re-keyed data throws uncaught (a 500 in disable.ts; in authorize next-auth surfaces it as a login error rather than a literal 500). It needs server-written data to be corrupted or the encryption key changed, and the adjacent code at disable.ts:51 and :77 already throws InternalServerError for comparable bad states.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.31727489999999997
+}

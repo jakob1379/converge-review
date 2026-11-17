@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts (patch line 500) filters with a strict `guest === attendee.email`, and the input schema (addGuests.schema.ts) is only `z.string().email()`, with no lowercasing. So `A@x.com` passes the filter next to an existing `a@x.com` and gets inserted by `createMany`. The client check (AddGuestsDialog `new Set(emails)`) and the blacklist check, which lowercases only the blacklist entries, are case-sensitive too.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1355627
+}

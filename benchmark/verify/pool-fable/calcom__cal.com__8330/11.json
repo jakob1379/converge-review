@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/types/schedule.d.ts:5 declares `timeZone?: string` and packages/lib/slots.ts:212 passes `override.timeZone` straight to `.tz()` with no fallback, so an undefined value would resolve to the host zone (dayjs behaviour recalled from memory; its source is not in this checkout). It is latent only: the sole caller that supplies dateOverrides, packages/trpc/server/routers/viewer/slots.ts:410-415, always sets timeZone from getUserAvailability (packages/core/getUserAvailability.ts:201), which ends in what the Prisma schema appears to declare as the non-nullable user.timeZone.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5041073
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the same prisma.workflowReminder.update({where:{id: reminder.id}, data:{retryCount: reminder.retryCount + 1}}) call twice: once in the else branch (packages/features/ee/workflows/api/scheduleSMSReminders.ts:178-187) and once in the catch block (189-197).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.043670600000000004
+}

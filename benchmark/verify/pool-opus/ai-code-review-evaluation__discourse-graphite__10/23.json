@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In embeddable-host.hbs:148-156 (patch lines 148-156), the four d-buttons have only `icon` and `action`, with no `label` or `title`. d-button.js.es6:7-14 sets the title attribute only from `title` or `label`, so these buttons render with no title and no text. The i18n part is only partly right: the patch adds `admin.embedding.edit` but never uses it, it adds no save, cancel or delete keys for embedding, and generic `js.save`/`js.cancel` keys already exist (client.en.yml:240-242).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21290279999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/serializers/user_serializer_spec.rb:67-91 only tests website_name with website set to 'http://example.com/user', and no context sets a nil or blank website or checks that website_name is absent. A test expecting the key to be absent would fail: the filter at app/serializers/user_serializer.rb:83 is named include_website_name without the trailing `?`, so it never runs and the key is always emitted (only a test expecting nil would pass).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06551420000000001
+}

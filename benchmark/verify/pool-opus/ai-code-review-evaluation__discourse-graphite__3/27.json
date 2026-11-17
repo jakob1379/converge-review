@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The spec 'last_match_at is null' (spec/models/blocked_email_spec.rb, patch lines 252-256) only checks that a newly created record has a nil column. That column is a plain nullable `t.datetime :last_match_at` with no default (db/migrate/20130724201552_create_blocked_emails.rb). The model's `set_defaults` never sets it, so the test checks schema and ActiveRecord behaviour, not application code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0352136
+}

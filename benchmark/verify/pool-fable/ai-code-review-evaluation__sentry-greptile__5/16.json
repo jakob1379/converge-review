@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "static/app/views/feedback/feedbackListPage.tsx:88 renders `<SummaryListContainer style={{gridArea: 'list'}}>`, while its Emotion definition at lines 125-129 sets only display, flex-direction and gap, with no grid-area. The inline style was carried over from the replaced `<Container style={{gridArea: 'list'}}>` and matches the neighbouring pattern at lines 85 and 97, so it is purely a style nit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08951490000000001
+}

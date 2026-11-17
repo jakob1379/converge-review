@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`updateLocation` now builds references from `result.externalId` and `result.credentialId` (packages/core/EventManager.ts:208-209), but `CalendarManager.updateEvent` returns neither field (packages/core/CalendarManager.ts:313-322), so calendar references persisted by editLocation.handler.ts:113-122 have both undefined. The patch removed the previous fallback to `evt.destinationCalendar?.externalId` / `.credentialId`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5964439
+}

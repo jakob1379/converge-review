@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At pkg/services/anonymous/anonimpl/anonstore/database.go:72 the comment says 'updated between the given times', but updateDevice(ctx, device) takes no time arguments. The BETWEEN bounds come from device.UpdatedAt minus anonymousDeviceExpiration and device.UpdatedAt plus one minute (lines ~80-81).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0963939
+}

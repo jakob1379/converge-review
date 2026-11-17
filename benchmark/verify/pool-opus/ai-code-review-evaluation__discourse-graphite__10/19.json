@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20150818190757_create_embeddable_hosts.rb (patch lines 535-565) moves the data with raw `execute` inside `def change`, then runs `DELETE FROM site_settings WHERE name IN ('embeddable_hosts','embed_category')`, and there is no `up`/`down` or `reversible` block. A rollback cannot recreate the deleted settings; under Rails 4.1.10 it fails because `execute` cannot be inverted, though it may stop with a TypeError at the `[0]['id']` lookup before reaching IrreversibleMigration.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06764049999999999
+}

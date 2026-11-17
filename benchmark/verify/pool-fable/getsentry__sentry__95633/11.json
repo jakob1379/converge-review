@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/uptime/consumers/test_results_consumer.py:2142-2146 has a `finally` block that wraps `admin_client.delete_topics([test_topic])` in `try: ... except Exception: pass`, added by this patch (change.patch lines 1422-1426). It swallows every `Exception` from the topic deletion without logging.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1067042
+}

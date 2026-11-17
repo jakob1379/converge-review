@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new AuthzClientCryptoProvider.java:103-110 (patch lines 467-474) calls System.arraycopy(signature, len, s, 1, len) without checking signature.length, so a signature shorter than signLength throws ArrayIndexOutOfBoundsException and a longer one is silently truncated. The impact is small: callers such as core/.../ECDSASignatureVerifierContext.java:28-33 catch Exception and turn it into a VerificationException, and the same unchecked pattern already exists in BCECDSACryptoProvider.java:28-35.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1921062
+}

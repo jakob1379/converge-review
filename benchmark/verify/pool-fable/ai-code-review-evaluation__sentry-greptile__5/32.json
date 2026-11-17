@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "static/app/components/feedback/list/useFeedbackSummary.tsx:43-59 returns early on `isPending` and `isError` before reading `data.summary` at line 62; under @tanstack/react-query v5 (package.json:79, wrapped by static/app/utils/queryClient.tsx:124) a disabled or idle query with no data has status 'pending', so `isPending` is true and line 62 is only reached on success, when `data` is defined.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.29624649999999997
+}

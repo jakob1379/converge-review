@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the 413 branch of displayErrorForUpload so it always reports 10 * 1024 KB (app/assets/javascripts/discourse/lib/utilities.js:246); before, it used Discourse.SiteSettings.max_image_size_kb. A 413 comes from the web server, whose limit an admin can set lower (docs/INSTALL-ubuntu.md:390 uses client_max_body_size 2m), so the message can state a wrong limit.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0988893
+}

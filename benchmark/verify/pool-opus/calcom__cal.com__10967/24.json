@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only test change is one snapshot field in apps/web/playwright/webhook.e2e.ts:249 (null -> []), and no test, spec or e2e file in the repo mentions destinationCalendar fan-out or credentialId mapping. Nothing tests the multi-calendar logic added in packages/core/EventManager.ts, packages/core/CalendarManager.ts, handleNewBooking.ts or handleCancelBooking.ts.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.054755399999999996
+}

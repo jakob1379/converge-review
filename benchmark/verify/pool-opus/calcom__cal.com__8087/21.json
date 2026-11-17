@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes packages/app-store/index.ts:87-114 so every app is loaded with an eager `import(\"./x\")` when the module is evaluated, and nothing attaches a handler to those promises until a consumer awaits that key (e.g. getCalendar.ts:17, videoClient.ts:247). A failing import therefore rejects with no handler and raises unhandledRejection, where the old static `import * as` made the importing module fail to load with an ordinary import error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1278896
+}

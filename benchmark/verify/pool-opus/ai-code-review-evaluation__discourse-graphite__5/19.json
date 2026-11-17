@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/views/application/_header.html.erb:4-17, `.panel` sits inside `.row`, so the only flex item of the new flex `.contents` (header.scss:14-19) is `.row`. The patch removed `float: right` from `.panel` (header.scss:35-40), and `margin-left: auto` on a block that is not a flex item resolves to 0. The panel therefore follows the left-floated `.title.span13` and the login button (`float: left`, header.scss:43) no longer sits on the right.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0979285
+}

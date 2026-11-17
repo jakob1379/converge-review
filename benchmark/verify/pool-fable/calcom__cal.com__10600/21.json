@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/auth/lib/next-auth-options.ts:121 only verifies the password when `!credentials.totpCode`, and the new backup-code branch at lines 131-156 checks only `credentials.backupCode` and never validates `totpCode`. A 2FA-enabled user is therefore authenticated with a valid backup code plus any non-empty totpCode, with no password check.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.3600867
+}

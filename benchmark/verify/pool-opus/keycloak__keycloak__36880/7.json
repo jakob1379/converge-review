@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:225 and :250 (both new in this patch) build a one-element list with `List<String> expectedScopes = Arrays.asList(scope);`. Each list is only used for a `contains` check, so `List.of(scope)` or a plain `scope.equals(s)` would work just as well.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.05254620000000001
+}

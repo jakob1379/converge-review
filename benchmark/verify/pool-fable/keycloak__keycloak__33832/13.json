@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "authz/client/pom.xml:67-71 adds org.hamcrest:hamcrest in test scope, but the module's only test file, authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java:27-28, imports only org.junit.Assert and org.junit.Test from test libraries, and nothing under authz/client/src references org.hamcrest. The root pom.xml:563-568 manages junit 4.13.2 without excluding its transitive hamcrest-core, so the explicit dependency is not needed there either; it only mirrors the junit+hamcrest pairing used in other modules (e.g. crypto/default/pom.xml:70-79).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2671997
+}

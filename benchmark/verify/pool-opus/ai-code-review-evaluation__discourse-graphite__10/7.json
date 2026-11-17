@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The migration declares `t.integer :category_id, null: false` with no foreign key (db/migrate/20150818190757_create_embeddable_hosts.rb). EmbeddableHostsController#save_host assigns params[:embeddable_host][:category_id] without checking the category exists, EmbeddableHost only has `belongs_to :category` and no validation, and app/models/category.rb never mentions embeddable hosts, so deleting a category leaves orphaned host rows that TopicEmbed later passes to PostCreator.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10892629999999999
+}

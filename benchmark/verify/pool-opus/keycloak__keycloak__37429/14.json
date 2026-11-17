@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "VerifyMessageProperties.java:157 builds the anchor message as \"Didn't find anchor tag \" + matcher.group() + \" in original string\". It leaves out `key` (which santizeAnchors receives but does not use) and `file`, while the 'Illegal HTML in key ... for file ...' message (patch line 153) includes both. ThemeVerifierMojo.java:51-55 then merges messages from all files without adding a prefix, so nothing tells the user which key or file failed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.08897419999999999
+}

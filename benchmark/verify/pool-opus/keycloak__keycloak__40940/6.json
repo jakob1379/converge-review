@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new GroupTest.createMultiDeleteMultiReadMulti test (patch lines ~115-118), `deletedAll.set(true)` comes straight after the `groupUuuids.forEach(... remove())` loop and is not in a finally block. If any `remove()` throws, the flag is never set, and the non-daemon reader thread keeps looping (`while (!deletedAll.get())`, catching every exception) indefinitely.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.035904900000000003
+}

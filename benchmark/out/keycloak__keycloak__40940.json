@@ -1,0 +1,155 @@
+{
+  "findings": [
+    {
+      "path": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/GroupAdapter.java",
+      "line": 275,
+      "severity": "Important",
+      "claim": "getSubGroupsCount() now returns null when the group vanished from the DB, breaking the documented never-null GroupModel contract; the NPE moves downstream instead of being fixed.",
+      "evidence": "server-spi/.../GroupModel.java:296 '@return The number of groups beneath this group. Never returns {@code null}.' Null flows via GroupUtils.populateSubGroupCount (GroupUtils.java:90) into GroupRepresentation.subGroupCount; admin UI GroupPickerDialog.tsx:324,379 checks subGroupCount !== 0, so a deleted group renders as having children; any SPI extension unboxing the Long gets an NPE. Codebase precedent for vanished source is an empty/zero fallback (DefaultLazyLoader, CachedGroup.getRoleMappings -> emptySet). Reasoned, not run.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Contract violation backed by source citation from three seats; return 0L instead of null (or explicitly change the SPI Javadoc)."
+    },
+    {
+      "path": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/GroupAdapter.java",
+      "line": 256,
+      "severity": "Important",
+      "claim": "Incomplete fix: the three getSubGroupsStream(...) overloads (lines 256, 262, 268) still call modelSupplier.get().getSubGroupsStream(...) unguarded and NPE under the same concurrent-delete race.",
+      "evidence": "modelSupplier is LazyModel(this::getGroupModel), which returns null once the row is deleted (same root cause the patch guards at 274-275). Reachable from REST: GroupResource.java:179-180 getSubGroups -> group.getSubGroupsStream(search, exact, -1, -1) on a cached adapter (GET /admin/realms/{realm}/groups/{id}/children). Reasoned; proposed repro: copy of the new test whose reader loops groups().group(parentId).getSubGroups(0,10,true) while parents are deleted.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Same root cause as the commit's stated intent ('accessing group concurrently'); guard all four delegations consistently (Stream.empty()/0L)."
+    },
+    {
+      "path": "tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java",
+      "line": 155,
+      "severity": "Minor",
+      "claim": "Regression test never joins the reader thread: assertion runs immediately after deletedAll.set(true), so an exception from an in-flight request can land after the assert, and the raw thread can outlive the test and hit the realm during cleanup.",
+      "evidence": "GroupTest.java:139 'new Thread(() -> {...}).start()' with no reference kept; :155 deletedAll.set(true); :157 assertThat(caughtExceptions, Matchers.empty()) with no join. If a remove() throws, deletedAll is never set and the reader loops indefinitely.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap and makes the regression guard trustworthy: keep the Thread, try/finally set the flag, join with timeout before asserting."
+    },
+    {
+      "path": "tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java",
+      "line": 139,
+      "severity": "Minor",
+      "claim": "Test can pass vacuously: nothing asserts the reader completed any reads during the deletes, and reproduction is timing-dependent, so it may pass on unpatched code.",
+      "evidence": "No read counter or assertion on reader progress in createMultiDeleteMultiReadMulti (GroupTest.java:117-158); race window depends on scheduling.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Add a successful-read counter and assert > 0 alongside the join fix; same edit surface as the join finding."
+    },
+    {
+      "path": "tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java",
+      "line": 117,
+      "severity": "Minor",
+      "claim": "Test only exercises the top-level brief group listing (groups(null,0,MAX,true)); the children endpoint path with the same race is not covered.",
+      "evidence": "Reader loop calls only managedRealm.admin().groups().groups(...); GroupResource.getSubGroups path (finding on GroupAdapter.java:256) has no coverage.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Coverage for the sibling-overload fix should ride along with that fix."
+    },
+    {
+      "path": "tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java",
+      "line": 121,
+      "severity": "Minor",
+      "claim": "Variable name typo: groupUuuids (three u's).",
+      "evidence": "GroupTest.java:121 'List<String> groupUuuids = new ArrayList<>();', also used at :129 and :152.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Trivial rename in new code."
+    },
+    {
+      "path": "tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java",
+      "line": 122,
+      "severity": "Minor",
+      "claim": "Create loop hand-rolls a status check, try-with-resources and fail() branch that ApiUtil.getCreatedId already performs.",
+      "evidence": "tests/utils/.../ApiUtil.java:53-59 getCreatedId asserts 201 and closes the response; GroupTest.java:122-134 duplicates it; the new 'import static ...Assertions.fail' at :97 exists only for this branch. About -9 lines.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory, non-blocking simplification in test code. ponytail: replace loop body with groupUuuids.add(ApiUtil.getCreatedId(managedRealm.admin().groups().add(group))) and drop the fail import."
+    },
+    {
+      "path": "tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java",
+      "line": 144,
+      "severity": "Minor",
+      "claim": "Reader thread catches only Exception; an Error thrown in the reader dies silently and the test still passes.",
+      "evidence": "GroupTest.java:144 'catch (Exception e)'.",
+      "seats": [
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "reject",
+      "reason": "The reader only makes admin-client calls; the bug signal (InternalServerErrorException/ProcessingException) is a RuntimeException and is caught. Errors (OOM, linkage) are not the race under test, and once the thread is joined per the accepted finding the residual gap is negligible."
+    },
+    {
+      "path": "tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java",
+      "line": 116,
+      "severity": "Minor",
+      "claim": "Stray whitespace-only line before @Test.",
+      "evidence": "GroupTest.java:114-119 per superpowers seat.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "reject",
+      "reason": "Generic formatting nit outside the review brief (no documented standard cited); no behavioural or readability impact."
+    },
+    {
+      "path": "services/src/main/java/org/keycloak/utils/GroupUtils.java",
+      "line": 101,
+      "severity": "Minor",
+      "claim": "Unrelated dead-code removal (private groupMatchesSearchOrIsPathElement) bundled into a bug-fix commit, against CONTRIBUTING.md 'No changes to code not directly related to your PR'.",
+      "evidence": "Patch deletes GroupUtils.java:98-110; method was private with no callers (the same-named method at ModelToRepresentation.java:209 is a separate private copy); StringUtil is same-package so no dangling import. CONTRIBUTING.md scope rule cited by mattpocock seat.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "All four seats confirm the removal is correct and safe; reverting a verified-safe 10-line deletion adds churn for zero behavioural gain. Scope note only."
+    },
+    {
+      "path": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/entities/CachedGroup.java",
+      "line": 61,
+      "severity": "Minor",
+      "claim": "Unrelated @Override added to CachedGroup.getRealm() in a bug-fix commit (CONTRIBUTING.md scope rule).",
+      "evidence": "CachedGroup.java:61; getRealm() implements InRealm.getRealm(), so the annotation is correct.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Correct, one-line, compiler-checked annotation; no risk, reverting is pure churn."
+    }
+  ],
+  "coverage": "Files: all 4 patch files (GroupAdapter.java, CachedGroup.java, GroupUtils.java, GroupTest.java) reviewed by all 4 seats; OCR's file rules excluded GroupTest.java (default_path) but that seat reviewed it manually. Untracked harness dotfiles in the worktree (.bashrc, .claude/, .mcp.json, etc.) were excluded from the pinned patch as not part of the PR. Axes not run: gate not run (benchmark mode) - no build, tests, or linters executed, so every finding is reasoned, none reproduced; no spec (only the commit title; issue #40368 not fetched); standards axis limited to CONTRIBUTING.md and docs/tests-development.md (mattpocock seat); no cross-model-family reviewer seat; fix rounds, red tests and scoped re-review (steps 5-6) not run per benchmark override. Unexamined leads noted by seats: groupsEvaluator.getAccess on a group deleted mid-request, LazyLoader null-model handling for getSubGroups/getAttributes/getRoleMappings, JSON serialization of null subGroupCount."
+}

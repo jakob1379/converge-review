@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/googlecalendar/lib/CalendarService.ts:254-256 and :315-317 only run `find((cal) => cal.externalId === externalCalendarId)` when `externalCalendarId` is falsy, so it is comparing against null, undefined or \"\", and it won't match any real calendar ID. As a result, updateEvent passes `calendarId: undefined` (line 261) and deleteEvent falls back to \"primary\" (line 322), where the old code used `event.destinationCalendar.externalId`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0806438
+}

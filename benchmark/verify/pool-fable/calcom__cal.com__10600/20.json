@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The migration adds a nullable `backupCodes` column with no backfill, and the only writer of fresh codes is `apps/web/pages/api/auth/two-factor/totp/setup.ts:61-68`, so the \"generate them in your settings\" message (`common.json:2019`) points to no regenerate UI or endpoint; the only way to get codes is to disable and re-enable 2FA. Used codes are nulled and the array re-encrypted (`packages/features/auth/lib/next-auth-options.ts:148-154`), so an exhausted set stays truthy at `:137` and falls through to `IncorrectBackupCode` at `:145`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.34914219999999996
+}

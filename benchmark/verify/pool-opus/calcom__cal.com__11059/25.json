@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:87 looks up appStoreMetadata[app.slug], where app.slug comes from the DB App row (for example \"google-calendar\"). appStoreMetadata (packages/app-store/appStoreMetaData.ts:12, apps.metadata.generated.ts:98-146) is keyed by directory name (googlecalendar, office365calendar, office365video, zoomvideo, larkcalendar), while their slugs are google-calendar, office365-calendar, msteams, zoom and lark-calendar (e.g. googlecalendar/_metadata.ts:17), so the lookup is undefined and the handler returns 404 at line 90.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2639799
+}

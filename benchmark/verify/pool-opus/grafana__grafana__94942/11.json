@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/expr/reader.go:131 (added by the patch) returns `fmt.Errorf(\"sqlExpressions is not implemented\")` with no errutil messageID, status code or public message. Every other rejection in ReadQuery (lines 56, 83, 87, 100, 149, 181) also uses plain fmt.Errorf, so this matches the file's existing style.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.16654059999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes handleEnable go to SetupStep.DisplayBackupCodes instead of calling onEnable (EnableTwoFactorModal.tsx, patch line 233). onEnable and resetState now run only from the backup-codes-close button (patch lines 303-306). Escape or an overlay click goes through onOpenChange, which only toggles enableModalOpen (two-factor-auth.tsx:64), so viewer.me is never invalidated and the switch and badge still read the old twoFactorEnabled=false (two-factor-auth.tsx:46,54). The modal stays mounted, so on reopen step is still DisplayBackupCodes. One detail is wrong: DialogContent has no X button (Dialog.tsx:84-127), so only Escape and an overlay click apply.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.24702639999999998
+}

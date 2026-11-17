@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts (patch lines 108-121), `dayjs(date.start).add(utcOffset, \"minutes\")` is built four times: once for the date comparison, once in the `===` check and twice in the isBefore/isSame check. The `date.end` equivalent is built twice rather than four times, so the claim slightly overstates the end side, but the shifted values are never computed once and reused.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.060842099999999996
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`applyTemplateVariables` with `request.filters` now runs at `shardQuerySplitting.ts:52`, again at `querySplitting.ts:299` (reached from `shardQuerySplitting.ts:163`), and again in `DataSourceWithBackend.ts:185` via `runQuery`/`super.query` (`datasource.ts:350-352`), so twice on the time-split path and three times on the shard path. Duplication is real only for queries with a parser where the filter key is not in the stream selector: `addFilterAsLabelFilter` (`modifyQuery.ts:511-541`, reached from `:211`) appends unconditionally, whereas the stream-selector path dedups via `labelExists` (`modifyQuery.ts:494`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6447963000000001
+}

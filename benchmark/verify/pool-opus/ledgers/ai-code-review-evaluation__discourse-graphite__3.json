@@ -1,0 +1,563 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BlockedEmail.should_block? looks up the email case-sensitively (BlockedEmail.where(email: email)) with no normalization, so a blocked address can be bypassed by changing letter case (e.g. Bad@spammers.org vs bad@spammers.org). This is also inconsistent with the case-insensitive domain whitelist/blacklist regex.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/models/blocked_email.rb:12 runs `BlockedEmail.where(email: email).first` on a plain string column (migration line 6), and neither the model nor the email validator lowercases the value. User.new_from_params (app/models/user.rb:87) passes params[:email] through unchanged, so `Bad@spammers.org` does not match a stored `bad@spammers.org`. The domain check in lib/validators/email_validator.rb:20 builds its regex with `Regexp.new(..., true)`, which is case-insensitive.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1084091
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BlockedEmail.should_block? increments match_count/last_match_at inside email validation, and users#create runs validations twice (user.valid? then user.save), so one signup attempt is counted twice and causes extra writes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "users_controller.rb:168 calls user.valid? and then :172 calls user.save, so validations run twice. On a new record email_changed? stays true, so EmailValidator (lib/validators/email_validator.rb:183) calls BlockedEmail.should_block? both times, and that method saves match_count+1 and last_match_at on every call (app/models/blocked_email.rb:80-84). One signup with a blocked email therefore counts two matches and does two writes.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0818194
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "should_block? is a predicate/validation-time method with write side effects: it increments match_count, sets last_match_at and saves the record on every call.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/blocked_email.rb:11-19, the predicate `should_block?` finds the matching record, increments `match_count`, sets `last_match_at` and calls `record.save` every time it runs. lib/validators/email_validator.rb:13 calls it during validation, so each `valid?` call writes to the database and inflates the count.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0444884
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Blocked-attempt stats written during validation are rolled back when save/save! fails validation inside its transaction, so blocked attempts via User.create_for_email and EmailToken.confirm are never recorded.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "BlockedEmail.should_block? does `record.save` on the stats from inside EmailValidator (lib/validators/email_validator.rb:183). In Rails 3.2.12, save/save! run validation inside with_transaction_returning_status, and that transaction is rolled back when validation fails. So when User.create_for_email's `user.save!` (app/models/user.rb:103) or EmailToken.confirm's `user.save!` inside `User.transaction` (app/models/email_token.rb:45-53) fails on a blocked email, the match_count/last_match_at update is lost.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1310506
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The match_count update uses a non-atomic read-modify-write (match_count += 1; save), so concurrent attempts lose increments.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/blocked_email.rb:14-17, should_block? loads the record, runs `record.match_count += 1`, then `record.save`. Rails writes the value computed in memory (`SET match_count = N+1`), not an atomic increment like `update_counters` or `increment_counter`, so two concurrent signups that read the same N each write N+1 and one increment is lost.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0468991
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The return value of save in the counter update is ignored.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/blocked_email.rb:15 (new file), should_block? increments match_count, sets last_match_at, then calls `record.save` without checking the result. A failed save is silently ignored, and the method's return value depends only on action_type.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0642261
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The regex @(#{domains}) in email_in_restriction_setting? lacks boundary/end anchoring, so addresses with domains that extend a whitelisted domain (e.g. user@example.com.evil.com) match the whitelist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "lib/validators/email_validator.rb:188-192 builds `Regexp.new(\"@(#{domains})\", true)` with no `$`/`\\z` anchor, so `user@example.com.evil.com` matches a whitelist of `example.com` and gets past the check at line 175. The patch moved this logic unchanged from the old `User#email_in_restriction_setting?` (removed at app/models/user.rb:126-130 in the patch).",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0691775
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "email_validator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "email_validator.rb is missing a trailing newline.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patch, lib/validators/email_validator.rb (a new file) ends at line 24 with `end`, and the next line of the diff is the `\\ No newline at end of file` marker (change.patch:194-195).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0347148
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "email_validator_spec.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Extra blank lines at the start/end of the describe block in email_validator_spec.rb violate RuboCop Layout/EmptyLinesAroundBlockBody.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new spec has a blank line right after `describe EmailValidator do` (spec/components/validators/email_validator_spec.rb:3) and another before the closing `end` (line 23); RuboCop's default Layout/EmptyLinesAroundBlockBody flags both. The repo has no .rubocop.yml, so this only matters if RuboCop's defaults are applied.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.038879199999999996
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "change_email does not check the blocklist and sends a confirmation to a blocked address; EmailToken.confirm then rescues RecordInvalid and returns nil, giving a generic token failure with no reason.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/users_controller.rb:265-286 (change_email) only checks whether the address is already in use, then creates a token and queues an authorize_email message, with no BlockedEmail/EmailValidator check. On confirm, app/models/email_token.rb:52-57 sets user.email; user.save! then fails the new `validates :email, email: true` blocklist check and raises RecordInvalid, which is rescued and returns nil, so authorize_email (users_controller.rb:293) only shows the generic change_email.error message with no reason.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0989785
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Redeeming an invite to a blocked email via User.create_for_email (save!) raises an unhandled ActiveRecord::RecordInvalid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new EmailValidator (lib/validators/email_validator.rb:183-185) adds an error when BlockedEmail.should_block? is true. User.create_for_email calls user.save! (app/models/user.rb:103), and it is reached via InviteRedeemer#create_new_user (app/models/invite_redeemer.rb:47), Invite#redeem and InvitesController#show (app/controllers/invites_controller.rb:12). None of these rescue ActiveRecord::RecordInvalid, so the request fails with a 500 error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.122785
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "User.new_from_params assigns params[:email] raw with no downcase/strip or before_validation hook, and the existing Email.downcase is unused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "app/models/user.rb:84-91 does assign params[:email] as-is, but that code is unchanged by the patch, and Email.downcase is used in many places (user.rb:127, invite.rb:20, session_controller.rb:17/60, users_controller.rb:269, topic.rb:410), so the claim that it is unused is wrong.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0904501
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Email.downcase lowercases only the domain part, not the local part, so it does not remove case sensitivity of the blocked-email lookup.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Email.downcase does lowercase only the domain (lib/email.rb:21), but the patch never calls it: BlockedEmail.should_block? runs a raw `where(email: email)` (app/models/blocked_email.rb:12 in the patch), and EmailValidator passes the value through unchanged, so the claimed cause is not in the changed code. The lookup is still case-sensitive, but only because nothing normalizes the email at all, which is a different problem from the one claimed.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0923475
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "On the client, any server-side email error (including 'has already been taken' and domain whitelist/blacklist) adds the address to rejectedEmails, which then shows the generic user.email.invalid text instead of the server's reason.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In create_account_controller.js, lines 41-43 of the patch push result.values.email into rejectedEmails whenever result.errors.email exists, whatever the reason (taken, not_allowed or blocked). The emailValidation check at lines 18-22 then returns the generic I18n.t('user.email.invalid') ('Please enter a valid email address.', client.en.yml:216) in the inline tip. The server's actual reason still appears in the flash message.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0869189
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The rejectedEmails list persists until page reload, so addresses unblocked in the meantime cannot be retried.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `rejectedEmails: Em.A([])` to the controller definition (create_account_controller.js:17) and only ever pushes to it (line 275). It has no `onShow` hook and nothing clears it, so `emailValidation` (line 69) keeps failing for that address until the page is reloaded, even after the address is unblocked.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.07541429999999999
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "pushObject(result.values.email) adds null/undefined to rejectedEmails when the server response omits or blanks values.email.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "create_account_controller.js:274-276 checks only result.errors.email and result.values, then pushes result.values.email without a null check, so a nil or blank email would be added. In practice the server always sends the email key (users_controller.rb:199, attributes.slice), the client blocks blank-email submits, and emailValidation's blank check (create_account_controller.js:61) runs before the rejectedEmails lookup, so the effect is harmless.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0972339
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The computed property depends on rejectedEmails.@each, which may not recompute on pushObject of primitive string items.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In the vendored Ember (app/assets/javascripts/external_development/ember.js:10201-10202), the @each proxy is set up whenever '@each' is watched. Its arrayWillChange/arrayDidChange call propertyWillChange/propertyDidChange(this._content, '@each') on every content change (ember.js:13213, 13231), so pushObject of a string recomputes the property that create_account_controller.js:96 makes depend on 'rejectedEmails.@each'.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.139818
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Submitting the same blocked email multiple times adds duplicate entries to rejectedEmails.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Once an email is pushed to rejectedEmails (create_account_controller.js:275), emailValidation fails for that same address (patch lines 68-73), which sets submitDisabled (create_account_controller.js:22). The same email therefore cannot be submitted again from the form, and users_controller.rb:199 sends back the email unchanged, so no normalization mismatch lets it slip through.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0808958
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "UsersController#create now returns user.errors.to_hash, exposing internal validation details.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch does add `errors: user.errors.to_hash` at app/controllers/users_controller.rb:198, but it exposes nothing new: those are the same user-facing validation messages already returned through `user.errors.full_messages` in `message` at line 197. The `values` slice at line 199 only returns the name, username and email the user just submitted.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0818874
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "match_count/last_match_at are incremented for :do_nothing matches, while the commit says it tracks how many times each address is blocked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The behaviour is real: app/models/blocked_email.rb:13-16 increments match_count and sets last_match_at for any matching record, including :do_nothing ones. But it is deliberate and tested, not a bug. The columns count matches rather than blocks, and spec/models/blocked_email_spec.rb:281-285 requires the statistics to update for :do_nothing, which lets that action work as a watch-only mode. The only mismatch is wording (the spec comment at line 14 says 'blocked').",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0792573
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The :do_nothing action type (enum, NOT NULL action_type column, set_defaults callback, fabricator, spec contexts) has no producer in the patch: no admin UI, caller or setting.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Only the specs use :do_nothing (spec/models/blocked_email_spec.rb:41-42). Outside the specs, no code creates BlockedEmail rows: no admin UI, controller, rake task or site setting does. The enum (app/models/blocked_email.rb:8) and the default to :block (blocked_email.rb:22) are only read by should_block?, which EmailValidator calls (lib/validators/email_validator.rb:13).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08007310000000001
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "email_in_restriction_setting? evaluates value =~ regexp, which raises when value is nil (e.g. missing email param); validate_each does not guard against blank/nil values.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In lib/validators/email_validator.rb:191, `value =~ regexp` with a nil value returns nil and does not raise, because Ruby's Object#=~ (and NilClass#=~ in newer versions) returns nil. A nil email is treated as \"not in the setting\", and the presence validation added in app/models/user.rb:105 reports the missing email.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0663638
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no regression test for a nil/blank value when whitelist/blacklist settings are present.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new spec/components/validators/email_validator_spec.rb:1-23 only tests the BlockedEmail path with a fixed non-blank email. The whitelist and blacklist tests in spec/models/user_spec.rb:494-565 always use non-blank emails, and no spec builds a user with a nil or blank email while those settings are stubbed, so nothing tests EmailValidator#validate_each (lib/validators/email_validator.rb:3-16) with a nil or blank value.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.104849
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "EmailValidator no longer rejects malformed addresses, so validates :email, email: true accepts values like sam@sam or sam.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "There was never a format check to lose. The removed User#email_validator (patch lines 114-130) only checked the domain whitelist and blacklist, and the new lib/validators/email_validator.rb:3-16 keeps those checks and adds the BlockedEmail check. No other EmailValidator or email-validation gem is defined (the Gemfile has none), so strings like 'sam' were accepted before this patch too.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0985541
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Blocked-email validation uses the user.email.invalid translation key instead of the new user.email.blocked key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The server-side blocked-email check uses the new key: `record.errors.add(attribute, I18n.t(:'user.email.blocked'))` (lib/validators/email_validator.rb:13 in the patch). The client's rejected-email check uses `user.email.invalid` (create_account_controller.js, around line 72), but that check catches any server email error, not just blocked ones, and `user.email.blocked` exists only in server.en.yml, not in client.en.yml (where `user.email.invalid` is at line 216).",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0769803
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "values: user.attributes.slice('name','username','email') in the failure JSON is redundant: the client reads only values.email, which equals the submitted email because new_from_params does not normalize.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The client only reads result.values.email (create_account_controller.js:274-275), and the email there is the raw submitted value: User.new_from_params copies params[:email] unchanged (app/models/user.rb:87) and the model has no callback that normalizes email. So users_controller.rb:199 returns data the client already has in its local `email` variable (create_account_controller.js:263), and name and username are never read.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.17818330000000002
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The EmailValidator spec stubs BlockedEmail.should_block? (a class the patch owns) instead of exercising the real validator-to-model path, and no integration test covers the blocked-signup path, stats persistence, or case handling.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "spec/components/validators/email_validator_spec.rb:12,18 stubs BlockedEmail.should_block?, and no user, controller or integration spec runs a blocked signup or a mixed-case email (grep of spec/ finds BlockedEmail only in that spec and blocked_email_spec.rb). One part overstates: the model spec does reload and check stats (spec/models/blocked_email_spec.rb:26-31), though not through the validator or signup path.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0858067
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'last_match_at is null' example tests an ActiveRecord/migration default rather than application logic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The spec 'last_match_at is null' (spec/models/blocked_email_spec.rb, patch lines 252-256) only checks that a newly created record has a nil column. That column is a plain nullable `t.datetime :last_match_at` with no default (db/migrate/20130724201552_create_blocked_emails.rb). The model's `set_defaults` never sets it, so the test checks schema and ActiveRecord behaviour, not application code.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0352136
+   }
+  },
+  {
+   "issue": "i29",
+   "path": "blocked_email_spec.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "blocked_email_spec.rb uses only lowercase emails and has no tests for case variants.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "spec/models/blocked_email_spec.rb:5 uses a single lowercase email ('block@spamfromhome.org') in every test, and no test checks a case variant. This matters because BlockedEmail.should_block? at app/models/blocked_email.rb:9 does a case-sensitive `where(email: email)` lookup, and that path is never tested.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0661791
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The modified User model validations have no updated specs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch leaves spec/models/user_spec.rb unchanged, but its existing 'email_validator' block (spec/models/user_spec.rb:488-565) still runs the refactored `validates :email, email: true, if: :email_changed?` through `User#valid?`. That block covers the blacklist, the whitelist, existing records and changed emails. The new blocked-email path is covered by the patch's spec/components/validators/email_validator_spec.rb:210-221.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.10315049999999998
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There are no updated specs for UsersController#create, including the new errors and values keys in the failure JSON.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `errors` and `values` keys to the failed-create JSON (app/controllers/users_controller.rb:197-199) but does not touch spec/controllers/users_controller_spec.rb. That file's `.create` block (spec/controllers/users_controller_spec.rb:285-510) never checks either key; its only `['errors']` checks are in the `.check_username` specs (lines 624-783).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.08936359999999999
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

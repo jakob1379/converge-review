@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/bookings.tsx:553-567, `bookingRefsFiltered.forEach(async ...)` around `await getCalendar(...)` is never awaited, so `sendRequestRescheduleEmail` (line 570) and the webhooks run without waiting for the deletions, and any rejection goes unhandled. The DB update at line 475 already runs before this loop, and the `deleteEvent`/`deleteMeeting` promises were dropped before the patch too. What the patch adds is that `getCalendar` is now async, so its failures are also detached.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.07700270000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:67 calls `OptimizedImage.downsize(tempfile.path, tempfile.path, \"80%\", ...)`, so `convert`/`gifsicle` (app/models/optimized_image.rb:126-134, 160-162) overwrite the only server-side copy of the upload in place. The return value is ignored, so a failed or partial write leaves a damaged tempfile that still goes to `Upload.create_for` at line 72.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16182370000000001
+}

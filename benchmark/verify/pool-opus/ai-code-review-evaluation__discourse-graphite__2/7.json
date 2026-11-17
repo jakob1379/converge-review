@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/components/email/message_builder_spec.rb:174-175 only asserts that `header_args['List-Unsubscribe']` is `be_present`, even though the patch now passes `unsubscribe_url: \"/t/1234/unsubscribe\"`. The weak check hides that lib/email/message_builder.rb:107 still builds the header from `template_args[:user_preferences_url]` and ignores unsubscribe_url.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11068430000000001
+}

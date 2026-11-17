@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The async legacy goroutines in dualwriter_mode3.go (Create, Delete, Update, DeleteCollection) keep the error only as `err != nil`, pass that bool to recordLegacyDuration/recordStorageDuration (metrics.go:54-62, which only set the is_error histogram label), and never log the error. The old code logged legacy failures with log.Error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1882036
+}

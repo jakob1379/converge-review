@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes `RECREATE_UPGRADE_EXIT_CODE` from 4 to 3 and reuses 4 for the new `FEATURE_DISABLED` (quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/compatibility/CompatibilityResult.java:34-35), so `update-compatibility check` now exits 3 instead of 4 when a recreate is needed. However, docs/guides/server/update-compatibility.adoc:128-130 already documented 3 for this case before the patch, and the command is a preview feature, so this aligns code with the documented contract.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5063478
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new sendAddGuestsEmails in packages/emails/email-manager.ts (patch lines 218-243) only takes (calEvent, newGuests) and sends organizer, team-member and attendee emails without any check. That differs from sendLocationChangeEmails just above it (email-manager.ts:503,515), which checks eventTypeDisableHostEmail/eventTypeDisableAttendeeEmail. addGuests.handler.ts calls sendAddGuestsEmails(evt, guests) without booking.eventType?.metadata (patch line 592).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1542089
+}

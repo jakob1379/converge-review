@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The denial cache key is built only from namespace, UserUID, action, name and parent folder (cache.go:30-32, service.go:116). The identity type is left out. Both identities get the same UID: render.go:48-50 and anonymous client.go:115-116 set ID \"0\" and no UID, so `GetUID()` (identity.go:95) yields an identical userUID. An anonymous denial is cached at service.go:146-148 and then denies the render service, which should get `*` for dashboards:read (service.go:446-447), for shortCacheTTL. The reverse also happens.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2257617
+}

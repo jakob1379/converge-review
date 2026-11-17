@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At dualwriter_mode3.go:139, the patch now passes the caller's raw objInfo to Legacy.Update inside a fire-and-forget goroutine and drops the old updateWrapper{updated: obj} hand-off, so legacy_storage.go:142-147 runs objInfo.UpdatedObject again against legacy's own Get result. For PATCH and apply, the patch gets re-applied to legacy's copy, which can differ from what storage saved, and the request's patcher state is reused after the handler has returned.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2331641
+}

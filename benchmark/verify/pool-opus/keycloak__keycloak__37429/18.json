@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In VerifyMessageProperties.java:124-126 (patch line 166-168), for keys starting with linkExpirationFormatter.timePeriodUnit and for error-invalid-multivalued-size, normalizeValue runs value.replaceAll(\"\\\\{[0-9]+,choice,[^}]*}\", \"...\"), which removes the whole choice body before policy.sanitize. So a translated branch like {2,choice,0#<img src=x onerror=...>|1#x} is never checked, as long as the injected HTML contains no '}'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2292976
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds V2 checks for MAP_ROLES_CLIENT_SCOPE (ClientPermissionsV2.java canMapClientScopeRoles, patch ~L387) and for realm-level client scopes (canManageClientScopes and canView(ClientScopeModel), ~L392-408), but no test in tests/base/.../fgap uses MAP_ROLES_CLIENT_SCOPE, the client-scopes endpoints, or realm-management escalation. PermissionClientTest.java only calls per-client getDefaultClientScopes/add/remove (lines ~148-230), and testManageAllClients deletes a client without checking that its V2 permission resources get cleaned up.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.25677890000000003
+}

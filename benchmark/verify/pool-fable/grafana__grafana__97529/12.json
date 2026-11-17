@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/storage/unified/resource/server.go:258-262 returns (nil, err) on Init failure without s.cancel() or s.lifecycle.Stop, and the caller gets nil so it cannot call Stop either. With Init now ordered search.init then initWatcher (server.go:303-311), a failing initWatcher leaves the search watch goroutine (search.go:202-213, on context.Background()) and the sql poller (sql/backend.go:566-578, which exits only on b.done, closed by backend.Stop) running.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4644764
+}

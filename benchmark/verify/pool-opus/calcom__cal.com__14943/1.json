@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both new update paths write `retryCount: reminder.retryCount + 1` using the value read earlier in the run (packages/features/ee/workflows/api/scheduleSMSReminders.ts:184 and :195), not Prisma's atomic `{ increment: 1 }`. If two cron runs overlap, both can write the same value, so one increment is lost.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0507168
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The claim has the direction backwards: no topic-post rule went from 70% to 30% on the light theme. The only mismatch is app/assets/stylesheets/desktop/topic-post.scss:291, where the original `scale-color($primary, $lightness: 30%)` became 70% in the light-theme (first) argument of `dark-light-choose` (variables.scss:46), making the text lighter, not darker; every rule that was originally 70% keeps 70% for light (common/base/topic-post.scss:71,159; desktop:896,958; mobile:498).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2924245
+}

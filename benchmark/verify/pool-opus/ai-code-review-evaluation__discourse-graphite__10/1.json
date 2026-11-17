@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In store.js.es6:196-201, the new `_ids` branch maps every id through `_lookupSubType` and then runs `delete obj[k]` unconditionally. When no matching collection was side-loaded, `_lookupSubType` (157-187) returns undefined, so the id list is replaced by an array of undefined. The singular branch at 204-207 avoids this by deleting only when hydration succeeds. The `muted_category_ids` example is weak, because categories resolve from memory (163-164), but any other plain id list hits the bug.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0896195
+}

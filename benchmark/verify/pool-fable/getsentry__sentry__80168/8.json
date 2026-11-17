@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/workflow_engine/processors/test_detector.py:206-221 checks the two publishes in `test_state_results_multi_group` with `assert_has_calls(..., any_order=True)` and no `call_count` check, so extra or duplicate `produce_occurrence_to_kafka` calls would still pass. Only the single-group test at line 167 uses `assert_called_once_with`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.32557250000000004
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/serializers/user_serializer.rb:138 takes the host from `URI(website.to_s).host`, which in Ruby keeps the original case. Lines 141, 146 and 149 then compare it with `Discourse.current_hostname` using case-sensitive `==` and `ends_with?`, and the stored website is never lowercased (`app/models/user_profile.rb` has no normalization). So `http://Example.com/u` does not match `example.com`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06041680000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`OptimizedCursorPaginator.value_from_cursor` returns `cursor.value` unconverted (src/sentry/api/paginator.py:842-843), and `build_queryset` binds it into `datetime <= %s` (paginator.py:119-125) for the audit-log endpoint ordered by `-datetime`, a `DateTimeField` (src/sentry/models/auditlogentry.py:69); `DateTimePaginator` converts at paginator.py:238-241. The sibling `get_item_key` (paginator.py:838-840) also calls `math.floor`/`math.ceil` on a datetime, so a non-empty first page should fail before any follow-up cursor is issued.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.3735883
+}

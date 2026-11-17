@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Dynamic group bookings use getDefaultEvent, which sets schedulingType: SchedulingType.COLLECTIVE (packages/lib/defaultEvents.ts:79). Because of that, isTeamEventType is true and the COLLECTIVE branches in handleNewBooking.ts (the teamMemberPromises push and the evt.destinationCalendar push after evt) also add members' destination calendars for dynamic groups, and userSelect includes destinationCalendar (packages/prisma/selects/user.ts:27).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2452972
+}

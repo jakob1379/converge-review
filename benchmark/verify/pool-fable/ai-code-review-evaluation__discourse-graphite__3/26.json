@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/components/validators/email_validator_spec.rb:11 and :17 stub BlockedEmail.should_block?, and the only other references to BlockedEmail in spec/ are the fabricator and spec/models/blocked_email_spec.rb, so no test drives a blocked signup through User or UsersController and none tests case variants. Stats are covered only at model level (spec/models/blocked_email_spec.rb:26-32), not through the validator or signup path.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2091003
+}

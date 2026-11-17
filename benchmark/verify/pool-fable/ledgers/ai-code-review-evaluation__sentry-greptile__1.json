@@ -1,0 +1,293 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil directly on the sort key. With order_by='-datetime' in the audit logs endpoint, that key is a datetime, so a TypeError is raised. DateTimePaginator avoids this by converting to an epoch timestamp first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`OptimizedCursorPaginator.get_item_key` (src/sentry/api/paginator.py:838-840) passes `getattr(item, self.key)` straight to `math.floor`/`math.ceil`; the audit logs endpoint uses it with `order_by=\"-datetime\"` (src/sentry/api/endpoints/organization_auditlogs.py:76-83), a `DateTimeField` (src/sentry/models/auditlogentry.py:69), so `build_cursor` raises TypeError on any non-empty result (src/sentry/utils/cursors.py:122). `DateTimePaginator` converts via `strftime(\"%s.%f\")` first (paginator.py:233-236).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.29377260000000005
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.value_from_cursor returns the raw integer cursor.value without converting it back to a datetime as DateTimePaginator does. build_queryset therefore compares a datetime field against an integer on subsequent pages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`OptimizedCursorPaginator.value_from_cursor` returns `cursor.value` unconverted (src/sentry/api/paginator.py:842-843), unlike `DateTimePaginator` (paginator.py:238-241), and the audit-log endpoint uses it with `order_by=\"-datetime\"` (src/sentry/api/endpoints/organization_auditlogs.py:76-83). Any request with a non-zero cursor value therefore has `build_queryset` emit `datetime <= <int>` (paginator.py:112-126).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.22464879999999998
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The enable_advanced check in the audit logs endpoint accesses organization_context.member.has_global_access without a None check. member is None for callers without membership, such as superusers, API keys/org auth tokens, legacy org ApiKeys and internal-integration proxy users, so an AttributeError is raised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 evaluates `organization_context.member.has_global_access` on every request with no None check, and `member` is None for non-members (src/sentry/organizations/services/organization/impl.py:123-125, model.py:346). An org ApiKey or sentry-app proxy user passes OrganizationAuditPermission via src/sentry/auth/access.py:1183-1193 and 917-918 and then hits AttributeError; only the superuser example is wrong, since `request.user.is_superuser` short-circuits.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.5401527
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When enable_advanced_features is true, OptimizedCursorPaginator.get_result passes a user-supplied negative cursor.offset directly into queryset[start_offset:stop]. Django QuerySets do not support negative indexing, so a crafted cursor (e.g. 0:-10:0) raises an error that is not converted to BadPaginationError and results in a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/paginator.py:877-882 slices `queryset[cursor.offset:stop]` with a negative offset that `Cursor.from_string` (src/sentry/utils/cursors.py:59) accepts unvalidated; Django 5.2.1 (requirements-frozen.txt:36) rejects negative slice bounds with a ValueError, by my knowledge of Django as its source is not in the checkout. `paginate` only catches `BadPaginationError` (src/sentry/api/base.py:540), so the error falls through to the generic 500 handler (base.py:316-328), reachable via `?optimized_pagination=true&cursor=0:-10:0` in organization_auditlogs.py:73-83.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.402739
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Comments and docstrings in the patch contain false or marketing-style claims. Examples are that the Django ORM properly handles negative slicing, 'sophisticated pagination patterns', and 'safe because permissions are checked at the queryset level'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The quoted comments are all present in the patched code: src/sentry/api/paginator.py:876 says the Django ORM \"properly handles negative slicing automatically\", which is false since Django QuerySets raise on negative indices (Django is not vendored here, so that rests on its documented behaviour); paginator.py:830 has \"sophisticated pagination patterns\" and paginator.py:879 has \"safe because permissions are checked at the queryset level\", both unsupported by the code.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1399937
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The change to the shared BasePaginator.get_result clamps negative next-cursor offsets to 0 with max(0, offset). Negative prev-cursor offsets still reach the queryset slice and raise errors, which contradicts the comment saying negative offsets are allowed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/paginator.py:182 clamps only when `not cursor.is_prev`; a prev cursor with a negative offset goes unclamped into `queryset[start_offset:stop]` at :184, where Django rejects negative slicing, contradicting the comment at :179-181. Cursor (src/sentry/utils/cursors.py:28) does not reject negative offsets, and `paginate` catches only BadPaginationError (src/sentry/api/base.py:540), so the error is unhandled.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.280642
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BasePaginator.get_result uses start_offset = max(0, offset) for slicing but still uses the raw offset in the duplicate-trim check (len(results) == offset + limit + extra), so the two diverge.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "src/sentry/api/paginator.py:182 clamps only when `not cursor.is_prev`, while the trim check at line 192 sits inside `if cursor.is_prev and cursor.value:` (line 186), where `start_offset == offset` exactly, so the two never diverge where the check runs. The `len(results) == offset + limit + extra` comparison itself is unchanged pre-patch code.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.1577315
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "cursors.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The comments added to the Cursor class in cursors.py say negative offsets are now allowed or optimized. No code in Cursor changed, and int(offset) already accepted negative values.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's only change to cursors.py is two comment lines at src/sentry/utils/cursors.py:26-27 claiming negative offsets are now allowed as a performance optimization; the code line `self.offset = int(offset)` at :28 is unchanged and already accepted negative values (as did `int(bits[1])` in from_string at :59), so the comments describe a behaviour change that did not happen in Cursor.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1462125
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator is a near line-for-line copy of BasePaginator.get_result and Paginator's key/cursor methods, plus broken additions. It builds the same queryset, makes the same count call and uses the same slice, so it does not deliver the claimed performance improvement.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`OptimizedCursorPaginator.get_result` (src/sentry/api/paginator.py:845-911) repeats `BasePaginator.get_result` (136-215) statement for statement, with the same `build_queryset`, `count_hits` and `queryset[start_offset:stop]` slice, and its key/cursor methods (838-843) are identical to `Paginator`'s (222-227). The only addition is the negative-offset branch (877-882), which passes a negative index to a queryset slice that Django rejects, so no faster query path exists.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2241555
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover OptimizedCursorPaginator, the optimized_pagination=true endpoint branch and its cursor handling, or the change to BasePaginator.get_result.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch touches only three source files (organization_auditlogs.py, paginator.py, cursors.py) and adds no tests; `OptimizedCursorPaginator`, `optimized_pagination` and `enable_advanced_features` appear nowhere under tests/, and tests/sentry/api/endpoints/test_organization_auditlogs.py has no cursor or pagination cases. The only negative-offset test (tests/sentry/api/test_paginator.py:143-153) targets `OffsetPaginator`, so the new offset handling at src/sentry/api/paginator.py:179-184 is run by existing paginator tests only incidentally, with no test of the changed behaviour.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1825379
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch adds trailing whitespace and extra blank lines at end of file, which fail the repo's trailing-whitespace and end-of-file-fixer pre-commit hooks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds trailing whitespace at src/sentry/api/endpoints/organization_auditlogs.py:72 and :89 and src/sentry/api/paginator.py:824, :827, :829, and ends paginator.py with an extra blank line after `return cursor` (patch line 168, a single extra line, not several); `.pre-commit-config.yaml:175-180` enables `end-of-file-fixer` and `trailing-whitespace` with no exclusion covering these files.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.150169
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The endpoint's if/else block repeats the same self.paginate(...) call, differing only in paginator_cls and one kwarg.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/endpoints/organization_auditlogs.py:76-83 and :85-91 are two near-identical self.paginate(...) calls with the same request, queryset, order_by and on_results; they differ only in paginator_cls (OptimizedCursorPaginator vs DateTimePaginator) and the extra enable_advanced_features=True kwarg.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.11855260000000001
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The enable_advanced_features constructor flag has a single caller that always passes True. Its name does not indicate that it enables negative-offset slicing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The flag is declared at src/sentry/api/paginator.py:834 with default False and its only effect is gating negative-offset slicing at paginator.py:877; the only place OptimizedCursorPaginator is used is src/sentry/api/endpoints/organization_auditlogs.py:79-82, which hardcodes enable_advanced_features=True.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1352156
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The code imports OptimizedCursorPaginator, which does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`OptimizedCursorPaginator` is defined at module level in src/sentry/api/paginator.py:821 (added by this same patch), so the import at src/sentry/api/endpoints/organization_auditlogs.py:11 resolves.",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0.0743137
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The admin gate checks the raw request.user.is_superuser DB flag instead of is_active_superuser(request), which bypasses the active superuser-session check. has_global_access also defaults to True for members, so the gate does not restrict access to admins.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 gates on raw `request.user.is_superuser` rather than `is_active_superuser(request)` (which the endpoint's own permission class uses, src/sentry/api/bases/organization.py:124), and ORs it with `organization_context.member.has_global_access`, which defaults to True (src/sentry/models/organizationmember.py:216) and is copied into the RPC member (src/sentry/organizations/services/organization/serial.py:47). The gate is therefore effectively a no-op for ordinary members, though the endpoint is still limited by `OrganizationAuditPermission` (org:write or active superuser).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2066656
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new optimized_pagination query parameter is not documented in the API docs or changelog.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`optimized_pagination` appears only at src/sentry/api/endpoints/organization_auditlogs.py:70, with no mention in api-docs, apidocs or CHANGES. However the endpoint is `ApiPublishStatus.EXPERIMENTAL` (line 37), so it has no public docs, and its existing `event`/`actor` params are undocumented too.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1581242
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

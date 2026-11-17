@@ -1,0 +1,247 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "error_upsampling.py and organization_events_stats.py contain trailing-whitespace or whitespace-only lines. The repo's pre-commit trailing-whitespace hook rejects these lines.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch commits a stray `sentry-repo` submodule gitlink (mode 160000, commit a5d29095) at the repository root. It has no .gitmodules entry and is unrelated to the upsampling feature.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "factories.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "_set_sample_rate_from_error_sampling in factories.py checks `if client_sample_rate:`. A valid client_sample_rate of 0 or 0.0 is therefore falsy and never set as sample_rate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "factories.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "_set_sample_rate_from_error_sampling copies client_sample_rate into sample_rate without production's checks. It skips the allowlist, type and 0<x<=1 range checks, swallows errors with a bare except, and lets invalid values reach the weighting logic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 60s Django-cache layer in is_errors_query_for_error_upsampled_projects replaces the in-process-cached options.get with a network cache round trip. It also runs before the cheap dataset check, on every events-stats request.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 60s per-org/project-set upsampling cache key does not include the allowlist contents, and nothing invalidates it when issues.client_error_sampling.project_allowlist changes. A project removed from the allowlist keeps being upsampled until the entry expires.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The allowlist lookup is a linear search per project instead of a set lookup.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The unit tests import and test private helpers (_are_all_projects_error_upsampled, _is_error_focused_query, _should_apply_sample_weight_transform) and patch sentry.api.helpers.error_upsampling.options. The public entry point is_errors_query_for_error_upsampled_projects and its cache path are untested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "invalidate_upsampling_cache has no callers and no option-change hook. It cannot work as designed, because cache keys are per (org, project-set) and an allowlist change cannot enumerate them.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'organization' parameter of _are_all_projects_error_upsampled is unused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "options.get(key, []) passes [] as the `silent` argument rather than as a default. The module also has a redundant `if not allowlist: return False`, a needless result variable, and `dataset` is typed Any instead of ModuleType.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": "organization_events_stats.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In OrganizationEventsStatsEndpoint._get_event_stats, upsampling eligibility is computed from the outer `dataset` and raw request query instead of `scoped_dataset` and the executed query. As a result, dashboard-split subqueries (e.g. discover when the outer dataset is metrics) are not upsampled or are upsampled incorrectly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "_is_error_focused_query uses a plain substring test for 'event.type:error'. It matches negated ('!event.type:error') and OR'd queries, and misses variants like 'event.type: error'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The upsampling cache keys are built with Python's built-in hash() of project IDs. hash() is process-dependent (PYTHONHASHSEED) and can collide, so keys do not match across workers and different project sets can share a key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "upsampled_count is toInt64(sum(sample_weight)) with no null or zero handling. Errors lacking sample_weight in allowlisted projects count as 0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'upsampled_count' SnQLFunction lambda has an unused parameter named 'args' instead of '_'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test creates the organization with Organization.objects.create(name='test-org') instead of self.create_organization(), contrary to the repo's CLAUDE.md factory rule.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": "discover.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "upsampled_count in discover.py is not marked private=True. It is therefore exposed as a public Discover function that can bypass the allowlist and error-query checks and reference sample_weight on datasets without that column.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "upsampled_count uses default_result_type='number' while wrapping its result in toInt64() and replacing count(), which is 'integer'. Response metadata therefore reports a different type when upsampling is active.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Rewriting count() to 'upsampled_count() as count' changes the result column name. With transformAliasToInputFormat=1, process_results renames columns to 'upsampled_count() as count' while resolve_axis_column looks up 'count()', so the serializer emits 0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The upsampling branch in the RPC path and in top-events is unreachable. use_rpc requires spans_rpc/ourlogs, for which _should_apply_sample_weight_transform returns False, and EAP RPC has no upsampled_count.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The same transform_query_columns_for_error_upsampling block is repeated in three mutually exclusive branches. upsampling_enabled is a pure alias of should_upsample.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

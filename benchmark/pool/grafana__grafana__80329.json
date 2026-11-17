@@ -1,0 +1,359 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/80329",
+ "cost_usd": 0.0763467,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review",
+   "text": "Per-run timeout at cleanup.go:89 is still 9*time.Minute which was sized for 10-minute cadence, so slow runs will now go back-to-back with the 1-minute ticker"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "Test case 'running the max count delete again should not remove any annotations' no longer runs cleanup a second time over prior state because each case now seeds fresh data; idempotency of repeated run is no longer tested and name is misleading"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "Two SQL paths in deleteByIDs (inlined for SQLite>999, placeholders elsewhere) where one suffices since IDs are int64 read from DB making inlining injection-safe - adds unnecessary complexity with GetDBType branch, sqliteParameterLimit, args, asAny and migrator import (~20 lines)"
+  },
+  {
+   "id": "c4",
+   "source": "golden",
+   "text": "The code uses Error log level for what appears to be debugging information. This will pollute error logs in production. Consider using Debug or Info level instead."
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "Error level logging breaches instrumentation guidelines: Error level should be for unhandled failures, messages must start with capital letter, and should use key 'error' not 'err' (lines 537/557/579 use lowercase)"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "Debug logging left in at Error level in cleanup closures (lines 534/537/554/557/576/579): every batch emits two r.log.Error lines including successful and empty ones, first line dumps full ids slice plus cond while 'err' is always nil"
+  },
+  {
+   "id": "c7",
+   "source": "coderabbit",
+   "text": "Condition checks r.cfg.AnnotationCleanupJobBatchSize > sqliteParameterLimit instead of len(ids) > sqliteParameterLimit, meaning even small final batches unnecessarily use inlined IDs when configured batch size is large"
+  },
+  {
+   "id": "c8",
+   "source": "coderabbit",
+   "text": "Incorrect log level: Error used for informational messages in annotation cleanup - logs at line 534 use Error level for routine operational information, which will pollute error logs and potentially trigger alerts"
+  },
+  {
+   "id": "c9",
+   "source": "claude-code",
+   "text": "The ERROR-level log statements dump potentially thousands of annotation IDs into the log stream and will trigger monitoring alerts"
+  },
+  {
+   "id": "c10",
+   "source": "qodo-extended-v2",
+   "text": "In TestIntegrationAnnotationCleanUp, the per-subtest DB cleanup is registered after data creation and assertions, so any failure before registration leaves the shared DB dirty and can cascade-fail subsequent subtests"
+  },
+  {
+   "id": "c11",
+   "source": "augment",
+   "text": "Changing the CleanUpService ticker from 10 minutes to 1 minute could cause the cleanup loop to run nearly continuously if srv.clean() takes >1 minute (ticks accumulate), increasing load and lock contention"
+  },
+  {
+   "id": "c12",
+   "source": "cubic-v2",
+   "text": "Cleanup scheduler ticker changed from 10 minutes to 1 minute, causing all cleanup jobs (snapshots, query history, short URLs, temp users, etc.) to run 10x more often instead of only changing annotation cleanup behavior"
+  },
+  {
+   "id": "c13",
+   "source": "cubic-v2",
+   "text": "Log statement at line 537 uses Error level for an informational message reporting cleanup results - should be Debug or Info level"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review-replay",
+   "text": "In deleteByIDs, the inlined SQLite ID list is built in quadratic time using string concatenation in a loop, causing gigabytes of copying at large batch sizes"
+  },
+  {
+   "id": "c15",
+   "source": "claude-code",
+   "text": "The 'err' field is logged after the error has already been checked and returned, meaning err is guaranteed to be nil at those log points, showing misleading err=<nil> output"
+  },
+  {
+   "id": "c16",
+   "source": "cubic-v2",
+   "text": "Cleanup log statements at line 534 use Error level for routine debug/informational output ('Annotations to clean by time', 'cleaned annotations by time'), which will pollute error logs and may trigger false alerts - should use Debug level instead"
+  },
+  {
+   "id": "c17",
+   "source": "claude-code",
+   "text": "deleteByIDs at line 608 checks r.cfg.AnnotationCleanupJobBatchSize > sqliteParameterLimit but should check len(ids) > sqliteParameterLimit instead - when batchSize is configured above 999, the last partial batch with fewer than 999 IDs will unnecessarily use string-interpolation instead of safer parameterized queries"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "Non-SQLite path binds one placeholder per ID with no cap; MySQL and Postgres reject statements with more than 65535 bind parameters, so cleanupjob_batchsize > 65535 makes every DELETE fail"
+  },
+  {
+   "id": "c19",
+   "source": "golden",
+   "text": "The cleanup job ticker was changed from 10 minutes to 1 minute, which can lead to increased database load and contention due to more frequent execution of cleanup tasks. This change should be reviewed to ensure it aligns with performance expectations."
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "Global cleanup ticker changed from time.Minute*10 to time.Minute*1 (cleanup.go:77), running all cleanup jobs 10x as often - appears to be debugging leftover unrelated to annotation fix, increases DB load/lock contention"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "Debug logging left in at Error level in cleanup closures: six r.log.Error calls that fire on healthy runs, dump the full ids slice and SQL condition, and log an 'err' value that is always nil - breaches Error log-level rule"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "Comment states 'SQLite has a parameter limit of 999' which is only true before SQLite 3.32 (32766 after); test name references 3.32 limit so comment is misleading"
+  },
+  {
+   "id": "c23",
+   "source": "coderabbit",
+   "text": "Same log level issue at lines 554-558: Error level used for informational messages in 'Annotations to clean by count' and 'cleaned annotations by count' logs"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "The fetch->log->delete->log closure is copied three times (by time, by count, tags) with opaque x, y temporaries; copies have already drifted in log wording (xorm_store.go:528-539, 548-559, 570-581)"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review-replay",
+   "text": "On Postgres and MySQL, the bound-parameter path in deleteByIDs has no cap - batch sizes above 65535 exceed the placeholder limit and break annotation cleanup"
+  },
+  {
+   "id": "c26",
+   "source": "coderabbit",
+   "text": "Same log level issue at lines 576-580: Error level used for informational messages in 'Tags to clean' and 'cleaned tags' logs"
+  },
+  {
+   "id": "c27",
+   "source": "qodo-extended-v2",
+   "text": "Annotation cleanup logs at Error level unconditionally even when err is nil, which will spam error logs and mask real production errors in all three cleanup paths (by time, by count, orphan tags)"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review-replay",
+   "text": "Global cleanup ticker changed from 10 minutes to 1 minute without justification - appears to be debugging leftover that makes cleanup jobs run 10x more often and causes continuous cleanup with lock contention in HA"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "SQLite inline-ID path builds IN list with fmt.Sprintf in a loop which is quadratic in batch size - at batch size 32767 the final string is ~200-230KB with several GB total copying per batch"
+  },
+  {
+   "id": "c30",
+   "source": "converge-review",
+   "text": "Subtest registers t.Cleanup only after createTestAnnotations and count assertions; if seeding fails via require (FailNow) the partially inserted rows are never cleaned and leak into later subtests sharing fakeSQL (cleanup_test.go:116 seeds, :120 registers t.Cleanup)"
+  },
+  {
+   "id": "c31",
+   "source": "claude-code",
+   "text": "The cleanup ticker interval was changed from 10 minutes to 1 minute (time.Minute * 1), causing all 8 cleanup jobs to run 10x more frequently - this appears to be a debugging/testing change accidentally included"
+  },
+  {
+   "id": "c32",
+   "source": "augment",
+   "text": "Cleanup paths log at Error level even when there is no error and include potentially huge ids slices, which could flood logs and create false error signals during normal operation"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "Test seeding sets explicit IDs (ID: int64(i+1)); on Postgres explicit IDs do not advance annotation_id_seq, so later test inserting via sequence without clearing could hit duplicate keys"
+  },
+  {
+   "id": "c34",
+   "source": "claude-code",
+   "text": "Six r.log.Error() calls (lines 534, 537, 554, 557, 576, 579) log routine cleanup operational info at ERROR level - these are debug statements that were not removed before submission"
+  },
+  {
+   "id": "c35",
+   "source": "coderabbit",
+   "text": "Variable 'err' at line 534 will always be nil at that point since errors return early, so logging it is unnecessary"
+  },
+  {
+   "id": "c36",
+   "source": "qodo-extended-v2",
+   "text": "Cleanup service ticker interval was changed from 10 minutes to 1 minute, which appears to be a debugging artifact not mentioned in PR description, and conflicts with the 9-minute timeout designed for the 10-minute cycle"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review",
+   "text": "createTestAnnotations duplicates the 500-row InsertMulti chunk loop for annotations and annotation tags, and calls require.NoError inside the DB callback then returns nil (cleanup_test.go:273-291)"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review-replay",
+   "text": "The deleteByIDs comment incorrectly states SQLite's parameter limit is 999, but from SQLite 3.32+ the limit is 32766 - comment doesn't explain why 999 was kept"
+  },
+  {
+   "id": "c39",
+   "source": "claude-code",
+   "text": "The 9-minute timeout on line 89 was designed for the 10-minute interval; with a 1-minute ticker, overlapping cleanup cycles are nearly guaranteed"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "Branch gates on configured batch size rather than len(ids) in xorm_store.go:605-608"
+  },
+  {
+   "id": "c41",
+   "source": "qodo-extended-v2",
+   "text": "Cleanup logs include full ID lists which creates very large log lines and log bloat"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The global CleanUpService ticker in cleanup.go was changed from 10 minutes to 1 minute. As a result, all cleanup jobs (snapshots, query history, short URLs, temp users, annotations, etc.) run 10x as often, and the loop can run nearly continuously when a run takes longer than a minute.",
+   "path": "cleanup.go",
+   "members": [
+    "c11",
+    "c12",
+    "c19",
+    "c20",
+    "c28",
+    "c31",
+    "c36"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The per-run timeout at cleanup.go:89 is still 9 minutes, a value sized for the old 10-minute cadence. With the 1-minute ticker, cleanup runs can overlap or go back-to-back.",
+   "path": "cleanup.go",
+   "members": [
+    "c1",
+    "c39"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The annotation cleanup closures in xorm_store.go contain six r.log.Error calls (lines 534/537/554/557/576/579) that log routine operational information. These calls fire at Error level on every batch, including successful and empty ones.",
+   "path": "xorm_store.go",
+   "members": [
+    "c4",
+    "c5",
+    "c6",
+    "c8",
+    "c13",
+    "c16",
+    "c21",
+    "c23",
+    "c26",
+    "c27",
+    "c32",
+    "c34"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The cleanup log statements include the full ids slice, which can contain thousands of annotation IDs and produce very large log lines.",
+   "path": null,
+   "members": [
+    "c9",
+    "c41"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The cleanup log statements log 'err' after the error has already been checked and returned, so the logged value is always nil.",
+   "path": null,
+   "members": [
+    "c15",
+    "c35"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "deleteByIDs in xorm_store.go (around lines 605-608) chooses between paths by checking r.cfg.AnnotationCleanupJobBatchSize > sqliteParameterLimit instead of len(ids) > sqliteParameterLimit. Because of this, small final batches still use the inlined-ID path when the configured batch size is large.",
+   "path": "xorm_store.go",
+   "members": [
+    "c7",
+    "c17",
+    "c40"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The SQLite inlined-ID path in deleteByIDs builds the IN list by string concatenation (fmt.Sprintf) in a loop, which takes quadratic time in the batch size.",
+   "path": null,
+   "members": [
+    "c14",
+    "c29"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The non-SQLite path in deleteByIDs binds one placeholder per ID with no cap. MySQL and Postgres reject statements with more than 65535 bind parameters, so a batch size above 65535 makes every DELETE fail.",
+   "path": null,
+   "members": [
+    "c18",
+    "c25"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The deleteByIDs comment says SQLite's parameter limit is 999. That limit applies only before SQLite 3.32 (32766 after), and the test name references the 3.32 limit.",
+   "path": null,
+   "members": [
+    "c22",
+    "c38"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "deleteByIDs has two SQL paths: inlined IDs for SQLite above 999, and placeholders elsewhere. The IDs are int64 values read from the DB, so a single path would be sufficient, and the second path adds a GetDBType branch, sqliteParameterLimit, args/asAny, and a migrator import.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The fetch->log->delete->log closure is copied three times (by time, by count, tags) with opaque x, y temporaries in xorm_store.go (528-539, 548-559, 570-581). The copies already differ in their log wording.",
+   "path": "xorm_store.go",
+   "members": [
+    "c24"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The test case 'running the max count delete again should not remove any annotations' now seeds fresh data for each case, so it no longer runs cleanup a second time over prior state. Idempotency of a repeated run is not tested, and the test name does not match what it does.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "In TestIntegrationAnnotationCleanUp, t.Cleanup is registered only after data seeding and assertions (cleanup_test.go:116 seeds, :120 registers). A failure before registration leaves rows in the shared DB that affect later subtests.",
+   "path": "cleanup_test.go",
+   "members": [
+    "c10",
+    "c30"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "Test seeding sets explicit IDs (ID: int64(i+1)). On Postgres this does not advance annotation_id_seq, so later inserts that use the sequence can hit duplicate keys.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "createTestAnnotations in cleanup_test.go (273-291) duplicates the 500-row InsertMulti chunk loop for annotations and annotation tags. It also calls require.NoError inside the DB callback and then returns nil.",
+   "path": "cleanup_test.go",
+   "members": [
+    "c37"
+   ]
+  }
+ ]
+}

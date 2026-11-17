@@ -1,0 +1,38 @@
+{
+ "findings": [
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Check returns a denial immediately from permDenialCache but ignores denials in the permission cache so that new grants are picked up. Once a denial is stored in permDenialCache, any permission granted afterward is blocked for up to the cache TTL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TestService_getUserPermissions no longer has a cacheHit:true case, so the cacheHit field and both 'if tc.cacheHit' branches are dead. No test asserts the always-go-to-store behavior or the removed anonymous cache read.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The newly added log message 'could not check permission' starts with a lowercase letter, which violates the convention that messages start with a capital letter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

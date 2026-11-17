@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/payment/deletePayment.ts:16 awaits the appStore promise with no try/catch, so a rejected import() from packages/app-store/index.ts propagates out of deletePayment as a rejection. Little changes in practice: these are eager imports of local modules, which would have failed at module load under the old static imports, and the later await at line 23 has no handling either.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1157217
+}

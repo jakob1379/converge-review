@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only call to `I18n.fallbacks.ensure_loaded!` is at app/controllers/application_controller.rb:159. `I18n.translate` (lib/freedom_patches/translate_accelerator.rb:68) loads only `config.locale`, and `load_locale` (line 56) loads only that locale's yml. So in jobs (app/jobs/base.rb:151), `with_locale` callers, rake tasks and the console, `:en` and the site default are never loaded. A missing key then returns 'translation missing', and for no-argument lookups that string is frozen into the LRU cache (lines 74-76).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.07894100000000001
+}

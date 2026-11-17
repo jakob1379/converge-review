@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:92-106 commits the attendees with no transaction, and the un-wrapped `await eventManager.updateCalendarAttendees(evt, booking)` at :165 sits before the email try at :167; a retry then filters every guest out at :74-81 and throws emails_must_be_unique_valid. The call can reject despite the try/catch in packages/core/EventManager.ts:815-921, because `return Promise.all(result)` at :920 is not awaited and `updateEvent` dereferences `credential.appId` (packages/core/CalendarManager.ts:371) when the referenced credential no longer exists.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.48540000000000005
+}

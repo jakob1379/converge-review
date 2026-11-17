@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/refreshOAuthTokens.ts:3 the parameter is typed `refreshFunction: () => any`, and line 17 (`const response = await refreshFunction()`) makes the response `any`, so the function's `Response | any` return collapses to `any`. That hides the mismatch where the sync branch returns a fetch Response (line 8) but callers expect another shape: googlecalendar reads `res?.data` (patch line 300) and hubspot assigns the result straight to `HubspotToken` (patch line 362), and neither gets a type error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0897896
+}

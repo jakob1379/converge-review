@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At pkg/apiserver/rest/dualwriter_mode3.go:126-129, when d.Storage.Update fails, the patch records the failure with d.recordLegacyDuration(true, mode3Str, ..., startStorage) instead of recordStorageDuration. The success path at line 132 and DeleteCollection at line 156 both correctly use recordStorageDuration.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0490757
+}

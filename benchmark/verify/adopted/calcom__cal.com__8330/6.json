@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/slots.ts:206-208 still picks overrides with `dayjs.utc(override.start)`, but getUserAvailability.ts:218-221 stores the organizer's wall-clock time as if it were UTC. The offset is applied only to the hours and minutes (slots.ts:211-224), so an IST override for 02:00\u201305:00 on D is placed on the UTC invitee's day D at 20:30\u201323:30 instead of D-1, where it really starts.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12691570000000002
+}

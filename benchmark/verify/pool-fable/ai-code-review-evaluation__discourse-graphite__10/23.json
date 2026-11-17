@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The four d-buttons at app/assets/javascripts/admin/templates/components/embeddable-host.hbs:9-10,16-17 pass only `icon`, and d-button.js.es6:11-14 leaves `title` undefined without a label or title while fa-icon.js.es6:13-18 emits a bare `<i>` with no sr-only text, so they have no accessible name. In config/locales/client.en.yml:2494-2500 the embedding block has no save/cancel/delete keys; an `edit` key exists at line 2498 but is unused, so the i18n half is only mostly right.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4472879999999999
+}

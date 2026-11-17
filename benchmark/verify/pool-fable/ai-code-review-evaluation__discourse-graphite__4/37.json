@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:44 declares `def self.import_remote(user, url, opts=nil)` with no spaces around `=`, and line 47 then does `opts = opts || {}` rather than defaulting to `opts={}`; the file is newly added by the patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0677847
+}

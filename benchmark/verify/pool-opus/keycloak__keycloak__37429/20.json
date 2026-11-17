@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "VerifyMessageProperties.java:74 runs replaceAll(\"resources-community\", \"resources\") on the whole absolute path, so a checkout directory with that name also gets rewritten and the English file is not found (RuntimeException). VerifyMessageProperties.java:132 tests file.getAbsolutePath().contains(\"email\"), so a parent directory named with 'email' makes every file get the email-only RTL style stripping.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2278799
+}

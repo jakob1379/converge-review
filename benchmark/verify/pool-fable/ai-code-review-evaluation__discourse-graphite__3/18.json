@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "app/controllers/users_controller.rb:198 does add `errors: user.errors.to_hash` to the failure response, but line 197 already returned the same validation messages via `user.errors.full_messages`. The hash only re-keys those user-facing messages by attribute, so nothing internal is newly exposed.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1331096
+}

@@ -1,0 +1,201 @@
+{
+ "findings": [
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java",
+   "line": 57,
+   "severity": "Important",
+   "claim": "The patch removes the fail-fast IllegalStateException(\"Multiple crypto providers loaded ...\") and replaces it with selection by order(). DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider all return 200. When two of them are on the classpath, the stable sort lets ServiceLoader/classpath order pick the winner silently, and the losers are only logged at DEBUG. A FIPS deployment with a stray keycloak-crypto-default jar can therefore run on the non-FIPS BouncyCastle provider instead of failing at startup.",
+   "evidence": "All three seats cite the ties: DefaultCryptoProvider.java:83-84, WildFlyElytronProvider.java:76-77 and FIPS1402Provider.java:114-115 all return 200. sorted(...) is stable. The pre-patch detectProvider threw. Quarkus is unaffected because KeycloakRecorder.java:214 uses setProvider. Affected init() callers: services KeycloakApplication.java:89, admin-cli Globals.java:44 (its dist packages both the default and fips1402 jars), testsuite CryptoInitRule.java:14 and now AuthzClient.create. mattpocock and superpowers note that the patch has no test of the new selection logic. All seats say this is reasoned, not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test before fixing, as proposed by superpowers: put two order-200 CryptoProviders on the ServiceLoader path and assert that CryptoIntegration.init throws. It throws on base 10aca55 and returns a provider on HEAD 79d11c4. Smallest fix: keep the throw when the top two providers have equal order(), so ordering only breaks real differences (100 vs 200). Not yet reproduced; the gate was not run.",
+   "list": "main"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java",
+   "line": 44,
+   "severity": "Important",
+   "claim": "int order() is added as an abstract method, with no default, to the public SPI interface CryptoProvider in keycloak-common. External implementations stop compiling. An implementation already compiled against the old interface and loaded through ServiceLoader throws AbstractMethodError when detectProvider's comparator calls order(), which crashes CryptoIntegration.init. The patch has no release note or upgrade-guide entry.",
+   "evidence": "superpowers rated it Important: keycloak-common is consumed outside this repo, e.g. by the separate keycloak-client authz-client that this commit mirrors. open-code-review rated it Minor: AbstractMethodError from Comparator.comparingInt(CryptoProvider::order) once two or more providers are found, all in-repo implementations are covered (Fips1402StrictCryptoProvider by inheritance), and there is no migration note. mattpocock rated it Minor: PR-CHECKLIST.md requires release notes and upgrade guide where applicable, CONTRIBUTING.md #8 requires documentation, and grep -rl CryptoProvider docs finds nothing. ponytail raised the same AbstractMethodError claim as a side note to its duplication finding. Severity is normalised up to Important because the failure is a runtime crash of the init path for any external provider. Reasoned, not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test before fixing: load, via ServiceLoader, a CryptoProvider class compiled against the pre-patch interface (no order()) next to a second provider, and assert that init succeeds. It fails with AbstractMethodError on HEAD. Smallest fix: give order() a default in the interface. Add an upgrade note if the method stays abstract. If no red can be built inside the repo, defer as unverified with this exact check. Severity split between seats: Important (superpowers) vs Minor (open-code-review, mattpocock, ponytail).",
+   "list": "main"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/AuthzClientCryptoProvider.java",
+   "line": 114,
+   "severity": "Minor",
+   "claim": "Dead code. ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) build encoders and throw the results away. Lines 117-121 repeat the encoding, and only that result is returned.",
+   "evidence": "open-code-review #3, ponytail #1 and superpowers #5 all cite lines 114-115 and the repeated work at 117-121. mattpocock noted the same lines but left them out as a generic code smell, so it is not counted as a raising seat.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Delete lines 114-115 (-2 lines). Minor, so no red test is required. The existing ECDSAAlgorithmTest round-trip must stay green.",
+   "list": "main"
+  },
+  {
+   "path": "authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java",
+   "line": 42,
+   "severity": "Minor",
+   "claim": "The test uses one default KeyPairGenerator.getInstance(\"EC\") key (P-256, or P-384 on some JDKs) for ES256, ES384 and ES512, and only asserts a self round-trip. So the P-521-sized signatures, the DER long-form length paths (ASN1Encoder.writeLength and ASN1Decoder.readLength when length > 127) and independent correctness of the encoding are never exercised. An encoder/decoder bug that is symmetric would pass.",
+   "evidence": "mattpocock #3 (lines 42, 65-71; cites CONTRIBUTING.md #7 and PR-CHECKLIST.md 'sufficient test coverage'), open-code-review #6 (lines 42, 56; the asn1Des output is never checked with Signature.verify), superpowers #4 (ES512 with a P-256 key gives about 70 bytes of DER). superpowers' standalone javac harness ran 500 signatures each on P-256, P-384 and P-521 against SHAxxxwithECDSAinP1363Format with 0 failures, including the long-form path. So this is a test gap, not a codec bug.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted as a test gap. Generate a key per curve (secp256r1, secp384r1, secp521r1) and check the output independently with SHAxxxwithECDSAinP1363Format or Signature.verify. Minor; no red is expected because superpowers' harness shows the codec is correct.",
+   "list": "main"
+  },
+  {
+   "path": "authz/client/pom.xml",
+   "line": 15,
+   "severity": "Minor",
+   "claim": "The org.hamcrest:hamcrest dependency is added at test scope but never used. ECDSAAlgorithmTest imports only org.junit.Assert and org.junit.Test.",
+   "evidence": "open-code-review #7 and ponytail #6 cite pom.xml:15-19. mattpocock #5 cites pom.xml:67-71 (line numbers differ between seats; same dependency and claim). mattpocock: grep -rn hamcrest authz/client/src/test finds nothing; PR-CHECKLIST.md rule on irrelevant changes. ponytail notes that crypto/default/pom.xml follows the same pattern. open-code-review did not check whether the BOM manages the hamcrest version.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Remove the dependency (-5 lines) and re-run the module's test build to confirm nothing needs it. Minor; the line numbers must be settled against the pinned patch.",
+   "list": "main"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java",
+   "line": 94,
+   "severity": "Minor",
+   "claim": "Hunks that only reformat whitespace in code the change does not otherwise touch.",
+   "evidence": "mattpocock #4: CryptoProvider.java:94, DefaultCryptoProvider.java:186, FIPS1402Provider.java:203,208,230,234; cites CONTRIBUTING.md 'Do not format or refactor code that is not directly related to your contribution'. ponytail #8: the same hunks, with FIPS1402Provider.java:235 instead of 234.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats, so not reported and not fixed. open-code-review and superpowers confirmed these hunks are whitespace-only and found no issue in them.",
+   "list": "appendix"
+  },
+  {
+   "path": "(commit message)",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The issue link 'closes #33831' is lowercase and sits on the line right after the summary with no blank line. CONTRIBUTING.md documents a separate trailing 'Closes #1234' line.",
+   "evidence": "mattpocock #6: CONTRIBUTING.md 'Commit messages and issue linking' says 'please only use the above formats'. Sign-off is present.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/AuthzClient.java",
+   "line": 95,
+   "severity": "Minor",
+   "claim": "AuthzClient.create now sets JVM-global crypto state, and the first caller wins. If only AuthzClientCryptoProvider is visible, it is locked in as the provider. It throws UnsupportedOperationException for most methods, and its getBouncyCastleProvider() (AuthzClientCryptoProvider.java:61-66) fixes BouncyIntegration.PROVIDER to the JDK keystore provider (usually SUN). A later KeycloakApplication init in the same JVM then does nothing.",
+   "evidence": "open-code-review #4 (AuthzClientCryptoProvider.java:61-66 and AuthzClient.java:95) and superpowers #3 (AuthzClient.java:95). Both say exposure is limited: the module artifactId is keycloak-authz-client-tests, and on the testsuite classpath crypto-default (200) beats the stub (100). Neither found a concrete failure. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats; not reported and not fixed. ponytail independently notes that the module is testsuite-only and DefaultCryptoProvider always wins there.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java",
+   "line": 52,
+   "severity": "Minor",
+   "claim": "The DER parsing is lenient. Tag checks compare only tag & 0x1f, ignoring the class and constructed bits. readInteger with length 0 throws NumberFormatException rather than IOException. Trailing bytes after the sequence are ignored.",
+   "evidence": "open-code-review #5 (lines 52, 68, 73). It notes the input is trusted JCA Signature.sign() output on the signer path only, the verifier path only encodes, and ECDSASignatureVerifierContext.verify catches Exception. superpowers reproduced NumberFormatException on '30 04 02 00 02 00' but classed it as behaviour matching intent, so it is not counted as raising this.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java",
+   "line": 93,
+   "severity": "Minor",
+   "claim": "The decoder supports high-tag-number tags and indefinite-length encoding (lines 93-124, 133-135), which its only caller never needs: JDK Signature.sign() DER, always 0x30 with two 0x02 integers and never indefinite length. The indefinite-length branch returns -1, and readInteger would then hit new byte[-1] and throw NegativeArraySizeException, adding a crash path.",
+   "evidence": "ponytail #4. The only production caller is ECDSASignatureSignerContext (core/.../ECDSASignatureSignerContext.java:33). The crash path is reasoned, not run. Suggested trim is about -25 lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single advisory seat; not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java",
+   "line": 65,
+   "severity": "Minor",
+   "claim": "The ignored-providers debug line is built with a StringBuilder loop that leaves a trailing ', ', and the built string is passed to logger.debugf as the format string, so a '%' in the text would be misread.",
+   "evidence": "ponytail #3 (lines 64-70; suggests debugf(\"Ignored crypto providers: %s\", ...), -6 lines) and superpowers #6 (lines 65-69; suggests logger.debug, or debugf with a join).",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats; not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java",
+   "line": 39,
+   "severity": "Minor",
+   "claim": "Because order() is abstract, the identical 'return 200' override is repeated in DefaultCryptoProvider (82-85), WildFlyElytronProvider (75-78) and FIPS1402Provider (113-116). A default in the interface would remove three of the four overrides.",
+   "evidence": "ponytail #2; about -12 lines. The compatibility side of the same change is merged into the main-list CryptoProvider.java:44 finding.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single advisory seat; not reported and not fixed. If the main-list fix adds a default order(), this duplication is largely resolved as a side effect.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/AuthzClientCryptoProvider.java",
+   "line": 151,
+   "severity": "Minor",
+   "claim": "The r/s padding and trimming in integerToBytes and concatenatedRSToASN1DER nearly copies ElytronECDSACryptoProvider (concatenatedRSToASN1DER, convertToBytes), and BC has a third copy. A fix to one copy will not reach the others.",
+   "evidence": "ponytail #5 (lines 151-163). The seat says no fix is needed now, because the modules deliberately share no dependencies.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single advisory seat, which itself proposes no fix; not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Encoder.java",
+   "line": 38,
+   "severity": "Minor",
+   "claim": "ASN1Encoder (38-44) and ASN1Decoder (39-47) each have both a constructor and a static create() that only calls it. In package-private classes with one caller, the factories add nothing over new.",
+   "evidence": "ponytail #7; about -6 lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single advisory seat; not reported and not fixed.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats report reviewing all 12 files in the patch, with these limits. open-code-review's tool excluded META-INF/services/org.keycloak.common.crypto.CryptoProvider (unsupported extension) and ECDSAAlgorithmTest.java (default path exclusion); the seat then read both by hand. ponytail reviewed all 12 files for over-engineering only, not correctness or security. mattpocock checked the ASN1 encoder/decoder internals only on the ES256/384/512 paths and left the dead code at AuthzClientCryptoProvider.java:114-115 out as a code smell. superpowers checked the whitespace hunks in DefaultCryptoProvider.java, FIPS1402Provider.java and CryptoProvider.java only for being whitespace. open-code-review did not check whether the Elytron or FIPS test profiles ever put two order-200 providers on one classpath, or whether the Maven BOM manages the hamcrest version. Axes that did not run: the gate was not run (benchmark mode), so the review has no executed ground truth. No seat built the repo or ran its tests. Only superpowers ran anything: a standalone javac harness for the codec outside the repo, which is not the project gate. All main-list claims are reasoned, not reproduced, and no red tests exist yet. Spec: none. The only spec was the commit title 'Add AuthzClientCryptoProvider to authz-client in keycloak main repository', and issue #33831 was not fetched. Standards: covered by mattpocock against CONTRIBUTING.md, PR-CHECKLIST.md and docs/tests-development.md. Seat independence: no reviewer from another model family held a correctness seat, so agreement between same-family seats may share blind spots. Rejections: none. No seat's report disproves any finding, so no verifier dispatch was needed and no finding carries an 'unverified' rejection reason. Severity disagreement: CryptoProvider.java:44 was normalised to Important (superpowers) over Minor (open-code-review, mattpocock, ponytail). Line disagreement: authz/client/pom.xml was cited at 15-19 (open-code-review, ponytail) and 67-71 (mattpocock). Scope: step 4 merge and the Rejections rule only. No fixes and no rounds 2+ were run, so nothing has converged."
+}

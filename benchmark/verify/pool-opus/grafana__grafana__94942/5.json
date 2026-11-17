@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a stub at pkg/expr/sql/db.go:16 whose RunCommands always fails. On the legacy path, nodes.go:160 calls UnmarshalSQLCommand with no feature-flag check, then NewSQLCommand, then TablesList. So every request logs logger.Error(\"error serializing sql\") with the raw SQL at pkg/expr/sql/parser.go:28, followed by Warn(\"invalid sql query\") with the raw SQL. That Warn is in pkg/expr/sql_command.go:32, not in parser.go as the claim says.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.20963469999999998
+}

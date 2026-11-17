@@ -1,0 +1,329 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In SpanFlusher.join(), when the deadline expires the `break` exits the per-process loop before terminate() runs for the current and remaining flusher processes, leaving them running after join returns during shutdown/rebalance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/spans/consumers/process/flusher.py:337-347 the deadline check at lines 338-341 does `break` before the `process.terminate()` at lines 346-347, so once the deadline has passed (for example after `self.next_step.join(timeout)` at line 334 uses up the timeout) the current and all remaining flusher processes are never terminated. The pre-patch code always called `self.process.terminate()` after the wait loop.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.11306580000000001
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isinstance(process, multiprocessing.Process) guard before process.kill() in the restart path (_ensure_processes_alive) is always False for spawn-context SpawnProcess objects, so hung or unhealthy processes are never killed before replacements start. The pre-PR code called kill() unconditionally.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/spans/consumers/process/flusher.py:105 creates processes via `multiprocessing.get_context(\"spawn\").Process` (SpawnProcess), and flusher.py:254-255 only calls `process.kill()` if `isinstance(process, multiprocessing.Process)`; in CPython SpawnProcess subclasses BaseProcess, not `multiprocessing.Process`, so the guard is False and a hung process is left running while flusher.py:259 starts its replacement (the stdlib hierarchy is from knowledge of CPython, not read here). The pre-patch code called `self.process.kill()` unconditionally.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.29515100000000005
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In join(), terminate() sits behind the same isinstance(process, multiprocessing.Process) check, which is always False for SpawnProcess, so flusher processes are never terminated on shutdown or rebalance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Flusher processes are created via `multiprocessing.get_context(\"spawn\").Process` (src/sentry/spans/consumers/process/flusher.py:53,105), i.e. `SpawnProcess`, which subclasses `BaseProcess` and not `multiprocessing.Process`, so the `isinstance` guard at flusher.py:346-347 is always False and `terminate()` is never called in `join()`. Processes only stop if they honour the `stopped` flag (not checked by running code; the `isinstance` result rests on CPython's class hierarchy), and the same guard already existed before the patch, which rewrote these lines into the per-process loop.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2471987
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "_create_process_for_shard (lines 127-132) has no callers in src/ or tests/ and only delegates to _create_process_for_shards, so it is dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`_create_process_for_shard` is defined at src/sentry/spans/consumers/process/flusher.py:127-132 and a repo-wide search finds no other reference to it; the only callers nearby (flusher.py:84, 259) call `_create_process_for_shards` directly. The patch adds this method (change.patch:190) as a thin lookup-and-delegate wrapper.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0980578
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Having both _create_process_for_shard and _create_process_for_shards, with near-identical names, is confusing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds both `_create_process_for_shards(process_index, shards)` at src/sentry/spans/consumers/process/flusher.py:86 and `_create_process_for_shard(shard)` at flusher.py:127, differing by one trailing letter. The singular one only looks up the owning process and delegates to the plural one, and it has no callers anywhere in the repository, so the near-duplicate name adds confusion for no benefit.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.10058989999999998
+   }
+  },
+  {
+   "issue": "i6",
+   "path": "test_consumer.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In test_basic in test_consumer.py, the added time.sleep(0.1) is a no-op because time.sleep is monkeypatched to a no-op earlier in the test, so it does not give the flusher time to process.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/sentry/spans/consumers/process/test_consumer.py:15 replaces the `sleep` attribute on the `time` module with `lambda _: None`, and the added call at test_consumer.py:62 resolves `time.sleep` through that same module object at call time, so it returns immediately and gives the flusher thread no real wait.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2180037
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "test_flusher_processes_limit asserts only internal attributes and does not check that segments from all shards are flushed across multiple processes. No test covers the restart/kill path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/sentry/spans/consumers/process/test_consumer.py:113-123 only asserts `len(flusher.processes)`, `max_processes`, `num_processes` and the shard-map total, submitting no messages and checking nothing in `messages`. No test under tests/ references `_ensure_processes_alive`, `process_restarts` or the kill path rewritten at src/sentry/spans/consumers/process/flusher.py:218-259; test_flusher.py covers only backpressure with one shard.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.29115440000000004
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The CLI default for --flusher-processes is 1 (one process for all shards), while SpanFlusher and ProcessSpansStrategyFactory default max_processes to None (one per shard). This forces a single process, and tests exercise only the per-shard path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The default mismatch is real: the CLI option defaults to 1 (src/sentry/consumers/__init__.py:432-437) while the factory and SpanFlusher default to None, meaning one process per shard (factory.py:41, flusher.py:47-51). It is a documented, overridable default that keeps the pre-patch single-flusher behaviour, and the tests part is overstated: test_flusher_processes_limit runs 2 processes over 4 shards (tests/sentry/spans/consumers/process/test_consumer.py:100-117).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.35820490000000005
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The docstring 'Creates one process per shard' does not match the default deployment, where the CLI default of 1 runs all shards in one process. The comments at lines 178 and 235 also do not match the code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The docstring at src/sentry/spans/consumers/process/flusher.py:32 says 'Creates one process per shard', but the CLI default `--flusher-processes` is 1 (src/sentry/consumers/__init__.py:434) and flusher.py:60 takes `min(max_processes, len(assigned_shards))`, so by default all shards share one process. The comments at flusher.py:178 and flusher.py:235 speak of per-shard health, while the code only writes and checks a single per-process `healthy_since` value.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.29568269999999997
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "max_processes is normalised twice, self.max_processes is kept only for the test, and _create_processes is a 2-line wrapper with one caller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/spans/consumers/process/flusher.py:51 defaults max_processes to len(buffer.assigned_shards) and :60 clamps it again with min(..., len(buffer.assigned_shards)); self.max_processes is read only at :60 and in tests/sentry/spans/consumers/process/test_consumer.py:116; _create_processes (:81-84) is a two-line loop called only from __init__ at :79.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2643044
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "--flusher-processes is a plain int with no lower bound: 0 silently means one process per shard, and a negative value gives a negative num_processes and an empty process_to_shards_map, causing a KeyError during shard distribution.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`--flusher-processes` is declared `type=int` with no bound (src/sentry/consumers/__init__.py:433); at src/sentry/spans/consumers/process/flusher.py:51 `max_processes or len(buffer.assigned_shards)` turns 0 into one process per shard. A negative value is truthy, so line 60 gives a negative `num_processes`, `range()` at line 62 builds an empty map, and `i % num_processes` at lines 65-66 yields 0 for the first shard, raising KeyError.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2499847
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "submit() loops over one SpansBuffer per child process, calling get_memory_info() and record_stored_segments() N times against the same Redis cluster on the consumer main thread.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`submit()` loops over `self.buffers` (one `SpansBuffer` per flusher process, src/sentry/spans/consumers/process/flusher.py:125) calling `record_stored_segments()` at flusher.py:269-270 and `get_memory_info()` at flusher.py:300-301. Every buffer uses the same `SENTRY_SPAN_BUFFER_CLUSTER` client (src/sentry/spans/buffer.py:117-118, 161-163), and `get_memory_info()` is a shard-independent cluster-wide `INFO` (buffer.py:375-376), so the consumer thread makes N redundant `INFO` calls and N pipelines per submit.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3758114
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The spans.buffer.flusher.wait_produce timer (line 199) uses tag key 'shards', while the other metrics in the same flush loop (lines 185, 195, 244) use 'shard'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/spans/consumers/process/flusher.py:199 tags `spans.buffer.flusher.wait_produce` with `{\"shards\": shard_tag}`, while lines 185 and 195 in the same loop use `{\"shard\": shard_tag}` and line 244 (in `_ensure_processes_alive`, not the flush loop) also uses `\"shard\"`. All four tag additions are `+` lines in the patch.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.12073829999999999
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'shard' tag value at lines 185 and 195 is a comma-joined list of a process's shards, which changes on rebalance and has high cardinality. Line 244 tags a single int under the same key, and existing buffer metrics use 'shard_i'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/spans/consumers/process/flusher.py:144 builds `shard_tag = \",\".join(map(str, shards))` and uses it as the `shard` tag at lines 185 and 195, so the value depends on the partition assignment, while line 244 tags a single int under the same `shard` key. Existing buffer metrics use `shard_i` (src/sentry/spans/buffer.py:372, 447), and line 199 adds a third key, `shards`.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2507124
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Several new comments (lines 59, 82, 92, 241, 336) restate the code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "All five comments exist in src/sentry/spans/consumers/process/flusher.py and were added by the patch; each only paraphrases the next line or two, e.g. flusher.py:92 \"Create a buffer for these specific shards\" above `shard_buffer = SpansBuffer(shards)` and flusher.py:82 \"Create processes based on shard mapping\" above the loop over `process_to_shards_map` (likewise :59, :241, :336).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.24528729999999999
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `if not process: continue` guard in _ensure_processes_alive can never be true, because self.processes only holds started Process or Thread objects, which are always truthy.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`self.processes` is only written at src/sentry/spans/consumers/process/flusher.py:124, after `process.start()`, with a `SpawnProcess` or `threading.Thread` object (neither defines `__bool__`/`__len__`, so both are always truthy); no code or test ever stores None or another falsy value, so the `if not process: continue` guard at flusher.py:222-223 is dead code.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2137737
+   }
+  },
+  {
+   "issue": "i17",
+   "path": "CLAUDE.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The hasattr/isinstance anti-pattern guidance added to CLAUDE.md (lines 448-458) is unrelated to the span-flusher change.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "CLAUDE.md:448-458 adds generic hasattr-vs-isinstance guidance for union types to the repo-wide agent doc, which has no functional connection to the per-shard flusher change in src/sentry/spans/consumers/process/flusher.py. The only link is thematic: the flusher narrows a `SpawnProcess | threading.Thread` union with isinstance at flusher.py:254 and :346.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.14187470000000002
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Each process's SpansBuffer computes ceil(max_flush_segments / len(assigned_shards)) over only its own shard subset, so spans.buffer.max-flush-segments becomes a per-process budget. Total flush per cycle and the backpressure threshold therefore scale with process count.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/spans/consumers/process/flusher.py:93 now builds a separate SpansBuffer(shards) per flusher process, and src/sentry/spans/buffer.py:382-384 divides spans.buffer.max-flush-segments by that buffer's own shard count only. Each process therefore fetches up to the full option value per cycle (buffer.py:390), and the backpressure flag at buffer.py:411 compares against the same inflated per-shard limit, so both scale with process count.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3864352
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

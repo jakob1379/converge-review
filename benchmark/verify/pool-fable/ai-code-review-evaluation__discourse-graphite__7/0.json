@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/desktop/topic-post.scss:291 now reads `dark-light-choose(scale-color($primary, $lightness: 70%), scale-color($secondary, $lightness: 30%))` where the patch removed `scale-color($primary, $lightness: 30%)`. The first argument is the light-theme result (common/foundation/variables.scss:46-52), so the light-theme link goes from 30% to 70% lightness, while every other conversion in this file keeps the original value first and uses (X, 100-X).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2071888
+}

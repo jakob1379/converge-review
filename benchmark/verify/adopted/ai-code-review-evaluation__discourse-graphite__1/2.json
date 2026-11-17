@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes utilities.js:246 so the 413 handler always reports a fixed `10 * 1024` KB limit. A 413 comes from the proxy, and that limit is set per install: config/nginx.sample.conf:61 uses 10m but docs/INSTALL-ubuntu.md:390 shows 2m. Before the patch the handler showed max_image_size_kb, which the setting descriptions (e.g. server.en.yml:1037) tell operators to keep in sync with client_max_body_size.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0872326
+}

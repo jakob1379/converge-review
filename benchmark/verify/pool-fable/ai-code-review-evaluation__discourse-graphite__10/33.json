@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/embeddable_host.rb:2 requires the host to end in `\\.[a-z]{2,5}` (before optional port/path), so `localhost`, `192.168.1.1` and `example.museum` all fail validation. db/migrate/20150818190757_create_embeddable_hosts.rb:25 copies old setting values in with raw SQL, bypassing validation, and app/controllers/admin/embeddable_hosts_controller.rb:27 calls `host.save` on update, so such migrated rows cannot be re-saved.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1700923
+}

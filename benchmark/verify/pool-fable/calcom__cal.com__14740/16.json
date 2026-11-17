@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/components/dialog/AddGuestsDialog.tsx:32 initialises the state with `useState<string[]>([\"\"])`, and resets it to `[\"\"]` at lines 39 and 90. This looks deliberate, since MultiEmail (packages/ui/form/MultiEmail.tsx:19,77) only renders an input when the array is non-empty, though it makes the `length === 0` guard at line 49 unreachable on first open.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1409066
+}

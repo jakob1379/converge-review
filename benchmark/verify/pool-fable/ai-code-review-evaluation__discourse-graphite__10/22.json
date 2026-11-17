@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20150818190757_create_embeddable_hosts.rb:22-25 inserts each legacy line verbatim with raw SQL, so the `before_validation` scheme/path stripping at app/models/embeddable_host.rb:5-8 never runs. `record_for_host` (app/models/embeddable_host.rb:14-17) compares `lower(host)` to the bare `URI(host).host`, so a stored 'http://eviltrout.com' \u2014 a form the removed `SiteSetting.allows_embeddable_host?` accepted \u2014 can never match.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1302871
+}

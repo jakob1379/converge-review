@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch drops the client-side `websiteName` computed property (controllers/user.js.es6:17-21 removed) and has user.hbs:66-71 show the server-only `model.website_name`. After a save, nothing on the client updates that field: `User#save` copies back only `bio_excerpt` (models/user.js.es6:209-210), and the preferences controller refreshes only `name` and `bio_cooked` (controllers/preferences.js.es6:117-121). The preferences route reuses `modelFor('user')` (routes/preferences.js.es6:6), so the shared model keeps the old name while the link's href (`model.website`) already points to the new URL.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1168082
+}

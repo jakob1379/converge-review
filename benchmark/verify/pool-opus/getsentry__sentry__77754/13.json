@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/integrations/services/test_assignment_source.py:268-271 makes TestAssignmentSource a subclass of sentry.testutils.cases.TestCase, which is a Django test case that uses the database (src/sentry/testutils/cases.py:506). The tests only call from_dict, to_dict and the constructor of the frozen dataclass in src/sentry/integrations/services/assignment_source.py:76-97, and none of these touch the DB.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.090994
+}

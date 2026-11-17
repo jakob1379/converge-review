@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `webauthnLoginWithDiscoverableKey_reauthentication` twice, at PasskeysUsernameFormTest.java:261-321 and PasskeysOrganizationAuthenticationTest.java:270-321, identical except for the password-removal block at PasskeysUsernameFormTest.java:281-287 (about 50 shared lines). `webauthnLoginWithExternalKey_reauthentication` (PasskeysUsernamePasswordFormTest.java:215-274) copies `passwordLoginWithExternalKey` (173-207) nearly verbatim and shares about 30 of its 60 lines with the Discoverable variant, so \"about 60\" is somewhat overstated for that pair.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3802662
+}

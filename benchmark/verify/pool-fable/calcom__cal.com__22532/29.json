@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The handler does filter only on `userId: user.id` (packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts:17-22), but team-owned calendar credentials do not exist: calendar-category apps are excluded from team install (packages/app-store/utils.ts:161-165) and the Google Calendar callback always stores `userId: req.session.user.id` (packages/app-store/googlecalendar/api/callback.ts:75,109). The only UI caller lists credentials fetched with `userId: user.id` (packages/lib/getConnectedDestinationCalendars.ts:282-291), so no team member is blocked.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3919779
+}

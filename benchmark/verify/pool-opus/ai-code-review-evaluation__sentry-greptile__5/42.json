@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Searching the whole repo, tests included, finds only the definitions of format_comment_subtitle (github/integration.py:394, gitlab/integration.py:240), because the patch removed their only callers (patch lines 213, 239). The one caller of _truncate_title (commit_context.py:601) passes only `title`, so max_length (commit_context.py:578) always takes its default.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.24146030000000002
+}

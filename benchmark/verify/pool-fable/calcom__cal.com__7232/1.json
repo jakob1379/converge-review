@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/bookings/lib/handleNewBooking.ts:964-975 wraps a synchronous forEach that calls deleteScheduledEmailReminder/deleteScheduledSMSReminder without await; both are async functions that also catch their own errors internally (emailReminderManager.ts:197-236, smsReminderManager.ts:177-190), and workflowReminders is always an array from the Prisma include (handleNewBooking.ts:772), so nothing in the try can throw synchronously and the log.error at line 974 is effectively dead code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4211656
+}

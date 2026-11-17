@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "VerifyMessageProperties.java (patch line 141) fails whenever the value differs from the OWASP sanitizer's output (after unescaping), even if nothing was removed; ThemeVerifierMojo.java:55 then throws MojoFailureException. As a result, a self-closing `<br/>` fails because the sanitizer writes it as `<br />`, which is why the patch rewrites every `<br/>` (e.g. messages_ar.properties). The claim overstates one point: `</ b>` and `< p>` are not equivalent markup, since HTML parses them as a bogus comment and as plain text.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2432782
+}

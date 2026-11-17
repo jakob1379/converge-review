@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/slots.ts:106-131 uses `dateOverrides.find` whose callback returns true as soon as the slot falls before or after any single same-day override, and the function then returns false; it never checks whether another override on that date contains the slot. Multiple ranges per date are possible, since each dated availability row becomes its own override (packages/core/getUserAvailability.ts:215-224) and the override dialog uses `DayRanges`, so a slot inside one range is rejected because it lies outside the other.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2549393
+}

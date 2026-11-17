@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/storage/unified/search/bleve.go:97-98 calls bleve.New on the deterministic path Root/namespace/resource.group, and nothing under pkg/storage removes or reopens it (no RemoveAll or bleve.Open), so on restart the error propagates through search.go:190-197 and the Init call the patch added at resource/server.go:258-262. bleve v2.4.3 is not vendored here, so ErrorIndexPathExists rests on bleve's documented contract for New (path must not exist), not on source I read; the bleve.New call predates the patch, which only moved the failure from first request to NewResourceServer.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5816508
+}

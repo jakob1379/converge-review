@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/blocked_email.rb:12 runs `BlockedEmail.where(email: email).first` on a plain string column (migration line 6), and neither the model nor the email validator lowercases the value. User.new_from_params (app/models/user.rb:87) passes params[:email] through unchanged, so `Bad@spammers.org` does not match a stored `bad@spammers.org`. The domain check in lib/validators/email_validator.rb:20 builds its regex with `Regexp.new(..., true)`, which is case-insensitive.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1084091
+}

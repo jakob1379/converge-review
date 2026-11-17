@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "static/app/views/dashboards/widgets/tableWidget/defaultTableCellRenderers.tsx:31-34 (head) and :70-73 (body) both gate the custom renderer result on `if (cell)`, so a return of 0, '', false or null falls through to the default renderer, while the documented contract (tableWidgetVisualization.tsx:42,54 and tableWidgetVisualization.stories.tsx:113) says only `undefined` triggers the fallback.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3331398
+}

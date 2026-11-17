@@ -1,0 +1,249 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/103633",
+ "cost_usd": 0.0561993,
+ "items": [
+  {
+   "id": "c1",
+   "source": "qodo-extended-v2",
+   "text": "The userPermDenialCacheKey function concatenates name and parent using _ as delimiter, but both components can contain underscores (Grafana UIDs allow a-zA-Z0-9\\-\\_). Different (name, parent) pairs like (\"some_dashboard\", \"fold1\") and (\"some\", \"dashboard_fold1\") produce identical cache keys, causing one resource's denial to falsely deny access to a different resource for up to 30 seconds."
+  },
+  {
+   "id": "c2",
+   "source": "augment",
+   "text": "Test comment claims permissions cache is set to \"allow\" to prove denial cache short-circuits, but the inserted map value is false (equivalent to no grant), so it doesn't actually verify that a would-be allow from permCache gets overridden by the denial cache"
+  },
+  {
+   "id": "c3",
+   "source": "golden",
+   "text": "The Check operation exhibits asymmetric cache trust logic: cached permission grants are trusted and returned immediately, but cached denials from the same permission cache are ignored, leading to a fresh database lookup. This allows stale cached grants to provide access to revoked resources, posing a security risk. "
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "TestService_getUserPermissions lost its only cacheHit:true case, leaving the cacheHit field and both if tc.cacheHit branches dead; no test asserts the new always-go-to-store contract or the removed anonymous cache read"
+  },
+  {
+   "id": "c5",
+   "source": "claude-code",
+   "text": "The denial cache key uses raw checkReq.UserUID instead of the resolved userIdentifiers.UID (as getCachedIdentityPermissions does), which reduces cache effectiveness when users are identified by numeric ID vs string UID across requests"
+  },
+  {
+   "id": "c6",
+   "source": "golden",
+   "text": "The test comment says the cached permissions 'allow access', but the map stores false for dashboards:uid:dash1, so checkPermission will still treat this scope as not allowed."
+  },
+  {
+   "id": "c7",
+   "source": "converge-review-replay",
+   "text": "The test 'Should deny on explicit cache deny entry' (973-995) does not prove that the denial cache short-circuits Check. It passes even if the denial-cache lookup is deleted because permCache is seeded with {'dashboards:uid:dash1': false} which checkPermission treats as denied, and the DB fallback is setupService's empty fakeStore which also denies. Suggested fix: seed true, or assert store.calls == 0."
+  },
+  {
+   "id": "c8",
+   "source": "golden",
+   "text": "The cache key construction in `userPermDenialCacheKey` uses simple string concatenation with underscores, which can lead to ambiguous keys and collision risks when any component contains underscores or is empty. This could result in incorrect denial cache hits, affecting user permissions."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "Denial keys share the .perm_<uid>_ prefix with userPermCacheKey in the same cache, potentially causing collisions"
+  },
+  {
+   "id": "c10",
+   "source": "augment",
+   "text": "userPermDenialCacheKey concatenates action, name, and parent using underscore delimiter, which can cause key collisions if any component contains underscore (e.g., name=\"a_b\", parent=\"c\" vs name=\"a\", parent=\"b_c\"), potentially applying cached denial to wrong resource pair"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "getCachedIdentityPermissions returns an error used only as a hit/miss flag and duplicates the identity-type switch of getIdentityPermissions; callers treat any error (store error, unsupported type) as a miss rather than only cache.ErrNotFound"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "Removing the permCache read from getUserPermissions/getAnonymousPermissions plus per-(user,action,name,parent) denial cache and NoopCache in-process client makes DB/permission-decode load scale with distinct denied resources instead of users x actions - N distinct denials per user = N queries per 30s vs 1 on base"
+  },
+  {
+   "id": "c13",
+   "source": "qodo-extended-v2",
+   "text": "The test case \"Should deny on explicit cache deny entry\" is non-diagnostic because it sets the permission cache value to false (equivalent to missing) and uses the default fakeStore with no permissions. The test would still deny even if permDenialCache were not checked, allowing denial-cache regressions to slip through CI."
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "Denial-cache key omits identity type; anonymous and render-service identities both have UID '0', so a cached anonymous denial denies the render service on the same resource for shortCacheTTL (30s)"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "userPermDenialCacheKey joins name and parent with '_' while UIDs may contain '_', so distinct (name,parent) pairs collide and one resource's denial denies another the user may access"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "Test 'Should deny on explicit cache deny entry' cannot fail: it seeds permCache with false (comment says allow) and the fallback fakeStore is empty, so it passes with the denial-cache lookup deleted"
+  },
+  {
+   "id": "c17",
+   "source": "coderabbit",
+   "text": "Cache key collision vulnerability in userPermDenialCacheKey function - concatenating name and parent with underscore can cause collisions when values contain underscores (UIDs often do), leading to incorrect denial cache hits. Should encode segments or add length prefixes before concatenation."
+  },
+  {
+   "id": "c18",
+   "source": "cubic-v2",
+   "text": "`Check` trusts the denial cache (returns denied immediately) but deliberately ignores denials from the permission cache (re-queries DB to pick up new grants). This is contradictory: once a denial is stored in `permDenialCache` after a DB re-query, any permission granted afterward is blocked for up to 30s \u2014 the exact staleness problem the re-query path was designed to solve. Consider either not caching denials for the `Check` path, or invalidating the denial cache entry when the permission cache is refreshed."
+  },
+  {
+   "id": "c19",
+   "source": "claude-code",
+   "text": "The denial cache key (userPermDenialCacheKey) does not include the identity type, causing anonymous:0 and render:0 to both produce UserUID '0' and generate identical cache keys, which leads to cross-identity cache poisoning where an anonymous user denial can block the render service from accessing the same dashboard"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "userPermDenialCacheKey joins name and parent with '_' without escaping. Dashboard and folder UIDs may contain '_', so different (name, parent) pairs produce the same key (e.g. name 'x_y', parent '' and name 'x', parent 'y_'). A cached denial for one resource then wrongly denies a different resource the user is entitled to, for up to shortCacheTTL (30s)."
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "New exported NoopCache type in public authz package has a single in-package call site; may duplicate functionality from authlib"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "NoopCache methods use receiver name 'lc' (LocalCache abbreviation) instead of one reflecting the type or none since unused"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "Newly added log message 'could not check permission' starts lowercase, violating naming conventions that require starting with a capital letter"
+  },
+  {
+   "id": "c24",
+   "source": "cubic-v2",
+   "text": "This test seeds the cached permission as denied, so it can pass even if `permDenialCache` is never consulted."
+  },
+  {
+   "id": "c25",
+   "source": "cubic-v2",
+   "text": "Escape or encode `name` and `parent` in the denial-cache key; the current `_`-joined format can collide and cause false permission denials."
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "userPermDenialCacheKey joins its components (action, name, parent) with '_' without escaping. UIDs can contain '_', so different (name, parent) pairs produce the same cache key, and a cached denial for one resource wrongly denies another.",
+   "path": null,
+   "members": [
+    "c1",
+    "c8",
+    "c10",
+    "c15",
+    "c17",
+    "c20",
+    "c25"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The test 'Should deny on explicit cache deny entry' seeds permCache with false for dashboards:uid:dash1, although its comment says the entry allows access. The fallback fakeStore is empty, so the test passes even if the permDenialCache lookup is removed.",
+   "path": null,
+   "members": [
+    "c2",
+    "c6",
+    "c7",
+    "c13",
+    "c16",
+    "c24"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "Check trusts cached permission grants and returns them immediately, but ignores cached denials from the same permission cache and re-queries the DB. As a result, stale cached grants can give access to revoked resources.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "Check returns a denial immediately from permDenialCache but ignores denials in the permission cache so that new grants are picked up. Once a denial is stored in permDenialCache, any permission granted afterward is blocked for up to the cache TTL.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "TestService_getUserPermissions no longer has a cacheHit:true case, so the cacheHit field and both 'if tc.cacheHit' branches are dead. No test asserts the always-go-to-store behavior or the removed anonymous cache read.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The denial cache key uses the raw checkReq.UserUID instead of the resolved userIdentifiers.UID used by getCachedIdentityPermissions.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "Denial cache keys share the '.perm_<uid>_' prefix with userPermCacheKey in the same cache, so the two key types can collide.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "getCachedIdentityPermissions returns an error that is used only as a hit/miss flag and duplicates the identity-type switch of getIdentityPermissions. Callers treat any error, including store errors and unsupported types, as a cache miss rather than only cache.ErrNotFound.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "Removing the permCache read from getUserPermissions/getAnonymousPermissions, adding a per-(user, action, name, parent) denial cache, and using NoopCache for the in-process client make DB and permission-decode load scale with the number of distinct denied resources rather than with users x actions.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The denial cache key omits the identity type. Anonymous and render-service identities both have UID '0', so a cached anonymous denial also denies the render service on the same resource for the cache TTL.",
+   "path": null,
+   "members": [
+    "c14",
+    "c19"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "A new exported NoopCache type in the public authz package has only one in-package call site and may duplicate functionality from authlib.",
+   "path": null,
+   "members": [
+    "c21"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The NoopCache methods use the receiver name 'lc' (a LocalCache abbreviation), which does not reflect the type.",
+   "path": null,
+   "members": [
+    "c22"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The newly added log message 'could not check permission' starts with a lowercase letter, which violates the convention that messages start with a capital letter.",
+   "path": null,
+   "members": [
+    "c23"
+   ]
+  }
+ ]
+}

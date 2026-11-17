@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The removed lines (patch lines 528-535) logged the zod error and the MS response, and processing carried on. Now the new helper parseRefreshTokenResponse.ts:205-207 throws a plain `Error(\"Invalid refreshed tokens were returned\")` with no zod detail, so the `tokenResponse.success &&` check at office365calendar/lib/CalendarService.ts:264 can never be false.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2248075
+}

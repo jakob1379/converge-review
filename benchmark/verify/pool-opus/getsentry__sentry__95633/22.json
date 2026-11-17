@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "test_queue_consumer.py:593-601 hashes 20 keys with `hash(group_key) % 3` (queue_consumer.py:230) and asserts all 3 queues are hit. String hashing is randomized per process and PYTHONHASHSEED is not set anywhere in the repo, so the test fails about 0.1% of the time (\u22483\u00b7(2/3)^20). test_stats_reporting (test_queue_consumer.py:694-695) asserts `total_items > 0` right after submitting, while the worker threads started in __init__ can already have emptied the queues with the trivial processor.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12166629999999999
+}

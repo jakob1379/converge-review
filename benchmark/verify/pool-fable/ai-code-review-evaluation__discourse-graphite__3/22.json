@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "No spec exercises a nil/blank email with whitelist/blacklist set: spec/components/validators/email_validator_spec.rb:5-21 only uses \"bad@spamclub.com\" with BlockedEmail stubbed, and the setting-based cases in spec/models/user_spec.rb:488-565 all use non-blank addresses. The gap is low-risk, since `value =~ regexp` at lib/validators/email_validator.rb:21 returns nil for a nil value rather than raising, the same as the removed User#email_validator.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.23909979999999997
+}

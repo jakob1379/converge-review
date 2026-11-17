@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In service.go:113-152, any check that misses the denial cache and is not allowed by the cached map calls getIdentityPermissions. getUserPermissions and getAnonymousPermissions (service.go:370-439) no longer read permCache, so they always query the DB, and only the denial for that one (user, action, name, parent) gets cached (cache.go:30). As a result, every distinct denied resource causes a DB fetch per TTL instead of one per user\u00d7action. The in-process client also uses NoopCache now (rbac.go:101-105), so every Check reaches the server and decodes the permissions again.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14065
+}

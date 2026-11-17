@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`.extra-info-wrapper` is the root element of the header-extra-info template (header-extra-info.hbs:1), and the component (header-extra-info.js.es6:1) sets no `tagName`, so Ember wraps it in a default `div.ember-view`; that wrapper, not `.extra-info-wrapper`, is the flex item of `.d-header .contents` (header.hbs:94, header.scss:14-19), so `order(2)` at topic.scss:30 does nothing. Visual order is still correct because `.panel` has `order(3)` (header.scss:39) and the wrapper defaults to 0, so the rule is only dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2472979
+}

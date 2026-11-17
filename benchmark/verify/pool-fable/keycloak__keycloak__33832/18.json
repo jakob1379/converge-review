@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`ASN1Decoder.readSequence()` (authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java:49-63) returns once the declared sequence length is consumed and never checks that the stream is exhausted, so `asn1derToConcatenatedRS` (AuthzClientCryptoProvider.java:125) silently accepts trailing bytes. The only caller is ECDSASignatureSignerContext.java:33, which feeds it the locally produced JCA signature, so the input is not attacker-controlled.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3535598
+}

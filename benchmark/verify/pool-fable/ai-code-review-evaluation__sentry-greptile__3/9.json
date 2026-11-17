@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/helpers/error_upsampling.py:43-64 the function accepts `organization: Organization` but the body only reads `project_ids` and the `issues.client_error_sampling.project_allowlist` option; `organization` is never referenced.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1575454
+}

@@ -1,0 +1,185 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `StatefulDetectorHandler.evaluate` docstring says it returns a list of `DetectorEvaluationResult`, but the method now returns `dict[DetectorGroupKey, DetectorEvaluationResult]`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/workflow_engine/processors/detector.py (patch lines 137-141), the patch changes the return type of `StatefulDetectorHandler.evaluate` to `dict[DetectorGroupKey, DetectorEvaluationResult]` and the body now builds a dict (`results[result.group_key] = result`). The docstring was left as is and still says it \"returns a list of `DetectorEvaluationResult`\".",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0446203
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`MetricAlertDetectorHandler` subclasses `StatefulDetectorHandler` with only `pass` and implements none of its abstract members (`counter_names`, `get_dedupe_value`, `get_group_key_values`, `build_occurrence_and_event_data`). Instantiating it through `MetricAlertFire.detector_handler` / `Detector.detector_handler` therefore raises TypeError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/incidents/grouptype.py:11-12 makes MetricAlertDetectorHandler a subclass of StatefulDetectorHandler whose body is only `pass`, but processors/detector.py:143-167 marks counter_names, get_dedupe_value, get_group_key_values and build_occurrence_and_event_data as @abc.abstractmethod. So the `group_type.detector_handler(self)` call in models/detector.py:86, for the MetricAlertFire type (grouptype.py:27), raises TypeError when it tries to instantiate an abstract class.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.16106730000000002
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In `test_state_results_multi_group`, the expected occurrence for `group_2` is built with `value=6`, while the data packet has `group_2=10`. The test passes only because the value is not used when the occurrence is constructed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the test file, the packet sets `group_2: 10` (patch line 379), but the expected occurrence is built with `build_mock_occurrence_and_event(..., \"group_2\", 6, ...)` (patch line 393). That helper never reads `value` (patch lines 458-489), so the mismatch goes unnoticed and the test still passes.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1369448
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test helper `build_mock_occurrence_and_event` ignores its `value` argument and hard-codes the occurrence id, and `IssueOccurrence.__eq__` compares only id. As a result, all mock occurrences compare equal, and tests cannot detect wrong group_key, value or priority passed to `build_occurrence_and_event_data`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/sentry/workflow_engine/processors/test_detector.py (patch lines 458-489), `build_mock_occurrence_and_event` never uses `value` and always sets `id=\"eb4b0acffadb4d098d48cb14165ab578\"`, and src/sentry/issues/issue_occurrence.py:181-184 compares only `id`, so fingerprint and priority differences go unnoticed. The tests show this: `test_results_on_change` builds the expected occurrence with 6 when the real value is 100, multi_group expects 6 for group_2 (real value 10), and `TestEvaluateGroupKeyValue.test_dedupe` uses \"val1\" against \"group_key\", yet all of them would pass.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1471238
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "grouptype.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The comment 'TODO: This will be a stateful detector when we build that abstraction' is stale, because `MetricAlertDetectorHandler` now subclasses `StatefulDetectorHandler`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/incidents/grouptype.py:10 still says 'TODO: This will be a stateful detector when we build that abstraction', but line 11 (changed by the patch) now makes MetricAlertDetectorHandler subclass StatefulDetectorHandler, so the comment is out of date. The class body is still just `pass`, so a TODO about implementing it would still fit, but this wording no longer does.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.139271
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No caller ever passes the `detector_type` parameter of `BaseDetectorHandlerTest.build_handler`. Also, `create_detector_and_conditions(type=None)` replaces None with 'handler_with_state' instead of using a plain default.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Every call to `build_handler` in tests/sentry/workflow_engine/processors/test_detector.py (lines 329-582) passes no arguments, and nothing in tests/ passes `detector_type`, so the parameter at line 102 is never used. `create_detector_and_conditions` (lines 86-88) defaults `type` to None and then swaps None for 'handler_with_state' instead of making that string the default.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1537941
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The mutable class attribute `counter_names` is not annotated with `typing.ClassVar`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/sentry/workflow_engine/processors/test_detector.py, MockDetectorStateHandler sets `counter_names = [\"test1\", \"test2\"]` with no `ClassVar` annotation (patch line 214). It overrides the abstract property `counter_names` at src/sentry/workflow_engine/processors/detector.py:142-144, so adding `ClassVar` here could also conflict with that property's type.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0578638
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new public abstract hook `build_occurrence_and_event_data` has no docstring, unlike its sibling abstract members. It is undocumented that the hook is called only on transitions to non-OK status, that `new_status` arrives as `PriorityLevel`, and that `event_data` is passed unchanged to `produce_occurrence_to_kafka`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At src/sentry/workflow_engine/processors/detector.py:166-170 the new abstract `build_occurrence_and_event_data` has only `pass` and no docstring, while its sibling abstract members `counter_names`, `get_dedupe_value` and `get_group_key_values` (lines 142-164) all have one. Nothing says that it is called only in the non-OK branch, that it receives `PriorityLevel(new_status)`, or that `event_data` is passed unchanged to `produce_occurrence_to_kafka` (lines 82-87).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.15337350000000002
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Kafka publish assertion allows extra publishes, so the test does not catch duplicate occurrence production.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In test_state_results_multi_group (tests/sentry/workflow_engine/processors/test_detector.py:206), the patch checks Kafka publishes with `assert_has_calls(..., any_order=True)` and never checks `call_count`, so the test still passes if there are extra or duplicate `produce_occurrence_to_kafka` calls. Only the single-group test at :167 uses the strict `assert_called_once_with`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1455951
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`TestProcessDetectors.setUp` only calls `super().setUp()`, which makes it a no-op override.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/sentry/workflow_engine/processors/test_detector.py:124-126, the patch adds `TestProcessDetectors(BaseDetectorHandlerTest)` with a `setUp` that only calls `super().setUp()`. Removing it would change nothing.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0458603
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

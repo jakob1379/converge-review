@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/spans/consumers/process/test_consumer.py:15 replaces the `sleep` attribute on the `time` module with `lambda _: None`, and the added call at test_consumer.py:62 resolves `time.sleep` through that same module object at call time, so it returns immediately and gives the flusher thread no real wait.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2180037
+}

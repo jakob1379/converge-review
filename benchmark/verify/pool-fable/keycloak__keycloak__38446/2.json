@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch sends plaintext codes as JSON to the storage's `updateCredential` (server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:119-125), while the readers parse the federated credential's credentialData/secretData as the hashed `RecoveryAuthnCodesCredentialModel` format (server-spi/src/main/java/org/keycloak/models/utils/RecoveryAuthnCodesUtils.java:56-61, RecoveryAuthnCodesFormAuthenticator.java:80-84). The patch adds no docs, and neither the `getCredentials` javadoc (server-spi/src/main/java/org/keycloak/credential/CredentialInputUpdater.java:43-52) nor anything under docs/ (recovery-codes.adoc, 26_2_0.adoc:84-98) describes this contract.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5393393
+}

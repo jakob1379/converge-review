@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In flusher.py:337-347, once the deadline passes, the `break` at :341 leaves the loop before the `terminate()` at :347 runs for the current process and every later one; the base code always reached its single terminate step. The `isinstance(process, multiprocessing.Process)` guard at :346 is never true for a spawn-context `SpawnProcess`, so terminate is a no-op today and the gap only shows once that guard is fixed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1116948
+}

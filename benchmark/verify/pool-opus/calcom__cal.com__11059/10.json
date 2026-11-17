@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch passes \"zoomvideo\" to the sync endpoint (packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:~92), but the app's slug is \"zoom\" (zoomvideo/_metadata.ts:16; seed-app-store.ts:294 has createApp(\"zoom\", \"zoomvideo\", ...)). The new webhook looks the app up with prisma.app.findUnique({ where: { slug: reqBody.appSlug } }) (apps/web/pages/api/webhook/app-credential.ts:~42), so \"zoomvideo\" returns 404, and changing it to \"zoom\" would still fail the later appStoreMetadata lookup, which uses folder names (~line 52).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.25964250000000005
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/groups_controller.rb:24-25 and :37-40 read only top-level `params[:name]`/`params[:visible]`/`params[:alias_level]` with no `params[:group]` fallback, so a legacy `group[...]` create yields name `''`, which fails `name_format_validator` (app/models/group.rb:12) and returns 422 via `render_json_error`, while a legacy update sets `visible = false`, ignores name and alias_level, and returns success. The in-repo client was updated to send top-level params (app/assets/javascripts/discourse/models/group.js:63-78), so only external callers using the old shape are affected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4424395
+}

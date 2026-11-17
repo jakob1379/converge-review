@@ -1,0 +1,444 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/3",
+ "cost_usd": 0.10179229999999999,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "Trailing whitespace or whitespace-only lines at 22, 28, 33, 36, 39, 49, 51 and 84 - breaks repo rule 'ALWAYS use pre-commit' and trailing-whitespace hook will reject the file"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "Patch commits a stray submodule gitlink (sentry-repo -> a5d29095) with no .gitmodules entry; unrelated to the feature and breaks `git submodule` commands / leaves an empty dir in fresh clones"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review-replay",
+   "text": "Stray submodule gitlink (mode 160000, commit a5d29095) added with no .gitmodules entry - unrelated to the upsampling feature and accidentally committed in 6ad6fe3899"
+  },
+  {
+   "id": "c4",
+   "source": "coderabbit",
+   "text": "Truthiness check 'if client_sample_rate:' may skip valid sample_rate of 0 or 0.0, should use explicit None check 'if client_sample_rate is not None'"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "The 60s Django-cache layer is a pessimisation and a correctness regression: options.get is already in-process cached, so it adds a network cache round trip to every events-stats request; cache key excludes allowlist contents so removing a project from the allowlist keeps upsampling for up to 60s"
+  },
+  {
+   "id": "c6",
+   "source": "coderabbit",
+   "text": "Allowlist lookup is O(n) per project, should convert to a set for O(1) lookups"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review-replay",
+   "text": "Unit tests import and test private helpers directly (_are_all_projects_error_upsampled, _is_error_focused_query, _should_apply_sample_weight_transform) and patch sentry.api.helpers.error_upsampling.options - breaks rules 'Never test internal/private functions directly' and 'Never mock things you own'"
+  },
+  {
+   "id": "c8",
+   "source": "qodo-extended-v2",
+   "text": "_set_sample_rate_from_error_sampling only sets sample_rate when client_sample_rate is truthy, so a valid client_sample_rate=0.0 is ignored, making it impossible to represent 0% sampling correctly in tests"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review-replay",
+   "text": "invalidate_upsampling_cache (lines 67-74) is dead code - nothing calls it and it cannot work as designed since cache keys hold arbitrary per-query project sets that an allowlist change cannot enumerate"
+  },
+  {
+   "id": "c10",
+   "source": "coderabbit",
+   "text": "Unused 'organization' parameter in _are_all_projects_error_upsampled function"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "invalidate_upsampling_cache has no callers and no option-change hook; it also cannot work as designed because keys are per (org, project-set) and an allowlist change cannot enumerate them"
+  },
+  {
+   "id": "c12",
+   "source": "golden",
+   "text": "The upsampling eligibility check passes the outer dataset instead of the actual dataset used by scoped_dataset. In paths where the query ultimately runs against discover (e.g., dashboard split) while the original dataset is metrics, upsampling may be skipped even when all projects are allowlisted."
+  },
+  {
+   "id": "c13",
+   "source": "coderabbit",
+   "text": "Substring check 'event.type:error' in query may have edge cases with negated queries like '!event.type:error' incorrectly returning True, or queries with extra whitespace like 'event.type: error' returning False"
+  },
+  {
+   "id": "c14",
+   "source": "golden",
+   "text": "Using Python\u2019s built-in hash() to build cache keys is non-deterministic across processes (hash randomization), so keys won\u2019t match across workers and invalidate_upsampling_cache may fail to delete them. Use a deterministic serialization of project_ids for the cache key."
+  },
+  {
+   "id": "c15",
+   "source": "qodo-extended-v2",
+   "text": "In OrganizationEventsStatsEndpoint._get_event_stats, upsampling eligibility is computed using the outer dataset variable instead of scoped_dataset, causing incorrect upsampling decisions when _get_event_stats is invoked with a different dataset (e.g., discover during dashboard split-query logic)"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "upsampled_count is toInt64(sum(sample_weight)) with no null/zero handling; errors in allowlisted projects lacking sample_weight (pre-allowlist events, SDKs not sending client_sample_rate) would count as 0, undercounting charts"
+  },
+  {
+   "id": "c17",
+   "source": "augment",
+   "text": "In _get_event_stats, the upsampling decision is computed from the outer dataset and request rather than the scoped_dataset/query actually being executed, causing upsampling to be skipped/applied incorrectly for dashboard-split subqueries"
+  },
+  {
+   "id": "c18",
+   "source": "coderabbit",
+   "text": "Unused lambda parameter 'args' in SnQLFunction definition for 'upsampled_count' should use underscore '_' to follow file conventions for unused parameters"
+  },
+  {
+   "id": "c19",
+   "source": "cubic-v2",
+   "text": "`if client_sample_rate:` at factories.py line 353 skips the valid value `0.0` because `0.0` is falsy in Python. Use `if client_sample_rate is not None:` to allow zero sample rates to be stored."
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "Test creates organization with Organization.objects.create(name='test-org') instead of self.create_organization() - breaks repo CLAUDE.md Common Gotchas #7 and 'Use factories for test data' rule"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "Cache 'performance optimization' is likely a regression - replaces locally-cached options.get with network round trip (memcached/redis), and runs before the cheap _should_apply_sample_weight_transform dataset check affecting all request types"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "upsampled_count is not marked private=True, exposing it as a public discover function on datasets without sample_weight; default_result_type='number' changes count meta from integer to number despite toInt64"
+  },
+  {
+   "id": "c23",
+   "source": "claude-code",
+   "text": "`upsampled_count` uses `default_result_type=\"number\"` but wraps its result in `toInt64()` and is designed to replace `count()` which uses `default_result_type=\"integer\"`, causing API response metadata to report the type inconsistently when upsampling is active"
+  },
+  {
+   "id": "c24",
+   "source": "augment",
+   "text": "Hardcoding the replacement to upsampled_count() as count forces the result column name to count, which can cause serialization to look up count() instead and emit 0 for upsampled rows when transformAliasToInputFormat=1 is used"
+  },
+  {
+   "id": "c25",
+   "source": "augment",
+   "text": "_set_sample_rate_from_error_sampling sets normalized_data[sample_rate] for any truthy client_sample_rate without validating the range, allowing values like 0, negatives, or >1 to leak into downstream weighting logic"
+  },
+  {
+   "id": "c26",
+   "source": "claude-code",
+   "text": "PR accidentally adds a `sentry-repo` git submodule reference at the repository root (commit a5d290951def) which is unrelated to the error upsampling feature and appears to be an artifact from the development environment"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "Whitespace-only/trailing-whitespace lines in error_upsampling.py and organization_events_stats.py fail the repo's pre-commit trailing-whitespace hook"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "Unit tests import and assert on private helpers and patch the module's options while the public entry point is_errors_query_for_error_upsampled_projects and its cache path have no test"
+  },
+  {
+   "id": "c29",
+   "source": "qodo-extended-v2",
+   "text": "is_errors_query_for_error_upsampled_projects builds cache keys using Python's hash() of project IDs, which is process-dependent and can collide across different project sets, making the cache unreliable across workers and potentially returning wrong eligibility decisions"
+  },
+  {
+   "id": "c30",
+   "source": "coderabbit",
+   "text": "Cache invalidation uses same problematic hash pattern and requires the caller to know the exact set of project IDs that were cached, which may be difficult in practice when invalidating due to allowlist changes"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "Rewriting count() to the field 'upsampled_count() as count' makes transformAliasToInputFormat=1 requests return zero counts: process_results renames columns to function_details.field ('upsampled_count() as count'), but resolve_axis_column looks up 'count()' and the serializer does r.get(column, 0)"
+  },
+  {
+   "id": "c32",
+   "source": "coderabbit",
+   "text": "Cache key using hash() may cause collisions or inconsistent behavior because Python's hash() for tuples can vary between interpreter sessions (PYTHONHASHSEED) and different project ID combinations could hash to the same value"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "_set_sample_rate_from_error_sampling copies contexts.error_sampling.client_sample_rate into sample_rate for every store_event, without production's allowlist, type and 0<x<=1 checks, and swallows errors with bare except; tests no longer mirror production"
+  },
+  {
+   "id": "c34",
+   "source": "golden",
+   "text": "In _set_sample_rate_from_error_sampling(), the check `if client_sample_rate:` treats 0.0 as falsy, so a sample_rate of 0.0 is silently skipped and never set on normalized_data."
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "options.get(key, []) passes [] as the `silent` argument, not a default; plus redundant `if not allowlist: return False`, result=...;return result, unused organization param once cache is gone, dataset typed Any vs ModuleType"
+  },
+  {
+   "id": "c36",
+   "source": "converge-review",
+   "text": "Upsampling eligibility is decided once from the outer `dataset` and raw request.GET['query'], not the scoped_dataset/query passed to _get_event_stats. In the dashboard-split path the errors half is never upsampled because the outer dataset is metrics; conversely a transactions-only split call is still marked for upsampling when the user query contains event.type:error"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review-replay",
+   "text": "_is_error_focused_query uses plain substring test for 'event.type:error', incorrectly matching negated queries like '!event.type:error' and compound queries like 'event.type:error OR event.type:transaction'"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review-replay",
+   "text": "Trailing whitespace or whitespace-only lines at 223, 234 and 278 - breaks repo rule 'ALWAYS use pre-commit' and trailing-whitespace hook will reject the file"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "The upsampling branch in the RPC path (and the RPC branch in top-events) is unreachable: use_rpc requires spans_rpc/ourlogs, for which _should_apply_sample_weight_transform returns False; EAP RPC has no upsampled_count anyway"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review-replay",
+   "text": "60s per-org/project-set cache serves stale upsampling decisions after a project is removed from issues.client_error_sampling.project_allowlist - cache key does not include the allowlist and nothing invalidates the cache when the option changes"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review",
+   "text": "upsampling_enabled is a pure alias of should_upsample and the same transform block is repeated in three mutually exclusive branches with comments claiming non-existent benefits"
+  },
+  {
+   "id": "c42",
+   "source": "coderabbit",
+   "text": "Repeated transformation logic 'transform_query_columns_for_error_upsampling(query_columns)' in three separate branches could be consolidated"
+  },
+  {
+   "id": "c43",
+   "source": "claude-code",
+   "text": "_get_event_stats passes the outer closure variable `dataset` instead of the `scoped_dataset` parameter to `is_errors_query_for_error_upsampled_projects`, causing the upsampling eligibility check to use the wrong dataset when get_event_stats_factory calls _get_event_stats with a different dataset during dashboard widget splitting"
+  },
+  {
+   "id": "c44",
+   "source": "cubic-v2",
+   "text": "Mark `upsampled_count` as private in discover.py line 1042. Currently it is a public Discover function, so queries can bypass the allowlist/error-query checks and reference `sample_weight` where that column is unsupported."
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "Test creates the organization with Organization.objects.create instead of self.create_organization, violating repo CLAUDE.md Common Gotchas"
+  },
+  {
+   "id": "c46",
+   "source": "cubic-v2",
+   "text": "Use `scoped_dataset` instead of `dataset` for the upsampling check at organization_events_stats.py line 221. The dashboard split path calls `_get_event_stats` with follow-up `discover` queries, and checking the outer `dataset` can silently disable upsampled error counts there."
+  },
+  {
+   "id": "c47",
+   "source": "converge-review",
+   "text": "_is_error_focused_query uses a substring match on 'event.type:error', so negated (`!event.type:error`) and OR'd (`event.type:error OR event.type:transaction`) queries are treated as error-focused and count() is rewritten to sum(sample_weight) over non-error events"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "error_upsampling.py and organization_events_stats.py contain trailing-whitespace or whitespace-only lines. The repo's pre-commit trailing-whitespace hook rejects these lines.",
+   "path": null,
+   "members": [
+    "c1",
+    "c27",
+    "c38"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The patch commits a stray `sentry-repo` submodule gitlink (mode 160000, commit a5d29095) at the repository root. It has no .gitmodules entry and is unrelated to the upsampling feature.",
+   "path": null,
+   "members": [
+    "c2",
+    "c3",
+    "c26"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "_set_sample_rate_from_error_sampling in factories.py checks `if client_sample_rate:`. A valid client_sample_rate of 0 or 0.0 is therefore falsy and never set as sample_rate.",
+   "path": "factories.py",
+   "members": [
+    "c4",
+    "c8",
+    "c19",
+    "c34"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "_set_sample_rate_from_error_sampling copies client_sample_rate into sample_rate without production's checks. It skips the allowlist, type and 0<x<=1 range checks, swallows errors with a bare except, and lets invalid values reach the weighting logic.",
+   "path": "factories.py",
+   "members": [
+    "c25",
+    "c33"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The 60s Django-cache layer in is_errors_query_for_error_upsampled_projects replaces the in-process-cached options.get with a network cache round trip. It also runs before the cheap dataset check, on every events-stats request.",
+   "path": null,
+   "members": [
+    "c5",
+    "c21"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The 60s per-org/project-set upsampling cache key does not include the allowlist contents, and nothing invalidates it when issues.client_error_sampling.project_allowlist changes. A project removed from the allowlist keeps being upsampled until the entry expires.",
+   "path": null,
+   "members": [
+    "c40"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The allowlist lookup is a linear search per project instead of a set lookup.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The unit tests import and test private helpers (_are_all_projects_error_upsampled, _is_error_focused_query, _should_apply_sample_weight_transform) and patch sentry.api.helpers.error_upsampling.options. The public entry point is_errors_query_for_error_upsampled_projects and its cache path are untested.",
+   "path": null,
+   "members": [
+    "c7",
+    "c28"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "invalidate_upsampling_cache has no callers and no option-change hook. It cannot work as designed, because cache keys are per (org, project-set) and an allowlist change cannot enumerate them.",
+   "path": null,
+   "members": [
+    "c9",
+    "c11",
+    "c30"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The 'organization' parameter of _are_all_projects_error_upsampled is unused.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "options.get(key, []) passes [] as the `silent` argument rather than as a default. The module also has a redundant `if not allowlist: return False`, a needless result variable, and `dataset` is typed Any instead of ModuleType.",
+   "path": null,
+   "members": [
+    "c35"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "In OrganizationEventsStatsEndpoint._get_event_stats, upsampling eligibility is computed from the outer `dataset` and raw request query instead of `scoped_dataset` and the executed query. As a result, dashboard-split subqueries (e.g. discover when the outer dataset is metrics) are not upsampled or are upsampled incorrectly.",
+   "path": "organization_events_stats.py",
+   "members": [
+    "c12",
+    "c15",
+    "c17",
+    "c36",
+    "c43",
+    "c46"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "_is_error_focused_query uses a plain substring test for 'event.type:error'. It matches negated ('!event.type:error') and OR'd queries, and misses variants like 'event.type: error'.",
+   "path": null,
+   "members": [
+    "c13",
+    "c37",
+    "c47"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The upsampling cache keys are built with Python's built-in hash() of project IDs. hash() is process-dependent (PYTHONHASHSEED) and can collide, so keys do not match across workers and different project sets can share a key.",
+   "path": null,
+   "members": [
+    "c14",
+    "c29",
+    "c32"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "upsampled_count is toInt64(sum(sample_weight)) with no null or zero handling. Errors lacking sample_weight in allowlisted projects count as 0.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The 'upsampled_count' SnQLFunction lambda has an unused parameter named 'args' instead of '_'.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The test creates the organization with Organization.objects.create(name='test-org') instead of self.create_organization(), contrary to the repo's CLAUDE.md factory rule.",
+   "path": null,
+   "members": [
+    "c20",
+    "c45"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "upsampled_count in discover.py is not marked private=True. It is therefore exposed as a public Discover function that can bypass the allowlist and error-query checks and reference sample_weight on datasets without that column.",
+   "path": "discover.py",
+   "members": [
+    "c22",
+    "c44"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "upsampled_count uses default_result_type='number' while wrapping its result in toInt64() and replacing count(), which is 'integer'. Response metadata therefore reports a different type when upsampling is active.",
+   "path": null,
+   "members": [
+    "c23"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "Rewriting count() to 'upsampled_count() as count' changes the result column name. With transformAliasToInputFormat=1, process_results renames columns to 'upsampled_count() as count' while resolve_axis_column looks up 'count()', so the serializer emits 0.",
+   "path": null,
+   "members": [
+    "c24",
+    "c31"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The upsampling branch in the RPC path and in top-events is unreachable. use_rpc requires spans_rpc/ourlogs, for which _should_apply_sample_weight_transform returns False, and EAP RPC has no upsampled_count.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The same transform_query_columns_for_error_upsampling block is repeated in three mutually exclusive branches. upsampling_enabled is a pure alias of should_upsample.",
+   "path": null,
+   "members": [
+    "c41",
+    "c42"
+   ]
+  }
+ ]
+}

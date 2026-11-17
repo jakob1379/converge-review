@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both model methods chain only a success `.then` (app/assets/javascripts/discourse/models/group.js:40-60) and the controller actions discard the returned promise (app/assets/javascripts/admin/controllers/admin-group.js.es6:51-65), unlike `save`/`destroy` which call `bootbox.alert` on rejection (lines 84-87, 103-105). `Discourse.ajax` only rejects the promise and shows no global error UI (app/assets/javascripts/discourse/mixins/ajax.js:51-67), so a 422 from `add_members`/`remove_member` or a 500 fails silently.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.42372590000000004
+}

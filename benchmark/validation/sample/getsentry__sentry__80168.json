@@ -1,0 +1,27 @@
+{
+ "findings": [
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In `test_state_results_multi_group`, the expected occurrence for `group_2` is built with `value=6`, while the data packet has `group_2=10`. The test passes only because the value is not used when the occurrence is constructed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Kafka publish assertion allows extra publishes, so the test does not catch duplicate occurrence production.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

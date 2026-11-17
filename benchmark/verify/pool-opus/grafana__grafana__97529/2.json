@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch takes the function-wide cacheMu lock out of BuildIndex. The lock is now held only around `b.cache[key] = idx` (pkg/storage/unified/search/bleve.go:137-139), so a Search and the handleEvent goroutine that both get nil from GetIndex in getOrCreateIndex (search.go:292-298) can now build the same key at the same time, and the last write to the cache wins. Some of this was already possible before the patch, because the old lock never covered the GetIndex-then-build check; also, the shared-directory part needs FileThreshold set below 10, since getOrCreateIndex passes size 10 and the default threshold is 10.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16635830000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only call site of `I18n.fallbacks.ensure_loaded!` is `app/controllers/application_controller.rb:159`; `app/jobs/base.rb:151` and `app/services/post_alerter.rb:138` set a locale without it, and `translate` at `lib/freedom_patches/translate_accelerator.rb:68-76` loads only `config.locale` and caches the result in the LRU. \"Never\" is overstated, since a fallback locale can be loaded incidentally (e.g. `config/unicorn.conf.rb:44`), but nothing guarantees it; the missing-translation outcome rests on standard i18n gem fallback behaviour, as the gem source is not in the repo.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5279986999999999
+}

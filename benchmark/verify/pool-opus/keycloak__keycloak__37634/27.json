@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Constants.java:207 (patch line 10) defines GRANT_TYPE = OAuth2Constants.GRANT_TYPE, so it is a pure alias. OAuth2GrantType.Context reads formParams.getFirst(OAuth2Constants.GRANT_TYPE) (patch line 53), while TokenManager and the grant classes write the client-session attribute with Constants.GRANT_TYPE (patch lines 99, 694, 731, 790, 901). Both resolve to \"grant_type\" and are used for different things (a request form parameter versus a session-context attribute key), so this is a style issue with no effect on behaviour.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.071021
+}

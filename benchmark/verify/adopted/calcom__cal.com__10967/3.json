@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At CalendarService.ts:254-256 and 315-317, the `find((cal) => cal.externalId === externalCalendarId)` branch only runs when `externalCalendarId` is falsy, so it cannot return a real calendar ID (it could only match an empty or null externalId). The old fallback to `event.destinationCalendar.externalId` is gone, so updateEvent sends `calendarId: undefined` and deleteEvent falls back to \"primary\", where a 404 is resolved silently (line 335).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.08449409999999999
+}

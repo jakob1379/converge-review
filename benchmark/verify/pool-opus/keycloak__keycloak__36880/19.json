@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In AdminPermissionsSchema.java:304-326, getResourceName only checks the Users type (line 310). Clients resources fall through to resource.getDisplayName() (line 325), which is never set: they are created with only a name (line 104), so PolicyResourceService.java:218 returns a null displayName for them.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16885239999999999
+}

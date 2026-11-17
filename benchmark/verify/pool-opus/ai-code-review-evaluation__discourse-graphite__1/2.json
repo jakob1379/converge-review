@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes app/assets/javascripts/discourse/lib/utilities.js:182 from Discourse.SiteSettings['max_' + type + '_size_kb'] to a fixed 10 * 1024 for every upload type, and line 246 gets the same change. The server still checks each type against its own SiteSetting in lib/validators/upload_validator.rb:81, so a file under 10 MB but over a smaller setting passes the browser check and is rejected by the server, and a file over 10 MB is blocked in the browser even when the site allows more.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0711494
+}

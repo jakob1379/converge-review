@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "createRequest in querySplitting.test.ts:49-59 sets only range, targets, intervalMs and requestId, never `filters`, and no test file contains `__range`. So the forwarding of `request.filters` and the $__range no-split guard at querySplitting.ts:285-287,299 are both untested. This gap matters because the patch now runs applyTemplateVariables before querySupportsSplitting, so the guard may see `$__range` already replaced.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1081261
+}

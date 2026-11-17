@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's Javadoc at GroupPermissionEvaluator.java:~142-147 says the method returns \"IDs of groups with view permission\" and does not mention any V2 exception. But GroupPermissionsV2.java:121-123 returns `groupResource.getId()` for resources found by `findByType(GROUPS_RESOURCE_TYPE)`, and only the \"Groups\" type resource has a type set (AdminPermissionsSchema.java:271-275). So V2 returns that resource's internal ID, not group IDs.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.128242
+}

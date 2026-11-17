@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "There is no try/catch around the `await appStore[...]` at packages/trpc/server/routers/viewer/bookings.tsx:967, but that is not a defect: the same refund block already stops on failure by throwing at lines 938, 963 and 977, so a rejected import fails the request the same way and the booking is not marked REJECTED without a refund. Before the patch, these app modules were statically imported in packages/app-store/index.ts, so a module that failed to load broke the whole import at load time; the patch adds no new silent failure.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1278197
+}

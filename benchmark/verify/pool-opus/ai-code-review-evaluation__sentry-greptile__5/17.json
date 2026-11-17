@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The removed FlexCenter in static/app/components/events/eventAttachments.tsx (patch lines 1293-1297) included theme.overflowEllipsis, whose overflow:hidden let the grid cell shrink. The plain <Flex align=\"center\"> that replaced it (eventAttachments.tsx:143) has no overflow or min-width rule (core/layout/flex.tsx:18-26), so the cell grows to fit the full no-wrap <Name> text and widens the `1fr auto auto` column (eventAttachments.tsx:200). The PanelTable then scrolls sideways (panelTable.tsx:177) instead of truncating.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.42669670000000004
+}

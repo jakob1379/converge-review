@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/AssertEvents.java:482 says the grant shortcut \"starts at character 4th char\", but services/src/main/java/org/keycloak/protocol/oidc/encode/DefaultTokenContextEncoderProvider.java:78-81 encodes it as chars 5-6 (`substring(4, 6)`); the comment is wrong, though whether it stems from an earlier 3-letter encoding is not provable from the source. The adjacent `substring(3, 5)` at AssertEvents.java:483 uses the same wrong offset, which is a separate problem beyond the comment.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.240616
+}

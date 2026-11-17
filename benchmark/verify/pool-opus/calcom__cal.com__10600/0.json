@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The codes are lowercase hex (`randomBytes(5).toString(\"hex\")`), and both disable.ts (patch line 372) and next-auth-options.ts:650 match them with `backupCodes.indexOf(input.replaceAll(\"-\", \"\"))`, so the match is case-sensitive and only dashes are removed; the 'XXXXX-XXXXX' placeholder in BackupCode.tsx even suggests uppercase. One correction: the second comparison is in next-auth-options.ts, not BackupCode.tsx, which only renders the input.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0794745
+}

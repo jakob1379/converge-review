@@ -1,0 +1,225 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "pkg/server/wire.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "pkg/server/wire.go (lines 374-375) still registers anonstore.ProvideAnonDBStore and binds AnonStore. ProvideAnonDBStore now requires an int64 parameter that no Wire provider supplies, and ProvideAnonymousDeviceService builds its own store instead of receiving AnonStore, so wire generation fails or the binding is dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "updateDevice returns ErrDeviceLimitReached when rowsAffected == 0. Zero affected rows means the device does not exist or its updated_at falls outside the time window, not that the limit was reached.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Using RowsAffected()==0 to signal ErrDeviceLimitReached can misfire on MySQL. MySQL reports 0 rows affected when a row matches but its values are unchanged, for example the same updated_at after second-precision truncation, so existing devices at the limit can be denied.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "grafana-data/src/types/config.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The anonymousDeviceLimit field on the GrafanaBootConfig class is initialized to undefined without a type annotation, so TypeScript infers type undefined instead of number | undefined. The value cannot be read as a number even though the backend sends an int64.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": "conf/defaults.ini",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new [auth.anonymous] device_limit config key is not added to conf/defaults.ini, conf/sample.ini, or docs/sources/administration/configuration.md. Nothing documents that 0 means unlimited.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": "impl_test.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The device limit tests do not verify that an already-known device can still be updated or refreshed when the limit is reached. They also do not cover other limit cases or the service/cache path, and impl_test.go only uses limit 0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "tagDeviceUI writes the device ID to localCache before calling CreateOrUpdateDevice and does not evict it on ErrDeviceLimitReached. Later requests from a rejected device hit the cache, TagDevice returns nil, and the device bypasses the limit until the cache entry expires.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test device struct is missing the CreatedAt field.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "anonymousDeviceLimit is added to the public GrafanaConfig interface and the frontend settings DTO, but nothing in public/ or packages/ reads it. Adding a required member to a published interface also affects implementers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The device limit is exposed in frontend settings to all clients, including unauthenticated anonymous ones.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "args = append([]interface{}{query}, args...) mutates the captured slice inside the WithDbSession callback. On a SQLite 'database locked' retry, the query is prepended twice and Exec fails.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "CountDevices and the subsequent insert/update in CreateOrUpdateDevice run in separate sessions without a transaction or lock. Concurrent requests or HA instances can all observe count < limit and insert devices beyond the limit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": "anonstore/database.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 30-day device window is defined in three places: anonymousDeviceExpiration in anonstore/database.go and api/api.go, and thirtyDays in impl.go. If one drifts, the enforced count, device listing and usage stats will disagree.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Device tagging moved from a background goroutine with a 2-minute timeout and panic recovery to a synchronous call on the anonymous auth path. This adds DB write latency to requests, removes panic recovery, and ties the write to the request context.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new TestIntegrationBeyondDeviceLimit lacks the testing.Short() skip guard.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The device-limit time window is computed inconsistently. CountDevices uses time.Now().UTC(), while the upsert uses device.UpdatedAt and device.UpdatedAt.Add(-anonymousDeviceExpiration) as its bounds.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": "client.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When TagDevice returns ErrDeviceLimitReached, Authenticate in client.go fails, so anonymous authentication is blocked entirely rather than only device tracking being capped.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ErrDeviceLimitReached is a plain fmt.Errorf value rather than an errutil error. It is logged at Warn on every rejected request, and the client gets a generic 401 with no device-limit message.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The doc comment says 'updated between the given times', but the function takes no time arguments; the window is derived from device.UpdatedAt.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Clients that omit X-Grafana-Device-Id or send an unparsable IP are never counted but still authenticate as anonymous, so the limit can be bypassed by dropping the header.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

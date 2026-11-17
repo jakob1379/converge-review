@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In static/app/views/performance/newTraceDetails/traceDrawer/details/span/eapSections/attributes.tsx:61-63 the memo returns the unfiltered `sorted` list when `searchQuery` is empty, and the `HIDDEN_ATTRIBUTES` check only runs in the filter at lines 65-69. `sortAttributes` (traceDrawer/details/utils.tsx:98-111) does no filtering and no `hiddenAttributes` prop is passed to `AttributesTree` (attributes.tsx:137-151), so is_segment/project_id/received still show in the default view.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2049789
+}

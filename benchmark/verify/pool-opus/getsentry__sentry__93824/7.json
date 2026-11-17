@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The defaults differ as described: --flusher-processes defaults to 1 (src/sentry/consumers/__init__.py:35-38 of the patch), while ProcessSpansStrategyFactory and SpanFlusher default to None, meaning one process per shard (flusher.py:98,103). But the CLI default is deliberate, since its help text says 'Defaults to 1', and the test claim is wrong: test_flusher_processes_limit (test_consumer.py:415-453) runs with flusher_processes=2 and 4 shards, so the shared-process path is tested.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0972045
+}

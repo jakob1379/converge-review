@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In ASN1Decoder.readInteger (authz/client/.../util/crypto/ASN1Decoder.java, patch lines 119-121), a length byte of 0 makes read(0) return an empty array, and `new BigInteger(new byte[0])` then throws an unchecked NumberFormatException (\"Zero length BigInteger\"). Nothing checks for or wraps this, so it never becomes an IOException parse error, and asn1derToConcatenatedRS (AuthzClientCryptoProvider, patch lines 497-498) passes it straight to the caller.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15114139999999998
+}

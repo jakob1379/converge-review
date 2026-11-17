@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`build_handler(self, detector=None, detector_type=None)` at tests/sentry/workflow_engine/processors/test_detector.py:101-106 is only ever called as `self.build_handler()` (e.g. lines 329, 381, 425, 534, 582), and `detector_type` appears nowhere else in the repo besides its definition and forwarding at lines 102 and 105. `create_detector_and_conditions(self, type: str | None = None)` at lines 86-88 does replace None with \"handler_with_state\" in the body rather than using a plain default.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3697243
+}

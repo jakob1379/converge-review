@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "CredentialHelper.java:58 builds `new UserCredentialModel(\"\", credentialModel.getType(), recoveryCodesJson)`, which holds only the JSON-encoded codes. The userLabel and createdDate (generatedAt) that createFromValues sets on credentialModel (RecoveryAuthnCodesAction.java:110) only reach the local-DB branch at line 64. The test storage then stamps its own time with Time.currentTimeMillis() and is left with a null userLabel.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1831389
+}

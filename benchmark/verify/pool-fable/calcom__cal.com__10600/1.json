@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/auth/lib/next-auth-options.ts:73-102 reads the user with a plain findUnique, then lines 139-156 decrypt, indexOf, null the slot and write the whole blob back with an unconditional prisma.user.update keyed only on id; there is no transaction, lock or conditional where on the old value. Two concurrent logins can therefore both accept the same code, and two logins using different codes can overwrite each other so a consumed code is restored.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1926794
+}

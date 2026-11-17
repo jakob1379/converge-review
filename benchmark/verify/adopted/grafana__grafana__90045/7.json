@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Every TestMode3_* case wraps the same `m := &mock.Mock{}` in both `legacyStoreMock{m, l}` and `storageMock{m, s}` (dualwriter_mode3_test.go:51-54), so the Create case 'error when creating object in the unified store fails' (lines 37-44) only reaches its error because Storage.Create matches the setupLegacyFn expectation. The duplicate legacy Update setup (313-315) is likewise indistinguishable from the storage one, and the file has no AssertExpectations, AssertNotCalled or wait for the legacy goroutines, whereas mode 1 does use AssertNotCalled (dualwriter_mode1_test.go:147).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.24664709999999998
+}

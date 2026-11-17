@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The Embedding object carries nothing but `id: 'default'` and `embeddable_hosts` (app/controllers/admin/embedding_controller.rb:16-19, app/serializers/embedding_serializer.rb:2-3), its `update` action is a no-op re-render (embedding_controller.rb:9-11), and the template only iterates the host list (app/assets/javascripts/admin/templates/embedding.hbs:8). The new plural `_ids` branch (app/assets/javascripts/discourse/models/store.js.es6:196-201) has `EmbeddingSerializer` as its only `has_many ... embed: :ids` consumer rendered with `rest_serializer: true`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5577452
+}

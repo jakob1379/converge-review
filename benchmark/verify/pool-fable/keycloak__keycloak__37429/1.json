@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes js/apps/account-ui/maven-resources/theme/keycloak.v3/account/messages/messages_en.properties:188 from `{{0}}/{{1}}/{{2}}` to `{0} \u2026 {2,choice,\u2026}`, while js/apps/account-ui/src/i18n.ts:25-47 builds a plain i18next instance (default `{{ }}` interpolation, no ICU plugin; none in package.json). The key is translated client-side with positional params in js/libs/ui-shared/src/user-profile/utils.ts:74-86 and the server serves the raw property value (ThemeResource.java:153), so the placeholders and choice block show up literally.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.8509666
+}

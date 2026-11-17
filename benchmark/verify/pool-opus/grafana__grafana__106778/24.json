@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "For non-Grafana rules AlertRuleMenu.tsx:72 passes skipToken, and useIsGrafanaPromRuleEditable returns loading:false when rule is undefined (useAbilities.ts, `if (!rule || !folderUID)`). So MaybeSupported=AlwaysSupported, isPluginProvided=false, and Duplicate=toAbility(true, getRulesPermissions('grafana').create), which is ORed into canDuplicate at AlertRuleMenu.tsx:91-92. Users with Grafana AlertingRuleCreate then see Duplicate on cloud rules even when the ruler-based check denies it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3773908
+}

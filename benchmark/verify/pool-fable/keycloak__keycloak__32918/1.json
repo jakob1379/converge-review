@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java:303 registers `testRealm().identityProviders().get(\"alias\")::remove` with the string literal, although the loop variable `alias` (\"org-idp-\" + i) is declared at line 300, so the created IDPs are never cleaned up. This line is pre-existing: the patch's only hunk in this file starts at line 365 and merely repeats the pattern at lines 381 and 425.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2077062
+}

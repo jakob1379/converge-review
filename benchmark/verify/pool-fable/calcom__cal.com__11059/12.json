@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In sync mode `parseRefreshTokenResponse` parses with `minimumTokenResponseSchema` (packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:5-16), a plain `z.object` that strips unknown keys; its computed keys do not act as a catch-all, so only `access_token` survives. Salesforce `getClient` then writes that stripped data back as the credential key (packages/app-store/salesforce/lib/CalendarService.ts:90-99), so `instance_url` and the other fields are lost from the stored credential, which line 105 reads on the next call.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1893583
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/monitors/logic/incidents.py:48 slices `previous_checkins[:failure_issue_threshold]` and line 52 only rejects when an OK check-in is present; there is no length check, so a new (ACTIVE) monitor with threshold > 1 falls through to set ERROR and create a MonitorIncident at lines 56-70 on its first failure. The logic is a verbatim move of the removed `mark_failed_threshold` in mark_failed.py, so the behaviour predates this patch.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.30021359999999997
+}

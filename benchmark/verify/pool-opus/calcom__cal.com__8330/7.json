@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/slots.ts:579-586 the patch looks up userSchedule only to pass organizerTimeZone, and passes no dateOverrides or workingHours (availabilityCheckProps at :418-421 holds only eventLength and currentSeats). Both default to [], and organizerTimeZone is only read inside dateOverrides.find (patch lines 104-105), so the lookup and the prop do nothing.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0901497
+}

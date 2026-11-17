@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/serializers/user_serializer.rb:79 (patch line 79), website host www.example.com (3 labels) and instance example.com (2 labels) skip the equal-length branch, and 'example.com'.ends_with?('.www.example.com') is false, so it returns only 'www.example.com'. With the hosts swapped, 'www.example.com'.ends_with?('.example.com') is true, so the path is appended.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0458811
+}

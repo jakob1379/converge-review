@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:207-222 falls back to the all-clients resource for any client with no resource of its own, with no exclusion for realm-management, so canMapRoles/canMapCompositeRoles (lines 91-98) return true for it. RolePermissions.java:308 and :398 then return true before reaching checkAdminRoles (only called at :325 and :415), letting an admin who also has map-roles on a user assign realm-admin.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 1.1672803
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "For a federated user, model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:66-77 lets the storage provider's validator accept the code and drop it from the list, so the only code-consuming logic (services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:110-111) never runs. services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java:80-92 afterwards only checks allCodesUsed() and never marks the used code, and the patch adds no docs or javadoc telling providers to do so (its own sample provider just does anyMatch over all codes without removal).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6778460999999999
+}

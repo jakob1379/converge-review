@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch turns the forEach callbacks async at packages/app-store/vital/lib/reschedule.ts:125, packages/app-store/wipemycalother/lib/reschedule.ts:125 and packages/trpc/server/routers/viewer/bookings.tsx:553, so the try/catch at reschedule.ts:124-139 cannot catch their rejections and sendRequestRescheduleEmail (reschedule.ts:143, bookings.tsx:570) runs before deletions finish. Before the patch the deleteEvent promises were already discarded by forEach, but the deletions now start only after an awaited getCalendar, and getCalendar errors no longer reach the catch.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.32972450000000003
+}

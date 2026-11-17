@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupResourceTypeEvaluationTest.java:73-75 (also 195-197, 261-263) wraps `groups().add(...)` in try-with-resources and asserts CREATED (via `assertThat(..., equalTo(...))`, not `assertEquals`) before calling `ApiUtil.handleCreatedResponse`, which itself asserts 201 and closes the response at test-framework/core/src/main/java/org/keycloak/testframework/util/ApiUtil.java:8-14. The same test file calls it directly without the wrapper at lines 165 and 302.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.6474933
+}

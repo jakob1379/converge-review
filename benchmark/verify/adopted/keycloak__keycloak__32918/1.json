@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `organizationId == null || BROKER_PUBLIC` to LoginFilter.getLoginPredicate() (IdentityProviderStorageProvider.java:254), which the plain bean uses at IdentityProviderBean.java:226 when organizations are off (FreeMarkerLoginFormsProvider.java:482-485). With the Organization feature disabled, IDPs are not wrapped (InfinispanIdentityProviderStorageProvider.java:433), so a linked org-bound non-public IDP that showed before is now hidden; with the feature on, the wrapper's isEnabled() (line 441) or the org-aware predicate (OrganizationAwareIdentityProviderBean.java:94) already hid it, so the change is narrow.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3257088
+}

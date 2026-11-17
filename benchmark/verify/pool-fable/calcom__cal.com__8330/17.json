@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds an inline `dateOverrides?: { start: Date; end: Date }[]` at packages/trpc/server/routers/viewer/slots.ts:87-90, while `TimeRange` in packages/types/schedule.d.ts:1-6 already has the same required `start: Date; end: Date` fields (plus optional `userId`/`timeZone`). The patch even imports `WorkingHours` from that same module at slots.ts:22, so `TimeRange[]` could have been reused.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1614756
+}

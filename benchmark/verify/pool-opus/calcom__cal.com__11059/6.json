@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In sync mode, refreshOAuthTokens.ts:15-18 returns the raw fetch Response without parsing it. The callers read SDK/axios fields that a Response does not have: Google `res?.data` gives undefined, so `token.access_token` throws (googlecalendar CalendarService); HubSpot `expiresIn`/`accessToken` are undefined, giving a NaN expiry and saving the Response as the key (hubspot/lib/CalendarService.ts:192-202); Zoho CRM/Bigin `.data.error` throws (zohocrm CalendarService ~L216, zoho-bigin ~L95).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.22998440000000003
+}

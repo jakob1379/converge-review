@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `String getShortcut();` to OAuth2GrantTypeFactory as an abstract method with no default (server-spi-private/.../OAuth2GrantTypeFactory.java, patch line 80). DefaultTokenContextEncoderProviderFactory.postInit calls `gtf.getShortcut()` on every OAuth2GrantType factory (patch lines 435-439), so a custom factory compiled against the old interface throws AbstractMethodError at startup.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0666602
+}

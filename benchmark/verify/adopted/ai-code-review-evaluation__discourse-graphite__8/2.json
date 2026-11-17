@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In admin-group.js.es6:13, totalPages = Math.floor(50/50)+1 = 2, so showingLast (line 17) is false on page 1. The next action (line 33) then sets offset to min(0+50, 50) = 50 and calls findMembers, which fetches an empty second page; Math.ceil would give the correct count.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0506711
+}

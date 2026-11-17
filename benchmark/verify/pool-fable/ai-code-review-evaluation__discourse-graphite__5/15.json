@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Only partly right: the patch makes `.small-action` a flex container (app/assets/stylesheets/common/base/topic-post.scss:264-265) and its direct child `.topic-avatar` keeps `float: left` (line 270), which is ignored on a flex item. But `.avatar` (line 298) and `button` (line 309) sit inside the non-flex `.small-action-desc` (app/assets/javascripts/discourse/templates/components/small-action.hbs:2-12), so their floats still apply and are not dead.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2664629
+}

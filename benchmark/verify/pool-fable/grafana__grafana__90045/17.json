@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`SetDualWritingMode` defaults an unset key to Mode1 and only transitions 1->2 and 2->1, with a TODO for other combinations (pkg/apiserver/rest/dualwriter.go:188-222); the returned mode, not the desired one, is passed to `NewDualWriter` (pkg/services/apiserver/builder/helper.go:173-184). So the new \"mode 3\" playlist subtests and a `=3` config get a Mode1 writer (or Mode2 if the KV store already holds \"2\"), never Mode3.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5592792999999999
+}

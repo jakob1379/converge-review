@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `checkIfIsAvailable`, packages/trpc/server/routers/viewer/slots.ts:117-125 rejects a slot only when it ends at or before the override start or starts strictly after the override end. A slot that starts inside the override and runs past its end matches neither test, so `dateOverrideExist` returns true at slots.ts:133-135, which also skips the busy check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3487886
+}

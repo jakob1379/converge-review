@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the error/Alert branch, the old code showed Remove app whenever there was no delegationCredentialId. It now renders CredentialActionsDropdown (SelectedCalendarsSettingsWebWrapper.tsx:123-131), which hides Remove app when disableConnectionModification is true (CredentialActionsDropdown.tsx:68). The evidence overstates one point: line 182 passes the raw disableConnectionModification prop, not shouldDisableConnectionModification, so a disabled scope (isDisabled) alone does not hide the option.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1468273
+}

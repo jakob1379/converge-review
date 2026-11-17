@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Every return path of buildAuthorizationConditions() yields a Prisma.Sql object (packages/lib/server/service/insightsBooking.ts:125-142, with the org/team helpers reducing over non-empty arrays at :164-174 and :196-207), and getAuthorizationConditions() is typed Promise<Prisma.Sql> (:83-88). So `authConditions` is always truthy and the `else if (filterConditions)` / `else` branches at :76-80 can never run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2289393
+}

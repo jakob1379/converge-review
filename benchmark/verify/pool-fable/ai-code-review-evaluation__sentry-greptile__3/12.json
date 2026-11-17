@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/helpers/error_upsampling.py:135-138 lowercases the raw query string and tests `\"event.type:error\" in query`, so `!event.type:error` and `event.type:error OR event.type:transaction` both return True, while any non-identical spelling such as `event.type: error` returns False. For the discover dataset this result alone decides whether the upsampling transform is applied (lines 122-124).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1304808
+}

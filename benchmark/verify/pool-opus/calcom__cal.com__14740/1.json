@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts:70-72 lowercases the BLACKLISTED_GUEST_EMAILS entries, but line 77 checks them with `blacklistedGuestEmails.includes(guest)` against the raw guest string, with no toLowerCase or extractBaseEmail. A differently cased or plus-aliased address therefore gets past the blacklist, whereas handleNewBooking.ts:742 normalizes with `extractBaseEmail(guest).toLowerCase()`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1550898
+}

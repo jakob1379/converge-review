@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The short-circuit was removed (GroupsResource.java:113, GroupResource.java:179), but canView(g) still covers the realm-wide case: V1 GroupPermissions.java:255 starts with `canView() || canManage()`, and V2 GroupPermissionsV2.java:141-150 falls back to the all-groups type resource when the group has no resource of its own. The patch's own testViewGroups expects topGroup (no per-group grant) to be listed under an all-groups VIEW permission, so listings are not empty.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0.8805719999999999
+}

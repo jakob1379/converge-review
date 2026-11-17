@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes RECREATE_UPGRADE_EXIT_CODE from 4 to 3 and adds FEATURE_DISABLED=4 (CompatibilityResult.java:34-35). In UpdateCommandDistTest.java, testFeatureNotEnabled (line 236) and testIncompatible (lines 283, 292) only call assertError on message text, and the only exit-code check anywhere is assertEquals(0, ...) at line 75; no test refers to either constant or to the values 3 or 4.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.128847
+}

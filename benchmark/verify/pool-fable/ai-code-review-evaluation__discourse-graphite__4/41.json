@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `ruby-readability` and `simple-rss` at Gemfile:210-211 and locks them only in Gemfile_rails4.lock (lines 313, 344, 474, 483); Gemfile.lock and Gemfile_rails_master.lock both exist but contain neither gem. Those two lockfiles are selected by `RAILS3` and `RAILS_MASTER` (Gemfile:15-26), so they are now out of sync with the Gemfile, while the default Rails 4 boot is unaffected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1660117
+}

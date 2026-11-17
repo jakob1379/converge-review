@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The only call of `handleDelete` passes a `RulerRuleDTO` (`handleDelete(rulerRule, groupIdentifier)` at AlertRuleMenu.tsx:172), matching the signature at AlertRuleMenu.tsx:31. The prop providers (RuleActionsButtons.V2.tsx:99, RuleActionsButtons.tsx:115-120) supply zero-argument closures that pass the `EditableRuleIdentifier` to `showDeleteModal` (typed for it at DeleteModal.tsx:18), not to `handleDelete`, so there is no type mismatch.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.5342844
+}

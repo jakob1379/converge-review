@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In addGuests.handler.ts:76, `booking.attendees.some((attendee) => guest === attendee.email)` uses raw `===` with no lowercasing, and the schema (addGuests.schema.ts:9) does not normalise case, so `A@x.com` passes the filter next to an existing `a@x.com` and is written as a new attendee at lines 92-106.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15897260000000002
+}

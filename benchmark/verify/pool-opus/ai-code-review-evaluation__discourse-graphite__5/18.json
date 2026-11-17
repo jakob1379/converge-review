@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes `.small-action-desc .custom-message p` from `margin: 5px 0` to `margin: 0` (app/assets/stylesheets/common/base/topic-post.scss:291-293), and that div holds `{{{post.cooked}}}` (small-action.hbs:16), so the paragraphs lose all vertical spacing. The mobile override (mobile/topic-post.scss:516-519) only sets padding-top to 0, so nothing adds the spacing back; the paragraphs stay separate blocks but sit flush with no gap.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0725886
+}

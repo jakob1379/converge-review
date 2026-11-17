@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Once the patch deletes the only `cacheHit: true` case, every case left in TestService_getUserPermissions (pkg/services/authz/rbac/service_test.go:341-356) sets `cacheHit: false`. That makes the field (line 337) and both `if tc.cacheHit` branches (lines 367 and 388) dead code, and no test pre-fills the cache and then checks that getIdentityPermissions still calls the store, or that the anonymous cache read is gone (lines 841 and 1240 only check that the cache gets written). The new 'outdated cache' subtest in TestService_CacheCheck covers a stale cache falling back to the store only indirectly, through Check.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.15474909999999997
+}

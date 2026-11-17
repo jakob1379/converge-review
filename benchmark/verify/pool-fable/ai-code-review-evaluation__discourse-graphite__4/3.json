@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "app/views/layouts/embed.html.erb:11 does pass the full `request.referer` URL as targetOrigin, but the HTML spec has postMessage parse targetOrigin as a URL and compare only its origin, so the path is ignored. The message is still delivered to the parent listener at app/assets/javascripts/embed.js:15-25, so the claimed failure does not occur.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.4140899
+}

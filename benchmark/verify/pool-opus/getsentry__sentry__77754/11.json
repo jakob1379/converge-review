@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "sync_group_assignee_outbound always puts an \"assignment_source_dict\" key in the task kwargs, even when it is None (src/sentry/integrations/utils/sync.py:136-145). A worker still running the old `sync_assignee_outbound(external_issue_id, user_id, assign)` signature will therefore raise TypeError. However, the @retry wrapper catches that error and requeues the task up to 5 times, 5 minutes apart (src/sentry/tasks/base.py:163-172; sync_assignee_outbound.py:18-22), so the sync is lost only if every retry also lands on an old worker. Usually it is just delayed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1291795
+}

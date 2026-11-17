@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only uniqueness check is the dialog's local ZAddGuestsInputSchema at apps/web/components/dialog/AddGuestsDialog.tsx:26-29, which uses `new Set(emails)` with no case normalisation, so User@x.com and user@x.com count as distinct. Nothing downstream catches it: MultiEmail does not lowercase, the server schema (packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts:3-6) has no uniqueness check, and the handler compares with `guest === attendee.email` (addGuests.handler.ts:74-78).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1910093
+}

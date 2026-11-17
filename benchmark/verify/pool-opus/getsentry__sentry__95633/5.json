@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new thread-queue-parallel tests are methods on ProcessResultSerialTest (tests/sentry/uptime/consumers/test_results_consumer.py, from ~line 1689). The only subclasses are the 'serial' one (line 1587) and the 'parallel' one (line 2009), so no ProcessResultTest subclass runs the full suite in thread-queue-parallel mode. The strategy_processing_mode annotation at line 74 is still Literal['batched-parallel','parallel','serial'], while the factory's own mode Literal was extended (result_consumer.py:406).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2320853
+}

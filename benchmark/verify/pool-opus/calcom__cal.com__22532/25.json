@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In scripts/test-gcal-webhooks.sh (patch lines 574-585), `for i in {1..20}` is used only as a retry counter. The loop body never reads `$i`; it only greps the log, breaks or calls cleanup, and sleeps.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0417662
+}

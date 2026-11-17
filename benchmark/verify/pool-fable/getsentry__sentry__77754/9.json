@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only tests calling `sync_group_assignee_inbound` directly (tests/sentry/models/test_groupassignee.py:289-388) use a single integration, run without `self.tasks()` and assert nothing about outbound sync. The one source-skip test (tests/sentry/models/test_groupassignee.py:180-221) calls `GroupAssignee.objects.assign` directly with one integration, so no test shows the source skipped while a second integration still syncs.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2836875
+}

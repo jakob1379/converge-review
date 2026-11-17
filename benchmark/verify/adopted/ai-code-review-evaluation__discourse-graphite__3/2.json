@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "BlockedEmail.should_block? (app/models/blocked_email.rb:13-17) saves the counter from inside EmailValidator (lib/validators/email_validator.rb:183). Rails 3.2.12 (Gemfile.lock:115) runs validations inside the save transaction, so a failed save rolls the counter back. users#create only keeps a hit because of the separate user.valid? call (users_controller.rb:168). User.create_for_email's save! (user.rb:103), called from InviteRedeemer inside Invite.transaction (invite_redeemer.rb:4,47), and EmailToken.confirm (email_token.rb:45-57: User.transaction, save!, rescue RecordInvalid) never record the attempt.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1319874
+}

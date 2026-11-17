@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/embeddable_host.rb (patch lines 340-348), record_for_host compares lower(host) against uri.host without downcasing it. Ruby's URI keeps the host's case, so \"EvilTrout.com\" never equals the lowercased column, the lookup returns nil, and host_allowed? is false.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0356654
+}

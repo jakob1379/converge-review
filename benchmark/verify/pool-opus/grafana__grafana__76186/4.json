@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In contextual_logger_middleware.go:40, 45, 50 and 55, `req.PluginContext` is read with no `req == nil` check, while logger_middleware.go:63/77/90/104 and most other middlewares check for nil first. In the real chain (pluginsintegration.go:158-160), the tracing and metrics middlewares run earlier and also read `req.PluginContext` without a nil check (tracing_middleware.go:85, metrics_middleware.go:149), so a nil request would already panic before reaching this middleware. That makes this a consistency gap, not a new crash path.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09790779999999999
+}

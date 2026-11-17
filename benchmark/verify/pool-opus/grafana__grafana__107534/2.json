@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "With this patch, runSplitQuery (querySplitting.ts:299) and runShardSplitQuery (shardQuerySplitting.ts:52) call applyTemplateVariables, which uses templateSrv.replace (datasource.ts:1128,1132). DataSourceWithBackend.query then calls it again (DataSourceWithBackend.ts:185), and the shard path also goes through runSplitQuery (shardQuerySplitting.ts:163), so the split path interpolates twice and the shard path three times (it was once and twice before the patch), and any `$var` text that appears after one pass is expanded on the next.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1507473
+}

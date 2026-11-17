@@ -1,0 +1,159 @@
+{
+  "findings": [
+    {
+      "path": "src/sentry/integrations/services/assignment_source.py",
+      "line": 18,
+      "severity": "Important",
+      "claim": "`queued: datetime = timezone.now()` is a dataclass default evaluated once at class definition, so every AssignmentSource in a process carries the module import time instead of its creation time; the stale value is serialised into every sync_assignee_outbound task.",
+      "evidence": "Python evaluates dataclass defaults once. Superpowers seat ran a stubbed-timezone repro (two instances 1.5s apart) that raised AssertionError 'queued is frozen at import time'. test_to_dict only asserts queued is not None, so it cannot catch this. Nothing reads queued today. Fix: field(default_factory=timezone.now) or drop the field.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Raised by both correctness seats as Important, with an executed repro; the fix is one line."
+    },
+    {
+      "path": "src/sentry/integrations/mixins/issues.py",
+      "line": 411,
+      "severity": "Minor",
+      "claim": "The abstract sync_status_outbound gains an `assignment_source` parameter that no caller passes and no implementation reads, so the contract advertises status-sync loop protection that does not exist.",
+      "evidence": "tasks/sync_status_outbound.py:43 still calls should_sync('outbound_status') with no source. The jira, jira_server, vsts and example implementations do not declare the parameter. ExampleIntegration.sync_status_outbound (example/integration.py:161) has no **kwargs, so it would raise TypeError if a caller ever passed it.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "All four seats agree, and reverting the signature removes the misleading contract at no cost."
+    },
+    {
+      "path": "tests/sentry/integrations/services/test_assignment_source.py",
+      "line": 13,
+      "severity": "Minor",
+      "claim": "Test name typo: `test_from_dict_inalid_data` should be `test_from_dict_invalid_data`.",
+      "evidence": "Declaration at line 13 of the new test file.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Trivial rename."
+    },
+    {
+      "path": "tests/sentry/integrations/services/test_assignment_source.py",
+      "line": 8,
+      "severity": "Minor",
+      "claim": "`test_from_dict_empty_array` passes an empty dict, not an array, so the name misdescribes the case.",
+      "evidence": "Test body calls from_dict({}).",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Trivial rename alongside the typo fix."
+    },
+    {
+      "path": "tests/sentry/models/test_groupassignee.py",
+      "line": null,
+      "severity": "Minor",
+      "claim": "Test gaps: no test covers deassign with a matching source integration, and no test drives sync_group_assignee_inbound end to end to show the source integration is skipped while a second integration still syncs.",
+      "evidence": "Only the assign path has a matching-source test (test_assignee_sync_outbound_assign_with_matching_source_integration). The ponytail seat noted the same deassign gap but judged it low value because both paths share should_sync.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "The deassign path calls should_sync through its own call site, so a cheap test guards against regression. The end-to-end inbound test is the highest-value test for this PR's purpose."
+    },
+    {
+      "path": "src/sentry/integrations/services/assignment_source.py",
+      "line": 32,
+      "severity": "Minor",
+      "claim": "from_dict swallows TypeError/ValueError and returns None, so a malformed payload silently turns off loop protection (fails open into the cycle) with no log or metric. queued is also not type-checked on deserialisation, so it would come back as a str under a JSON serializer.",
+      "evidence": "assignment_source.py:31-35. should_sync treats None as no source and syncs. Celery uses pickle today (conf/server.py:739), so the type issue is latent.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: degrades to the pre-patch behaviour and the only producer is to_dict, so there is no current trigger. Add a log or metric when there is an observability need."
+    },
+    {
+      "path": "src/sentry/integrations/tasks/sync_assignee_outbound.py",
+      "line": 30,
+      "severity": "Minor",
+      "claim": "The new task kwarg `assignment_source_dict` and the sender (utils/sync.py:136-144) ship in the same deploy. During a rolling deploy, an old worker receiving the kwarg raises TypeError and that assignee sync is lost.",
+      "evidence": "Reasoned. Sentry practice (external developer docs, not written in the repo) is to land the task parameter with a default one deploy before any caller sends it.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Cannot be fixed inside a single patch. It needs deploy sequencing (split the PR, or accept a transient loss window), and the release owner should decide. Unverified: settling it needs a mixed-version worker test."
+    },
+    {
+      "path": "src/sentry/integrations/mixins/issues.py",
+      "line": 390,
+      "severity": "Minor",
+      "claim": "The loop guard compares integration IDs, not external issues. A group linked to two external issues on the same integration (Jira A and B on one install) no longer propagates an inbound reassignment on A to B, which worked before the patch and was not a loop.",
+      "evidence": "Reasoned. sync_group_assignee_outbound queues one task per linked external issue, and should_sync returns False whenever source.integration_id == org_integration.integration_id. No test covers it.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "This may be the intended behaviour, and with no spec it is a product-intent question. Settle it by confirming the intended semantics for multiple links on one integration, then add a test either way."
+    },
+    {
+      "path": "src/sentry/integrations/mixins/issues.py",
+      "line": null,
+      "severity": "Minor",
+      "claim": "Measured against the inferred intent ('Breaks issue sync cycles'), status-sync cycles are not addressed; only assignee sync is protected.",
+      "evidence": "tasks/sync_status_outbound.py:43 is unchanged. Inbound tagging exists only in the assign/deassign paths of utils/sync.py:96-116.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "There is no spec, so scope cannot be established. Out of this PR's evident scope; track separately if status loops are observed."
+    },
+    {
+      "path": "src/sentry/integrations/services/assignment_source.py",
+      "line": 16,
+      "severity": "Minor",
+      "claim": "`source_name` is serialised into every task payload but never read; should_sync compares only integration_id.",
+      "evidence": "A grep finds no reader of source_name outside the class.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: cheap dead data that is plausibly useful for logging and debugging; drop it if nobody adopts it."
+    },
+    {
+      "path": "tests/sentry/integrations/services/test_assignment_source.py",
+      "line": null,
+      "severity": "Minor",
+      "claim": "A database-backed sentry TestCase is used to test a plain dataclass.",
+      "evidence": "The test class extends sentry.testutils TestCase although no DB access is needed.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: test speed nit with no documented repo standard."
+    },
+    {
+      "path": "src/sentry/integrations/services/assignment_source.py",
+      "line": 1,
+      "severity": "Minor",
+      "claim": "A plain value-object dataclass placed in integrations/services/, whose existing packages are hybrid-cloud RPC services (service.py/impl.py/model.py/serial.py).",
+      "evidence": "Inferred from `ls src/sentry/integrations/services/`. The seat itself rated it low confidence.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "reject",
+      "reason": "The repo documents no layout standard (CONTRIBUTING.md only links to external docs), and this is an advisory Minor from a standards seat, so it does not breach a documented standard."
+    }
+  ],
+  "coverage": "Files skipped: none; all 7 patch files were reviewed by every seat. The OCR tool's default_path excluded the 2 test files, but that seat reviewed them manually. Axes not run: gate not run (benchmark mode, no dependencies installed, no tests/linters/mypy executed), so the review is unanchored by executed checks. The only executed evidence is the superpowers seat's stubbed-Django repro of the queued default. Spec axis not run (no spec; intent inferred from commit title). Standards axis had no in-repo documented standards (.github/CONTRIBUTING.md links externally); enforced conventions such as the celery pickle rule were used instead. No cross-family reviewer was available, so all four seats are the same model family with correlated blind spots. Rounds 2+, fixes and red tests were not run (benchmark mode stops after merge). No Critical/Important finding was rejected, so no verifier was dispatched."
+}

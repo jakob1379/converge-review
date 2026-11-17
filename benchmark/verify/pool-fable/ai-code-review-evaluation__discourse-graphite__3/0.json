@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/blocked_email.rb:12 does `BlockedEmail.where(email: email).first` on a plain `t.string :email` column (db/migrate/20130724201552_create_blocked_emails.rb:4), an exact case-sensitive match in PostgreSQL, and the value arrives un-normalized from `user.email = params[:email]` (app/models/user.rb:87) via lib/validators/email_validator.rb:13. The domain whitelist/blacklist regex in the same validator is case-insensitive (`Regexp.new(..., true)`, lib/validators/email_validator.rb:20), so the inconsistency is real too.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2544124
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts (patch lines 450-592) loads the booking by id and checks only who the user is (admin/owner, organizer or attendee). It never checks booking.status or startTime/endTime. It then adds attendee rows with prisma.booking.update and calls sendAddGuestsEmails, which sends REQUEST/CONFIRMED ICS files (attendee-add-guests-email.ts:304-313). The UI hides the action for non-upcoming bookings (BookingListItem.tsx:544), but anyone allowed to call the endpoint directly can still do this.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1507764
+}

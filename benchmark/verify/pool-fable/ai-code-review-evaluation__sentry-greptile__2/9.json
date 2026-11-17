@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The gate at src/sentry/api/endpoints/organization_auditlogs.py:71 reads the member column `has_global_access`, which defaults to True for every member (src/sentry/models/organizationmember.py:216, copied through at organizations/services/organization/serial.py:47), so it is not an admin check and the 'authorized administrators' comment is misleading. Two caveats: the open-membership rule the claim cites belongs to a different attribute (src/sentry/auth/access.py:611), and the extra exposure is small because the endpoint already requires org:write, i.e. manager/owner or active superuser (src/sentry/api/bases/organization.py:111).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.575667
+}

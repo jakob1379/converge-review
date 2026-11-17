@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The only caller that passes date overrides to getSlots is getSchedule (packages/trpc/server/routers/viewer/slots.ts:410-415), and it always sets `timeZone: availability.timeZone`. That value is always a string: getUserAvailability.ts:201 resolves it as `schedule?.timeZone || eventType?.timeZone || user.timeZone`, and the overrides spread after it carry only start and end (lines 215-224), so they cannot clear it. The TeamAvailabilityTimes callers pass no dateOverrides, so the `tz(undefined)` path at packages/lib/slots.ts:44 is never reached; only the optional type leaves it open.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1347475
+}

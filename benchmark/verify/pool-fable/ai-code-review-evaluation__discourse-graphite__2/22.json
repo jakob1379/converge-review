@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/email/notification.html.erb:6 emits `%{respond_instructions}` inside the `context_posts.present?` block and line 19 emits it again unconditionally, so emails with context posts carry the instructions twice. The pre-patch template had the same two placements, so this looks like deliberate, pre-existing layout that the patch only re-indented.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.2346715
+}

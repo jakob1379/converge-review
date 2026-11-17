@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/refreshOAuthTokens.ts:8-18, both branches do `const response = await ...; return response;` when they could return the call directly. The new call sites wrap the refresh call in `async () => await fetch/axios/createToken(...)`, e.g. zoomvideo/lib/VideoApiAdapter.ts:~80, webex/lib/VideoApiAdapter.ts:~63 and hubspot/lib/CalendarService.ts:~178, where `() => fetch(...)` would do the same.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2148171
+}

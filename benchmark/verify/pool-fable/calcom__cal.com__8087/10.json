@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "packages/core/CalendarManager.ts:28 does call getCalendar without await, but the only consumer, getConnectedCalendars, does `const calendar = await item.calendar` at CalendarManager.ts:48 before the `if (!calendar)` check at line 51, inside a try/catch that also handles rejections. The sole residue is the promise dropped for `other_calendar`-variant apps at line 29, which could reject unhandled only if a CalendarService constructor or import throws.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5103133
+}

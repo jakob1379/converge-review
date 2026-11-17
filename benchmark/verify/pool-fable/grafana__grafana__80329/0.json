@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the ticker at pkg/services/cleanup/cleanup.go:77 from `time.Minute * 10` to `time.Minute * 1`, and every tick calls `srv.clean(ctx)` (line 81), which runs all eight cleanup jobs (lines 96-105) with no per-job throttle. `clean` keeps its 9-minute timeout (line 89), so a run longer than a minute is followed immediately by the next one from the buffered tick.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1578621
+}

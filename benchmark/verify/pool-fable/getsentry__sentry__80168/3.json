@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`build_mock_occurrence_and_event` (tests/sentry/workflow_engine/processors/test_detector.py:244-275) never uses `value` and hard-codes `id=\"eb4b0acffadb4d098d48cb14165ab578\"`, while `IssueOccurrence.__eq__` compares only `id` (src/sentry/issues/issue_occurrence.py:181-184) and the event data carries nothing derived from group_key, value or priority. The tests already pass with mismatched arguments, e.g. expected value 6 vs actual 100 at test_detector.py:488-490 and expected key \"val1\" vs actual \"group_key\" at 536-548.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4321427
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new click.Option at src/sentry/consumers/__init__.py:433-438 is a plain `type=int` with no lower bound. In flusher.py (patch lines 103, 118-124), `max_processes or len(...)` turns 0 into one process per shard. A negative value gives `num_processes = min(-1, n) = -1`, so `range(-1)` builds an empty map and `process_to_shards_map[i % -1]` (key 0) raises KeyError.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0961661
+}

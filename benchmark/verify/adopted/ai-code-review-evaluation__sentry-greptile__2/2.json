@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/paginator.py:182, BasePaginator.get_result clamps the offset only for non-prev cursors, and every subclass inherits this. build_cursor (utils/cursors.py:116,141,187) still computes the next cursor from the raw negative offset (e.g. -5+limit), so pages overlap. Prev cursors such as 0:-5:1 still pass a negative slice to Django, which raises a ValueError that base.py:540 does not catch, so the comment saying the queryset handles boundary conditions is false. Minor correction: line 192 only runs for prev cursors, where the offset is never clamped, so that line itself is not inconsistent.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21960339999999998
+}

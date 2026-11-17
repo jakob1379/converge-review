@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The test helper at src/sentry/testutils/factories.py:344-357 sets sample_rate = float(client_sample_rate) whenever the value is truthy. Production (src/sentry/event_manager.py:776-787) first requires the project to be allowlisted, the value to be an int or float, and 0 < x <= 1, so the helper accepts strings, negatives and values above 1. One detail is overstated: errors are swallowed by `except Exception: pass`, not a literally bare `except:`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.07619319999999999
+}

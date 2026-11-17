@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/api/webassets/webassets.go:48-49 takes the write lock and goes straight to readWebAssetsFromFile (line 60) and the unconditional assignment at line 69, with no second check of entryPointAssetsCache. Callers that saw nil under the RLock at lines 41-45 therefore each re-read and re-parse the manifest in turn and overwrite the cache with an equivalent value.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.12261849999999999
+}

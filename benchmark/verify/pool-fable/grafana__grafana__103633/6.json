@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both key builders emit `namespace + \".perm_\" + userUID + \"_\" + action\u2026` (pkg/services/authz/rbac/cache.go:27 and :31), both wrappers share one cache, and Name/ParentFolder are unvalidated (service.go:226-227), so the key spaces are not disjoint. A collision needs contrived input (a user UID like `u1_dashboards:read_dash1` plus a parent folder equal to an action string), and the bool-vs-map JSON mismatch makes a collided read fail to unmarshal and count as a miss (cache.go:70-74), not a wrong decision.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.7704970999999999
+}

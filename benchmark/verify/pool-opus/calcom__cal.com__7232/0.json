@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "deleteScheduledEmailReminder/deleteScheduledSMSReminder are async and run DB writes (emailReminderManager.ts and smsReminderManager.ts in the patch), but the patch calls them inside forEach without await at handleCancelBooking.ts (~L484-492), handleNewBooking.ts (~L966-971, where the surrounding try/catch therefore catches nothing), bookings.tsx (~L488-494) and workflows.tsx (~L211-217, 376-382, 520-524, 573-578), and it removes the awaited Promise.all of prisma deletes that was there before. Errors are caught and logged inside each function, so the 'rejections are lost' part is overstated, but nothing guarantees the reminder cancel or delete finishes before the request ends.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1324723
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both files added by the patch repeat the same check: packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:15 has `APP_CREDENTIAL_SHARING_ENABLED && process.env.CALCOM_CREDENTIAL_SYNC_ENDPOINT`, and refreshOAuthTokens.ts:5 has the same check plus `&& userId`. It could be a single shared constant next to APP_CREDENTIAL_SHARING_ENABLED in packages/lib/constants.ts:103.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.05347520000000001
+}

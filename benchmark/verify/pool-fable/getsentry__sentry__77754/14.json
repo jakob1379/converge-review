@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The base `should_sync` at src/sentry/integrations/mixins/issues.py:66-67 does ignore both parameters, but that is a normal overridable default (overridden at issues.py:382), and nothing flags it: the repo has no Ruff config at all and lints with flake8 + bugbear + flake8-logging (setup.cfg:87-110, requirements-dev.txt:26-28), with no unused-argument rule enabled.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.26596320000000007
+}

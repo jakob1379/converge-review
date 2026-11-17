@@ -1,0 +1,38 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The async functions deleteScheduledEmailReminder and deleteScheduledSMSReminder are called inside forEach loops without await. The call sites include handleCancelBooking.ts, handleNewBooking.ts, bookings.tsx and workflows.tsx. Because of this, reminder cancellation or DB updates may not complete before the request ends, and rejections are lost.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "emailReminderManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In deleteScheduledEmailReminder (emailReminderManager.ts), the immediateDelete=true branch cancels the SendGrid scheduled send and then returns. It neither deletes the workflowReminder DB row nor marks it cancelled, which leaves orphaned rows.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The EMAIL/SMS reminder-deletion dispatch block is duplicated at 7 call sites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

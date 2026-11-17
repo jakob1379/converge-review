@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Before this patch, IsHealthy called s.Init(), which returned the s.initErr that Stop() sets to \"service is stopping\" or \"service is stopped\" (pkg/storage/unified/resource/server.go:321,339). The patch removes that call, so IsHealthy (server.go:934-935) now just calls diagnostics.IsHealthy. For the SQL backend that only pings the DB and returns SERVING (sql/backend.go:109-116), and backend.Stop only cancels a context without closing the DB (sql/backend.go:119-122).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1377293
+}

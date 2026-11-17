@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new fixture static/app/views/dashboards/widgets/tableWidget/fixtures/sampleHTTPRequestTableData.ts every row carries `id: ''` (lines 8, 13, 18, 23, 28), while meta.fields (lines 32-35) and meta.units (lines 36-39) list only 'http.request_method' and 'count(span.duration)'. The effect is limited to this stories/spec fixture: TabularData's TFields defaults to string (common/types.tsx:61-74) so it type-checks, and tableWidgetVisualization.tsx:94 derives columns from meta.fields so 'id' is simply not rendered.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.8760243
+}

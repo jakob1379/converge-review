@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/cleanup_test.go:116-127 now seeds fresh annotations and wipes both tables in every subtest, so the case at lines 83-96 runs a single cleanup over 9 new rows (3 per type, MaxCount 3) rather than a second run over the prior case's state. The name still says \"again\"; the seeded state mirrors what a first run would leave, so the coverage loss is small.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2914454
+}

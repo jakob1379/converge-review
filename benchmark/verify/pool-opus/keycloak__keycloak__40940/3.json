@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupAdapter.java:256, 262 and 268 still call modelSupplier.get().getSubGroupsXxx(...) with no null check. The patch adds a null guard only to getSubGroupsCount (lines 274-275). The supplier is a lazy database lookup (getGroupModel, line 298), which returns null once another transaction has deleted the group, and GroupResource.java:180 (GET .../children) calls group.getSubGroupsStream(search, exact, -1, -1) on the cached adapter.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1033742
+}

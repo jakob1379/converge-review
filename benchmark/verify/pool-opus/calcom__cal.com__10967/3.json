@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/emails/src/templates/BrokenIntegrationEmail.tsx:89-90, the `?.` in `mainHostDestinationCalendar?.integration` only runs in the branch where the ternary has already checked that `mainHostDestinationCalendar` is truthy, so it does nothing. The old code had the same redundancy (`calEvent.destinationCalendar ? calEvent.destinationCalendar?.integration...`), and the patch only renamed the variable.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.06593869999999999
+}

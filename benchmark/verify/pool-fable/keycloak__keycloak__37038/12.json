@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/.../admin/permissions/AdminPermissions.java:74 registers the removal listener only under ADMIN_FINE_GRAINED_AUTHZ, and nothing else cleans up V2: per-object resources created by AdminPermissionsSchema.java:92-131 are deleted only when the permission itself is edited or removed (AdminPermissionsSchema.java:294-317), and AuthorizationStoreFactory.java:48-50 has no group/role synchronizer. Caveats: this holds for groups and clients only (V2 has no role resource type), the pre-patch guard inside onEvent was equally V1-only, and registering the listener under V2 would not help because GroupPermissionsV2.java:173 and ClientPermissionsV2.java:193 throw UnsupportedOperationException.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.2230936000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `prisma.workflowReminder.update({ where: { id: reminder.id }, data: { retryCount: reminder.retryCount + 1 } })` call appears word for word in the else branch (scheduleSMSReminders.ts:179-186) and in the catch block (:190-197). The patch adds both copies (patch lines 53 and 64).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.036166500000000004
+}

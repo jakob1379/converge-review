@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only calls are `setupRecoveryKeysForUserWithRequiredAction(userId, true)` and `assertUserHasRecoveryKeysCredentialInUserStorage(true)` in BackwardsCompatibilityUserStorageTest.java:249 and :253. So the `if (!logoutOtherSessions)` block at :423-425 never runs. The assert helper (:456-462) has no actual branch, but its parameter is always true, so its `false` case is never used.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.060727300000000005
+}

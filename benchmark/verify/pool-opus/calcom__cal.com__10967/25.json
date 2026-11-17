@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `schedulingType` to CalendarEvent (packages/types/Calendar.d.ts:1102) and sets it in handleNewBooking.ts:872, but no code reads `evt.schedulingType` / `event.schedulingType`; the COLLECTIVE logic uses `eventType.schedulingType` instead. The field only travels inside `...evt` spreads such as the webhook payload near handleNewBooking.ts:2297.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.25537190000000004
+}

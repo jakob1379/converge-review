@@ -1,0 +1,373 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/97529",
+ "cost_usd": 0.0912365,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "The patch skips the only postgres integration test of storage-server startup, hiding a failure this patch exposes"
+  },
+  {
+   "id": "c2",
+   "source": "augment",
+   "text": "With the function-wide cacheMu lock removed from BuildIndex, concurrent callers can build the same key at the same time, leading to duplicate work or intermittent build failures for file-based indexes"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "With search enabled, indexes above index_file_threshold are created via bleve.New(dir) under a deterministic path; bleve v2 returns ErrorIndexPathExists when directory exists and nothing removes/reopens it, causing NewResourceServer to fail on every restart after the first"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "Eager Init runs inside the wire graph for every Grafana process with no deadline on context.Background(); DB or search failure/hang now blocks Grafana startup instead of only failing unified-storage requests"
+  },
+  {
+   "id": "c5",
+   "source": "cubic-v2",
+   "text": "Removing the broad lock allows concurrent `BuildIndex` calls for the same key to race. Two goroutines can simultaneously build the same index \u2014 for file-backed indices this calls `bleve.New` on the same directory path (risking I/O errors or corruption), and in all cases the second writer silently overwrites the first. Consider a per-key lock or a check-before-build pattern (e.g., `sync.Map` of in-flight keys) to prevent duplicate concurrent builds for the same `NamespacedResource`."
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "Test hardcodes db_host 'localhost' for postgres (line 76), but Drone runs postgres at POSTGRES_HOST=postgres, causing startup failure when eager init opens the DB in NewResourceServer"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "Removing per-request s.Init(ctx) removed the only reader of initErr after startup: Stop sets initErr but handlers no longer reject requests after Stop, and IsHealthy reports healthy while stopped; initErr writes in Stop are now dead"
+  },
+  {
+   "id": "c8",
+   "source": "coderabbit",
+   "text": "Track the RV short-circuit TODO - if this optimization is intended, consider filing a follow-up so it doesn't get lost"
+  },
+  {
+   "id": "c9",
+   "source": "coderabbit",
+   "text": "Docstring coverage is 0.00% which is insufficient - the required threshold is 80.00%; write docstrings for the functions missing them"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "The init error is logged twice with identical message 'error initializing resource server' (inside Init and in NewResourceServer) and also returned to caller"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "sync.Once and initErr gating are now dead scaffolding: Init has one caller (constructor), *server is unexported and Init is not on ResourceServer interface, so once guard can never be hit twice"
+  },
+  {
+   "id": "c12",
+   "source": "cubic-v2",
+   "text": "Skipping this integration test for postgres removes coverage for the storage-server startup and `/metrics` path on a supported backend. That hides regressions instead of fixing the Drone-specific failure."
+  },
+  {
+   "id": "c13",
+   "source": "claude-code",
+   "text": "When Init() fails in NewResourceServer(), the function returns (nil, err) without calling cancel(), leaking the context created at line 229 and any goroutines spawned during partial initialization"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review-replay",
+   "text": "Handlers (Create, Update, Delete, Read, List, Watch, Search, History, Origin, PutBlob, GetBlob) are no longer refused after Stop is called"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "No test covers the new contract that NewResourceServer returns lifecycle/search/watcher init errors, or that handlers work without lazy Init; apistore/watcher_test.go still calls Init manually before construction (now redundant)"
+  },
+  {
+   "id": "c16",
+   "source": "claude-code",
+   "text": "In searchSupport.init() when initWorkers > 1, totalBatchesIndexed++ (line 189) is a non-atomic increment from multiple concurrent goroutines, causing a data race"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Pre-existing data race in searchSupport.init: errgroup workers write shared outer err and totalBatchesIndexed++ unsynchronized; the narrowed BleveIndex lock makes builds truly parallel so race fires more often and build errors can be lost"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "BleveIndexMetrics.Collect (resource/bleve_index_metrics.go:96) calls TotalDocs on every scrape without proper locking, vulnerable to concurrent map access crash"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "IsHealthy (934) reports healthy while the server is stopping or stopped"
+  },
+  {
+   "id": "c20",
+   "source": "golden",
+   "text": "Calling s.search.TotalDocs() here may race with concurrent index creation: TotalDocs iterates b.cache without synchronization, and the event watcher goroutine started just above could trigger BuildIndex writes concurrently, potentially causing a concurrent map read/write panic."
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "With function-wide lock removed, concurrent builds of the same key (Search request and handleEvent both seeing nil index in getOrCreateIndex) overlap more easily; last writer wins and documents written to discarded index are lost"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "On Init failure NewResourceServer returns without calling s.cancel() or lifecycle.Stop; if search.init succeeded and initWatcher failed, the search watch goroutine and its sql poller leak"
+  },
+  {
+   "id": "c23",
+   "source": "cubic-v2",
+   "text": "`TotalDocs()` iterates `b.cache` without acquiring `b.cacheMu.RLock()`, while `BuildIndex` concurrently writes to the map under `cacheMu.Lock()`. In Go, this is a fatal race \u2014 the runtime will panic with 'concurrent map read and map write'. `TotalDocs` must hold the read lock while iterating the map."
+  },
+  {
+   "id": "c24",
+   "source": "claude-code",
+   "text": "In searchSupport.init() when initWorkers > 1, the errgroup goroutines concurrently write to the shared err variable (line 190 uses = instead of :=) - if one goroutine sets err=someError and another sets err=nil, the error is silently lost"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "The patch skips the only postgres integration test instead of fixing it; the test hardcodes db_host=localhost while Drone runs postgres at host 'postgres', and eager Init now opens the DB in NewResourceServer hitting the wrong host"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "The narrowed lock lets up to index_workers builds write the cache in parallel while BleveIndexMetrics.Collect calls TotalDocs on every scrape, causing concurrent map access"
+  },
+  {
+   "id": "c27",
+   "source": "augment",
+   "text": "On init failure, the error is logged both at the call site and inside (*server).Init, producing duplicate error logs for a single failure"
+  },
+  {
+   "id": "c28",
+   "source": "claude-code",
+   "text": "The error is logged twice with identical message 'error initializing resource server' - once at line 260 (new) and once inside Init() at line 314 (existing)"
+  },
+  {
+   "id": "c29",
+   "source": "qodo-extended-v2",
+   "text": "TotalDocs map race panic: searchSupport.init calls s.search.TotalDocs() after starting a WatchWriteEvents goroutine; if an event triggers a cache write while TotalDocs iterates the cache map, the process can panic with 'concurrent map iteration and map write' during startup because bleveBackend.TotalDocs iterates over the cache map without any lock while BuildIndex writes to the same map"
+  },
+  {
+   "id": "c30",
+   "source": "coderabbit",
+   "text": "Consider per-key dedupe now that the lock is narrow - without a singleflight/per-key guard, concurrent callers can build the same index twice"
+  },
+  {
+   "id": "c31",
+   "source": "qodo-extended-v2",
+   "text": "Duplicate index builds allowed: bleveBackend.BuildIndex no longer holds cacheMu across the build, so concurrent callers building the same key can both build separate indexes and then race to store into b.cache (last writer wins), wasting work, leaving one built index untracked, and for file-backed indexes can cause concurrent creation/writes to the same directory"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review-replay",
+   "text": "The new log line calls s.search.TotalDocs() which iterates b.cache without cacheMu (bleve.go:144-154), while other code writes the map concurrently, causing potential fatal Go runtime crash"
+  },
+  {
+   "id": "c33",
+   "source": "augment",
+   "text": "s.search.TotalDocs() is called after the watch goroutine is started, which can cause race conditions or panics with concurrent map writes if the backend updates its index cache concurrently since Bleve's TotalDocs() iterates b.cache without locking"
+  },
+  {
+   "id": "c34",
+   "source": "golden",
+   "text": "A race condition in BuildIndex allows multiple goroutines to concurrently build the same expensive index for the same key. This is caused by moving the b.cacheMu lock from protecting the entire function to only protecting the final cache assignment. "
+  },
+  {
+   "id": "c35",
+   "source": "converge-review-replay",
+   "text": "After Stop, writes reach a still-open DB with the poller cancelled (sql/backend.go:118), causing Watch to return io.EOF and no watch events to be published"
+  },
+  {
+   "id": "c36",
+   "source": "cubic-v2",
+   "text": "Removing per-request `Init()` checks means `Stop()` no longer blocks later RPCs; the server can still serve requests after shutdown starts."
+  },
+  {
+   "id": "c37",
+   "source": "converge-review",
+   "text": "New startup log calls s.search.TotalDocs(), which ranges over bleveBackend.cache without cacheMu while the watch goroutine can write the map via handleEvent -> getOrCreateIndex -> BuildIndex; concurrent map iteration and write is a fatal Go runtime error"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review-replay",
+   "text": "The init error is logged twice with identical message 'error initializing resource server': once inside Init (313-315) and again in NewResourceServer (258-262), creating redundant error logging"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review-replay",
+   "text": "Removing per-request s.Init(ctx) calls left initErr with no reader after construction, making writes to initErr in Stop (320-341) dead code"
+  },
+  {
+   "id": "c40",
+   "source": "coderabbit",
+   "text": "Skipping PostgreSQL test for all postgres runs removes coverage; consider gating this on a CI-only env var and/or filing a follow-up issue"
+  },
+  {
+   "id": "c41",
+   "source": "claude-code",
+   "text": "TotalDocs() in bleve.go iterates b.cache without holding b.cacheMu.RLock(), while BuildIndex() writes to b.cache under cacheMu.Lock() - concurrent map iteration and map write is undefined behavior that can cause a fatal runtime panic"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The patch skips the only postgres integration test of storage-server startup and /metrics instead of fixing it. This removes coverage for a supported backend and hides the startup failure that eager Init exposes.",
+   "path": null,
+   "members": [
+    "c1",
+    "c12",
+    "c25",
+    "c40"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The test hardcodes db_host 'localhost' for postgres, but Drone runs postgres at host 'postgres'. Startup therefore fails when eager init opens the DB in NewResourceServer.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The function-wide cacheMu lock was removed from BuildIndex, so concurrent callers (e.g. a Search request and handleEvent via getOrCreateIndex) can build the same key at once. The last writer wins, one built index goes untracked or its documents are lost, and file-backed indexes can be created concurrently in the same directory.",
+   "path": null,
+   "members": [
+    "c2",
+    "c5",
+    "c21",
+    "c30",
+    "c31",
+    "c34"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "File-based indexes above index_file_threshold are created with bleve.New(dir) under a deterministic path. bleve v2 returns ErrorIndexPathExists when that directory already exists and nothing removes or reopens it, so NewResourceServer fails on every restart after the first.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "Eager Init runs inside the wire graph for every Grafana process on context.Background() with no deadline. A DB or search failure or hang now blocks Grafana startup.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "With the per-request s.Init(ctx) check removed, handlers (Create, Update, Delete, Read, List, Watch, Search, History, Origin, PutBlob, GetBlob) no longer reject requests after Stop is called. Writes can then reach the still-open DB with the poller cancelled, so Watch returns io.EOF and no events are published.",
+   "path": null,
+   "members": [
+    "c7",
+    "c14",
+    "c36",
+    "c35"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "IsHealthy reports healthy while the server is stopping or stopped.",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "With the per-request Init calls removed, initErr has no reader after construction, so the writes to initErr in Stop are dead code.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The sync.Once and initErr gating in Init are dead scaffolding. Init's only caller is the constructor, *server is unexported, and Init is not on the ResourceServer interface, so the once guard can never be hit twice.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "There is an untracked TODO about the RV short-circuit optimization.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "Docstring coverage is 0.00%, below the required 80.00% threshold.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The init error is logged twice with the identical message 'error initializing resource server', once inside Init and once in NewResourceServer, and is also returned to the caller.",
+   "path": null,
+   "members": [
+    "c10",
+    "c27",
+    "c28",
+    "c38"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "When Init fails, NewResourceServer returns (nil, err) without calling cancel() or lifecycle.Stop. This leaks the context, and if search.init succeeded before initWatcher failed, it also leaks the search watch goroutine and its sql poller.",
+   "path": null,
+   "members": [
+    "c13",
+    "c22"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "No test covers NewResourceServer returning lifecycle/search/watcher init errors or handlers working without lazy Init. apistore/watcher_test.go still calls Init manually before construction, which is now redundant.",
+   "path": "apistore/watcher_test.go",
+   "members": [
+    "c15"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "In searchSupport.init with initWorkers > 1, totalBatchesIndexed++ is a non-atomic increment from multiple concurrent goroutines, which is a data race.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "In searchSupport.init with initWorkers > 1, errgroup goroutines write the shared outer err variable without synchronization (assigned with = rather than :=), so one worker's error can be overwritten by another's nil and lost. The narrowed lock makes these builds truly parallel.",
+   "path": null,
+   "members": [
+    "c24",
+    "c17"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "bleveBackend.TotalDocs iterates b.cache without holding cacheMu, while BuildIndex writes the map concurrently. Callers include the new startup log in searchSupport.init (after the watch goroutine starts) and BleveIndexMetrics.Collect on every scrape, so concurrent map iteration and write can cause a fatal runtime panic.",
+   "path": "resource/bleve_index_metrics.go",
+   "members": [
+    "c18",
+    "c20",
+    "c23",
+    "c26",
+    "c29",
+    "c32",
+    "c33",
+    "c37",
+    "c41"
+   ]
+  }
+ ]
+}

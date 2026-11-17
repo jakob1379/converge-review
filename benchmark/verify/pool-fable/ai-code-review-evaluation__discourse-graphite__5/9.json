@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The untouched mobile rule at app/assets/stylesheets/mobile/topic-post.scss:530-532 still applies `margin-top: -5px` to the time-gap `.topic-avatar`, which is now a flex item of `.small-action` centred by the patch at app/assets/stylesheets/common/base/topic-post.scss:264-265, so the clock icon sits above the centred description text. The offset from centre is about 2.5px rather than the claimed 5px, because flex centring acts on the margin box (my reading of the CSS, not rendered).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.39782140000000005
+}

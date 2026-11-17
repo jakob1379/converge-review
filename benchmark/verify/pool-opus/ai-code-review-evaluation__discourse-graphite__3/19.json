@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The behaviour is real: app/models/blocked_email.rb:13-16 increments match_count and sets last_match_at for any matching record, including :do_nothing ones. But it is deliberate and tested, not a bug. The columns count matches rather than blocks, and spec/models/blocked_email_spec.rb:281-285 requires the statistics to update for :do_nothing, which lets that action work as a watch-only mode. The only mismatch is wording (the spec comment at line 14 says 'blocked').",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0792573
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "With ADMIN_FINE_GRAINED_AUTHZ_V2 on, AdminPermissions.management() returns MgmtPermissionsV2, whose clients() now returns the new ClientPermissionsV2. Its canExchangeTo(client, to, token) always throws UnsupportedOperationException(\"Not supported in V2\"). AbstractTokenExchangeProvider.java:276 calls it with no try/catch, so token exchange to another client's audience fails with HTTP 500 instead of the 403 at line 280.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1536351
+}

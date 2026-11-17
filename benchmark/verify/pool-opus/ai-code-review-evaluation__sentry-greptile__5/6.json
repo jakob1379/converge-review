@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/preprod/api/endpoints/organization_preprod_artifact_assemble.py:81-86, the patch adds analytics.record('preprod_artifact.api.assemble', ...) before the features.has('organizations:preprod-artifact-assemble') check at lines 88-91, which returns 404. So the event is recorded even when the feature is off.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0560747
+}

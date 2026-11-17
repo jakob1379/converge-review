@@ -1,0 +1,311 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "AssignmentSource.queued defaults to timezone.now(), which is evaluated once at class definition/import time. Every instance created without an explicit value therefore shares the same stale timestamp instead of getting its own creation time.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/integrations/services/assignment_source.py:18 declares `queued: datetime = timezone.now()` as a plain dataclass default, so it is evaluated once at import; `from_integration` (lines 22-25) never passes `queued`, so every instance gets the process-import timestamp. Nothing in src/sentry currently reads `.queued`, so the stale value is only serialised via `to_dict`.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.10220169999999999
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "to_dict() uses asdict(), which leaves queued as a datetime object. Serializing the dict to JSON as task kwargs can raise TypeError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`to_dict()` does return `asdict(self)` with `queued` still a `datetime` (src/sentry/integrations/services/assignment_source.py:27-28), but task kwargs are not JSON-serialized: Celery is configured with `CELERY_TASK_SERIALIZER = \"pickle\"` and `CELERY_ACCEPT_CONTENT = {\"pickle\"}` (src/sentry/conf/server.py:739-741). A `datetime` pickles fine and passes the bad-pickle guard, which rejects only Django models and `sentry.`/`getsentry.` classes (src/sentry/celery.py:49-56), so no TypeError is raised.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.343193
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "from_dict does not type-check or convert queued on deserialisation, so under a JSON serializer it comes back as a str.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "from_dict does pass queued through unconverted (src/sentry/integrations/services/assignment_source.py:31-35), but the str outcome cannot occur here: Celery is configured for pickle only (src/sentry/conf/server.py:739-741), so the datetime round-trips intact. Nothing in src/ ever reads .queued, so the JSON-serializer scenario is hypothetical.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3818154
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test method name test_from_dict_inalid_data contains a typo; it should be test_from_dict_invalid_data.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/sentry/integrations/services/test_assignment_source.py:13 defines `test_from_dict_inalid_data`, added by the patch (change.patch line 277); it sits beside `test_from_dict_valid_data` and passes invalid data, so `invalid` was clearly intended.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0613856
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test test_from_dict_empty_array passes an empty dict, not an array, so its name misdescribes the case.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/sentry/integrations/services/test_assignment_source.py:8-11 defines test_from_dict_empty_array but passes `data: dict[str, Any] = {}` (an empty dict) to AssignmentSource.from_dict, so the name says \"array\" while the input is a dict. The file is newly added by this patch.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.076582
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The abstract sync_status_outbound has an assignment_source parameter that no caller passes and no implementation reads.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `assignment_source` to the abstract `sync_status_outbound` at src/sentry/integrations/mixins/issues.py:411-418, but the only non-test caller (src/sentry/integrations/tasks/sync_status_outbound.py:44-46) passes just three positional arguments. No implementation reads it: jira/integration.py:990, jira_server/integration.py:1090, vsts/issues.py:266 and example/integration.py:161 never reference `assignment_source`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3005289
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The abstract contract is inconsistent: sync_assignee_outbound declares the source parameter, but sync_status_outbound does not follow the same pattern.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The two abstract methods are inconsistent, but in the opposite direction to the claim's wording: src/sentry/integrations/mixins/issues.py:411-418 adds `assignment_source` to abstract `sync_status_outbound` (never passed by any caller), while abstract `sync_assignee_outbound` at issues.py:397-403 does not declare it, even though src/sentry/integrations/tasks/sync_assignee_outbound.py:59-61 passes `assignment_source=` to it and it is only absorbed by `**kwargs`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.31682
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "tasks/sync_status_outbound.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Status-sync cycles are not protected. tasks/sync_status_outbound.py calls should_sync(\"outbound_status\") without a source argument, so only assignee sync gets loop protection.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/integrations/tasks/sync_status_outbound.py:43 calls `installation.should_sync(\"outbound_status\")` with no source and the task takes no source argument (line 19), so the same-integration check at src/sentry/integrations/mixins/issues.py:390 never fires for status sync; only sync_assignee_outbound.py:56 passes a source. The patch adds an `assignment_source` parameter to the abstract `sync_status_outbound` (issues.py:416) but nothing ever supplies it.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2765879
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "example/integration.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ExampleIntegration.sync_status_outbound has no **kwargs, so it raises TypeError when called with the new assignment_source argument.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "src/sentry/integrations/example/integration.py:161 does lack **kwargs, but no TypeError is reachable: the only production caller, src/sentry/integrations/tasks/sync_status_outbound.py:44-46, passes three positional args and never assignment_source. The patch only passes assignment_source to sync_assignee_outbound (tasks/sync_assignee_outbound.py:59-61), which ExampleIntegration accepts via **kwargs at integration.py:152-158; what remains is a latent signature mismatch with the abstract method at mixins/issues.py:411-418.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.3104925
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test drives sync_group_assignee_inbound end to end to show that the source integration is skipped while a second integration still syncs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only tests calling `sync_group_assignee_inbound` directly (tests/sentry/models/test_groupassignee.py:289-388) use a single integration, run without `self.tasks()` and assert nothing about outbound sync. The one source-skip test (tests/sentry/models/test_groupassignee.py:180-221) calls `GroupAssignee.objects.assign` directly with one integration, so no test shows the source skipped while a second integration still syncs.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2836875
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers deassign with a matching source integration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only matching-source test added is for assign (tests/sentry/models/test_groupassignee.py:203-221); the deassign test at :273-276 passes no source and asserts assignment_source=None. test_assignee_sync_inbound_deassign (:349-388) does reach deassign with a matching source via sync.py:96-99, but runs outside self.tasks() and never asserts the outbound sync is suppressed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3180751
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new task kwarg assignment_source_dict causes TypeError on old workers during a rolling deploy, so assignee sync is lost.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the parameter (src/sentry/integrations/tasks/sync_assignee_outbound.py:34) and in the same change makes the caller always send the `assignment_source_dict` key, even when None (src/sentry/integrations/utils/sync.py:141), so a worker still on the old three-argument signature raises TypeError on every such task. \"Lost\" is overstated: the `retry` wrapper catches it and re-queues (src/sentry/tasks/base.py:170-172) with a 5-minute delay and 5 retries, so sync is dropped only if old workers outlast that window.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3404356
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "from_dict catches TypeError/ValueError and returns None without logging or emitting a metric, so a malformed payload silently disables loop protection.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`from_dict` at src/sentry/integrations/services/assignment_source.py:31-35 catches `(ValueError, TypeError)` and returns None with no log or metric; src/sentry/integrations/tasks/sync_assignee_outbound.py:53-56 passes that None to `should_sync`, whose cycle check at src/sentry/integrations/mixins/issues.py:390 is skipped when `sync_source` is falsy, so the outbound sync proceeds. In practice the dict only comes from `to_dict()`, so this needs schema drift between deploys to trigger.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2386317
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A database-backed sentry TestCase is used to test a plain dataclass that needs no DB access.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/sentry/integrations/services/test_assignment_source.py:4-7 subclasses sentry.testutils.cases.TestCase, which is a Django TestCase with databases=\"__all__\" (src/sentry/testutils/cases.py:506-508). All four tests only call AssignmentSource.from_dict/to_dict on a frozen dataclass (src/sentry/integrations/services/assignment_source.py:14-35) and use no fixtures, models or DB.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2207536
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Both parameters (attribute, sync_source) of the default should_sync implementation are unused and flagged by Ruff.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The base `should_sync` at src/sentry/integrations/mixins/issues.py:66-67 does ignore both parameters, but that is a normal overridable default (overridden at issues.py:382), and nothing flags it: the repo has no Ruff config at all and lints with flake8 + bugbear + flake8-logging (setup.cfg:87-110, requirements-dev.txt:26-28), with no unused-argument rule enabled.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.26596320000000007
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "source_name is serialised into every task payload but never read; should_sync compares only integration_id.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`source_name` is declared and populated in src/sentry/integrations/services/assignment_source.py:16,23 and serialised via `to_dict()` into the task kwargs at src/sentry/integrations/utils/sync.py (`assignment_source_dict`), but a grep of `src/` finds no other read of it; `should_sync` in src/sentry/integrations/mixins/issues.py compares only `sync_source.integration_id`. The payload carries it only when an assignment source is set (otherwise `None`), so this is an unused field, not a behavioural bug.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1861067
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The loop guard compares integration IDs rather than external issues, so an inbound reassignment no longer propagates between two external issues linked to the same group on the same integration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The guard at src/sentry/integrations/mixins/issues.py:390 returns False whenever `sync_source.integration_id` equals the installation's integration ID, and src/sentry/integrations/utils/sync.py:135-145 passes that same source to every external issue linked to the group. A sibling external issue on the same integration is therefore skipped at src/sentry/integrations/tasks/sync_assignee_outbound.py:56, where before the patch it was synced; src/sentry/models/grouplink.py:82 allows several such links per group.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.32973739999999996
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

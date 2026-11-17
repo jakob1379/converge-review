@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The claim quotes only half of the row: docs/guides/server/update-compatibility.adoc:132-134 reads \"Rolling Upgrade is not possible. The feature `rolling-updates` is disabled.\", so code 4 is explicitly tied to the disabled feature and kept apart from the compatibility verdict on code 3 (lines 128-130). Code 4 has no other meaning (CompatibilityResult.java:35, returned only by the feature guard in UpdateCompatibilityCheck.java:48 and UpdateCompatibilityMetadata.java:48), and the caution at adoc:12-16 already says both commands fail without the feature; what remains is a wording nit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3838351000000001
+}

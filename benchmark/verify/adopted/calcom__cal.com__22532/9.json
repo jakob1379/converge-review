@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes apps/web/package.json:11 from `ts-node cron-tester.ts` to `npx tsx cron-tester.ts`, while `ts-node` is still declared at apps/web/package.json:196. No package.json or yarn.lock entry declares tsx, so npx fetches an unpinned copy at run time, and this has nothing to do with the cache-status feature in the rest of the patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0631183
+}

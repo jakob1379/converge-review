@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "With the flag on, static/app/views/dashboards/widgetCard/chart.tsx:164-174 renders TableWidgetVisualization with hardcoded `columns={[]}` and `tableData={{data: [], meta: {fields: {}, units: {}}}}`; `result.data`, `result.meta` and `loading` only reach the else-branch StyledSimpleTableChart (lines 176-192). The component passes those empty values straight to GridEditable (tableWidgetVisualization.tsx:92-104), so the table is always empty.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2228578
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/groups_controller.rb:67-71 takes `params.require(:usernames)` and calls `usernames.split(\",\")` with no type check, so `usernames[]=a&usernames[]=b` does end in a NoMethodError/500. The raise is one step later than the claim implies: `config/application.rb:2` loads `rails/all`, ActiveSupport 4.1.8 defines `Array#split`, so the error comes from `username.downcase` on an Array at app/models/user.rb:176.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2650504
+}

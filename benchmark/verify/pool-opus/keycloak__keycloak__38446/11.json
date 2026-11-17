@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "BackwardsCompatibilityUserStorage.java's javadoc (patch lines 245-249) says the provider dates from Keycloak 4.8.3 and should not need changes, yet the patch adds `var` (line 232) and RecoveryAuthnCodesCredentialModel branches in supportsCredentialType, updateCredential, isConfiguredFor, isValid and a new getCredentials override. However, the file already used post-4.8.3 Stream APIs such as getDisableableCredentialTypesStream (line 255) and searchForUserStream (lines 379-414), so it was not 4.8.3-pure before this patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1786968
+}

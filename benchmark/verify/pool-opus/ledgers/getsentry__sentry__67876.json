@@ -1,0 +1,275 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The user-match check reads integration.metadata[\"sender\"][\"login\"] without a guard. Integrations whose metadata lacks a 'sender' key (build_integration only adds it conditionally, and older or pre-existing integrations may not have it) raise a KeyError, which produces an HTTP 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At src/sentry/integrations/github/integration.py:503 the patch reads `integration.metadata[\"sender\"][\"login\"]` with no guard, but build_integration only adds `sender` when `state.get(\"sender\")` is set (integration.py:376-377), and only the webhook path supplies it (webhook.py:204). An active GitHub Integration that is no longer linked to any organization and has no `sender` therefore raises a KeyError (an HTTP 500); installation.py:44 already guards this same key with `if \"sender\" not in integration.metadata`.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1152758
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The OAuth authorize redirect URL is built with an f-string or string interpolation and does not URL-encode client_id, state or redirect_uri. Parameters containing characters such as &, ? or # produce a malformed URL or unintended query parsing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/integrations/github/integration.py:408 builds the authorize URL with an f-string and does not URL-encode client_id, state or redirect_uri. In practice nothing breaks today: state is the pipeline's hex signature, redirect_uri comes from absolute_uri(reverse(...)) of a fixed path with no &, ? or #, and client_id comes from operator configuration.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.10320019999999999
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OAuthLoginView uses pipeline.signature as the OAuth state. This is a deterministic MD5 of pipeline view class names, identical for every user and session, so it is guessable. As a result the state check gives no CSRF protection, and an attacker can forge a setup callback that binds the attacker's GitHub login and installation into a victim's pipeline.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's OAuthLoginView (integration.py, new lines ~101-113) sends and checks `pipeline.signature` as the OAuth state. `src/sentry/pipeline/base.py:132-133` sets that value to an MD5 of the pipeline view class names, so it is the same for every user and session; the patch's tests reuse the same constant 9cae5e88\u2026 for different users and orgs. An attacker can therefore make a setup link with their own `code`, this known state and their own `installation_id` (which OAuthLoginView binds from GET). That binds the attacker's GitHub login and installation into the victim's in-progress pipeline, and it passes the sender-login check in GitHubInstallation.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.11606830000000001
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OAuthLoginView.dispatch() accepts installation_id from GET params unconditionally, including during the OAuth callback phase. A crafted callback URL with an attacker's installation_id, code and the predictable state can therefore overwrite both sides of the sender comparison.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patched src/sentry/integrations/github/integration.py, OAuthLoginView.dispatch binds `request.GET[\"installation_id\"]` into pipeline state (patch lines 97-99) before and regardless of the state check. That check only compares against `pipeline.signature`, which is a fixed md5 of the pipeline view class names (src/sentry/pipeline/base.py:132-133). So a crafted callback URL carrying an attacker's installation_id and code sets both the installation sender and github_authenticated_user that GitHubInstallation then compares (patch lines 149-155, 234-239).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1266213
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "safe_urlopen() and get_user_info() (which calls raise_for_status()) are outside exception handling. Network errors or non-2xx responses during the token exchange or user fetch cause an unhandled 500 instead of the error() page.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In OAuthLoginView.dispatch (src/sentry/integrations/github/integration.py, added in the patch), safe_urlopen() is called before the try block and get_user_info() is called with no try at all. get_user_info calls resp.raise_for_status() (src/sentry/identity/github/provider.py:16), and nothing catches errors on the way up through Pipeline.dispatch_to (src/sentry/pipeline/base.py:196) or PipelineAdvancerView. So network errors and a non-2xx from /user become a 500 instead of the error() page. One part of the claim is overstated: safe_urlopen does not raise on a non-2xx token response, which ends up on error() because no access_token is found.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1460128
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The token-response parsing is wrapped in a broad 'except Exception', which masks unexpected failures. Also, parse_qsl() with default parameters does not raise ValueError as expected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "There is an `except Exception` at src/sentry/integrations/github/integration.py:425-429, but any failure leaves `payload` empty and returns an invalid-request error page (line 431-432), so nothing is wrongly accepted. Nothing in the code expects `parse_qsl()` to raise `ValueError`, so the second half of the claim criticises an expectation the code does not have.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1085046
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "test_installation_not_found sends an OAuth state that does not match the pipeline signature. OAuthLoginView rejects it at the state check before build_integration runs, so the 404 installation-not-found path is never exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The pipeline signature is a deterministic md5 of the view names (src/sentry/pipeline/base.py:133). The other tests show it is 9cae5e88803f35ed7970fc131e6e65d3 (test_integration.py:235), but test_installation_not_found sends state ddd023d87a913d5226e2a882c4c4cc05 (test_integration.py:392). OAuthLoginView therefore returns the generic 'Invalid installation request.' error at the state check (integration.py, `request.GET.get(\"state\") != pipeline.signature`), the test asserts exactly that message, and build_integration and its 404 path never run.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.14348760000000002
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The authenticated-user vs installer check is skipped when no Integration row exists yet. build_integration then resolves any installation_id via the app JWT, so anyone who knows an installation id can claim it into their org before the installation webhook is processed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In GitHubInstallation.dispatch, the `except Integration.DoesNotExist: return pipeline.next_step()` branch (integration.py ~479-481) skips the installer check, which only runs later at ~493-503. build_integration (integration.py:351-353) then fetches `/app/installations/{installation_id}` with the app client for whatever id the user supplied, without checking who installed it.",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0.12416060000000001
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "pipeline.fetch_state(\"github_authenticated_user\") can return None if the OAuth step was skipped or the state was lost. The comparison has no explicit None check.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "There is no explicit None check, but none is needed. At src/sentry/integrations/github/integration.py:235-239, a None value from fetch_state fails the `!=` comparison against the installer's login string, so the code returns error(), refusing the request instead of letting it through.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.092466
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Integration is fetched twice with inconsistent filters: first without a status filter, then with status=ACTIVE. This adds a query, and a non-active Integration without an OrganizationIntegration now gets the generic error instead of proceeding to next_step/ensure_integration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/integrations/github/integration.py the patch fetches the Integration at line 478 with no status filter, then fetches it again at lines 494-496 with status=ObjectStatus.ACTIVE. If the Integration exists but is not active and has no OrganizationIntegration, the code now returns the generic error at line 498; before the patch it called next_step, and ensure_integration (pipeline.py:41-42) would have set the integration back to ACTIVE.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1284939
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The token exchange request omits redirect_uri even though the authorize URL includes it. RFC 6749 Section 4.1.3 requires the same redirect_uri in the token request.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/integrations/github/integration.py, OAuthLoginView puts redirect_uri in the authorize URL (patch lines 104-108), but the token request data has only code, client_id and client_secret (patch lines 116-120). The generic OAuth2CallbackView.get_token_params does send redirect_uri (src/sentry/identity/oauth2.py:273-280).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1061597
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OAuthLoginView hand-rolls an OAuth2 flow that already exists as OAuth2LoginView/OAuth2CallbackView via NestedPipelineView and IdentityProviderPipeline. The copy lost the random state, urlencode and error logging.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new OAuthLoginView (integration.py, patch lines 101-113), state is pipeline.signature, an md5 of view class names (pipeline/base.py:132-133). That value is the same for every user, which is why the tests hard-code 9cae5e88\u2026. The authorize URL is built with an f-string without urlencode, and failures return error() without logging, whereas OAuth2LoginView/OAuth2CallbackView (identity/oauth2.py:245-252, 293-345) use secrets.token_hex(), urlencode(params) and pipeline.logger.info.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1368755
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "error() calls _(error_short) on a variable, while call sites pass plain literals. makemessages therefore no longer extracts these strings, and their translations will be dropped on the next catalog rebuild.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/integrations/github/integration.py the new error() helper calls `_(error_short)` on a parameter (patch line 59), and callers now pass plain literals (\"GitHub installation pending deletion.\", \"Github installed on another Sentry organization.\", and the default \"Invalid installation request.\"). makemessages can't extract strings from these, even though the first two are msgids in src/sentry/locale/*/LC_MESSAGES/django.po. Those entries all have empty msgstr, so no real translation is lost.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1433737
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the tests, the setup_path + urlencode({code, state=<md5>}) block is duplicated six times, with the magic state hash hardcoded each time.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds six separate `\"{}?{}\".format(self.setup_path, urlencode({\"code\": \"12345678901234567890\", \"state\": \"<md5>\"}))` blocks to tests/sentry/integrations/github/test_integration.py (patch lines 318-324, 346-351, 372-379, 426-431, 446-456, 464-471). Each one hardcodes its state hash: five use \"9cae5e88803f35ed7970fc131e6e65d3\" and one uses \"ddd023d87a913d5226e2a882c4c4cc05\".",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0942724
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The identity check compares GitHub login strings, which can change, rather than the stable user id. A user who renamed their account between install and link is wrongly rejected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In integration.py, OAuthLoginView saves only authenticated_user_info[\"login\"] as github_authenticated_user (patch line 138). GitHubInstallation then compares it to integration.metadata[\"sender\"][\"login\"] (patch lines 235-239), even though webhook.py:204-206 also stores the stable sender id. A user who renames their account between installing and linking would fail the check and be rejected.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1009952
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

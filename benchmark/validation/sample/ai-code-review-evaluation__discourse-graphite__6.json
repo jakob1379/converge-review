@@ -1,0 +1,27 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The serializer method `include_website_name` lacks the trailing `?` that ActiveModel::Serializer requires for `include_<attr>?` predicates. As a result it is never called and `website_name` is always serialized, as null when there is no website.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "UserSerializer's `website_name` does not honor `Guardian#restrict_user_fields?` and is not in `untrusted_attributes`, unlike `website`. This exposes the website host/path of TL0 users to anonymous viewers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

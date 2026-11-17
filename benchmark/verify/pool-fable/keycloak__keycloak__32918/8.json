@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java the `for (FetchMode fetchMode : ...)` assertNull/assertNotNull loop appears five times (lines 394, 435, 459, 476, 512) and the REALM_ONLY/ORG_ONLY/ALL getForLogin + size-check block appears three times (lines 401-414, 483-496, 519-532), differing only in expected counts.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2546161
+}

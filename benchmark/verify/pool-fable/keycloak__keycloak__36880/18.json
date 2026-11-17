@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch wraps the listener body in `if (Profile.isFeatureEnabled(Profile.Feature.ADMIN_FINE_GRAINED_AUTHZ))` at services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java:77, re-indenting lines 78-95 and changing five casts from `(X)event`/`(X)role.getContainer()` to `(X) event`/`(X) role.getContainer()` (lines 79, 83, 86, 90, 93). The re-indent follows from the new gate, but the cast-spacing changes are pure formatting noise with no behavioural effect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4612089999999999
+}

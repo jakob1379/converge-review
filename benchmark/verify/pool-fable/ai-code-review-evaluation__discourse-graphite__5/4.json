@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `.small-action` a flex container and cuts `.small-action-desc` padding to `0 1.5%` (common/base/topic-post.scss:264-265, 280), while the untouched mobile rule still sets `.custom-message { margin-left: -40px }` (mobile/topic-post.scss:520-522). That offset used to be absorbed by the old 4em left padding; now the message starts about 40px inside the 45px-wide `.topic-avatar` flex item (common/base/topic-post.scss:273), which is vertically centred beside it, so the text runs under the icon.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.30151659999999997
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`detectProvider` collects every ServiceLoader-instantiated `CryptoProvider` into a list before picking index 0 (common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:56-58,71), and the `FIPS1402Provider` constructor calls `Security.insertProviderAt` unconditionally (crypto/fips1402/src/main/java/org/keycloak/crypto/fips/FIPS1402Provider.java:94-98). The patch replaced the old \"multiple providers\" exception with silently ignoring the rest, so a non-selected FIPS provider (possible only when it ties at order 200 with the default or Elytron provider) still mutates the JVM security provider list.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.42930360000000006
+}

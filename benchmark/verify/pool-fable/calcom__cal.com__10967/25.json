@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `schedulingType` to `CalendarEvent` (packages/types/Calendar.d.ts:182) and sets it once (packages/features/bookings/lib/handleNewBooking.ts:1074); a repo-wide search finds no read of it on a CalendarEvent, since every other `.schedulingType` access is on an eventType object (e.g. handleNewBooking.ts:992, 1077). It only travels onward through `...evt` spreads, including the webhook payloads at handleNewBooking.ts:1755 and 2297.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.6551186
+}

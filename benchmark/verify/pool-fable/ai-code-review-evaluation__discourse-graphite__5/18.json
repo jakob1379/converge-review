@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes `.small-action-desc .custom-message p` from `margin: 5px 0` to `margin: 0` (app/assets/stylesheets/common/base/topic-post.scss:291-293), and that div renders `{{{post.cooked}}}` (app/assets/javascripts/discourse/templates/components/small-action.hbs:16), so consecutive cooked paragraphs get no vertical gap; no other stylesheet rule restores it. Paragraphs still break onto separate lines, so the effect is purely cosmetic.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.24650930000000001
+}

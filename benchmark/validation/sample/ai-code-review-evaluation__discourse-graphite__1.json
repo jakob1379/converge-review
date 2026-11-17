@@ -1,0 +1,27 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "app/models/optimized_image.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`self.downsize` is defined twice in OptimizedImage. Ruby has no overloading, so the later (from, to, dimensions, opts) definition replaces the (from, to, max_width, max_height, opts) one, and existing 5-argument callers such as ResizeEmoji (app/jobs/regular/resize_emoji.rb:14) raise ArgumentError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The same 10 MB constant is duplicated in several places, so the client and server limits can drift apart.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

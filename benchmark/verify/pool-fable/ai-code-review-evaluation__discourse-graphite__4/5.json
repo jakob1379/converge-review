@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/embed.js:20-21 only truthiness-checks `e.data.height` and then assigns `iframe.height = e.data.height + \"px\"` with no parseInt, type check or range check. The only guard is the loose substring origin test at embed.js:17, and the value goes into a DOM property, so the worst case is a wrong iframe height, not injection.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3370047
+}

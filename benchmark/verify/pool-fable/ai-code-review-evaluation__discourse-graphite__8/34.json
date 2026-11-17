@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `next` action clamps the offset to `user_count` (app/assets/javascripts/admin/controllers/admin-group.js.es6:33) and `previous` clamps it to 0 (same file, line 44); `findMembers` then clamps the same offset to [0, user_count] again (app/assets/javascripts/discourse/models/group.js:23). The duplication is redundant but harmless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2995389
+}

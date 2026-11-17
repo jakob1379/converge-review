@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the awaited `afterModel` hook and instead calls `model.findMembers()` fire-and-forget in `setupController` (app/assets/javascripts/admin/routes/admin_group_route.js:11-14 and app/assets/javascripts/discourse/routes/group-members.js.es6:8-12), so the template does render before members load. The effect is only a brief empty list, because `findMembers` sets `members` on the model when the request resolves (app/assets/javascripts/discourse/models/group.js:20-37) and the bound `{{each member in members}}` then re-renders.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.363751
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes Update in pkg/apiserver/rest/dualwriter_mode3.go (patch lines 229-244). The background goroutine now calls d.Legacy.Update with the caller's raw objInfo, where it used to wrap the object unified storage returned in an updateWrapper. As a result, legacy re-runs objInfo.UpdatedObject against its own old object after Update has returned, and the result can differ from what unified storage stored. Mode2 still uses the wrapper (dualwriter_mode2.go:298).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19574289999999997
+}

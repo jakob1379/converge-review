@@ -1,0 +1,16 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The arroyo commit callable is invoked from the background _commit_loop thread rather than the consumer/StreamProcessor thread, so KafkaConsumer's unlocked stage_offsets/commit state is accessed concurrently with the main loop and rebalance callbacks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

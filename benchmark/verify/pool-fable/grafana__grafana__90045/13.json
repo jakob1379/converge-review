@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go, `err` from `d.Storage.Create` (line 42) is checked and returned at lines 43-47, and the goroutine at lines 50-57 only assigns its own `errObjectSt`, so `err` is always nil at `return created, err` on line 59. Behaviour is identical to `return created, nil`, which the patch replaced.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1180856
+}

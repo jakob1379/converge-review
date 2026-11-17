@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both `zunionstore` calls in src/sentry/scripts/spans/add-buffer.lua:47 and :53 have no AGGREGATE option, so Redis uses the default SUM. A payload already in set_key that shows up again in span_key or parent_key (for example a span redelivered by Kafka and re-added at buffer.py's zadd) ends up with a summed score, and that skews the `zpopmin` eviction at line 63.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1401599
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In checkIfIsAvailable, any slot on a date-override day that is not rejected at slots.ts:105-131 returns true at slots.ts:133-135, so the `busy.every(...)` check at slots.ts:153 never runs. The fixed-host path (slots.ts:488-493) and the round-robin path (slots.ts:513-518) both spread each user's availability, which includes `dateOverrides` and `busy`, so existing bookings and calendar busy times are ignored on those days.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.10680139999999999
+}

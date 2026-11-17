@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At cleanup_test.go:116-118 the subtest seeds rows and checks counts with require, which stops the subtest on failure, before t.Cleanup is registered at :120. Leftover rows with fixed IDs 1..N (set at :241) stay in the shared fakeSQL DB, so later subtests hit duplicate-ID errors or wrong counts.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13367099999999998
+}

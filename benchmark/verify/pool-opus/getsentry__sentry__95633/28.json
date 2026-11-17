@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/remote_subscriptions/consumers/queue_consumer.py:214-220, get_stats builds and returns queue_depths. Its only production callers, wait_until_empty (line 226) and SimpleQueueProcessingStrategy.poll (line 328), read only stats[\"total_items\"]. queue_depths is read only by test_stats_reporting in the new test file.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22562500000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The claim is correct but only as a latent hazard: config/locales/server.en.yml:1852-1855 now interpolates %{unsubscribe_url}, and lib/email/message_builder.rb:24-28 defaults only site_name, base_url and user_preferences_url, so the I18n.t calls at :67 and :90 would raise under i18n 0.7.0 if the key were absent. The sole in-repo caller with add_unsubscribe_link: true (app/mailers/user_notifications.rb:294-295) does pass unsubscribe_url, so nothing breaks today; other locales (e.g. config/locales/server.de.yml:1343) do keep the old string.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5010693
+}

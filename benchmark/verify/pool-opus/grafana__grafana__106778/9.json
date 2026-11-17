@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new GrafanaRuleListItem.tsx, `rule` is typed as a required `GrafanaPromRuleDTO`, yet `rule?.health`, `rule?.lastError` and `rule?.isPaused` are still used (patch lines 1067-1071). Strictly, those three are in `commonProps`, not inside the alerting branch. Inside the branch, `promAlertingRule = rule && rule.type === PromRuleType.Alerting ? rule : undefined` (line 1077) repeats a check the `prometheusRuleType.grafana.alertingRule(rule)` guard has already done, and `promAlertingRule?.totals` and `promAlertingRule?.state` are therefore needless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2392068
+}

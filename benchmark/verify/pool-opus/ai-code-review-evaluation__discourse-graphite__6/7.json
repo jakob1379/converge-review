@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/serializers/user_serializer.rb (patch lines 67-81), a same-host match returns `website_host + URI(website).path`, so `http://example.com/` renders as `example.com/`. `URI#host` leaves out the port, so `example.com:8080/u` shows as `example.com/u`; the removed JS `websiteName` (`website.split(\"/\")[2]`, controllers/user.js.es6:9-13) kept the port.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.05820170000000001
+}

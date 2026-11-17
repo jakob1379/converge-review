@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:92 passes \"zoomvideo\" as the appSlug to refreshOAuthTokens, but the app's slug is \"zoom\" (packages/app-store/zoomvideo/_metadata.ts:16, packages/prisma/seed-app-store.ts:294). The new webhook looks apps up by slug (apps/web/pages/api/webhook/app-credential.ts:40-43), so \"zoomvideo\" echoed back would return 404 \"App not found\"; the other apps in the patch send their real slugs.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5342499
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched GroupsController#add_members, `params.require(:usernames)` is followed by `usernames.split(\",\")` with no type check. With `usernames[]=a&usernames[]=b`, ActiveSupport's Array#split returns `[[\"a\",\"b\"]]`, so it is `User.find_by_username` (app/models/user.rb:176, `username.downcase`) that raises NoMethodError, not split itself; the request still ends in a 500.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0632694
+}

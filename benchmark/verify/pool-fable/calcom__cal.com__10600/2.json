@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Backup codes are stored as AES-256 ciphertext of the JSON array via symmetricEncrypt (apps/web/pages/api/auth/two-factor/totp/setup.ts:68, packages/features/auth/lib/next-auth-options.ts:154) and recovered in plaintext with symmetricDecrypt for comparison (next-auth-options.ts:139-144, apps/web/pages/api/auth/two-factor/totp/disable.ts:58), so anyone holding the DB and CALENDSO_ENCRYPTION_KEY can read them. This matches how the existing twoFactorSecret is already stored under the same key, so it adds little exposure beyond what that threat model already allows.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14196340000000002
+}

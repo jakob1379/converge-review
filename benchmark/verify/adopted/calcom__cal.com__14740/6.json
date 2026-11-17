@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts:92-106 adds Attendee rows with a plain createMany and never creates a bookingSeat or checks seatsPerTimeSlot. The seat-capacity check counts only attendees that have a bookingSeat (createNewSeat.ts:50-55), so these guests are never counted. Also, any seat-holder passes the attendee check at line 52 and can add guests to the shared booking. The exposure part is overstated: line 165 does push every attendee, the same as createNewSeat.ts:147 already does, but seatsShowAttendees is passed at line 146 and Google honours it via guestsCanSeeOtherGuests (googlecalendar/lib/CalendarService.ts:254), and the attendee emails remove other attendees for seated events (attendee-scheduled-email.ts:21-23).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2746756
+}

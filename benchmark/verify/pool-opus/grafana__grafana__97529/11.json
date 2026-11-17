@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/storage/unified/resource/server.go, Init logs 'error initializing resource server' at line 314 and returns s.initErr at line 317. The patch adds a call in NewResourceServer (lines 258-261) that logs the same message with the same error again and then returns it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0785543
+}

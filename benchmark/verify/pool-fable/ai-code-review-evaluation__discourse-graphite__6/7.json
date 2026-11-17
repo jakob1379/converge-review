@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/serializers/user_serializer.rb:137-150 builds the name as `website_host + URI(website.to_s).path`; `URI#host` excludes the port and `URI#path` is `/` for `http://example.com/`, so the results are `example.com/` and `example.com/u` (the removed JS `website.split(\"/\")[2]` kept the port). Read from the code, not executed.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1041879
+}

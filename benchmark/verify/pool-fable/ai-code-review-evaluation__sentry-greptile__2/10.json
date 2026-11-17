@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 evaluates `organization_context.member.has_global_access` unconditionally (before the `use_optimized` check), and `member` is `RpcOrganizationMember | None` (src/sentry/organizations/services/organization/model.py:346), set to None when the caller has no user id or no membership (src/sentry/organizations/services/organization/impl.py:123-125). An ApiKey or other non-member token with `org:write` passes `OrganizationAuditPermission` and hits AttributeError; the superuser example is wrong only because `request.user.is_superuser` short-circuits.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.48315270000000005
+}

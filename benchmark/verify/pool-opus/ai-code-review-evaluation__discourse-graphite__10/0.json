@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/embeddable_host.rb: the before_validation hook strips the scheme and then runs `self.host.sub!(/\\/.*$/, '')`, which removes everything from the first '/' before validation runs. So the `(\\/.*)?` group in `validates_format_of` (line ~3) never matches anything in practice (the spec at spec/models/embeddable_host_spec.rb shows 'https://example.com/1234/45' becoming 'example.com').",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0759321
+}

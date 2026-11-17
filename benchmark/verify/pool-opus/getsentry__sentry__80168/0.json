@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/workflow_engine/processors/detector.py (patch lines 137-141), the patch changes the return type of `StatefulDetectorHandler.evaluate` to `dict[DetectorGroupKey, DetectorEvaluationResult]` and the body now builds a dict (`results[result.group_key] = result`). The docstring was left as is and still says it \"returns a list of `DetectorEvaluationResult`\".",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0446203
+}

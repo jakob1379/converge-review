@@ -1,0 +1,275 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "cleanup.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The global CleanUpService ticker in cleanup.go was changed from 10 minutes to 1 minute. As a result, all cleanup jobs (snapshots, query history, short URLs, temp users, annotations, etc.) run 10x as often, and the loop can run nearly continuously when a run takes longer than a minute.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes the ticker at pkg/services/cleanup/cleanup.go:77 from `time.Minute * 10` to `time.Minute * 1`, and every tick calls `srv.clean(ctx)` (line 81), which runs all eight cleanup jobs (lines 96-105) with no per-job throttle. `clean` keeps its 9-minute timeout (line 89), so a run longer than a minute is followed immediately by the next one from the buffered tick.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1578621
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "cleanup.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The per-run timeout at cleanup.go:89 is still 9 minutes, a value sized for the old 10-minute cadence. With the 1-minute ticker, cleanup runs can overlap or go back-to-back.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes the ticker to 1 minute at pkg/services/cleanup/cleanup.go:77 but leaves `const timeout = 9 * time.Minute` at cleanup.go:89, so a run may last up to 9 ticker periods. Runs cannot truly overlap, because `srv.clean(ctx)` is called synchronously in the ticker loop (cleanup.go:80-81), but a run longer than a minute is followed immediately by the next one via the buffered tick, so the back-to-back half of the claim holds.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.23515950000000002
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "xorm_store.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The annotation cleanup closures in xorm_store.go contain six r.log.Error calls (lines 534/537/554/557/576/579) that log routine operational information. These calls fire at Error level on every batch, including successful and empty ones.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:534, 537, 554, 557, 576 and 579 call r.log.Error unconditionally inside the cleanup batch closures. The first call of each pair runs only after the `if err != nil { return }` guard, so it fires on every successful ID fetch (including empty ones, with a nil err), and the second fires after every delete whether or not it failed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0773344
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cleanup log statements include the full ids slice, which can contain thousands of annotation IDs and produce very large log lines.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:534, :554 and :576 log the whole `ids` slice (\"ids\", ids) at Error level on every batch. Batch size is the configurable `cleanupjob_batchsize` (default 100, pkg/setting/setting.go:710), so it reaches thousands of IDs per line only when set that high, as the patch's own test does with 32767.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2109346
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cleanup log statements log 'err' after the error has already been checked and returned, so the logged value is always nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/annotations/annotationsimpl/xorm_store.go:534, 554 and 576 the log calls pass \"err\", err immediately after `if err != nil { return 0, err }` (lines 531-533, 551-553, 573-575), so err is always nil there. The follow-up logs at 537, 557 and 579 log `y` from deleteByIDs, which can be non-nil and are not affected.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.21175549999999999
+   }
+  },
+  {
+   "issue": "i6",
+   "path": "xorm_store.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "deleteByIDs in xorm_store.go (around lines 605-608) chooses between paths by checking r.cfg.AnnotationCleanupJobBatchSize > sqliteParameterLimit instead of len(ids) > sqliteParameterLimit. Because of this, small final batches still use the inlined-ID path when the configured batch size is large.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:608 branches on `r.cfg.AnnotationCleanupJobBatchSize > sqliteParameterLimit` rather than `len(ids)`, so on SQLite with a large configured batch size even a small final batch takes the inlined-ID path (lines 609-613). This is functionally harmless: the IDs are int64 values formatted with %d and both paths delete the same rows.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1422018
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The SQLite inlined-ID path in deleteByIDs builds the IN list by string concatenation (fmt.Sprintf) in a loop, which takes quadratic time in the batch size.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:609-612 builds the SQLite IN list with `values = fmt.Sprintf(\"%s, %d\", values, v)` inside a loop over ids, re-copying the whole accumulated string each iteration, so the cost is O(n\u00b2) in the batch size. This path only runs on SQLite when AnnotationCleanupJobBatchSize > 999.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1234402
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The non-SQLite path in deleteByIDs binds one placeholder per ID with no cap. MySQL and Postgres reject statements with more than 65535 bind parameters, so a batch size above 65535 makes every DELETE fail.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/annotations/annotationsimpl/xorm_store.go:614-617 the non-SQLite branch builds one `?` per ID and passes them all as args through session.Exec (line 622) with no chunking, and `cleanupjob_batchsize` has no upper bound (pkg/setting/setting.go:710). No `interpolateParams` or similar is set anywhere, so MySQL/Postgres receive real bind parameters and hit their 65535 limit; strictly, only batches that actually fetch more than 65535 IDs fail, not literally every DELETE.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3776809
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The deleteByIDs comment says SQLite's parameter limit is 999. That limit applies only before SQLite 3.32 (32766 after), and the test name references the 3.32 limit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:605-607 states \"SQLite has a parameter limit of 999\" and hardcodes sqliteParameterLimit = 999 with no version caveat, while the test added at cleanup_test.go:98 is named for \"SQLITE_MAX_VARIABLE_NUMBER for SQLite >= 3.32.0\" and uses batch size 32767 (the post-3.32 default of 32766 plus one). The comment is imprecise but behaviour is unaffected, since inlining IDs above 999 is merely conservative.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.18638480000000002
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "deleteByIDs has two SQL paths: inlined IDs for SQLite above 999, and placeholders elsewhere. The IDs are int64 values read from the DB, so a single path would be sufficient, and the second path adds a GetDBType branch, sqliteParameterLimit, args/asAny, and a migrator import.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:608-618 has two paths: inlined IDs for SQLite when the batch size exceeds 999, placeholders otherwise. The ids are []int64 from fetchIDs (xorm_store.go:584-595), so inlining is injection-safe on every dialect, and the placeholder path is the only user of the GetDBType branch, sqliteParameterLimit, args/asAny (603, 617, 632-638) and the new migrator import.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.259483
+   }
+  },
+  {
+   "issue": "i11",
+   "path": "xorm_store.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The fetch->log->delete->log closure is copied three times (by time, by count, tags) with opaque x, y temporaries in xorm_store.go (528-539, 548-559, 570-581). The copies already differ in their log wording.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:528-539, 548-559 and 570-581 hold three near-identical closures (fetchIDs -> r.log.Error -> deleteByIDs into `x, y` -> r.log.Error -> return x, y) that differ only in condition, table and log text (\"Annotations to clean by time\" / \"by count\" / \"Tags to clean\"). All three were added by this patch.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1986293
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test case 'running the max count delete again should not remove any annotations' now seeds fresh data for each case, so it no longer runs cleanup a second time over prior state. Idempotency of a repeated run is not tested, and the test name does not match what it does.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/cleanup_test.go:116-127 now seeds fresh annotations and wipes both tables in every subtest, so the case at lines 83-96 runs a single cleanup over 9 new rows (3 per type, MaxCount 3) rather than a second run over the prior case's state. The name still says \"again\"; the seeded state mirrors what a first run would leave, so the coverage loss is small.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2914454
+   }
+  },
+  {
+   "issue": "i13",
+   "path": "cleanup_test.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In TestIntegrationAnnotationCleanUp, t.Cleanup is registered only after data seeding and assertions (cleanup_test.go:116 seeds, :120 registers). A failure before registration leaves rows in the shared DB that affect later subtests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/annotations/annotationsimpl/cleanup_test.go the subtest seeds at :116 and runs `require`-based count assertions at :117-118 before `t.Cleanup` is registered at :120, so a FailNow in seeding or those assertions skips the DELETEs. The DB is shared across subtests (`fakeSQL` at :23) and seeding uses fixed IDs (:241), so leftover rows would break later subtests' inserts and counts.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2880422
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Test seeding sets explicit IDs (ID: int64(i+1)). On Postgres this does not advance annotation_id_seq, so later inserts that use the sequence can hit duplicate keys.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Explicit IDs are set at pkg/services/annotations/annotationsimpl/cleanup_test.go:241, but every subtest seeds only through that helper and deletes all annotation rows in its cleanup (cleanup_test.go:120-127), so no sequence-based insert ever meets a seeded row. The only sequence-using inserts (cleanup_test.go:178-184) run after db.InitTestDB, which truncates with RESTART IDENTITY on Postgres (pkg/services/sqlstore/migrator/postgres_dialect.go:161), against an empty table.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.4187241
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "cleanup_test.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "createTestAnnotations in cleanup_test.go (273-291) duplicates the 500-row InsertMulti chunk loop for annotations and annotation tags. It also calls require.NoError inside the DB callback and then returns nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/annotations/annotationsimpl/cleanup_test.go:273-281 and 283-291 are two near-identical WithDbSession blocks, each with batchsize := 500 and an InsertMulti chunk loop (annotations, then annotation tags); both call require.NoError inside the callback (lines 277, 287) and then return nil (lines 279, 289). It is test-helper duplication only, and the same require-in-callback pattern already exists at lines 211-216.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2346431
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

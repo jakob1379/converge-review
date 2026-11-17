@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "base.py:746 stores the full input string 'upsampled_count() as count' as FunctionDetails.field under alias 'count', so with the flag on, process_results (base.py:1566-1572) renames the result key to that string. organization_events.py:605-607 still resolves the axis from the original 'count()' (resolve_axis_column returns it unchanged at :75-76), so serializers/snuba.py:92 `r.get(column, 0)` returns 0.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.3055395
+}

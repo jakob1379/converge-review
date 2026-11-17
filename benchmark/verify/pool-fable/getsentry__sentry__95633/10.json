@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/remote_subscriptions/consumers/queue_consumer.py:344-345 defines join(self, timeout=None) as just self.close(), never using timeout; close() (335-338) joins the commit thread for up to 5.0s and then calls FixedQueuePool.shutdown(), which does worker.join(timeout=5.0) for every worker in turn (patch lines 259-271), so the wait is bounded by fixed 5s constants rather than the caller's deadline.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.17507640000000002
+}

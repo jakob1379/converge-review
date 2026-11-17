@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch sets RECREATE_UPGRADE_EXIT_CODE = 3 and FEATURE_DISABLED = 4 (CompatibilityResult.java:34-35), but the only exit-code assertion in the update tests is `assertEquals(0, result.exitCode())` at UpdateCommandDistTest.java:75. testFeatureNotEnabled (lines 46-50) and the incompatible-version test (actually named testWrongVersions, lines 86-107, not testIncompatible) call only assertError, which checks message text (CLIResult.java:78-81).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.570614
+}

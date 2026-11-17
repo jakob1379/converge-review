@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In scripts/test-gcal-webhooks.sh, `cleanup()` always ends with `exit 0` (line 17). It is also called on the two failure paths: the tunnel rate limit (line 49) and failing to get the Tunnelmole URL (lines 56-58). So the script reports success even when it fails.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12383949999999999
+}

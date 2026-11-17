@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In app/serializers/user_serializer.rb (patch lines 67-81), `URI(website.to_s)` is written four times, and a single call runs it at most twice. `discourse_host.split('.')` is written three times (two at patch line 74, one at 76), not four, and the two ternaries sit in separate if/elsif/else branches rather than being nested; the code does repeat parsing and splitting, but the claim's counts and description are wrong.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0522733
+}

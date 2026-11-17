@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The push does happen inside the async `users.slice(1).map` callback before its `await getTranslation(...)` (patch lines 835-838). But `teamDestinationCalendars` is only read after `await Promise.all(teamMemberPromises)` (patch lines 853, 876), so it would be fully populated even if the push came after the await. The claim that it works 'only because' of where the push sits is wrong; what remains is a style nit about a side effect inside map.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0439542
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:605-607 states \"SQLite has a parameter limit of 999\" and hardcodes sqliteParameterLimit = 999 with no version caveat, while the test added at cleanup_test.go:98 is named for \"SQLITE_MAX_VARIABLE_NUMBER for SQLite >= 3.32.0\" and uses batch size 32767 (the post-3.32 default of 32766 plus one). The comment is imprecise but behaviour is unaffected, since inlining IDs above 999 is merely conservative.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.18638480000000002
+}

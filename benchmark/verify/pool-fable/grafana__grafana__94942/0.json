@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/expr/reader.go:194-200 computes `enabled` from `FlagSqlExpressions` but returns false on both the `if enabled` branch and the fall-through, so the check at reader.go:129-132 always rejects `QueryTypeSQL` with \"sqlExpressions is not implemented\" whatever the toggle says.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0886486
+}

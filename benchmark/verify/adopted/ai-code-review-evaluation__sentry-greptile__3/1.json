@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/helpers/error_upsampling.py:137 is a plain substring test (`\"event.type:error\" in query`), so queries like '!event.type:error' and 'event.type:error OR event.type:transaction' both return True. On the discover dataset (line 122-124) that turns count() into upsampled_count() (toInt64(sum(sample_weight))) for non-error rows.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06465219999999999
+}

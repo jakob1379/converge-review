@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only test change is a second getSchedule call with timeZone +6:00 inside the existing 'Check for Date overrides' test (apps/web/test/lib/getSchedule.test.ts:788-804). That test has one user, no schedulingType, hosts: [], no bookings, and a schedule with one override range of 14:00-18:00 IST (lines 107-129, 746-766). Every slot it checks falls on the override day, so checkIfIsAvailable returns early at `if (dateOverrideExist) return true` and never reaches the new working-hours branch. Nothing in the test covers round-robin, busy times, split hours, UTC-midnight crossing or multiple override ranges.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11564590000000001
+}

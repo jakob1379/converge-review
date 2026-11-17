@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "GroupPermissionsV2.java:144-147 does pass the result of getResourceTypeResource straight to findByResource, but that call only returns null if the server is not the admin-permissions client or the feature is off (AdminPermissionsSchema.java:134-150). In GroupPermissionsV2 the server is the admin-permissions client, and AdminPermissionsSchema.init (lines 270-278) always creates the 'Groups' resource, so normal group checks never pass null. UserPermissionsV2:109-111 and ClientPermissionsV2:217-219 use the same pattern.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.260388
+}

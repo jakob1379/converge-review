@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:123-125` builds the storage input as `new UserCredentialModel(\"\", credentialModel.getType(), recoveryCodesJson)`, carrying only the JSON-serialised codes; the userLabel and createdDate (generatedAt) set on `credentialModel` at `RecoveryAuthnCodesAction.java:110` are forwarded only on the local-DB fallback at line 129. The test storage accordingly substitutes `Time.currentTimeMillis()` and never sets a label (`BackwardsCompatibilityUserStorage.java:193-200`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4485173
+}

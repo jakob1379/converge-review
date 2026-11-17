@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The factory creates one FixedQueuePool in __init__ (result_consumer.py:133) and only clears it in factory.shutdown() (result_consumer.py:185), so after a rebalance the assert at result_consumer.py:247 passes and the new strategy gets the old pool, which close() already shut down (queue_consumer.py:338, 231-243). The later work_queue.put() raises queue.ShutDown (queue_consumer.py:212), the broad except at queue_consumer.py:317-325 records the offset as complete, and the commit loop commits it without the message ever being processed.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.12491920000000001
+}

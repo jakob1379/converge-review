@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:63-69 rewrites `tempfile.path` in place, using convert and then `ImageOptim.optimize_image!`, which does an atomic rename (app/models/optimized_image.rb:160-165). `tempfile.size` checks the open file handle, which still points at the old file, so the size stays stale: the loop can run all 5 passes (it always stops after 5) and `Upload.create_for` gets a stale filesize. `FastImage.new(file)` may also read stale dimensions through that handle, while the sha1 is computed from the path at upload.rb:106 and so does not match them. I inferred the rename from memory of the image_optim gem source, which is not in this repository.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1371371
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Nothing under tests/ mentions OptimizedCursorPaginator or optimized_pagination. The patch's only test edits add end_timestamp_precise to fixtures in tests/sentry/spans/test_buffer.py, test_consumer.py and test_flusher.py. No test exercises the >1000 zpopmin eviction (add-buffer.lua:209-211) or a negative offset in BasePaginator (paginator.py:179-183).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0996341
+}

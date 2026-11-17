@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:66-69 appends `getClass().getName() + \", \"` for every ignored provider and logs `builder.toString()` without trimming, so the debug message always ends with a trailing \", \".",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0735353
+}

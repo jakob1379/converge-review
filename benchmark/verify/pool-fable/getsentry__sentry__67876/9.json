@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/github/integration.py:478 fetches the Integration by external_id only, then :494-498 re-fetches it with status=ObjectStatus.ACTIVE and returns the generic error() on DoesNotExist, where the pre-patch code went straight to pipeline.next_step(). In practice a non-active Integration is one GitHub has already uninstalled (webhook.py:253-254 sets DISABLED), so the old path most likely failed later anyway with a different error message.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3509544
+}

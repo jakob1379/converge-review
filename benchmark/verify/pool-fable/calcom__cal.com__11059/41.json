@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/refreshOAuthTokens.ts:8-14 calls fetch(process.env.CALCOM_CREDENTIAL_SYNC_ENDPOINT, { method, body }) with no signal/AbortController or other timeout, and nothing in packages/app-store/_utils adds one; only the runtime's default fetch limits would apply, which I did not check here.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15253090000000002
+}

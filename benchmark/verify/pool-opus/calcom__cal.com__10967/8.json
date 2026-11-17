@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes create.handler.ts:151 from `!IS_TEAM_BILLING_ENABLED && { slug }` to `IS_TEAM_BILLING_ENABLED ? { slug } : {}`, while line 153 still sets requestedSlug only when billing is on. So with billing on, the org gets a real slug before payment, and with billing off it gets neither. createTeams.handler.ts:67-68 then throws NoOrganizationSlugError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0545235
+}

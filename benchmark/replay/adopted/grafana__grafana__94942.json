@@ -1,0 +1,133 @@
+{
+ "findings": [
+  {
+   "path": "pkg/expr/reader.go",
+   "line": 194,
+   "severity": "Important",
+   "claim": "enableSqlExpressions (reader.go:194-200, gate at :129-132) reads FlagSqlExpressions and then returns false on both branches, so the sqlExpressions toggle has no effect. The local `enabled := !IsEnabledGlobally(...)` also holds the opposite of what its name says. The toggle is still registered and documented ('Enables using SQL and DuckDB functions as Expressions', registry.go:1083-1088 and feature-toggles docs). The frontend still offers the SQL expression type when the flag is on (public/app/features/expressions/types.ts:73), so operators who enable the flag see a UI option that every backend request rejects.",
+   "evidence": "Patch body: `enabled := !h.features.IsEnabledGlobally(...); if enabled { return false }; return false`. Breaks contribute/feature-toggles.md ('Use the IsEnabled function'). Proposed red test (mattpocock, superpowers): NewExpressionQueryReader(featuremgmt.WithFeatures(featuremgmt.FlagSqlExpressions)).ReadQuery with type 'sql' asserting no error; this fails with 'sqlExpressions is not implemented'. All seats reasoned this from the code; nothing was run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. All four seats raised it; severity normalised to Important (3 seats said Important, open-code-review said Minor because it matches the 'disable sql expressions' intent). No spec exists, so the fix direction depends on intent. If the flag should keep working, the red test is the proposed ReadQuery test. If the disable is permanent, the fix is an honest unconditional rejection plus deprecating or hiding the toggle and frontend option, and the red test must target that contract. Unverified: no test has been run yet.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/expr/nodes.go",
+   "line": 159,
+   "severity": "Important",
+   "claim": "The legacy parse path (FlagExpressionParser off, which is the default) never reaches the new reader gate. It runs nodes.go:159-160 \u2192 UnmarshalSQLCommand \u2192 NewSQLCommand (sql_command.go:30-35) \u2192 sql.TablesList (parser.go:23-29), then fails in the stub RunCommands. The user gets BadRequest 'sql-invalid-sql' / 'error reading SQL command' (told their SQL is invalid) instead of being told the feature is disabled. Each request also logs logger.Error('error serializing sql') and Warn('invalid sql query') with the raw user SQL. The disable is therefore implemented two ways, with different errors, and the default path relies on stub behaviour rather than an explicit check.",
+   "evidence": "Traced nodes.go:123-161 \u2192 sql_command.go:30 \u2192 parser.go:23-29 (mattpocock, open-code-review, superpowers). Ponytail notes the gate covers only one of two paths and suggests putting a single check at the top of NewSQLCommand. Proposed red test (superpowers): go through buildCMDNode with the parser flag off and assert the disabled/not-implemented error. Reasoned, not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. All four seats raised it. Severity normalised to Important: mattpocock and ponytail rated it Important; open-code-review and superpowers rated it Minor. It affects the default path, misreports the cause to users, and logs raw user SQL at error level. Red test: buildCMDNode with the parser flag off, asserting the explicit disabled error. Unverified until that test is run.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/expr/sql/db.go",
+   "line": 12,
+   "severity": "Minor",
+   "claim": "The stub sql.DB leaves dead code. DB.TablesList (db.go:12-14) has no callers, because parser.go:22 calls the package-level sql.TablesList. SQLCommand.Execute's db.QueryFramesInto (sql_command.go:96-104) cannot be reached because NewSQLCommand always fails first. The stub's API (labelled InMemoryDB) suggests a working backend, and its exported names have no doc comments.",
+   "evidence": "Grep finds no db.TablesList caller (ponytail). NewSQLCommand fails before Execute can run (open-code-review, superpowers). Missing doc comments on exported names, per the Code Review Comments rule the style guide adopts (mattpocock).",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: whether to remove it depends on whether the disable is permanent. If it is temporary until a new engine lands, the stub that mirrors the go-duck API keeps restoration small (superpowers, ponytail). Revisit once the intent from finding 1 is settled; then delete DB.TablesList (-4 lines) and add doc comments, or keep the stub with an explanatory comment.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/expr/sql/parser.go",
+   "line": 23,
+   "severity": "Minor",
+   "claim": "The variable is still named duckDB but now holds the stub DB. sql_command.go:96 renamed the same variable to db, so the two are inconsistent, and the name suggests a working DuckDB backend.",
+   "evidence": "parser.go:23 compared with sql_command.go:96.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats. Not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/expr/reader.go",
+   "line": 131,
+   "severity": "Important",
+   "claim": "The user-facing rejection is a plain fmt.Errorf('sqlExpressions is not implemented') rather than an errutil error with a <service>.<id> messageID (errutil.NotImplemented fits), so it loses the status code and public message. The text is also misleading: the feature is disabled, not unimplemented, and the message exposes the internal toggle name.",
+   "evidence": "contribute/backend/errors.md requires errutil errors. The same package already follows the pattern (sql_command.go:27 errutil.BadRequest('sql-missing-query', ...)). Reasoned. Open-code-review and superpowers did not check how the HTTP layer maps this error.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat only. Not fixed in this loop. Could be folded into the explicit-disable fix for the legacy-path finding if that lands.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/expr/reader.go",
+   "line": 194,
+   "severity": "Minor",
+   "claim": "enableSqlExpressions(h *ExpressionQueryReader) is a free function that only reads h.features. The existing check at reader.go:160 calls h.features.IsEnabledGlobally inline (Feature Envy).",
+   "evidence": "reader.go:194 compared with reader.go:160. The seat called it a judgement call.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat only. Likely made moot by the fix to the always-false gate.",
+   "list": "appendix"
+  },
+  {
+   "path": "(commit messages)",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit subjects 'disable sql expressions' and 'Run make update-workspace' lack the <Area>: prefix (e.g. 'Expressions: Disable SQL expressions'). This matters only if it carries over to the PR title or squash commit.",
+   "evidence": "contribute/create-pull-request.md:90-125.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat only. Not a code change.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/expr/reader.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test was added to show that SQL expressions are rejected on either path. All existing SQL tests (pkg/expr/sql/parser_test.go, pkg/expr/sql_command_test.go:9) were already t.Skip(), so nothing exercises the new gate or the default-path error.",
+   "evidence": "Skipped tests cited by superpowers and mattpocock ('There is no test for either'). Open-code-review observed the same but listed it under no-issue checks.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats. The red tests required for the two main-list fixes would close most of this gap.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/expr/query.go",
+   "line": 30,
+   "severity": "Minor",
+   "claim": "Schema and doc drift: query.go:30 still says 'SQL query via DuckDB', query.go:77 still says SQLExpression 'requires the sqlExpression feature flag', and pkg/expr/query.types.json still lists the sql type. The generated API schema therefore advertises a query type that always fails.",
+   "evidence": "Cited lines in pkg/expr/query.go and pkg/expr/query.types.json (superpowers). Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat only. Depends on the permanent-vs-temporary intent behind finding 1.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate not run (benchmark mode), so the review is unanchored: no build, go vet, test, go mod tidy or go mod verify result exists, and compilation is unconfirmed (superpowers checked signatures by inspection only). Every finding is reasoned, none is backed by a failing run, and no rejection was possible because no seat report disproves another. Files: go.sum and go.work.sum were not hash-verified by any seat (mattpocock and superpowers checked structure and consistency only; ponytail skipped them). Open-code-review's tool skipped go.mod, go.sum and go.work.sum as unsupported extensions, and the seat read those hunks by hand only for remaining importers. Ponytail read go.mod only for removed deps. All four Go source files (reader.go, sql/db.go, sql/parser.go, sql_command.go) were reviewed by every seat. Axes not run: spec (no spec; intent inferred from the commit subject, which leaves finding 1's fix direction undecided). Standards docs were available (contribute/*, .golangci.toml; no AGENTS.md or CLAUDE.md). The HTTP status mapping of the ReadQuery error was not checked (open-code-review, superpowers). Existing SQL tests are all t.Skip(), so CI exercises none of this. No reviewer from another model family held a seat."
+}

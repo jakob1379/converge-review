@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "ResourceServer.getClientId() just returns getId() in both the JPA adapter (model/jpa/.../ResourceServerAdapter.java:91-93) and the Infinispan adapter (ResourceServerAdapter.java:121-123). So the owner set at AdminPermissionsSchema.java:104 is server.getId(), and the resource name is client.getId() (via resolveClient). The lookup findByName(server, client.getId(), server.getId()) in the patch's hasPermission matches the per-client resource and does not fall back to the all-clients resource.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.13458910000000002
+}

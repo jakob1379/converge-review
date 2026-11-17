@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/apps/components/CredentialActionsDropdown.tsx:89-92 formats the timestamp with `new Intl.DateTimeFormat(\"en-US\", { dateStyle: \"short\", timeStyle: \"short\" })` and no `timeZone` option, while line 37 destructures only `t` from `useLocale()`. The date is therefore always rendered in US format and in the browser's timezone, not the user's locale or profile timezone.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16699319999999998
+}

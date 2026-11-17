@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AuthzClientCryptoProvider.java:114-115 create two fresh ASN1Encoder instances, write r and s into their private ByteArrayOutputStreams and discard them; ASN1Encoder.create()/write (ASN1Encoder.java:42-49) have no shared state or side effects, and the return at lines 117-121 re-encodes with new encoders, so the two statements are dead.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1250339
+}

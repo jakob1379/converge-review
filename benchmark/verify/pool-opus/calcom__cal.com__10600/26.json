@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `mockUser: User` literal at packages/trpc/server/routers/viewer/teams/inviteMember/inviteMemberUtils.test.ts:65-101 has no `backupCodes` key, but the patch makes `backupCodes String?` part of the Prisma User model (schema.prisma ~line 205), so the generated type requires `backupCodes: string | null`. The patch adds the field to packages/lib/test/builder.ts but not to this mock, and the type-check script misses the file: packages/trpc/package.json has no type-check script, and apps/web/tsconfig.json only includes files under apps/web plus a few .d.ts files.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0954016
+}

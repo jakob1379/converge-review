@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "BackwardsCompatibilityUserStorage.java:179 gives the OTP a generated id and getCredentials (lines 231-252) now returns it, so in testOTPSetupAndRemoveThroughAccountMgmtAndLogin the account GET builds a real OTP entry (AccountCredentialResource.java:196-210) instead of the dummy 'otp-id' one (212-220), and the DELETE is handled by the federated-id branch at CredentialDeleteHelper.java:63-70 instead of the '-id' fallback at 75-80. No other test under testsuite/ or tests/ references the '-id' placeholder or deletes a federated credential, so that fallback appears to be left without coverage.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.2994759999999999
+}

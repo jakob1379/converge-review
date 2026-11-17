@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`feed_key` is defined at app/jobs/scheduled/poll_feed.rb:20-22 and nothing in the repository calls it; `poll_feed` and `execute` never use it. In that file, `require 'digest/sha1'` (line 4) is only needed by `feed_key`, so both are dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1511863
+}

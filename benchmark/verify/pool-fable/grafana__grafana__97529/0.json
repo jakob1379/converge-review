@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a `t.Skip` for `dbType == \"postgres\"` with a `TODO - fix this test for postgres` at pkg/server/module_server_test.go:35-38, and this is the only test that targets `modules.StorageServer` and checks `/metrics` (line 45 is the sole test reference), so with sqlite already skipped only mysql still runs it. The same patch adds eager `s.Init(ctx)` in `NewResourceServer` (pkg/storage/unified/resource/server.go:258-262); that this is what breaks postgres in Drone is plausible but not provable from source alone.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2341429
+}

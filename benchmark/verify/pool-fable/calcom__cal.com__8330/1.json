@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/slots.ts:133-135 returns true whenever a slot falls on an override day and is not outside the override window, before the busy.every(...) check at line 153. Both the fixed-host call (line 488) and the round-robin call (line 513) spread the user's schedule, which includes dateOverrides and busy, so bookings and calendar busy times are skipped on override days.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.24562490000000003
+}

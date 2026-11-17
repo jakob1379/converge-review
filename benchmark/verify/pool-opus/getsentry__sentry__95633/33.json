@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch does use `queue.ShutDown` and `q.shutdown(immediate=False)` (change.patch:160, 170, 266), but the repo only supports Python 3.13+: setup.cfg:24 sets `python_requires = >=3.13`, .python-version:1 is 3.13.1 and pyproject.toml:47 sets mypy's `python_version = \"3.13\"`. Earlier Python versions are not supported, so this can't fail in practice.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0500543
+}

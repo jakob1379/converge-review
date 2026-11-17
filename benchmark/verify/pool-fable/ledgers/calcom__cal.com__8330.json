@@ -1,0 +1,365 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the working-hours check in checkIfIsAvailable, `end` is computed from slotStartTime instead of slotEndTime, so start and end are identical. A slot that starts inside working hours but runs past workingHour.endTime is not rejected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/slots.ts:141-142 compute both `start` and `end` as `slotStartTime.hour() * 60 + slotStartTime.minute()`, so the `end > workingHour.endTime` test at line 143 only compares the slot's start; `slotEndTime` (line 99) is never used in the working-hours check, and a slot that starts inside working hours but runs past the end is not rejected.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.18852239999999998
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When a slot falls inside a date override window, checkIfIsAvailable returns true (`if (dateOverrideExist) return true;`) before the busy.every(...) check. Existing bookings and calendar busy times are ignored on override days, which allows double bookings for fixed and round-robin hosts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/slots.ts:133-135 returns true whenever a slot falls on an override day and is not outside the override window, before the busy.every(...) check at line 153. Both the fixed-host call (line 488) and the round-robin call (line 513) spread the user's schedule, which includes dateOverrides and busy, so bookings and calendar busy times are skipped on override days.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.24562490000000003
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The working-hours check uses workingHours.find(day matches && slot outside range), so it rejects a slot that is outside any one range for that weekday instead of requiring it to be inside some range. Days with split hours or hours split at UTC midnight lose valid slots.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/slots.ts:138-151 returns false as soon as any working-hours entry for the slot's weekday does not contain the slot, rather than requiring some entry to contain it. getWorkingHours (packages/lib/availability.ts:92-121) emits several entries per weekday for split hours and for ranges that cross UTC midnight, so every slot on such days is rejected.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.32507980000000003
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`dayjs(date.start) === dayjs(date.end)` compares object references and is always false. The zero-length ('unavailable all day') date override branch therefore never runs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/slots.ts:114 compares two freshly created Dayjs objects with `===` (the actual line adds `.add(utcOffset, \"minutes\")` to both sides), so the comparison is always false and the `return true` at line 115 is dead code. The fallthrough checks at lines 117-125 still reject most slots on a zero-length override, but a slot starting exactly at, or straddling, the override instant is treated as available (line 133).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.200003
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The only new test covers a single fixed host with no bookings in a second invitee timezone. It does not exercise round-robin, busy times on override days, split hours, UTC-midnight-crossing schedules, multiple override ranges, or the new working-hours branch.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's only test change is one extra `getSchedule` call with invitee timezone +6:00 inside the existing \"Check for Date overrides\" test (apps/web/test/lib/getSchedule.test.ts:788-804). Its scenario (lines 746-766, schedule at 107-129) has one user, no scheduling type, no bookings and a single IST override range with non-split hours that do not cross UTC midnight; every asserted slot falls on the override day, so `checkIfIsAvailable` returns at packages/trpc/server/routers/viewer/slots.ts:131-133 before the new working-hours branch at 136-149.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.291977
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In getSlots, the activeOverrides day filter picks the invitee day by treating the organizer's wall-clock time (stored as fake UTC) as a real instant. The offset correction is only partly applied, so the override lands on the wrong invitee day.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The day filter at packages/lib/slots.ts:206-208 still compares the fake-UTC `override.start` (organizer wall-clock built with `dayjs.utc(override.date).hour(...)` in packages/core/getUserAvailability.ts:221) as a real instant against `startOfInviteeDay`. The patch's invitee-minus-organizer offset is applied only to hour/minute at slots.ts:212-223, which wraps past midnight and drops the day shift, so the override attaches to the wrong invitee day (e.g. a New York 09:00\u201317:00 override seen from Tokyo becomes 23:00\u201307:00 on day D and is skipped as start >= end at slots.ts:68).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.33128019999999997
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "After the offset is applied, override startTime/endTime are computed as hour()*60+minute() with no day carry. An override that crosses the invitee's midnight gets endTime < startTime, buildSlots drops it, and the day has zero slots.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/lib/slots.ts:218-223 reduces the offset-shifted override start/end to hour()*60+minute(), discarding the day, so an override whose shifted end passes the invitee's midnight (e.g. 09:00-19:00 organizer UTC, invitee +6 gives 900/60) has endTime < startTime. buildSlots skips it at slots.ts:68 (`if (start >= end) continue`) after that user's working hours were already spliced out at slots.ts:228-243, leaving no slots for that host that day.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.2874369
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The selected-slots checkIfIsAvailable call looks up userSchedule and passes organizerTimeZone but passes no dateOverrides or workingHours, so the lookup and the prop have no effect.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The selected-slots call at packages/trpc/server/routers/viewer/slots.ts:579-586 passes only time, busy, availabilityCheckProps (just eventLength and currentSeats, lines 418-421) and organizerTimeZone, so dateOverrides and workingHours default to [] (lines 79-80). organizerTimeZone is read only inside the dateOverrides.find callback (line 107), which never runs on an empty array, so the userSchedule lookup and the prop are dead code.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2595705
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch newly enforces working hours and date overrides inside checkIfIsAvailable for every fixed and round-robin host, where these spread-in fields were previously ignored.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both the fixed-host and round-robin calls spread the per-user schedule, which carries `workingHours` and `dateOverrides` (packages/trpc/server/routers/viewer/slots.ts:400-406, 488-493, 513-518). Before the patch `checkIfIsAvailable` destructured only `time`/`busy`/`eventLength`/`currentSeats`, so those fields were ignored; it now destructures them and returns early on them (slots.ts:79-80, 105-151).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3317603
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The date-override check uses dateOverrides.find and returns unavailable when the slot lies outside any one override range on that day. With multiple override ranges on the same date, a slot valid in one range is rejected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/slots.ts:106-131 uses `dateOverrides.find` whose callback returns true as soon as the slot falls before or after any single same-day override, and the function then returns false; it never checks whether another override on that date contains the slot. Multiple ranges per date are possible, since each dated availability row becomes its own override (packages/core/getUserAvailability.ts:215-224) and the override dialog uses `DayRanges`, so a slot inside one range is rejected because it lies outside the other.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.2549393
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A date override is matched to slots by the UTC calendar date of its shifted start (format('YYYY MM DD')) rather than the host's local date. Overrides near local midnight therefore reject slots on the neighbouring day. The dayjs(date.start)...format() call also uses the server's local zone while slotStartTime is UTC.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/slots.ts:109-111 compares `dayjs(date.start).add(utcOffset,\"minutes\").format(\"YYYY MM DD\")` (a local-mode dayjs, so server-zone date of the real start instant; no default tz is set anywhere) against `slotStartTime.format(...)`, which is UTC (line 100), never the host's local date. E.g. a UTC-8 host's 17:00\u201320:00 override on day D starts at D+1 01:00Z, so it matches every slot dated D+1 in UTC and lines 117-125 reject the host's normal D+1 working-hours slots as outside the override.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.2845846
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "override.timeZone is optional on TimeRange but is passed directly to tz(override.timeZone). When it is undefined, tz falls back to the process timezone, so the override shift depends on the host machine.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/types/schedule.d.ts:5 declares `timeZone?: string` and packages/lib/slots.ts:212 passes `override.timeZone` straight to `.tz()` with no fallback, so an undefined value would resolve to the host zone (dayjs behaviour recalled from memory; its source is not in this checkout). It is latent only: the sole caller that supplies dateOverrides, packages/trpc/server/routers/viewer/slots.ts:410-415, always sets timeZone from getUserAvailability (packages/core/getUserAvailability.ts:201), which ends in what the Prisma schema appears to declare as the non-nullable user.timeZone.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.5041073
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "dayjs(override.start.toString()) parses the non-ISO, engine-dependent Date#toString output, which also drops milliseconds, where dayjs(override.start) would suffice.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/lib/slots.ts:212-213 call dayjs(override.start.toString()) on a value typed as Date (packages/types/schedule.d.ts TimeRange.start), so dayjs falls back to parsing the non-ISO Date#toString string, which has no milliseconds, while lines 219-223 of the same block already use dayjs(override.start) directly. The practical effect is negligible, since the result is only used for utcOffset() and the ECMAScript spec requires Date.parse to accept toString output.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.24300159999999998
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The override containment check only tests slotEndTime <= override start and slotStartTime.isAfter(override end). Slots that partially overlap the override, such as starting inside and ending after it, are accepted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In `checkIfIsAvailable`, packages/trpc/server/routers/viewer/slots.ts:117-125 rejects a slot only when it ends at or before the override start or starts strictly after the override end. A slot that starts inside the override and runs past its end matches neither test, so `dateOverrideExist` returns true at slots.ts:133-135, which also skips the busy check.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3487886
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The override end boundary uses strict isAfter while the start boundary uses isBefore || isSame. A slot starting exactly at the override end time passes the check and is marked available.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/slots.ts:117-125 the start exclusion is `slotEndTime.isBefore || isSame(date.start)` but the end exclusion is only `slotStartTime.isAfter(date.end)`, so a slot starting exactly at the override end is not rejected and line 133-135 returns true. Such a slot reaches this check for fixed hosts at slots.ts:485-493, where slots built from other hosts' availability are tested against each host's own override.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3269584
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The UTC offset is computed at the stored fake-UTC wall-clock instant rather than the real local instant, so it can be wrong on DST-transition dates.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Date overrides are stored as the organizer's wall-clock time stamped as UTC (packages/core/getUserAvailability.ts:221-222), and the patch treats that Date as a real instant when looking up the zone offset (packages/trpc/server/routers/viewer/slots.ts:107 `dayjs.tz(date.start, organizerTimeZone).utcOffset()`; packages/lib/slots.ts:212-213 `dayjs(override.start.toString()).tz(...).utcOffset()`). The offset is therefore sampled up to |offset| hours away from the true local instant, giving the pre- or post-transition offset wrongly for overrides near a DST switch (e.g. 03:00 local in New York on spring-forward day yields -300 instead of -240); dayjs is not installed here, so the Date-input behaviour of `dayjs.tz` is from knowledge of the library rather than read from source.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2717833
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The organizerTimeZone parameter duplicates the timeZone already spread in via ...schedule/...userSchedule. It is also misnamed, since it receives each host's timezone rather than the organizer's.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At packages/trpc/server/routers/viewer/slots.ts:490-492 and :515-517 the spread `...schedule`/`...userSchedule` already carries `timeZone` (returned at :401), and the patch passes the same value again as `organizerTimeZone`, which `checkIfIsAvailable` (:82, :93, :107) reads instead of `timeZone`; the third call site at :581-585 has no spread, so the duplication is only at two of three sites. The value is each host's own schedule timezone, whereas `organizerTimeZone` in the same function at :439-440 means the event-type/first-user timezone, so the name is misleading.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2901096
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The inline type dateOverrides?: { start: Date; end: Date }[] duplicates TimeRange from @calcom/types/schedule.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds an inline `dateOverrides?: { start: Date; end: Date }[]` at packages/trpc/server/routers/viewer/slots.ts:87-90, while `TimeRange` in packages/types/schedule.d.ts:1-6 already has the same required `start: Date; end: Date` fields (plus optional `userId`/`timeZone`). The patch even imports `WorkingHours` from that same module at slots.ts:22, so `TimeRange[]` could have been reused.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1614756
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the override check, dayjs(date.start).add(utcOffset, 'minutes') and the equivalent for end are rebuilt four times instead of computing the shifted start/end once per override.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In `checkIfIsAvailable`, `dayjs(date.start).add(utcOffset, \"minutes\")` is rebuilt four times (packages/trpc/server/routers/viewer/slots.ts:110, 114, 118, 119) and the `date.end` equivalent twice (lines 114, 123) inside one `dateOverrides.find` callback, with no shifted start/end stored once per override.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.13921139999999999
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The dayjs(override.start).utc().add(offset,'minute') chain is built twice each for start and end. The flatMap callback returns a single object, so it should be map.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/lib/slots.ts:219-223 builds `dayjs(override.start).utc().add(offset, \"minute\")` twice and the same chain for `override.end` twice, and the `flatMap` callback at packages/lib/slots.ts:211-225 returns a single object literal, so `map` would behave identically. The duplicated chains are new in this patch; the `flatMap` call was already there but sits on lines the patch rewrote.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1464292
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

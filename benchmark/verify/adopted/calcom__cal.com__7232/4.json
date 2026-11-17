@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch merges the old `import type { Prisma, PrismaPromise }` into a value import at packages/trpc/server/routers/viewer/workflows.tsx:1-10. PrismaPromise is used only as a type annotation at line 342, so @typescript-eslint/consistent-type-imports (set to error with prefer: type-imports in packages/config/eslint-preset.js:35-44) reports it even though other names in the same import are values.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0737844
+}

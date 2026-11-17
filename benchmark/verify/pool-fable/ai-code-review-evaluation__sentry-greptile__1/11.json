@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/endpoints/organization_auditlogs.py:76-83 and :85-91 are two near-identical self.paginate(...) calls with the same request, queryset, order_by and on_results; they differ only in paginator_cls (OptimizedCursorPaginator vs DateTimePaginator) and the extra enable_advanced_features=True kwarg.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11855260000000001
+}

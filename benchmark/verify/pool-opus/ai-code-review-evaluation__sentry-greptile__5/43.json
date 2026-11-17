@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched project_replay_summarize_breadcrumbs.py, fetch_error_details always sets category=\"error\" (patch line 723), and generate_error_log_message reads only error[\"title\"], error[\"message\"] and error[\"timestamp\"] (patch lines 737-742). No other code reads ErrorEvent's category; the other category lookups under src/sentry/replays work on replay breadcrumb payloads, not ErrorEvent.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0587907
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The claim is accurate but harmless. In packages/emails/src/templates/AttendeeAddGuestsEmail.tsx:5-8 and OrganizerAddGuestsEmail.tsx:5-9, title, headerType and subject are set first and `{...props}` comes last, so a caller could override them. The only callers (attendee-add-guests-email.ts:323-326 and organizer-add-guests-email.ts:367-370) pass just calEvent and attendee, and the existing templates (e.g. AttendeeLocationChangeEmail.tsx:5-8) follow the same default-then-override pattern.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.20259560000000001
+}

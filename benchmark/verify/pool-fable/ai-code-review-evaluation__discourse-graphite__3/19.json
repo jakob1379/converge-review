@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/blocked_email.rb:12-18 increments match_count and sets last_match_at for any matching record before the action_type check, so :do_nothing matches are counted too. This is deliberate (spec/models/blocked_email_spec.rb:281-285 asserts it), though the comment at spec/models/blocked_email_spec.rb:13-14 does describe last_match_at as showing whether an email was 'ever blocked'; the commit message itself is not in the patch, so that wording was not checked.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1496789
+}

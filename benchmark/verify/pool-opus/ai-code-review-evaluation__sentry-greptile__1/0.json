@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.get_item_key (src/sentry/api/paginator.py:838-840) calls math.floor/math.ceil directly on getattr(item, 'datetime'). The audit logs endpoint uses this paginator with order_by='-datetime' (organization_auditlogs.py, patch line 37), and build_cursor calls key() on the results (src/sentry/utils/cursors.py:137,197), so any non-empty page raises a TypeError on the datetime value. DateTimePaginator (paginator.py:233-236) avoids this by converting the value with strftime('%s.%f') first.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.10842859999999999
+}

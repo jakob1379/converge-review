@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At apps/web/playwright/login.2fa.e2e.ts:53, `expect(...isChecked()).toBeTruthy()` passes the unawaited Promise from `isChecked()`, and a Promise is always truthy, so the check can never fail. The patch only adds the FIXME comment at lines 50-51 and leaves the assertion as it was.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.034984299999999996
+}

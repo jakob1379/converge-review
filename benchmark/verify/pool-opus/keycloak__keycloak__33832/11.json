@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds sorting by order() and drops the multiple-providers exception in common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:57-71, but its only new test, authz/client/.../test/ECDSAAlgorithmTest.java, creates AuthzClientCryptoProvider directly and checks only ECDSA round-trips. The only order() match under src/test is services/.../DefaultKeycloakSessionFactoryTest.java:126, which is about ProviderFactory, not CryptoIntegration.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15508629999999998
+}

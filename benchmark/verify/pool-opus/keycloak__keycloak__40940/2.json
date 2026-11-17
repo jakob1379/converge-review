@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes model/infinispan/.../GroupAdapter.java:274-275 so that it returns null when modelSupplier.get() is null, which breaks the GroupModel.java:296 javadoc promise that the method 'Never returns null'. No caller in this repo unboxes the value: GroupUtils.java:90 passes it to the Long setter in GroupRepresentation.java:94. So the NPE risk applies only to outside or SPI callers that unbox it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0934595
+}

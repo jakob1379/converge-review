@@ -1,0 +1,258 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The privilege gate for advanced pagination checks the raw request.user.is_superuser flag instead of is_active_superuser(request), so it grants access without an active superuser session.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil on the sort key without converting it, but for audit logs ordered by -datetime the key is a datetime object. This raises TypeError, so every non-empty page with ?optimized_pagination=true returns 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.value_from_cursor returns the raw numeric cursor value without converting it back to a datetime, so follow-up pages compare an int against the DateTimeField in SQL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When enable_advanced_features is True and cursor.offset < 0, OptimizedCursorPaginator.get_result passes the negative offset directly into queryset slicing. Django rejects negative QuerySet indexing, and paginate() only catches BadPaginationError, so the error surfaces as a 500. The comment saying Django handles negative slicing is incorrect, and a crafted cursor (e.g. '0:-5:0') from users who pass the gate can trigger this.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In BasePaginator.get_result, negative offsets on non-prev cursors are clamped to 0 for start_offset, while cursor.offset and build_cursor still use the unclamped value, producing inconsistent next/prev cursors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In BasePaginator.get_result, when cursor.is_prev is True, start_offset = offset is not clamped, so negative offsets still reach queryset slicing and crash.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The BasePaginator change to offset handling is unscoped and alters behavior for every subclass (Paginator, DateTimePaginator, etc.) and every paginated endpoint.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The BasePaginator comment claiming it allows negative offsets and that the underlying queryset will handle boundary conditions is false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An added comment describes negative-offset behavior that the Cursor class does not implement.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The gate uses has_global_access, which is true for all members of open-membership orgs, so the comment's 'authorized administrators' is misleading and the advanced paginator is exposed far more widely than intended.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The enable_advanced computation accesses organization_context.member.has_global_access on every request. It raises AttributeError (500) when member is None, e.g. for non-member callers, ApiKey/org-token auth, or superusers who are not members.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": "add-buffer.lua",
+   "line": null,
+   "severity": "Minor",
+   "claim": "max_segment_spans (default 1001) is still accepted and stored but never read, because the cap is hard-coded as 1000 in add-buffer.lua; the Python-side limit is ignored and the two values disagree.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The max_segment_spans safety check in _load_segment_data was removed, so pre-existing oversized Redis sets are processed without Python-side protection.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": "add-buffer.lua",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ZUNIONSTORE in the span buffer Lua script uses the default AGGREGATE SUM, so a payload present in both inputs gets its timestamp score summed (doubled), corrupting ordering and ZPOPMIN eviction.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": "add-buffer.lua",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ZPOPMIN keeps the 1000 latest-ending spans, so a segment/root span that ends before its children can be evicted while has_root_span remains true.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": "add-buffer.lua",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ZPOPMIN eviction drops spans silently, with no metric or logging.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "span-buf:s:* keys change from Redis SET to ZSET in the same key namespace with no migration, prefix bump, or dual-read. During a rolling deploy this causes WRONGTYPE errors and loss of spans stored in old SET keys.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Module docs still describe span-buf:s:* as set keys after the switch to sorted sets.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The redirect-walk depth limit was reduced from 10000 to 1000 and its explanatory comment was deleted, so segment trees deeper than 1000 are not joined correctly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_result is a near line-for-line copy of BasePaginator.get_result, with key logic wrongly copied from Paginator and no actual optimization.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": "factory.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "factory.py indexes val['end_timestamp_precise'] directly, so a missing field raises KeyError and fails the batch.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover span eviction beyond 1000, OptimizedCursorPaginator, the endpoint's optimized_pagination branch, or the BasePaginator negative-offset change.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i23",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Style issues: trailing whitespace at organization_auditlogs.py:72,89 and paginator.py:824,827,829, a blank line at EOF in paginator.py, and three blank lines before class OptimizedCursorPaginator (E303).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

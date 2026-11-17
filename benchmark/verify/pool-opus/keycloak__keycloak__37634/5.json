@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientCredentialsGrantType.java:140-141 builds the token with tokenManager.responseBuilder(...).generateAccessToken() and never calls createTokenResponse, the path that sets Constants.GRANT_TYPE at OAuth2GrantTypeBase.java:109. Nothing else in the class or in TokenManager sets the attribute for this grant, so DefaultTokenContextEncoderProvider.java:57-59 falls back to 'na' and client-credentials token IDs get 'na' instead of 'cc'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.29748670000000005
+}

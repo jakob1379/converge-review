@@ -1,0 +1,460 @@
+{
+ "findings": [
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java",
+   "line": 123,
+   "severity": "Important",
+   "claim": "The User Storage SPI contract for recovery codes changes in a way providers can see, and the patch documents none of it: no docs, release notes, upgrade guide or Javadoc. Providers now receive plaintext codes as a JSON list via updateCredential, must return Keycloak's internal hashed model from getCredentials, and are read before local storage.",
+   "evidence": "mattpocock: all 8 files are Java and none is under docs/; CONTRIBUTING.md:29 and :79 and PR-CHECKLIST.md:9 require docs; plaintext codes at CredentialHelper.java:117-123; federated read first at RecoveryAuthnCodesUtils.java:56-62. open-code-review: the asymmetric contract (plaintext in, hashed RecoveryAuthnCodesCredentialModel out) is documented nowhere and no Javadoc was added. superpowers: neither the Javadoc of createRecoveryCodesCredential nor CredentialInputUpdater documents the asymmetric contract. All reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Add provider-facing docs and Javadoc plus a release-note or upgrade-guide entry. Red check: on the pinned code, no doc or Javadoc describes the recovery-codes user-storage contract.",
+   "list": "main"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 340,
+   "severity": "Minor",
+   "claim": "The fixture's isValid never consumes a code after a successful match, and the new test performs only one login, so single use is not exercised on the federated path.",
+   "evidence": "open-code-review: generatedKeys.stream().anyMatch(key -> key.equals(input.getChallengeResponse())) with no state change afterwards (:325-340). superpowers: the fixture never consumes codes and the test (:241-262) does exactly one login. mattpocock: the test provider accepts any stored code every time (:326-341), and testRecoveryKeysSetupAndLogin checks a single login. ponytail: the fixture never marks codes as used.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted test gap. Make the fixture remove a used code, and add a second login with the same code that must be rejected.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java",
+   "line": 80,
+   "severity": "Minor",
+   "claim": "For federated recovery codes, core never enforces single use or tells user storage that a code was used. Consumption is left entirely to the provider's isValid.",
+   "evidence": "mattpocock: the local isValid (RecoveryAuthnCodesCredentialProvider.java:99-117) removes the used code via updateStoredCredential, but nothing on the federated path does, so codes held in user storage look reusable. open-code-review: consuming used codes is left entirely to the provider's isValid, and core never enforces single use for federated codes. superpowers: core delegates single-use enforcement to the storage provider, and nothing in the change says so. All reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: closing this needs an SPI design decision (core cannot mutate a federated credential except through updateCredential). For now the documentation fix in the docs finding covers it. Settle with a fixture provider that does not consume codes: a second login with the same code succeeds.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java",
+   "line": 85,
+   "severity": "Minor",
+   "claim": "When the federated credential reports all codes used, the authenticator calls removeStoredCredentialById, which acts on local or fed storage only. The provider's copy is not removed, so only the added required action takes effect.",
+   "evidence": "mattpocock: :85-87 calls removeStoredCredentialById (local store only) when all codes are used. open-code-review: removeStoredCredentialById(federatedId) against local or fed storage does nothing to the provider's copy (:80-88). ponytail: for a federated credential that call cannot remove anything.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. On the federated branch, route removal through the provider (for example disableCredentialType) or skip the local removal call.",
+   "list": "main"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 231,
+   "severity": "Minor",
+   "claim": "The fixture's getCredentials rebuilds the recovery-codes model with createFromValues, which drops the stored credential id. The returned model therefore has a null id, and delete or remove by id cannot find it.",
+   "evidence": "open-code-review: createFromValues does not copy the id generated at line 196, so account REST and CredentialDeleteHelper delete-by-id cannot find it. superpowers: CredentialDeleteHelper matches credentialId.equals(c.getId()) against the null id and throws NotFoundException. ponytail: the model is built without an id, so removeStoredCredentialById gets null.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Set the stored id on the model returned from getCredentials.",
+   "list": "main"
+  },
+  {
+   "path": "(commit message)",
+   "line": null,
+   "severity": "Important",
+   "claim": "The commit message has no issue link (no 'Closes #').",
+   "evidence": "mattpocock: CONTRIBUTING.md:26, :96-97 and :115-125, plus PR-CHECKLIST.md:6. git log -1 shows only the subject and Signed-off-by.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed. Settle by checking the commit message for 'Closes #'.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java",
+   "line": 125,
+   "severity": "Important",
+   "claim": "When regenerated codes go to user storage, the old local recovery-codes credential is never deleted, so the old codes still log the user in.",
+   "evidence": "open-code-review and superpowers: only the local createCredential (RecoveryAuthnCodesCredentialProvider.java:36-42) deletes the previous credential. UserCredentialManager.isValid (:59-80) falls through to local validation when storage returns false. This is the normal upgrade path for federated users who had local codes. Test sketch, not run: inject a local credential with oldCodes, run setupRecoveryKeysForUserWithRequiredAction, log in with oldCodes.get(0); login succeeds.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed. Reasoned and unverified. Settle with the seats' test sketch in BackwardsCompatibilityUserStorageTest; expected is an invalid code.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java",
+   "line": 80,
+   "severity": "Minor",
+   "claim": "In the mixed local-plus-federated state, getCredential returns the federated model, so the authenticator inspects or removes a different credential from the one that actually validated. Exhaustion of the old local credential is never seen or cleaned up.",
+   "evidence": "open-code-review finding 6, second bullet. superpowers finding 1, second effect.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed. It depends on the stale-local-codes finding.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi/src/main/java/org/keycloak/models/utils/RecoveryAuthnCodesUtils.java",
+   "line": 56,
+   "severity": "Important",
+   "claim": "Recovery-code login now calls the storage provider's getCredentials for every federated user, LDAP users included. This adds remote round trips, and LDAPStorageProvider.getCredentials can throw IllegalStateException when the LDAP entry is missing, so an imported user cannot use local codes.",
+   "evidence": "open-code-review: UserCredentialManager.java:130-145 and LDAPStorageProvider.java:1211-1215. Called from the bean (render) and the authenticator (submit). Suggests guarding with supportsCredentialType. Reasoned.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed. Unverified. Settle with recovery-code login for an imported LDAP user whose LDAP entry has been deleted.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/forms/login/freemarker/model/RecoveryAuthnCodeInputLoginBean.java",
+   "line": 17,
+   "severity": "Important",
+   "claim": "If a provider supports recovery-authn-codes but does not override getCredentials, the login bean calls .get() on an empty Optional, throws NoSuchElementException, and the page returns 500.",
+   "evidence": "superpowers: the CredentialInputUpdater.getCredentials default returns Stream.empty() (CredentialInputUpdater.java:50) and nothing is stored locally. The authenticator handles an empty Optional (:90-92); the bean does not. Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed. Unverified. Settle with a provider that supports the type without overriding getCredentials, then render the recovery-code form.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/forms/login/freemarker/model/RecoveryAuthnCodeInputLoginBean.java",
+   "line": 17,
+   "severity": "Important",
+   "claim": "If a provider's getCredentials returns a model that is not in Keycloak's internal hashed RecoveryAuthnCodes format, createFromCredentialModel throws in the bean and the authenticator.",
+   "evidence": "superpowers finding 2, case B. open-code-review finding 4: otherwise createFromCredentialModel fails in the authenticator and the login bean.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed. Unverified. Settle with a provider returning plaintext credentialData.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java",
+   "line": 123,
+   "severity": "Minor",
+   "claim": "The storage path sends only the codes; userLabel and generatedAt are dropped and never reach the provider.",
+   "evidence": "open-code-review finding 4. superpowers finding 3.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 340,
+   "severity": "Minor",
+   "claim": "The fixture accepts any of the 12 codes regardless of which code number was requested, so the 'code #N' prompt never advances and the test always expects code #0.",
+   "evidence": "open-code-review finding 5 (test :259, :481). superpowers finding 4.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 235,
+   "severity": "Minor",
+   "claim": "getCredentials dereferences getMyUser(user) without a null check.",
+   "evidence": "open-code-review: getDisableableCredentialTypesStream in the same file does check for null. superpowers: line 235.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 217,
+   "severity": "Minor",
+   "claim": "disableCredentialType and getDisableableCredentialTypesStream do not handle recovery codes, so removing them from the account console does nothing.",
+   "evidence": "open-code-review finding 7, third bullet. superpowers finding 5 (:217-224, :255-263).",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 247,
+   "severity": "Important",
+   "claim": "The new getCredentials also returns the OTP credential, and OTP gets a generated id (:179). This reroutes testOTPSetupAndRemoveThroughAccountMgmtAndLogin (Issue 19575) onto the federated-id branch, so the 'otp-id' placeholder and the '-id' delete fallback lose their only test.",
+   "evidence": "ponytail: AccountCredentialResource.java:211-219 and CredentialDeleteHelper.java:63-80; grep finds no other coverage. open-code-review: same path analysis and grep. superpowers observed no test regression, but that does not address the coverage loss.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed. Settle by tracing CredentialDeleteHelper.removeCredential in that test before and after the patch.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 59,
+   "severity": "Minor",
+   "claim": "The patch adds features to a provider whose Javadoc says it is a 4.8.3-era provider that should need no code changes: a new getCredentials, var, and post-4.8.3 APIs. A separate test provider would keep it intact.",
+   "evidence": "mattpocock finding 5 (:58-60, :231-252); its own mitigation is that the file was already edited in 2024 (c3a98ae387, 8cbd39083e). open-code-review finding 3 (var, RecoveryAuthnCodesCredentialModel, KeycloakModelUtils).",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed. The mitigation weakens the claim but does not disprove it.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java",
+   "line": 76,
+   "severity": "Minor",
+   "claim": "Unrelated whitespace-only re-indent of getConfigurableAuthenticatorFactory.",
+   "evidence": "mattpocock: CONTRIBUTING.md:27 and :66-68. ponytail: whitespace-only hunk (:76-85).",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 61,
+   "severity": "Minor",
+   "claim": "Unrelated Javadoc change: '*' replaced by '* <p>'.",
+   "evidence": "mattpocock finding 3. ponytail finding 5.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": 95,
+   "severity": "Minor",
+   "claim": "Unrelated whitespace change: a double space removed.",
+   "evidence": "mattpocock finding 3. ponytail finding 5.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Unrelated removal of unused imports (Collectors, Pbkdf2Sha512PasswordHashProviderFactory).",
+   "evidence": "mattpocock finding 3.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 328,
+   "severity": "Minor",
+   "claim": "Unrelated re-indent of .auth(accountToken).",
+   "evidence": "mattpocock finding 3. ponytail finding 5.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 467,
+   "severity": "Minor",
+   "claim": "Unrelated split of 'new TypeReference<>() {}' over two lines.",
+   "evidence": "mattpocock finding 3 (:467-468). ponytail finding 5 (~:466).",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/authentication/requiredactions/RecoveryAuthnCodesAction.java",
+   "line": 5,
+   "severity": "Minor",
+   "claim": "Unrelated blank line added in the import block.",
+   "evidence": "mattpocock finding 3. ponytail finding 5.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 2 seats, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 481,
+   "severity": "Minor",
+   "claim": "The new helper uses fully qualified org.junit.Assert.assertEquals, against the guidance to prefer hamcrest assertThat.",
+   "evidence": "mattpocock: docs/tests-development.md. The file already uses org.keycloak.testsuite.Assert (:462), so this is a judgement call.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 123,
+   "severity": "Minor",
+   "claim": "configureBrowserFlowWithRecoveryAuthnCodes keeps a delay parameter that its only caller (:243) sets to 0.",
+   "evidence": "ponytail finding 2. Copied from RecoveryAuthnCodesAuthenticatorTest.java:123-143, where only the original uses non-zero delays.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 123,
+   "severity": "Minor",
+   "claim": "The copied flow includes the 'delayed-authenticator' execution, which exists for timing tests and does nothing here.",
+   "evidence": "ponytail finding 2.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 123,
+   "severity": "Minor",
+   "claim": "The copied alias keeps the typo 'delayed-suthenticator-config'.",
+   "evidence": "ponytail finding 2.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 123,
+   "severity": "Minor",
+   "claim": "configureBrowserFlowWithRecoveryAuthnCodes takes testingClient as a parameter although it is already a field.",
+   "evidence": "ponytail finding 2.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 410,
+   "severity": "Minor",
+   "claim": "setupRecoveryKeysForUserWithRequiredAction's logoutOtherSessions parameter is only ever true, so the uncheckLogoutSessions branch (:423-425) is dead.",
+   "evidence": "ponytail finding 3: single call site at :249.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 456,
+   "severity": "Minor",
+   "claim": "assertUserHasRecoveryKeysCredentialInUserStorage's boolean parameter is only ever true.",
+   "evidence": "ponytail finding 3: single call site at :253.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 476,
+   "severity": "Minor",
+   "claim": "enterRecoveryCodes is a near copy of the helper at RecoveryAuthnCodesAuthenticatorTest.java:299.",
+   "evidence": "ponytail finding 4: same body; that helper is private in another package. The seat calls this acceptable for a test.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+   "line": 476,
+   "severity": "Minor",
+   "claim": "enterRecoveryCodes takes driver and enterRecoveryAuthnCodePage as parameters although both are fields.",
+   "evidence": "ponytail finding 4.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: appendix, 1 seat, not fixed.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files: all 8 patch files were reviewed by all four seats. open-code-review's tool left BackwardsCompatibilityUserStorageTest.java out of its reviewable list (default_path), but the seat reviewed it manually. open-code-review and superpowers deliberately skipped the whitespace-only hunks (CredentialHelper re-indent, Javadoc <p>, test formatting). Not checked: the upstream GitHub issue (network blocked) and docs user-storage pages in depth (mattpocock); whether the new test passes and how imported-LDAP users behave at runtime (open-code-review); LDAP mappers and git history (superpowers). Axes that did not run: the gate was not run (benchmark mode), so the review is unanchored and no seat executed any build or test; every finding is reasoned, and no red test exists. There was no spec; mattpocock judged against the commit subject only. No reviewer from another model family took a seat. Merge only: no fixes were made, there were no rounds 2+, and no rejection verifiers were dispatched (none were needed, since no finding was rejected)."
+}

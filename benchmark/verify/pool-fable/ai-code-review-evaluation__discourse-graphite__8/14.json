@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/controllers/admin/groups_controller_spec.rb:115 sends `xhr :put, :remove_member`, while config/routes.rb:49 declares `delete \"members\" => \"groups#remove_member\"` (PUT maps to add_members at :50); the sibling test at spec line 125 uses `:delete`. Controller specs dispatch straight to the action without checking the HTTP verb, so the mismatch goes unnoticed (not run here).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1257651
+}

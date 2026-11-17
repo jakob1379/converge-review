@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/models/store.js.es6:197 calls `obj[k].map(...)` on any key matching `/(.+)\\_id(s?)$/` with no null or array check, so a null or non-array `*_ids` value throws TypeError; the `hydrated || []` fallback at :200 never runs because `.map` either throws or returns an array. No payload in this repo currently sends a null `*_ids` under `__rest_serializer`, so the crash is latent.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2210997
+}

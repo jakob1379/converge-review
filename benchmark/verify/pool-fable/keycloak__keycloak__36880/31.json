@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:66 and :107 inline `root.hasOneAdminRole(AdminRoles.MANAGE_CLIENTS)` and :119 inlines `root.hasOneAdminRole(AdminRoles.VIEW_CLIENTS, AdminRoles.MANAGE_CLIENTS)`, which are exactly the bodies of the inherited `canManageClientsDefault()` and `canViewClientDefault()` at ClientPermissions.java:268-273 (the same class already uses `canViewClientDefault()` at :87). Behaviour is identical, so this is duplication only.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.19287659999999998
+}

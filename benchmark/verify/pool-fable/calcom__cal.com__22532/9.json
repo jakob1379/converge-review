@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/package.json:11 now runs `npx tsx cron-tester.ts` (patch line 10 replaces `ts-node cron-tester.ts`), but no package.json in the repo declares `tsx` and yarn.lock has no `tsx@` entry at all (only `ts-node@npm:^10.9.1` at yarn.lock:44995). npx would therefore have to fetch an unpinned tsx from the registry when the script runs.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1632596
+}

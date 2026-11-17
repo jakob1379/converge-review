@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`load_locale` and `ensure_loaded!` do not normalize (lib/freedom_patches/translate_accelerator.rb:48,58,64), but no caller ever passes a String: the only inputs are `config.locale` (line 68), which i18n 0.7.0's `locale=` stores as a Symbol (gem behaviour recalled, not vendored in the repo), and `[locale, SiteSetting.default_locale.to_sym, :en]` from `I18n.locale` (config/initializers/i18n.rb:17,21). The String/Symbol duplicate and redundant load therefore cannot occur in the code as patched.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2068756
+}

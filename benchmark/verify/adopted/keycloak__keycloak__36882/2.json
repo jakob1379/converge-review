@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In UpdateCommandDistTest.java:46-50, testFeatureNotEnabled is the only test that runs without ENABLE_FEATURE, and it runs only `update-compatibility metadata`; every UpdateCompatibilityCheck launch (lines 65, 81, 96, 105) passes `--features=rolling-updates`, so the gate added in UpdateCompatibilityCheck.run() (patch lines 173-177) is never tested with the feature off. HelpCommandDistTest only prints help and never calls run().",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.126147
+}

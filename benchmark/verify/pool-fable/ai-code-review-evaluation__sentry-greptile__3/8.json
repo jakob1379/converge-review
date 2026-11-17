@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`invalidate_upsampling_cache` is defined at src/sentry/api/helpers/error_upsampling.py:67 and a repo-wide grep finds no callers or option-change hook. Its key (line 73) hashes one exact sorted project-id set, matching the read key at line 27, so an allowlist change cannot enumerate the affected entries; staleness is bounded only by the 60s TTL at line 38.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2510645
+}

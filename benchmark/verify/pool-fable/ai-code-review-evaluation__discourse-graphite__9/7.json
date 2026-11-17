@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/freedom_patches/translate_accelerator.rb:62-65 adds ensure_loaded! with `@loaded_locales ||= []` and an `unless @loaded_locales.include?(locale)` check that repeats load_locale's own guard at line 48, while translate at line 68 dereferences @loaded_locales with no nil guard (it is only initialised in reload! at line 40). The outer check does skip the mutex, as translate's does, so this is a redundancy and consistency nit, not a behavioural bug.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1328367
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At handleCancelBooking.ts:460-467, `deletedEvent` is awaited before `apiDeletes.push(deletedEvent)`, so a resolved value is pushed, not a promise. That happens inside a fire-and-forget `forEach(async ...)`, so `Promise.all(prismaPromises.concat(apiDeletes))` at line 652 never waits for those recurring-event calendar deletions.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0851311
+}

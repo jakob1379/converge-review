@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new override check in slots.ts:117-125 rejects a slot only if slotEnd <= override start or slotStart is after override end, so slots that partly overlap the override (or start exactly at its end) fall through to `dateOverrideExist` and return true at slots.ts:133-135, which also skips the busy check. One caveat: in round-robin, buildSlots (packages/lib/slots.ts:90) already leaves a host's ID off a slot that does not fit that host's override, so this is not the only per-host gate there. The bug still lets fixed/collective hosts be booked past their override when another host's hours produce the slot.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.20336920000000003
+}

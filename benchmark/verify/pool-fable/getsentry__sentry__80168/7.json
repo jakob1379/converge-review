@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/workflow_engine/processors/detector.py:166-170 adds the abstract `build_occurrence_and_event_data` with a bare `pass` and no docstring, while sibling abstract members at :142-164 all have one. The undocumented behaviours are real: it is called only in the non-OK branch with `PriorityLevel(new_status)` (:298-301), and `event_data` is forwarded unchanged to `produce_occurrence_to_kafka` (:82-87).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.36536769999999996
+}

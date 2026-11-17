@@ -1,0 +1,149 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The variable name groupUuuids is misspelled with three u's instead of two.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `List<String> groupUuuids` (three u's) at tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:121. The same misspelled name is used again at lines 129 and 152, while the loop variable is spelled `groupUuid`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0275682
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The create loop duplicates the status check, try-with-resources and fail() logic that ApiUtil.getCreatedId already performs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The loop the patch adds (GroupTest.java around patch lines 88-96) checks for a SUCCESSFUL status, calls fail() if it isn't, and wraps the response in try-with-resources. ApiUtil.getCreatedId (tests/utils/src/main/java/org/keycloak/tests/utils/admin/ApiUtil.java:53-59) already asserts a 201 status and closes the response, so the extra code adds nothing except the reason phrase in the error message.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.06767000000000001
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupAdapter.getSubGroupsCount() returns null when modelSupplier.get() returns null because the group was deleted. This violates the GroupModel contract that the method never returns null, and callers that unbox the Long can get a NullPointerException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes model/infinispan/.../GroupAdapter.java:274-275 so that it returns null when modelSupplier.get() is null, which breaks the GroupModel.java:296 javadoc promise that the method 'Never returns null'. No caller in this repo unboxes the value: GroupUtils.java:90 passes it to the Long setter in GroupRepresentation.java:94. So the NPE risk applies only to outside or SPI callers that unbox it.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0934595
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The three paginated getSubGroupsStream(...) overloads in GroupAdapter (lines 256, 262, 268) still call modelSupplier.get().getSubGroupsStream(...) without a null check. They throw a NullPointerException when the group is deleted concurrently, which is reachable through the GET /admin/realms/{realm}/groups/{id}/children endpoint.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupAdapter.java:256, 262 and 268 still call modelSupplier.get().getSubGroupsXxx(...) with no null check. The patch adds a null guard only to getSubGroupsCount (lines 274-275). The supplier is a lazy database lookup (getGroupModel, line 298), which returns null once another transaction has deleted the group, and GroupResource.java:180 (GET .../children) calls group.getSubGroupsStream(search, exact, -1, -1) on the cached adapter.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1033742
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The regression test never joins the background reader thread before asserting on caughtExceptions. The assertion runs immediately after deletedAll.set(true), so exceptions from in-flight reads can be missed and the thread can outlive the test.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In GroupTest.java (change.patch lines 102-120), the reader thread is started anonymously with `new Thread(...).start()` and nothing keeps a reference to it, so it is never joined. `assertThat(caughtExceptions, Matchers.empty())` runs right after `deletedAll.set(true)`, so an exception from a read still in progress can land after the assertion and be missed, and the thread can keep running after the test ends.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.04658760000000001
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test has no assertion that the reader thread completed any reads during the deletes, so it can pass vacuously, including on unpatched code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In GroupTest.java (patch lines 99-120), the reader thread does not count its reads and is never joined. The only check is assertThat(caughtExceptions, Matchers.empty()), so the test passes if the thread gets in no read, or no overlapping one, before deletedAll is set, including on unpatched code.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.045898
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The stop flag deletedAll is not set in a finally block, so a failed delete leaves the polling reader thread running indefinitely.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new GroupTest.createMultiDeleteMultiReadMulti test (patch lines ~115-118), `deletedAll.set(true)` comes straight after the `groupUuuids.forEach(... remove())` loop and is not in a finally block. If any `remove()` throws, the flag is never set, and the non-daemon reader thread keeps looping (`while (!deletedAll.get())`, catching every exception) indefinitely.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.035904900000000003
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test only exercises the top-level brief group listing and does not cover the children endpoint path (GroupResource.getSubGroups), which has the same race condition.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new test (GroupTest.java patch lines 102-112) only calls `groups().groups(null, 0, MAX, true)`, so it never reaches `GroupResource.getSubGroups` (GroupResource.java:171-196). That endpoint uses the same `GroupUtils.populateSubGroupCount` \u2192 `GroupAdapter.getSubGroupsCount` path, so the patch's null-safe fix covers it too and the only real gap is the missing test.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1142002
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

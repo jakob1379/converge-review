@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:24-28 and :92-106 look up and update the booking by `bookingId` alone and `createMany` attendees directly on it, with no seat reference, no `BookingSeat` record and no `seatsPerTimeSlot` capacity check; the action is offered for every booking, seated ones included (apps/web/components/booking/BookingListItem.tsx:193-200), although enabling seats deliberately disables guests (apps/web/components/eventtype/EventAdvancedTab.tsx:468-470).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4648562
+}

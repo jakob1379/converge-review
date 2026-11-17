@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The snapshot at src/sentry/remote_subscriptions/consumers/queue_consumer.py:74 is `list(self.all_offsets.keys())`, a single C-level copy that runs no Python code, so a concurrent `add_offset` insert (line 59) cannot realistically raise \"dictionary changed size during iteration\" in CPython. Even if it did raise, `_commit_loop` catches `Exception` inside its `while` loop (lines 274-291), logs it and retries a second later, so the commit loop is not broken.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19780620000000002
+}

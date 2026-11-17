@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "flusher.py:124 is the only place that writes to `self.processes`, and it only stores a started `SpawnProcess` or `threading.Thread`; neither class defines `__bool__` or `__len__`, so both are always truthy and the `if not process: continue` check at flusher.py:222-223 can never run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1403352
+}

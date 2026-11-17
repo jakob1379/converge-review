@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The dependency at app/assets/javascripts/discourse/controllers/create_account_controller.js:96 does recompute on `pushObject` of strings: in the vendored Ember, `arrayContentWillChange` sets up the `@each` proxy when it is watched (external_development/ember.js:10202) and `EachProxy.arrayDidChange` unconditionally calls `Ember.propertyDidChange(this._content, '@each')` (ember.js:13231), regardless of item type. This is from reading the Ember source, not from running it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2724204
+}

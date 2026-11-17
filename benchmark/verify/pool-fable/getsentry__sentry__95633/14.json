@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`force` is indeed unread in the three `track_commits` helpers (tests/sentry/uptime/consumers/test_results_consumer.py:1830, 1880, 1932), but no linter flags it: the repo has no Ruff config or dependency and lints with flake8 (.pre-commit-config.yaml:45, setup.cfg:86, requirements-dev.txt:30-32) with no unused-argument plugin. The parameter is also needed to match the commit callback signature passed to `create_with_partitions`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2088537
+}

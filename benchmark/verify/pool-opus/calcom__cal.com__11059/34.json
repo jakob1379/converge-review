@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "getClient does post the refresh to a hard-coded https://login.salesforce.com/services/oauth2/token (packages/app-store/salesforce/lib/CalendarService.ts:75), but install and callback (api/add.ts:18-23, api/callback.ts:33-39) build jsforce connections with no loginUrl, so they also use login.salesforce.com. A sandbox org can never get a credential here, so this refresh never sees a sandbox token; the app simply doesn't support sandboxes, before or after this patch.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.11879260000000001
+}

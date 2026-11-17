@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/javascripts/discourse/models/store.js.es6:196-201 the plural branch maps every id through `_lookupSubType`, assigns the result (`hydrated || []` is always a truthy array) and unconditionally deletes `obj[k]`, unlike the singular branch at lines 203-207 which only deletes on a hit; with no side-loaded collection this leaves an array of `undefined` and drops the original ids. The `muted_category_ids` example is latent rather than live: it only bites payloads flagged `__rest_serializer` (line 222), and the user serializers that emit it are not rendered that way today.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.56392
+}

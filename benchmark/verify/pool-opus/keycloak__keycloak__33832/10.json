@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The ECDSAAlgorithmTest constructor (patch lines 663-665) makes a single key with KeyPairGenerator.getInstance(\"EC\").genKeyPair(), which uses the JDK's default curve, normally P-256. testES256, testES384 and testES512 (lines 681-694) all sign with that one key, so each DER signature is a SEQUENCE of two roughly 32-byte INTEGERs, about 70 bytes. That stays under 128, so the long-form branches in ASN1Encoder.writeLength (length > 127, line 324) and ASN1Decoder.readLength (line 185) never run; only a real P-521 key for ES512 would produce DER over 127 bytes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15512269999999997
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/storage/unified/resource/search.go:189 does a plain `totalBatchesIndexed++` on a captured local int inside `group.Go` closures, and the errgroup limit is `s.initWorkers` (search.go:179), so with more than one worker the increments run concurrently with no mutex or atomic. The value is only read for a trace span attribute at search.go:199, and the patch did not touch these lines.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1912466
+}

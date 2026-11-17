@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The block comment that opens at workflows.tsx:848 (`/* testAction`) closes partway through line 901, and a second `/*` opens on the same line and runs until `EMAIL_ADDRESS*/` at line 967. The hunk at lines 902\u2013961 only strips leading whitespace from lines inside that comment, so behaviour does not change.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.092063
+}

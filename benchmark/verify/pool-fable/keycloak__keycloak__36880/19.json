@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`getResourceName` (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:304-326) branches only on `USERS.getType()` and otherwise returns `resource.getDisplayName()`. Clients resources never get a display name set (created by `resourceStore.create(resourceServer, name, ...)` at :104, and in `init` at :249-250 with no `setDisplayName`), so it is null for them.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.40113659999999995
+}

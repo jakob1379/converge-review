@@ -1,0 +1,329 @@
+{
+  "findings": [
+    {
+      "path": "packages/app-store/googlecalendar/lib/CalendarService.ts",
+      "line": 1024,
+      "severity": "Important",
+      "claim": "SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {}) is a no-op/dead write: with empty data Prisma 5.4.2 does not bump @updatedAt, nothing reads SelectedCalendar.updatedAt (UI reads CalendarCache.updatedAt), and it adds an extra UPDATE round-trip on every webhook/cron fetchAvailabilityAndSetCache run. The new repository method at packages/lib/server/repository/selectedCalendar.ts:400 exists only for this caller.",
+      "evidence": "Line 1024 passes {}; grep finds updateManyByCredentialId only at its definition (selectedCalendar.ts:400) and this caller; no consumer of SelectedCalendar.updatedAt in the patch. Prisma empty-data behaviour reasoned, not run against a DB.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three of the four seats rated this Important (the fourth Minor), and the grep for a consumer supports it. Remove the call and the repository method. Red check: an integration test asserting SelectedCalendar.updatedAt changes after fetchAvailabilityAndSetCache, which needs a database."
+    },
+    {
+      "path": "scripts/test-gcal-webhooks.sh",
+      "line": 68,
+      "severity": "Important",
+      "claim": "sed -i '' -E is BSD/macOS-only syntax; on GNU sed (Linux) the .env update fails with exit 2 but the script still prints that GOOGLE_WEBHOOK_URL was updated. The script is also unrelated to the cache feature (scope creep).",
+      "evidence": "Reproduced by two seats: printf 'GOOGLE_WEBHOOK_URL=old\\n' > t.env && sed -i '' -E \"s|^GOOGLE_WEBHOOK_URL=.*|GOOGLE_WEBHOOK_URL=new|\" t.env -> \"sed: can't read s|...: No such file or directory\", rc=2, file unchanged.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Reproduced on GNU sed. The fix is a portable in-place edit, or dropping the script from this PR."
+    },
+    {
+      "path": "scripts/test-gcal-webhooks.sh",
+      "line": 5,
+      "severity": "Minor",
+      "claim": "ENV_FILE=\"../.env\" depends on the caller's working directory. The cleanup function exits 0 on failure paths, and when an existing tmole process is reused it reads a possibly stale or missing /tmp/tmole.log.",
+      "evidence": "Line 5 hard-codes a relative path; per OCR, cleanup at lines 17/49/58 exits 0.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap correctness fixes in the same file as the accepted sed finding, or moot if the script is dropped."
+    },
+    {
+      "path": "packages/lib/server/repository/user.ts",
+      "line": 899,
+      "severity": "Minor",
+      "claim": "updatedAt and googleChannelId are added to the selectedCalendars select in findUnlockedUserForSession (every session lookup), and the UserWithCalendars Pick type in packages/lib/getConnectedDestinationCalendars.ts:21-28 is widened to require them, but nothing reads either field.",
+      "evidence": "A grep for googleChannelId/.updatedAt across the calendars router, the selected-calendars atoms and CredentialActionsDropdown hits only the type lines. Breaches .cursor/rules/review.mdc 'Only select data you need'.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Breaks a documented repo standard; reverting both hunks is trivial."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts",
+      "line": 28,
+      "severity": "Minor",
+      "claim": "new CalendarCacheRepository() is constructed directly, bypassing CalendarCache.init's feature-flag gate (calendar-cache.ts:24-28). Cache status and the 'Delete cached data' action therefore show even when calendar-cache is off, and the getCacheStatusByCredentialIds additions to calendar-cache.repository.interface.ts and calendar-cache.repository.mock.ts are unreachable.",
+      "evidence": "Line 28 instantiates the concrete repository; the factory that returns the mock when the flag is off is never called on this path.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "A real behaviour gap (the UI ignores the feature flag) and dead mock code. Respect the flag, or drop the interface and mock edits."
+    },
+    {
+      "path": "packages/features/apps/components/CredentialActionsDropdown.tsx",
+      "line": 43,
+      "severity": "Minor",
+      "claim": "After the deleteCache mutation succeeds it only calls onSuccess?.(); it never invalidates viewer.calendars.connectedCalendars. Callers that pass no onChanged (e.g. EventAdvancedTab) keep showing the stale 'Last updated' timestamp after a delete. The disconnect mutation in the same file does invalidate in onSettled.",
+      "evidence": "Lines 43-45: the onSuccess body has no utils invalidate call, unlike the disconnect mutation's onSettled.",
+      "seats": [
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Reasoned stale-UI bug with a one-line fix."
+    },
+    {
+      "path": "packages/features/apps/components/CredentialActionsDropdown.tsx",
+      "line": 69,
+      "severity": "Minor",
+      "claim": "hasCache ignores disableConnectionModification, so the event-type Advanced tab (EventAdvancedTab.tsx:372 passes disableConnectionModification={true}), which previously showed no credential actions, now shows a destructive 'Delete cached data' item.",
+      "evidence": "Line 69: hasCache = isGoogleCalendar && cacheUpdatedAt has no modification gate; rendering at lines 71/82 depends only on canDisconnect and hasCache.",
+      "seats": [
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "defer",
+      "reason": "Whether deleting the cache counts as 'connection modification' is a product decision. ponytail: confirm intent with the feature owner before gating."
+    },
+    {
+      "path": "packages/features/apps/components/CredentialActionsDropdown.tsx",
+      "line": 89,
+      "severity": "Minor",
+      "claim": "The cache timestamp is formatted with a hard-coded Intl.DateTimeFormat(\"en-US\", ...), ignoring the user's locale and profile timezone, even though the label beside it uses t().",
+      "evidence": "Line 89 literal \"en-US\"; .cursor/rules/review.mdc requires localisation in frontend code.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap fix: use the locale from useLocale."
+    },
+    {
+      "path": "packages/features/apps/components/CredentialActionsDropdown.tsx",
+      "line": 86,
+      "severity": "Minor",
+      "claim": "The read-only cache-status block is a focusable, selectable DropdownMenuItem that does nothing, and it uses raw text-gray-900/text-gray-500/dark:text-white instead of the design-system tokens (text-emphasis, text-subtle).",
+      "evidence": "Lines 86-87 raw gray classes; the status block is wrapped in a menu item with no action.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Low-cost consistency and accessibility fix."
+    },
+    {
+      "path": "packages/features/apps/components/CredentialActionsDropdown.tsx",
+      "line": 6,
+      "severity": "Minor",
+      "claim": "Imports @calcom/platform-constants, which packages/features/package.json does not declare. This is the first such import in packages/features; it resolves only through workspace hoisting.",
+      "evidence": "Line 6 import; the @calcom deps in packages/features/package.json are atoms, dayjs, lib, trpc and ui.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Undeclared dependency; declare it, or import the constant from a declared package."
+    },
+    {
+      "path": "packages/features/apps/components/CredentialActionsDropdown.tsx",
+      "line": 54,
+      "severity": "Minor",
+      "claim": "The disconnect mutation, toasts, invalidations and confirm dialog are copied from DisconnectIntegration.tsx instead of reusing it, and the copy drops the original's teamId passthrough and isDelegationCredential({credentialId}) guard.",
+      "evidence": "Compare DisconnectIntegration.tsx:26-46 with CredentialActionsDropdown.tsx:53-65 and 143-154.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Reuse the existing component rather than keep two copies that have already drifted."
+    },
+    {
+      "path": "packages/features/apps/components/CredentialActionsDropdown.tsx",
+      "line": 20,
+      "severity": "Minor",
+      "claim": "The component takes six props, four only to derive canDisconnect/hasCache, and the same six-prop block is duplicated at two call sites in SelectedCalendarsSettingsWebWrapper.tsx (70-79, 123-132).",
+      "evidence": "Cites .cursor/rules/review.mdc 'Prefer Composition over Prop Drilling'; the seat itself called it a judgement call.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory judgement call with no defect. ponytail: revisit if the dropdown gains more actions."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts",
+      "line": 25,
+      "severity": "Minor",
+      "claim": "A failed ownership check throws a plain Error, so the client gets INTERNAL_SERVER_ERROR (500) instead of NOT_FOUND/FORBIDDEN.",
+      "evidence": "Line 25 throw new Error(...); the sibling setDestinationCalendar.handler.ts imports and throws TRPCError with codes.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "All seats agree; one-line fix to TRPCError({ code: \"NOT_FOUND\" })."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts",
+      "line": 17,
+      "severity": "Minor",
+      "claim": "prisma.credential.findFirst has no select, so it loads the full Credential row, including key (OAuth tokens), only for an existence/ownership check.",
+      "evidence": "Line 17 findFirst without select; .cursor/rules/review.mdc: 'Only select data you need' and names app credentials. The key is not returned to the client.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented-standard breach on the credentials table; select: { id: true } suffices. Normalised from Important (MP, advisory) to Minor because nothing is exposed."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts",
+      "line": 28,
+      "severity": "Minor",
+      "claim": "The cache delete calls prisma.calendarCache.deleteMany directly from the tRPC handler, while the cache-status read goes through CalendarCacheRepository; the layering is inconsistent.",
+      "evidence": "Line 28 vs connectedCalendars.handler.ts:28; no documented rule mandates repositories.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "defer",
+      "reason": "Heuristic only; no documented standard is breached. ponytail: move into CalendarCacheRepository when that file is next touched."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/calendars/_router.tsx",
+      "line": 29,
+      "severity": "Minor",
+      "claim": "The deleteCache input schema is inlined with z.object instead of a deleteCache.schema.ts, and the procedure is missing from CalendarsRouterHandlerCache, which breaks this router's convention.",
+      "evidence": "Sibling procedures use ZConnectedCalendarsInputSchema/ZSetDestinationCalendarInputSchema from *.schema.ts files (lines 1-11).",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap alignment with the local convention."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts",
+      "line": null,
+      "severity": "Minor",
+      "claim": "No tests were added for the new code: deleteCacheHandler (including its ownership check), getCacheStatusByCredentialIds, the cacheUpdatedAt field in connectedCalendars, and the dropdown UI.",
+      "evidence": "The router already has handler tests (e.g. setDestinationCalendar.handler.test.ts); the patch adds none.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "The ownership check guards a destructive mutation and needs a test."
+    },
+    {
+      "path": "packages/platform/atoms/selected-calendars/wrappers/SelectedCalendarsSettingsWebWrapper.tsx",
+      "line": 123,
+      "severity": "Minor",
+      "claim": "Undocumented behaviour change: in the error/Alert branch, 'Remove app' used to be hidden only for delegation credentials and is now also hidden when disableConnectionModification is set, so users there can no longer remove a broken credential.",
+      "evidence": "The removed lines gated only on !connectedCalendar.delegationCredentialId; the new component also gates on !disableConnectionModification.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Arguably more consistent with the flag's meaning; needs a product decision. ponytail: confirm whether broken credentials must stay removable when modification is disabled."
+    },
+    {
+      "path": "packages/platform/atoms/selected-calendars/wrappers/SelectedCalendarsSettingsWebWrapper.tsx",
+      "line": 98,
+      "severity": "Minor",
+      "claim": "Unrelated churn: delegationCredentialId={... || null} and a lone blank line at 162.",
+      "evidence": "Lines 98 and 162 of the diff.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "reject",
+      "reason": "Harmless: || null only normalises undefined to null for the prop and changes no behaviour. Not a defect."
+    },
+    {
+      "path": "packages/lib/server/repository/selectedCalendar.ts",
+      "line": 259,
+      "severity": "Minor",
+      "claim": "An unrelated refactor of findMany removes the `satisfies Prisma.SelectedCalendarFindManyArgs` type check.",
+      "evidence": "The hunk replaces `const args = {...} satisfies ...; findMany(args)` with `findMany({ where, select, orderBy })`.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "reject",
+      "reason": "No loss of type safety: the object is now passed inline to prisma.selectedCalendar.findMany, whose parameter type checks it (selectedCalendar.ts:260). Two seats (SP, OCR) also found no behaviour change."
+    },
+    {
+      "path": "apps/web/package.json",
+      "line": 11,
+      "severity": "Minor",
+      "claim": "dev:cron switches from ts-node (still declared at line 196) to `npx tsx`. tsx is not declared or in yarn.lock, so npx downloads it at run time, and the change is unrelated to the feature.",
+      "evidence": "The tsx grep across the package.json files finds no dependency; ts-node is still declared.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Undeclared runtime download plus scope creep; revert or declare tsx."
+    },
+    {
+      "path": "packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql",
+      "line": 1,
+      "severity": "Minor",
+      "claim": "The auto-generated warning header says the required column is added 'without a default value', but the SQL adds DEFAULT NOW(), so the comment is stale and misleading.",
+      "evidence": "Lines 1-6 header vs line 9 DEFAULT NOW().",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Delete the stale header. PT's extra point, that the explanatory comments breach a 'no comments' rule, is rejected: that rule is the user's global preference, not a documented repo standard."
+    },
+    {
+      "path": "packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql",
+      "line": 9,
+      "severity": "Minor",
+      "claim": "DEFAULT NOW() backfills existing CalendarCache rows with the migration time, so 'Last updated' is wrong for them until their next refresh.",
+      "evidence": "The migration adds updatedAt with DEFAULT NOW(); there is no backfill from any existing column.",
+      "seats": [
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "defer",
+      "reason": "Cosmetic and self-healing (@updatedAt bumps on the next upsert). ponytail: acceptable unless an accurate pre-migration timestamp matters."
+    },
+    {
+      "path": "packages/features/calendar-cache/calendar-cache.repository.ts",
+      "line": 174,
+      "severity": "Minor",
+      "claim": "getCacheStatusByCredentialIds takes the max updatedAt without filtering expired rows (expiresAt), so a status can show for a fully expired cache.",
+      "evidence": "The groupBy where clause contains only credentialId.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "'Last updated' is still factually correct for expired rows; whether to hide expired caches is a product call. ponytail: filter on expiresAt if the status is meant to mean 'cache active'."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode): no dependency install, typecheck, lint, build or tests. No spec, so the spec-compliance axis was limited to scope notes. Documented standards found: .cursor/rules/review.mdc, CONTRIBUTING.md, packages/app-store/CONTRIBUTING.md; the repo has no AGENTS.md/CLAUDE.md. All 4 seats reviewed all 17 files in the patch; apps/web/public/static/locales/en/common.json was only checked for key usage (ponytail). The untracked harness dotfiles in the worktree (.bashrc, .claude/, .mcp.json, etc.) were excluded from the pinned patch as not part of the PR. Unverified claims: the Prisma empty-data updateMany behaviour (needs a DB). Stopped after the merge per benchmark overrides: no fixes, red tests or round 2+."
+}

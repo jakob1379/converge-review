@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:92-106 adds attendees via createMany with no bookingSeat and no seatsPerTimeSlot check, lets any attendee do it (:52-56), and pushes the full list to the calendar (:165). Emails and Google Calendar still honour seatsShowAttendees, but a guest added without a seat has no seatsReferences, so the filter at get.handler.ts:400-401 is skipped and they see every seat-holder in the bookings list.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.6982986
+}

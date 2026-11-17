@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only spec change is spec/components/email/message_builder_spec.rb:172. It passes `unsubscribe_url: \"/t/1234/unsubscribe\"` so the new interpolation key resolves, but it asserts nothing about the link. No spec mentions TopicsController#unsubscribe (topics_controller.rb:197-215) or Topic#unsubscribe_url (topic.rb:719), even though CONTRIBUTING.md:44 says to include tests.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1245753
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "EmbedController#best calls discourse_expires_in (app/controllers/embed_controller.rb:195 in the patch), which sets ANON_CACHE_DURATION for anonymous users (app/controllers/application_controller.rb:168-171). The cache key is only HTTP_HOST + REQUEST_URI (lib/middleware/anonymous_cache.rb:14), and the middleware is inserted at position 0 (config/initializers/99-rack-cache.rb:10), so a cache hit returns the stored body and headers, including X-Frame-Options ALLOWALL, before ensure_embeddable runs; the first requester's referer, which layouts/embed.html.erb writes into the page, is stored with it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19404509999999997
+}

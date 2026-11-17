@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.value_from_cursor (patch, paginator.py ~842) returns cursor.value unchanged, and BasePaginator.build_queryset (paginator.py:119-126) then adds the SQL condition `datetime <= <int>`, comparing the timestamp column to an integer. DateTimePaginator.value_from_cursor (paginator.py:238-241) turns the epoch-ms value into a datetime first, so its cursors don't work on the new path. It is worse than the claim says: get_item_key calls math.floor/ceil on a datetime, which raises TypeError on any non-empty page, even with no cursor.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.095
+}

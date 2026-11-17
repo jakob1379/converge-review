@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds unguarded `JSON.parse(symmetricDecrypt(user.backupCodes, ...))` calls, with no try/catch or array check before `.indexOf`, at apps/web/pages/api/auth/two-factor/totp/disable.ts:58 and packages/features/auth/lib/next-auth-options.ts:139-140, so corrupted data or a rotated key throws an unhandled error. This can only happen with corrupted stored data: setup.ts always writes an encrypted JSON array, and the existing twoFactorSecret decrypt at disable.ts:85 and next-auth-options.ts:172 has no guard either.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1619157
+}

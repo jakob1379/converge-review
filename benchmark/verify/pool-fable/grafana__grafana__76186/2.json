@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "No test references `ContextualLoggerMiddleware` or `instrumentContext`: the only hits are `pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go:16,27` and `pluginsintegration.go:160`, and there is no `contextual_logger_middleware_test.go` or `logger_middleware_test.go`. `pkg/plugins/log` has no test files at all, so `grafanaInfraLogWrapper.FromContext` (`pkg/plugins/log/logger.go:48`) and the egress-log fields now sourced from context (`logger_middleware.go:58`) are unpinned.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3257237
+}

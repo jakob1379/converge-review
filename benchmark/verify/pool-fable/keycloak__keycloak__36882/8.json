@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Profile is always initialized before run() on the CLI path: Picocli.parseAndRun sets the parsed command (Picocli.java:176) and calls PropertyMappers.sanitizeDisabledMappers() (Picocli.java:128) before cmd.execute (Picocli.java:129), and that call runs Environment.getCurrentOrCreateFeatureProfile() (PropertyMappers.java:302-306), which configures Profile when it is null (Environment.java:239-246). Profile.getInstance() is therefore non-null at UpdateCompatibilityCheck.java:46.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5761364
+}

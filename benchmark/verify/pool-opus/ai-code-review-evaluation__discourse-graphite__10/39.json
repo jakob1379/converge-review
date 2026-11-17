@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/admin_controller.rb:3-4 already declares `before_filter :ensure_logged_in` and `before_filter :ensure_staff`. The patch's new subclasses repeat them: Admin::EmbeddableHostsController (patch line 252) and Admin::EmbeddingController (patch line 292). Rails drops a callback that is declared twice, so the repeat is redundant but harmless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0325634
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In smsReminderManager.ts:178-189, `await twilio.cancelSMS(referenceId)` and `prisma.workflowReminder.delete` sit in the same try block, so if cancelSMS throws the delete is skipped and the error is only logged. Before the patch, callers deleted the row themselves whatever Twilio returned: handleCancelBooking.ts and bookings.tsx used deleteMany, and workflows.tsx did the same in its activeOn and edited-steps paths. The patch removes those deletes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13953079999999998
+}

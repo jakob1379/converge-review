@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The edit at src/sentry/api/paginator.py:179-184 sits in BasePaginator.get_result with no flag or subclass gating, so Paginator (221), DateTimePaginator (230) and any other subclass that inherits get_result pick it up. The only behaviour that changes is a forward cursor with a negative offset: it used to error on the negative queryset slice and is now silently clamped to 0. Prev cursors and non-negative offsets behave exactly as before.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1966113
+}

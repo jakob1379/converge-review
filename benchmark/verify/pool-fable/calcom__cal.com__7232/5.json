@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes `import type { Prisma, PrismaPromise }` and adds `PrismaPromise` to the value import at packages/trpc/server/routers/viewer/workflows.tsx:1-10, yet its only use is a type annotation at workflows.tsx:342. The rule is set to \"error\" with `prefer: \"type-imports\"` for all *.ts/*.tsx in packages/config/eslint-preset.js:35-44, which the root .eslintrc.js applies; ESLint was not run here.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2229585
+}

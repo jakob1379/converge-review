@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The script is a local-dev helper for the cache refresh path this patch changes: scripts/test-gcal-webhooks.sh:67-70 writes GOOGLE_WEBHOOK_URL, which CalendarService.ts:41-42 uses as the Google watch address, and that webhook (packages/app-store/googlecalendar/api/webhook.ts:46) calls fetchAvailabilityAndSetCache, which the patch modifies at CalendarService.ts:1023-1024. No runtime code references the script, so it is only scope-adjacent tooling, not unrelated.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3738603
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In error_upsampling.py (patch lines 153\u2013166), `cache.get`/`cache.set` go to the Django cache (src/sentry/utils/cache.py:4) before the cheap `_should_apply_sample_weight_transform` dataset check. `options.get` already serves values from an in-process local cache (src/sentry/options/store.py:132-163). `get_event_stats` calls this unconditionally on every events-stats request, including transactions and spans queries (patch lines 58\u201360).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0899439
+}

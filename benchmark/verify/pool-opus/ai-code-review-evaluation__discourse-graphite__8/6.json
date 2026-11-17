@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/groups_controller.rb:28-35 now returns `{members: [...], meta: {total, limit, offset}}`, where it used to return a bare array (`render_serialized(members.to_a, GroupUserSerializer)`). The patch updates all in-repo callers (app/assets/javascripts/discourse/models/group.js:25), but any outside API client that expects an array will break.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0557173
+}

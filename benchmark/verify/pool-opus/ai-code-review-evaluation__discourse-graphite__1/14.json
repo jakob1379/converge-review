@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds no tests, and nothing in spec/ calls OptimizedImage.downsize/optimize or exercises the new loop in uploads_controller.rb:63-69 (spec/models/optimized_image_spec.rb only stubs :resize). One part of the claim is slightly off: test/javascripts/lib/utilities-test.js.es6:52-61 already exercises the client size check, but the patch does not update it, and with the limit hardcoded to 10MB that test (10KB file, max_image_size_kb=5) should now fail.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0931877
+}

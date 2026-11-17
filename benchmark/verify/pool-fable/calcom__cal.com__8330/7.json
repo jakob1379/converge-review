@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The selected-slots call at packages/trpc/server/routers/viewer/slots.ts:579-586 passes only time, busy, availabilityCheckProps (just eventLength and currentSeats, lines 418-421) and organizerTimeZone, so dateOverrides and workingHours default to [] (lines 79-80). organizerTimeZone is read only inside the dateOverrides.find callback (line 107), which never runs on an empty array, so the userSchedule lookup and the prop are dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2595705
+}

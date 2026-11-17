@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The loop at packages/core/videoClient.ts:24-33 does await once per credential, but every `import(...)` in packages/app-store/index.ts:1-31 is started eagerly when that module is evaluated, so the loop only awaits promises already in flight and adapter construction (videoClient.ts:30) is synchronous. Loading is therefore concurrent, total wait is the slowest import rather than the sum, and most callers pass a single credential anyway.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2094683
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patch, the GitHub (github/integration.py:~410) and GitLab (gitlab/integration.py:~256) PR-comment bodies call get_environment_info for each issue. That method calls issue.get_recommended_event() (commit_context.py:~587), which runs a Snuba get_events_snql query plus the event and environment lookups, and falls back to a second query through get_latest_event (models/group.py:305, 881-890). The list is capped at the top 5 issues (tasks.py:134-147), so it costs at most about 5-10 extra queries in a background task.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14605410000000002
+}

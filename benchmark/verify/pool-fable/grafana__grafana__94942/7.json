@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`NewSQLCommand` calls `sql.TablesList` (pkg/expr/sql_command.go:30), which calls the stub `DB.RunCommands` that always returns \"not implemented\" (pkg/expr/sql/db.go:16-18, pkg/expr/sql/parser.go:26-29), so it always returns an error for any non-empty query. The only `SQLCommand` construction is inside `NewSQLCommand` (sql_command.go:43; callers at sql_command.go:68 and reader.go:137), so `Execute` and its `QueryFramesInto` call at sql_command.go:96-104 can never run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.39320900000000003
+}

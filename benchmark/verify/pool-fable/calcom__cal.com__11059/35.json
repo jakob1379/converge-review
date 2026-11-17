@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:24-28 rejects with 403 whenever the header value `!==` the secret string; an array (or Node's comma-joined duplicate value) is never strictly equal to that string, so a repeated header is rejected, not let through. The secret cannot be undefined at that point because line 19 already requires CALCOM_WEBHOOK_SECRET to be set.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4564288
+}

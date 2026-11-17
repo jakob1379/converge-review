@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In static/app/views/dashboards/widgets/tableWidget/defaultTableCellRenderers.tsx, both the head-cell renderer (line 32) and the body-cell renderer (line 71) use `if (cell) return cell;`, so a custom renderer that returns 0, '', or false falls back to the default renderer. For null or undefined this fallback is probably intended, which makes the issue mostly an edge case.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0403292
+}

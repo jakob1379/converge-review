@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/expr/reader.go:195 assigns `enabled := !h.features.IsEnabledGlobally(featuremgmt.FlagSqlExpressions)`, so `enabled` is true exactly when the flag is off. The misnaming itself changes no behaviour, because both branches at pkg/expr/reader.go:196-199 return false regardless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08242959999999999
+}

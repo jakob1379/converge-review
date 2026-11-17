@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/templates/group/members.hbs:1 still guards on `{{#if model}}` while line 6 now loops `{{#each m in members}}`; routes/group-members.js.es6:10-11 sets model to the group object (always truthy) and loads members asynchronously without waiting, so the header row renders with no rows for an empty group or while loading.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1761095
+}

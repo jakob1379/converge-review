@@ -1,0 +1,27 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TestLogger.FromContext returns a new instance via NewTestLogger() instead of the receiver f. Logs written through FromContext(ctx), such as those from LoggerMiddleware, go to a throwaway logger, so tests asserting on the original TestLogger see no calls.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ContextualLoggerMiddleware's QueryData, CallResource, CheckHealth and CollectMetrics dereference req.PluginContext with no nil check on req, so a nil request panics. Other middlewares, including LoggerMiddleware, guard against nil requests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

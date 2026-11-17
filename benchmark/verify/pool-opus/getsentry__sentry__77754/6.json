@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The claim has it backwards. In src/sentry/integrations/mixins/issues.py:397-403, the abstract sync_assignee_outbound has no source parameter (only external_issue, user, assign, **kwargs), while sync_status_outbound at :411-418 is the one the patch gave `assignment_source`. So the contract is inconsistent, but the reverse of what is claimed: the parameter landed on the status method while the task calls sync_assignee_outbound with assignment_source= (sync_assignee_outbound.py:138-140), and that call only works through **kwargs.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0964751
+}

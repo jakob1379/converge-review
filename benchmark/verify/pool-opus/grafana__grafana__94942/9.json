@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Of the 8 functions the patch adds or changes, only parser.go TablesList and sql_command.go:77-79 Execute have doc comments. The new enableSqlExpressions (reader.go:194), all four functions in the new pkg/expr/sql/db.go (DB.TablesList, RunCommands, QueryFramesInto, NewInMemoryDB) and ReadQuery (reader.go:45, which has only a nolint comment) have none, giving 2/8 = 25%.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.15699010000000002
+}

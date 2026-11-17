@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The flag is declared at src/sentry/api/paginator.py:834 with default False and its only effect is gating negative-offset slicing at paginator.py:877; the only place OptimizedCursorPaginator is used is src/sentry/api/endpoints/organization_auditlogs.py:79-82, which hardcodes enable_advanced_features=True.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1352156
+}

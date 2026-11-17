@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's docstring at flusher.py:32 says 'Creates one process per shard', but consumers/__init__.py:433-437 sets `--flusher-processes` to default=1. The factory passes that value through as max_processes, so flusher.py:51,60 gives num_processes=min(1, shards)=1 and every shard shares one process by default.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11482540000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/integrations/services/test_assignment_source.py:4-7 subclasses sentry.testutils.cases.TestCase, which is a Django TestCase with databases=\"__all__\" (src/sentry/testutils/cases.py:506-508). All four tests only call AssignmentSource.from_dict/to_dict on a frozen dataclass (src/sentry/integrations/services/assignment_source.py:14-35) and use no fixtures, models or DB.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2207536
+}

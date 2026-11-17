@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `app/views/application/_header.html.erb:3-15` the `.panel` sits inside `.row`, which is the only flex item of the now-flex `.contents`, so the `margin-left: auto` and `order(3)` at `app/assets/stylesheets/common/base/header.scss:35-39` do nothing for it. With `float: right` removed, the login button (itself `float: left`) lands beside the left-floated `.title.span13` instead of at the right edge; traced from the CSS, not rendered.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4535707
+}

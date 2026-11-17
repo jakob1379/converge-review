@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In app/controllers/embed_controller.rb:202, a nil referer becomes `URI('').host`, which is nil, so the request is rejected rather than let through. An attacker's page that frames this one cannot fake the browser-sent Referer, so `X-Frame-Options: ALLOWALL` (line 204) is only sent when the referer's host is the configured embeddable_host. The described clickjacking bypass does not exist.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1597834
+}

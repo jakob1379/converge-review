@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's new `_is_error_focused_query` in src/sentry/api/helpers/error_upsampling.py lowercases the query and only checks `if \"event.type:error\" in query`, so it returns True for `!event.type:error` and for OR'd queries, and returns False for spaced variants such as `event.type: error`. The patch's tests (test_error_upsampling.py) cover only the positive, transaction and empty cases.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0518073
+}

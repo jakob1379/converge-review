@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/slots.ts:490-492 and :515-517 the spread `...schedule`/`...userSchedule` already carries `timeZone` (returned at :401), and the patch passes the same value again as `organizerTimeZone`, which `checkIfIsAvailable` (:82, :93, :107) reads instead of `timeZone`; the third call site at :581-585 has no spread, so the duplication is only at two of three sites. The value is each host's own schedule timezone, whereas `organizerTimeZone` in the same function at :439-440 means the event-type/first-user timezone, so the name is misleading.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2901096
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodesUtils.java:56-61 always calls getFederatedCredentialsStream first, which for any federated user delegates to the storage provider's getCredentials (UserCredentialManager.java:130-142); for LDAP that runs loadLDAPUserByUuid, an LDAP search (LDAPStorageProvider.java:1211-1212, 1067-1078). It is hit on every challenge render (RecoveryAuthnCodeInputLoginBean.java:17 via FreeMarkerLoginFormsProvider.java:272) and on each successful submit (RecoveryAuthnCodesFormAuthenticator.java:80); a failed submit re-renders the form and hits it that way.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5651664
+}

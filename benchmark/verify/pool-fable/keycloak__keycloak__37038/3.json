@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:122-123 passes and collects groupResource.getId(), but hasPermission() resolves via resourceStore.findByName (line 141) and group resources are created with name = group ID and a generated resource ID (AdminPermissionsSchema.java:109,121; JPAResourceStore.java:65-66). The lookup therefore misses and falls back to the all-groups resource, and the returned resource IDs are used as group IDs in user filtering and counts (UsersResource.java:398-450, JpaUserProvider.java:762-765).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5283720000000001
+}

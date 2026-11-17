@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/helpers/error_upsampling.py:58-63 reads the allowlist option (registered as type=Sequence with a list default at src/sentry/options/defaults.py:3464-3466) and runs `all(project_id in allowlist for project_id in project_ids)`, an O(n) list membership scan per project with no conversion to a set.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3008516
+}

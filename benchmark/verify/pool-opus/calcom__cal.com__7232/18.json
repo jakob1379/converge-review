@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes no test files. No test, spec or e2e file mentions workflowReminder, `cancelled` on reminders, or deleteScheduledEmailReminder/SMSReminder, so nothing tests the new cancel-flag logic (emailReminderManager.ts:197-234, scheduleEmailReminders.ts:43-77) or reminder cancellation on reschedule (handleNewBooking.ts:~964, bookings.tsx:~487). apps/web/playwright/reschedule.e2e.ts tests rescheduling a booking but not its workflow reminders.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1530303
+}

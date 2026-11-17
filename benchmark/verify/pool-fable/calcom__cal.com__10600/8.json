@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/auth/two-factor/totp/disable.ts:48-64 repeats the same backup-code verification sequence as packages/features/auth/lib/next-auth-options.ts:131-145 (encryption-key guard with the identical \"backup code login\" log message, missing-codes guard, JSON.parse(symmetricDecrypt(...)), replaceAll(\"-\", \"\"), indexOf === -1); only the error delivery differs (res.status(400) vs throw). Both blocks are added by this patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2279813
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/expr/sql/parser.go:23 still names the variable `duckDB := NewInMemoryDB()`, but the patch renamed the same stub DB to `db := sql.NewInMemoryDB()` at pkg/expr/sql_command.go:96. The two names no longer match, and `duckDB` is now misleading because the stub is no longer DuckDB.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1395602
+}

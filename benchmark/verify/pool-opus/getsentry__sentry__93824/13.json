@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At flusher.py:185 and :195 the `shard` tag is `shard_tag`, built as `\",\".join(map(str, shards))` from the process's assigned shards, and those shards come from the partition assignment that changes on rebalance. flusher.py:244 tags a single int under the same `shard` key, and the existing buffer metrics at buffer.py:372 and :447 use `shard_i`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1175804
+}

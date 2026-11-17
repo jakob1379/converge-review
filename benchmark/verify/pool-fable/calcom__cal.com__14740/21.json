@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:35-40 includes `user: { include: { destinationCalendar: true, credentials: true } }`, but only `booking.user.destinationCalendar` is read (lines 142-143) and EventManager is built from `getUsersCredentials(ctx.user)` (line 158), with no `booking.user` access in packages/core/EventManager.ts. The rule at packages/eslint-plugin/src/rules/no-prisma-include-true.ts:27-46 recurses into nested `include` on `findFirst` and reports `credentials: true`; it is enabled as \"warn\" in packages/eslint-plugin/src/configs/recommended.ts:9.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6555985999999999
+}

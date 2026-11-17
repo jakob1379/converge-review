@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:86-88 makes canView() true only for the view-clients/manage-clients roles or the all-clients VIEW scope, while canManageClientScopes() (106-110) and canView(ClientScopeModel) (118-122) also accept MANAGE. ClientScopesResource.java:91 gates GET /client-scopes on requireListClientScopes(), which is canView() || query-clients role (ClientPermissions.java:258-260), so an admin holding only all-clients MANAGE gets ForbiddenException.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.0765228
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/test/java/org/keycloak/protocol/oidc/encode/DefaultTokenContextEncoderProviderTest.java:56-59, 68-71, 91-94 and 102-105 call `Assert.assertEquals(ctx.getX(), <expected constant>)`, putting the actual value in JUnit's `expected` slot. docs/tests-development.md:26-29 asks for hamcrest `assertThat` and to avoid `org.junit.Assert.*`; it says nothing about argument order, so only the use of `org.junit.Assert` is contrary to the doc.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5759274000000001
+}

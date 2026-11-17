@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts:254-256 and :315-317 the fallback `find((cal) => cal.externalId === externalCalendarId)` only runs when externalCalendarId is falsy, and DestinationCalendar.externalId is a required string, so it always yields undefined. updateEvent then passes calendarId undefined at :261 and deleteEvent uses 'primary' at :322; callers can pass null (packages/core/EventManager.ts:586, :563), whereas the old code fell back to event.destinationCalendar?.externalId.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19045259999999997
+}

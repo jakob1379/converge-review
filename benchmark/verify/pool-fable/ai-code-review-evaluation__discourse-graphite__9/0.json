@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The cache key at lib/freedom_patches/translate_accelerator.rb:72 is only `\"#{key}#{config.locale}#{config.backend.object_id}\"`, while the new fallback chain at config/initializers/i18n.rb:17 depends on the per-site, mutable `SiteSetting.default_locale`. Only `reload!` (translate_accelerator.rb:39-43) clears `@cache`, and nothing calls it on a setting change or site switch, so a fallback string cached under a user locale persists across default_locale changes and across multisite sites.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.22085670000000002
+}

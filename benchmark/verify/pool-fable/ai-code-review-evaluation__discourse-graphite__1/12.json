@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The loop at app/controllers/uploads_controller.rb:65-69 stops after 5 passes at 80% with no size check afterwards, so a still-oversized image does reach Upload.create_for at line 72. It is not stored, though: Validators::UploadValidator#maximum_file_size (lib/validators/upload_validator.rb:80-87) rejects it at upload.save (app/models/upload.rb:135) with a too_large error, so the only effect is a late rejection.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.439095
+}

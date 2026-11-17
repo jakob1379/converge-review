@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "test/javascripts/helpers/create-pretender.js.es6:226-228 takes no request argument and always returns fruits[0] (apple, color_ids [1,2]); test/javascripts/models/store-test.js.es6:111-117 calls store.find('fruit', 2) yet asserts two colors with ids 1 and 2, which are apple's, not banana's ([3] at create-pretender.js.es6:43), so it passes only because the wrong record is returned.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15299559999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/controllers/groups_controller_spec.rb:72-84 is still marked `pending` and reads `JSON.parse(response.body)` as an array of users, but the patch changes GroupsController#members to return `{members: [...], meta: {total, limit, offset}}` (change.patch lines 692-699). The patch leaves this spec untouched and adds no other spec or JS test for the new response shape.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1746347
+}

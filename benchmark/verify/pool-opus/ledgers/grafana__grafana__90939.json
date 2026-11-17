@@ -1,0 +1,149 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In GetWebAssets, after acquiring the write lock the code does not re-check whether entryPointAssetsCache was already populated by another goroutine. Concurrent cold-cache callers therefore each re-read and re-parse assets-manifest.json redundantly and overwrite the cache.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/api/webassets/webassets.go:48-49, after the RLock check at lines 41-47, the code takes the write lock and goes straight to readWebAssetsFromFile (line 60) without checking entryPointAssetsCache again. So every goroutine that hit the cold cache re-reads and re-parses the manifest one after another and overwrites the cache at line 69.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0421831
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The fetch result is unconditionally assigned to entryPointAssetsCache, so a failed fetch stores nil and overwrites a previously valid cache entry.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/api/webassets/webassets.go:69 sets `entryPointAssetsCache = result` even when the fetch failed and result is nil, so a valid entry gets overwritten. That happens in Dev mode, which always refetches, or when a second caller takes the lock after a successful fill, because there is no re-check after Lock at line 48. The assignment existed before this patch, which only added the mutex around it.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.045969800000000005
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "contribute/create-pull-request.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The data-race fix includes no regression test that calls GetWebAssets concurrently under the race detector. The repo's contribution guidelines (contribute/create-pull-request.md) require bug-fix PRs to include such tests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch touches only pkg/api/webassets/webassets.go (change.patch:1-37) and adds no test that calls GetWebAssets concurrently. contribute/create-pull-request.md:25-28 says bug-fix PRs \"should include tests that replicate the fixed bug\"; that is a firm recommendation rather than the strict requirement the claim describes.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.036943699999999996
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In setting.Dev mode every call bypasses the cache and holds the exclusive lock during manifest file I/O, so requests are serialized. In production, a missing or broken manifest causes every request to retry the failed read serially under the lock.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In webassets.go:45-49 the cache shortcut is skipped when cfg.Env == setting.Dev, and the function then takes the exclusive Lock and reads the manifest file (line 60) while holding it, so Dev requests run one at a time. On failure, line 69 stores a nil result, so in production every later request misses the cache at line 45 and retries the file read under the same lock, again one at a time.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.047119499999999995
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The CDN branch is unreachable because cdn is set to \"\", and if it were reachable it would hold the exclusive lock across an HTTP call.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At pkg/api/webassets/webassets.go:54-56, cdn is hard-coded to \"\", so readWebAssetsFromCDN is never called. If that branch could run, the HTTP request would happen while holding the exclusive lock taken at lines 48-49 and kept by defer until the function returns. Because the branch is dead code, this has no effect on behaviour today.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0526983
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Nothing resets the package-global entryPointAssetsCache, so its state leaks between tests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "No code ever resets the package-level entryPointAssetsCache. It is only assigned at pkg/api/webassets/webassets.go:69, and when cfg.Env is not Dev, the cached value is returned from line 45 onward. So the first test in a process that calls GetWebAssets fixes the assets for later tests. The global existed before this patch, which only added a mutex and a 'TODO: get rid of global state' comment at line 37.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.05549370000000001
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The fix adds a package-level global mutex beside the global cache, extending global state against the documented guidance to avoid globals.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a package-level `entryPointAssetsCacheMu sync.RWMutex` next to the existing global `entryPointAssetsCache` (pkg/api/webassets/webassets.go:35-38 in the patch), which adds to global state. contribute/backend/style-guide.md:187 and recommended-practices.md:46-52 say to avoid global state, though the mutex only guards a global that already existed and the patch adds a TODO to remove it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0395751
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Docstring coverage is 0.00%, below the required 80.00% threshold.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only function the patch changes, GetWebAssets (pkg/api/webassets/webassets.go:40), has no doc comment, and none of the file's functions do (lines 40, 73, 85, 104), so docstring coverage of the changed code is 0%. The 80% threshold comes from the review tool, not from any rule in the repository.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0390215
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

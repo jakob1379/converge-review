@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The claim says createMeeting is different, but it is not: it also awaits getVideoAdapters outside its try block (packages/core/videoClient.ts:52; the try only starts at line 70). updateMeeting (line 111), deleteMeeting (line 144) and getBusyVideoTimes handle a rejection the same way.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1220361
+}

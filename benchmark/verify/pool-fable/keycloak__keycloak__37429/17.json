@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`santizeAnchors` at misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:150-162 loops only over anchors found in the translation (`while (matcher.find())`) and never checks for English anchors left unmatched. A translation with fewer or no anchors adds no message, and the sanitizer comparison at lines 91-99 also passes since the value simply has no anchor tags.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5442077
+}

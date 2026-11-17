@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At anonstore/database.go:84 the callback reassigns the captured `args` with `args = append([]interface{}{query}, args...)`. withDbSession (sqlstore/session.go:126-127) retries the callback through retryOnLocks (session.go:90-102) when SQLite returns ErrLocked/ErrBusy, so on a retry `query` is prepended a second time and Exec gets one argument too many, which fails.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.07237629999999999
+}

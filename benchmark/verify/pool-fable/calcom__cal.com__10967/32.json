@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "All three patterns are present in the patched code: `credentialId: result.credentialId ?? undefined` at packages/core/EventManager.ts:209 is a no-op because `EventResult.credentialId` is `number | undefined` (packages/types/EventManager.d.ts:25); `if (bookingCalendarReference.length > 0)` wraps a plain for-of at packages/features/bookings/lib/handleCancelBooking.ts:422 (similar guards before destructuring at packages/app-store/googlecalendar/lib/CalendarService.ts:101,199); and `SchedulingType.COLLECTIVE/ROUND_ROBIN` comparisons became `[\"COLLECTIVE\", \"ROUND_ROBIN\"].includes(...)` at packages/features/bookings/lib/handleNewBooking.ts:689.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.48588869999999995
+}

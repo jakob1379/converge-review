@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `immediateDelete` branch at packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:213-223 only posts the SendGrid cancel and returns, so the row is neither deleted nor marked cancelled. The rows are only stale temporarily, though: the workflow-delete and step-delete callers (workflows.tsx:214, 521) remove them by FK cascade, and the reschedule caller (handleNewBooking.ts:968) leaves the row only until the cron purge of past-dated email reminders (scheduleEmailReminders.ts:34-41).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.518757
+}

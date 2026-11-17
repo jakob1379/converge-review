@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/pluginsintegration/clientmiddleware/ has no logger_middleware_test.go, and NewLoggerMiddleware/LoggerMiddleware are referenced only in logger_middleware.go and pkg/services/pluginsintegration/pluginsintegration.go:161; the log message and fields at logger_middleware.go:52-58 appear in no test file. The patch moves pluginId/endpoint/uname/dsName/dsUID out of logRequest and relies on FromContext (logger_middleware.go:58) without adding a test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.31656880000000004
+}

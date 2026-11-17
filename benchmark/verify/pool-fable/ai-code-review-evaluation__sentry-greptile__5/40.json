@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The declarations are as described, but there is no type incompatibility: `projects?: Project[]` (static/app/views/explore/types.tsx:20) and `projectIds?: PageFilters['projects']` (static/app/views/explore/hooks/useGetTraceItemAttributeValues.tsx:27) are two differently named optional properties that coexist on the interface, and callers pass only `projectIds` (static/app/views/explore/components/traceItemSearchQueryBuilder.tsx:74). The inherited `projects` is merely unused by the hook, and the same extends-plus-`projectIds` shape existed before the patch, which only moved the base type and renamed the interface.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.29700509999999997
+}

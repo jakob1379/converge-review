@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes the `len(payloads[key]) > self.max_segment_spans` skip from `_load_segment_data` (src/sentry/spans/buffer.py:439-453), leaving `max_segment_spans` set but unused (buffer.py:150,158). Practical exposure is small: the `max_segment_bytes` check remains (buffer.py:441) and add-buffer.lua:62-64 trims each set to 1000 on every insert.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.37014630000000004
+}

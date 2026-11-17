@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In discourse/models/group.js:259, findMembers caps the offset using the local user_count, which still holds the count from before the removal. With limit 50 and 51 members, removing the only member on page 2 refetches with offset 50. The server returns no members and meta.offset 50 (groups_controller.rb:686-698), and admin-group.js.es6:12-20 then shows page 2/2 with an empty list.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14741359999999998
+}

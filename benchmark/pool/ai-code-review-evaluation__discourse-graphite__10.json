@@ -1,0 +1,853 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/10",
+ "cost_usd": 0.1388198,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review",
+   "text": "The (\\/.*)? path group in the validation regex is dead: before_validation strips everything from the first '/' first"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review-replay",
+   "text": "Plural _ids hydration branch deletes *_ids keys even when sub-collection was not side-loaded, leaving arrays of undefined"
+  },
+  {
+   "id": "c3",
+   "source": "qodo-extended-v2",
+   "text": "Store._hydrateEmbedded unconditionally deletes *_ids attributes even when no embedded collection exists, breaking plain ID-list attributes like muted_category_ids that client code reads/observes"
+  },
+  {
+   "id": "c4",
+   "source": "coderabbit",
+   "text": "Migration execute(...)[0] will raise IndexError if embed_category or uncategorized_category_id queries return no rows - needs presence checks"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "File ends with extra trailing blank line, against CONTRIBUTING's no-trailing-blank-lines rule"
+  },
+  {
+   "id": "c6",
+   "source": "claude-code",
+   "text": "rest.js.es6 type.replace('_', '-') only replaces the first underscore, not all occurrences, which could be fragile for other types"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "category_id is NOT NULL but has no FK, no existence check in the controller, and no dependent handling; deleting a category leaves orphaned host rows"
+  },
+  {
+   "id": "c8",
+   "source": "coderabbit",
+   "text": "Migration backfill interpolates host strings directly into SQL without escaping and doesn't filter blank lines - needs connection.quote and blank check"
+  },
+  {
+   "id": "c9",
+   "source": "qodo-extended-v2",
+   "text": "Migration indexes into SQL results with [0] for embed_category and uncategorized_category_id without checking for empty result sets, causing nil dereference crashes when those rows are absent"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review-replay",
+   "text": "Creating host with no host value raises NoMethodError (500) instead of validation error - before_validation calls self.host.sub! on nil"
+  },
+  {
+   "id": "c11",
+   "source": "coderabbit",
+   "text": "self.host.sub! in before_validation raises on nil host instead of returning validation error - needs nil guard"
+  },
+  {
+   "id": "c12",
+   "source": "augment",
+   "text": "Server-side save_host defaults blank category_id to uncategorized, but the client sets host.category from categoryId rather than the saved record's returned category_id, causing UI to show no category even though the server persisted one"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review",
+   "text": "Embedding#update persists nothing (re-renders show), the PUT customize/embedding route backs it, and the client saveChanges action is never referenced: dead endpoint that looks like it saves"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "Missing params[:embeddable_host] raises in the controller instead of returning validation error"
+  },
+  {
+   "id": "c15",
+   "source": "augment",
+   "text": "If host is nil, sub! will raise before validations run, turning a bad request into a 500 instead of surfacing a validation error"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "New create/update/destroy and embedding show endpoints have no behavioural tests; specs only assert subclassing AdminController"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review-replay",
+   "text": "Admin::EmbeddingController#update persists nothing and just re-renders show - dead PUT route and dead client code"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "update/destroy use where(id:).first and then dereference, so an unknown id raises NoMethodError (500) instead of 404"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "'is false if embeddable_host is blank' test no longer tests hosts: expandable_first_post? dropped the host-presence check"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "Contents of category_fabricator.rb and embeddable_host_fabricator.rb are swapped: category fabricators now live in embeddable_host_fabricator.rb and :embeddable_host in category_fabricator.rb"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "Validation accepts a port (example.com:8080) but record_for_host compares against uri.host (no port), so such hosts never match"
+  },
+  {
+   "id": "c22",
+   "source": "qodo-extended-v2",
+   "text": "After saving embeddable host, component sets host.category from potentially null categoryId, clearing the displayed category even though server defaulted to uncategorized"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "store.find('fruit', 2) test asserts wrong colors because pretender /fruits/:id handler ignores the id and returns fruits[0]"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review-replay",
+   "text": "Test calls store.find('fruit', 2) but pretender handler ignores id and always returns fruits[0], so test passes for wrong reason"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "Migration uses def change with raw execute data moves and deletes the old settings, so rollback raises IrreversibleMigration and old data is unrecoverable"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "type.replace('_', '-') replaces only the first underscore, so a future admin model with two underscores resolves the wrong base path"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "New _ids hydration branch deletes the *_ids key even when no sideloaded collection exists (leaving an array of undefined)"
+  },
+  {
+   "id": "c28",
+   "source": "cubic-v2",
+   "text": "Guard the `embed_category` lookup before indexing it. As written, missing data raises before the uncategorized fallback can run."
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "Serializer file ends with an extra blank line"
+  },
+  {
+   "id": "c30",
+   "source": "claude-code",
+   "text": "embedding_controller.rb update action is a no-op - it re-renders without saving anything"
+  },
+  {
+   "id": "c31",
+   "source": "augment",
+   "text": "record_for_host compares against uri.host (no port), but the model allows saving host values with :port, so a stored example.com:3000 would never match and will be treated as disallowed"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "admin.embedding.edit locale key is never referenced"
+  },
+  {
+   "id": "c33",
+   "source": "coderabbit",
+   "text": "Typo in spec context description: 'emeddable' should be 'embeddable'"
+  },
+  {
+   "id": "c34",
+   "source": "qodo-extended-v2",
+   "text": "Migration copies raw host strings from embeddable_hosts site setting without normalization, so entries containing schemes/paths will not match EmbeddableHost.record_for_host which compares against URI(host).host"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "uncategorized_category_id lookup at line 15 has the same unguarded [0] on a fresh DB"
+  },
+  {
+   "id": "c36",
+   "source": "coderabbit",
+   "text": "Icon-only d-button elements (save, cancel, edit, delete) lack accessible labels for screen readers - need title attributes with i18n keys that don't currently exist in locale files"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review-replay",
+   "text": "Missing params[:embeddable_host] raises in controller instead of returning proper error"
+  },
+  {
+   "id": "c38",
+   "source": "qodo-extended-v2",
+   "text": "EmbeddableHost's before_validation calls sub! on self.host without guarding for nil, causing 500 errors instead of 422 validation failures when host param is missing"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review-replay",
+   "text": "Legacy host values interpolated into SQL without quoting - hosts containing single quotes abort the migration"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "Case-insensitive lookup lowercases only the column, not uri.host, so http://EvilTrout.com/x fails to match via TopicRetriever"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review-replay",
+   "text": "Contents of spec/fabricators/category_fabricator.rb and embeddable_host_fabricator.rb are swapped"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review",
+   "text": "Host values are string-interpolated into SQL without quoting; a value containing a single quote aborts the migration"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review",
+   "text": "Explicit id/host/category_id methods in serializer only return object.<attr>; attributes declaration already does this"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review",
+   "text": "Uses hash-rocket ':with =>' contrary to CONTRIBUTING's Ruby 1.9 hash syntax rule"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "before_validation calls self.host.sub! on nil when no host param is given, raising NoMethodError (500) instead of a validation error"
+  },
+  {
+   "id": "c46",
+   "source": "converge-review-replay",
+   "text": "Line 15 uncategorized_category_id lookup uses same unguarded pattern and fails on fresh database"
+  },
+  {
+   "id": "c47",
+   "source": "qodo-extended-v2",
+   "text": "Store._hydrateEmbedded drops IDs for embedded relationships when side-loaded data uses a different root key (e.g., featured_user_badges uses root: :user_badges), producing arrays of undefined"
+  },
+  {
+   "id": "c48",
+   "source": "claude-code",
+   "text": "Tests for the new controller are minimal - only checks inheritance with no integration tests for CRUD actions"
+  },
+  {
+   "id": "c49",
+   "source": "converge-review",
+   "text": "Inner 'if records.present?' is redundant after val.present? and split"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review-replay",
+   "text": "Migration crashes on databases without site_settings row for embed_category - execute(...)[0]['id'] raises IndexError on empty result with no row-count check"
+  },
+  {
+   "id": "c51",
+   "source": "golden",
+   "text": "The EmbeddableHost model's before_validation callback calls self.host.sub! to strip http://, https://, and path segments, but if self.host is nil, this raises NoMethodError."
+  },
+  {
+   "id": "c52",
+   "source": "converge-review",
+   "text": "Saving a new host without touching the category chooser shows a blank category badge until reload (client uses findById(null))"
+  },
+  {
+   "id": "c53",
+   "source": "converge-review-replay",
+   "text": "Legacy hosts copied verbatim skipping model normalization - entries with scheme or path (http://eviltrout.com) never match after upgrade, breaking embedding"
+  },
+  {
+   "id": "c54",
+   "source": "qodo-extended-v2",
+   "text": "Pretender handler for GET /fruits/:id always returns fruits[0] regardless of requested id, so store.find('fruit', 2) returns wrong record and tests don't validate intended behavior"
+  },
+  {
+   "id": "c55",
+   "source": "converge-review",
+   "text": "Trailing \\r/whitespace from the textarea is kept when inserting legacy hosts"
+  },
+  {
+   "id": "c56",
+   "source": "cubic-v2",
+   "text": "`self.host.sub!` will raise `NoMethodError` if `host` is `nil`. The `before_validation` callback runs before the format validation, so a nil host bypasses the validates_format_of check and crashes instead of producing a validation error. Guard with a nil check or use the safe navigation operator."
+  },
+  {
+   "id": "c57",
+   "source": "golden",
+   "text": "Because this migration inserts embeddable_hosts rows with raw SQL, any existing embeddable_hosts values that include http:// or /https:// or path segments won\u2019t go through the EmbeddableHost model\u2019s normalization, so the new host lookup (which compares only the bare host) may fail for migrated data. Consider ensuring that migrated hosts are normalized to the same format as newly created EmbeddableHost records so existing embedding configurations keep working."
+  },
+  {
+   "id": "c58",
+   "source": "augment",
+   "text": "Migration inserts h via string interpolation which can break on quotes and bypasses the model's host normalization (scheme/path stripping), potentially leaving records that will never match record_for_host"
+  },
+  {
+   "id": "c59",
+   "source": "qodo-extended-v2",
+   "text": "Admin::EmbeddableHostsController#update and #destroy fetch records with where(...).first and call methods without handling not-found, causing 500s for invalid IDs instead of 404s"
+  },
+  {
+   "id": "c60",
+   "source": "golden",
+   "text": "The update and destroy methods in Admin::EmbeddableHostsController do not validate the existence of the EmbeddableHost record retrieved by ID. If EmbeddableHost.where(id: params[:id]).first returns nil (i.e., the host does not exist), attempting to call methods on the nil object (e.g., save_host or destroy) will result in a NoMethodError."
+  },
+  {
+   "id": "c61",
+   "source": "coderabbit",
+   "text": "obj[k].map in store.js.es6 will throw if API returns null or non-array for *_ids fields - needs Array.isArray guard before calling map"
+  },
+  {
+   "id": "c62",
+   "source": "claude-code",
+   "text": "Fabricator files appear swapped: category_fabricator.rb contains the embeddable_host fabricator and embeddable_host_fabricator.rb contains category fabricators"
+  },
+  {
+   "id": "c63",
+   "source": "coderabbit",
+   "text": "Test requests fruit id 2 but mock always returns fruit id 1 - test passes accidentally due to matching color_ids"
+  },
+  {
+   "id": "c64",
+   "source": "converge-review-replay",
+   "text": "update and destroy with unknown id return 500 instead of 404 - EmbeddableHost.where().first returns nil, then host.destroy raises NoMethodError"
+  },
+  {
+   "id": "c65",
+   "source": "golden",
+   "text": "The SQL query in the `app/controllers/admin/embeddable_hosts_controller.rb` file uses string interpolation (`'#{h}'`) to insert values, which is vulnerable to SQL injection. It should use parameter binding or proper quoting to prevent this security vulnerability."
+  },
+  {
+   "id": "c66",
+   "source": "converge-review",
+   "text": "destroyRecord() has no .catch(popupAjaxError) so delete errors are swallowed"
+  },
+  {
+   "id": "c67",
+   "source": "augment",
+   "text": "If params[:id] doesn't match a record, host will be nil and save_host(host) / host.destroy will raise a 500 error instead of returning 404"
+  },
+  {
+   "id": "c68",
+   "source": "qodo-extended-v2",
+   "text": "Migration interpolates host value directly into SQL without quoting, so values containing quotes can break the migration"
+  },
+  {
+   "id": "c69",
+   "source": "converge-review",
+   "text": "Migration crashes with IndexError when no site_settings row 'embed_category' matches a category (fresh installs, test DB, any site that kept the '' default); execute(...)[0]['id'] on an empty PG::Result raises IndexError"
+  },
+  {
+   "id": "c70",
+   "source": "cubic-v2",
+   "text": "The query lowercases the DB column with `lower(host)` but does not downcase the input parameter. Call `.downcase` on `host` so the comparison is consistent."
+  },
+  {
+   "id": "c71",
+   "source": "claude-code",
+   "text": "Migration at db/migrate/20150818190757_create_embeddable_hosts.rb uses string interpolation in raw SQL: VALUES ('#{h}', ...) which is unparameterized and a SQL injection risk"
+  },
+  {
+   "id": "c72",
+   "source": "converge-review",
+   "text": "The Embedding wrapper (OpenStruct with id 'default', its own controller, serializer, adapter, routes) plus the new plural _ids store hydration exist only to wrap a host list; could be simplified with store.findAll pattern"
+  },
+  {
+   "id": "c73",
+   "source": "converge-review-replay",
+   "text": "Null *_ids value throws TypeError on .map in hydration code"
+  },
+  {
+   "id": "c74",
+   "source": "coderabbit",
+   "text": "Fabricator(:private_category) after_build uses update! which persists even for Fabricate.build, and transients[:group].id raises if group not passed - should set attribute directly and guard group usage"
+  },
+  {
+   "id": "c75",
+   "source": "converge-review",
+   "text": "The [a-z]{2,5} TLD rule rejects localhost, IPs and long TLDs that the old setting allowed, so migrated rows fail validation on later edit"
+  },
+  {
+   "id": "c76",
+   "source": "converge-review",
+   "text": "Topics imported by feed polling now take their category from the item's host record instead of the removed global embed_category setting; items whose host is not registered get category nil (Uncategorized), and admins lose any way to set the feed import category"
+  },
+  {
+   "id": "c77",
+   "source": "golden",
+   "text": "The migration accesses execute(...)[0]['id'] without checking if the query returned any rows, which causes a crash when no embed_category setting exists. This can lead to a broken feature when attempting to edit category/host relationships."
+  },
+  {
+   "id": "c78",
+   "source": "coderabbit",
+   "text": "Extra blank lines in spec files violate RuboCop layout rules (Layout/EmptyLinesAroundBlockBody)"
+  },
+  {
+   "id": "c79",
+   "source": "golden",
+   "text": "record_for_host compares lower(host) = ? but does not normalize the parameter\u2019s case, so mixed\u2011case referer hosts may fail to match even though comparison intends to be case\u2011insensitive."
+  },
+  {
+   "id": "c80",
+   "source": "cubic-v2",
+   "text": "Fetch the singleton embedding record by id instead of calling `store.find` without an id, which resolves to a collection."
+  },
+  {
+   "id": "c81",
+   "source": "converge-review-replay",
+   "text": "Spec 'is false if embeddable_host is blank' no longer tests hosts because Topic#expandable_first_post? dropped the embeddable_hosts.present? guard"
+  },
+  {
+   "id": "c82",
+   "source": "converge-review-replay",
+   "text": "In obj[pluralize(subType)] = hydrated || [], the || [] is dead code since Array#map always returns an array"
+  },
+  {
+   "id": "c83",
+   "source": "claude-code",
+   "text": "Migration uses force: true which will drop the table if it already exists, potentially causing data loss on re-run"
+  },
+  {
+   "id": "c84",
+   "source": "coderabbit",
+   "text": "EmbeddableHost.where(id:).first returns nil causing NoMethodError in update/destroy actions when invalid id is passed - need find_by with explicit guard"
+  },
+  {
+   "id": "c85",
+   "source": "converge-review",
+   "text": "_ids hydration throws TypeError on a null *_ids value"
+  },
+  {
+   "id": "c86",
+   "source": "coderabbit",
+   "text": "Host validation regex caps TLDs at 5 characters, rejecting valid domains like .museum or .community - should allow up to 63 characters"
+  },
+  {
+   "id": "c87",
+   "source": "converge-review-replay",
+   "text": "TLD validation regex rejects localhost, IP addresses and TLDs longer than 5 characters - migrated rows skip validation but editing them later fails"
+  },
+  {
+   "id": "c88",
+   "source": "converge-review",
+   "text": "Legacy hosts are inserted verbatim via raw SQL, bypassing the model's scheme/path normalisation, so entries like 'http://eviltrout.com' or 'https://example.com/1234' never match record_for_host after upgrade and embedding silently breaks"
+  },
+  {
+   "id": "c89",
+   "source": "converge-review",
+   "text": "before_filter :ensure_logged_in, :ensure_staff duplicates filters already declared by the parent Admin::AdminController"
+  },
+  {
+   "id": "c90",
+   "source": "converge-review",
+   "text": "No unique index on host and no uniqueness validation; duplicate hosts make record_for_host's .first pick a category arbitrarily"
+  },
+  {
+   "id": "c91",
+   "source": "converge-review",
+   "text": "'hydrated || []' is dead code since map always returns an array"
+  },
+  {
+   "id": "c92",
+   "source": "converge-review-replay",
+   "text": "Validation and lookup disagree on ports - host saved as example.com:8080 passes validation but can never match a request since URI().host excludes port"
+  },
+  {
+   "id": "c93",
+   "source": "golden",
+   "text": "The contents of `category_fabricator.rb` and `embeddable_host_fabricator.rb` have been swapped, resulting in the loss of original category fabricators and potentially causing errors in fabricator usage."
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In the host validation regex, the (\\/.*)? path group is dead because before_validation strips everything from the first '/' before validation runs.",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The plural *_ids hydration branch in Store._hydrateEmbedded always deletes *_ids keys, even when no sub-collection was side-loaded. This leaves arrays of undefined and breaks plain ID-list attributes such as muted_category_ids.",
+   "path": "store.js.es6",
+   "members": [
+    "c2",
+    "c27",
+    "c3"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "Store._hydrateEmbedded drops IDs for embedded relationships when the side-loaded data uses a different root key, for example featured_user_badges with root :user_badges. This produces arrays of undefined.",
+   "path": "store.js.es6",
+   "members": [
+    "c47"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The migration indexes execute(...)[0]['id'] for the embed_category lookup without checking for an empty result. It raises IndexError when no matching site_settings row exists, such as on fresh installs or the test DB.",
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "members": [
+    "c4",
+    "c9",
+    "c28",
+    "c50",
+    "c69",
+    "c77"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The uncategorized_category_id lookup at line 15 of the migration uses the same unguarded [0] index on the query result and fails on a fresh database.",
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "members": [
+    "c35",
+    "c46"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The file (the serializer) ends with an extra trailing blank line, which breaks CONTRIBUTING's no-trailing-blank-lines rule.",
+   "path": null,
+   "members": [
+    "c5",
+    "c29"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "In rest.js.es6, type.replace('_', '-') replaces only the first underscore, so a type containing several underscores resolves to the wrong base path.",
+   "path": "rest.js.es6",
+   "members": [
+    "c6",
+    "c26"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "embeddable_hosts.category_id is NOT NULL but has no foreign key, no existence check in the controller, and no dependent handling. Deleting a category leaves orphaned host rows.",
+   "path": null,
+   "members": [
+    "c7"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The migration backfill interpolates legacy host strings directly into raw SQL (VALUES ('#{h}', ...)) without quoting or parameter binding. A value containing a single quote aborts the migration.",
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "members": [
+    "c8",
+    "c39",
+    "c42",
+    "c68",
+    "c71",
+    "c65",
+    "c58"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "EmbeddableHost's before_validation calls self.host.sub! without a nil guard. A missing host raises NoMethodError (500) instead of producing a validation error.",
+   "path": null,
+   "members": [
+    "c10",
+    "c11",
+    "c15",
+    "c38",
+    "c45",
+    "c51",
+    "c56"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "A missing params[:embeddable_host] raises an exception in the controller instead of returning a validation error.",
+   "path": null,
+   "members": [
+    "c14",
+    "c37"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "After saving an embeddable host, the client sets host.category from the possibly-null local categoryId instead of the category_id returned by the server. The server defaults that value to uncategorized, so the UI shows a blank category until reload.",
+   "path": null,
+   "members": [
+    "c12",
+    "c22",
+    "c52"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "Admin::EmbeddingController#update persists nothing and only re-renders show. The PUT customize/embedding route and the client saveChanges action that back it are therefore dead.",
+   "path": "embedding_controller.rb",
+   "members": [
+    "c13",
+    "c17",
+    "c30"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The new create/update/destroy and embedding show endpoints have no behavioural tests. The specs only assert subclassing of AdminController.",
+   "path": null,
+   "members": [
+    "c16",
+    "c48"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "Admin::EmbeddableHostsController#update and #destroy use EmbeddableHost.where(id:).first and then call methods on the result. An unknown id raises NoMethodError (500) instead of returning 404.",
+   "path": "app/controllers/admin/embeddable_hosts_controller.rb",
+   "members": [
+    "c18",
+    "c59",
+    "c60",
+    "c64",
+    "c67",
+    "c84"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The spec 'is false if embeddable_host is blank' no longer tests hosts, because Topic#expandable_first_post? dropped the host-presence check.",
+   "path": null,
+   "members": [
+    "c19",
+    "c81"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The contents of spec/fabricators/category_fabricator.rb and embeddable_host_fabricator.rb are swapped.",
+   "path": "spec/fabricators/category_fabricator.rb",
+   "members": [
+    "c20",
+    "c41",
+    "c62",
+    "c93"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "Host validation accepts a port (e.g. example.com:8080), but record_for_host compares against uri.host, which excludes the port. Such stored hosts never match.",
+   "path": null,
+   "members": [
+    "c21",
+    "c31",
+    "c92"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "The pretender GET /fruits/:id handler ignores the id and always returns fruits[0]. The store.find('fruit', 2) test therefore checks the wrong record and passes accidentally.",
+   "path": null,
+   "members": [
+    "c23",
+    "c24",
+    "c54",
+    "c63"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "The migration uses def change with raw execute data moves and deletes the old settings. Rollback raises IrreversibleMigration and the old data cannot be recovered.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The admin.embedding.edit locale key is never referenced.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "A spec context description contains the typo 'emeddable' instead of 'embeddable'.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "The migration copies legacy host strings verbatim via raw SQL and bypasses the model's scheme/path normalization. Entries like 'http://eviltrout.com' never match record_for_host after the upgrade.",
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "members": [
+    "c34",
+    "c53",
+    "c57",
+    "c88"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "Icon-only d-button elements (save, cancel, edit, delete) have no accessible labels or title attributes, and the needed i18n keys do not exist.",
+   "path": null,
+   "members": [
+    "c36"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "record_for_host lowercases the host column with lower(host) but does not downcase the input host. Mixed-case hosts such as http://EvilTrout.com/x fail to match.",
+   "path": null,
+   "members": [
+    "c40",
+    "c70",
+    "c79"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The serializer defines explicit id/host/category_id methods that only return object.<attr>, which duplicates what the attributes declaration already does.",
+   "path": null,
+   "members": [
+    "c43"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "The code uses hash-rocket syntax ':with =>', which goes against CONTRIBUTING's Ruby 1.9 hash syntax rule.",
+   "path": null,
+   "members": [
+    "c44"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The inner 'if records.present?' check is redundant after val.present? and split.",
+   "path": null,
+   "members": [
+    "c49"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "Trailing \\r and whitespace from the textarea are kept when legacy hosts are inserted in the migration.",
+   "path": null,
+   "members": [
+    "c55"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "In store.js.es6, obj[k].map throws TypeError when a *_ids field is null or not an array.",
+   "path": "store.js.es6",
+   "members": [
+    "c61",
+    "c73",
+    "c85"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "destroyRecord() has no .catch(popupAjaxError), so delete errors are swallowed.",
+   "path": null,
+   "members": [
+    "c66"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "The Embedding wrapper (OpenStruct with id 'default', plus its own controller, serializer, adapter and routes) and the plural _ids store hydration exist only to wrap a host list.",
+   "path": null,
+   "members": [
+    "c72"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "The Fabricator(:private_category) after_build uses update!, which persists even under Fabricate.build. It also calls transients[:group].id, which raises if no group is passed.",
+   "path": null,
+   "members": [
+    "c74"
+   ]
+  },
+  {
+   "id": "i34",
+   "claim": "The host validation regex's [a-z]{2,5} TLD rule rejects localhost, IP addresses and TLDs longer than 5 characters such as .museum. Migrated rows that skipped validation then fail on later edit.",
+   "path": null,
+   "members": [
+    "c75",
+    "c87",
+    "c86"
+   ]
+  },
+  {
+   "id": "i35",
+   "claim": "Feed-polled topics now take their category from the item's host record instead of the removed embed_category setting. Items from unregistered hosts get a nil category, and admins can no longer set the feed import category.",
+   "path": null,
+   "members": [
+    "c76"
+   ]
+  },
+  {
+   "id": "i36",
+   "claim": "Spec files contain extra blank lines that violate RuboCop Layout/EmptyLinesAroundBlockBody.",
+   "path": null,
+   "members": [
+    "c78"
+   ]
+  },
+  {
+   "id": "i37",
+   "claim": "The singleton embedding record is fetched with store.find without an id, which resolves to a collection.",
+   "path": null,
+   "members": [
+    "c80"
+   ]
+  },
+  {
+   "id": "i38",
+   "claim": "In obj[pluralize(subType)] = hydrated || [], the || [] is dead code because map always returns an array.",
+   "path": "store.js.es6",
+   "members": [
+    "c82",
+    "c91"
+   ]
+  },
+  {
+   "id": "i39",
+   "claim": "The migration's create_table uses force: true, which drops an existing table on re-run.",
+   "path": null,
+   "members": [
+    "c83"
+   ]
+  },
+  {
+   "id": "i40",
+   "claim": "before_filter :ensure_logged_in, :ensure_staff duplicates filters already declared by the parent Admin::AdminController.",
+   "path": null,
+   "members": [
+    "c89"
+   ]
+  },
+  {
+   "id": "i41",
+   "claim": "There is no unique index or uniqueness validation on host. With duplicate hosts, record_for_host's .first picks a category arbitrarily.",
+   "path": null,
+   "members": [
+    "c90"
+   ]
+  }
+ ]
+}

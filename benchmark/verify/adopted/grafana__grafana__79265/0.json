@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In impl.go:87, tagDeviceUI writes the device's cache key into the cache before CreateOrUpdateDevice runs at impl.go:93, and nothing removes that key when the store returns ErrDeviceLimitReached. On the next request, the cache hit at impl.go:83-84 returns nil, so client.go never reaches the new limit check and grants the identity until the 29-minute entry expires (impl.go:42).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1285982
+}

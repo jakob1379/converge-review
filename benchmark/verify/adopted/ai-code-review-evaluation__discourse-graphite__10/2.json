@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:22-25, each legacy setting entry is split on \"\\n\" and inserted with raw SQL, so the stripping in the EmbeddableHost before_validation hook (app/models/embeddable_host.rb:5-8) never runs. Nothing filters embeddable_hosts when it is saved (lib/site_setting_extension.rb:335-345), and the removed allows_embeddable_host? used to strip the scheme. A stored 'http://eviltrout.com' therefore never matches uri.host in record_for_host (embeddable_host.rb:17), and those sites are rejected after the upgrade.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1356044
+}

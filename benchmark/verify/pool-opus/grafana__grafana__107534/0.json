@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds applyTemplateVariables(query, scopedVars, request.filters) at querySplitting.ts:299 and shardQuerySplitting.ts:52. The shard path then calls runSplitQuery (shardQuerySplitting.ts:163), and every request reaches DataSourceWithBackend.ts:185 through runQuery and super.query, so filters are applied twice on the time-split path and three times on the shard path. addFilterToStreamSelector removes duplicates (modifyQuery.ts:494), but addFilterAsLabelFilter (modifyQuery.ts:511-540), which is used when a parser is present, appends ` | key=\\`value\\`` every time without checking.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21641109999999997
+}

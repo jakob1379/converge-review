@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "CryptoIntegration.java (patch lines 724-728) builds a StringBuilder from the fixed prefix and provider class names, then calls `logger.debugf(builder.toString())`, so that runtime string is used as the printf format. In practice a '%' cannot appear, because Java class names cannot contain it, so this is a misuse of the logging API rather than a bug anyone can hit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0587342
+}

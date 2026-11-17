@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch reads the new key at pkg/setting/setting.go:1654 (`anonSection.Key(\"device_limit\").MustInt64(0)`), but it touches no file under conf/ or docs/, and a search for `device_limit` across conf/ and docs/ finds nothing. The 0-means-unlimited behaviour is only implicit in the `if s.deviceLimit > 0` check in pkg/services/anonymous/anonimpl/anonstore/database.go.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10166539999999999
+}

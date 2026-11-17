@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/admin/groups_controller.rb:41-52 (patch lines 541-564), `create` sets only `name` and `visible`, while `update` reads `params[:alias_level]` (patch line 580). The client's `asJSON` and `create()` in app/assets/javascripts/discourse/models/group.js (patch lines 311-323) send `alias_level` in the POST, so the chosen value is ignored when a group is created. The old `create` also never read `params[:group][:alias_level]`, so the patch carries this gap over rather than introducing it.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15099169999999998
+}

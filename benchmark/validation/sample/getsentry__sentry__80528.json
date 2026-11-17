@@ -1,0 +1,16 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "incident_occurrence.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "get_monitor_environment_context() in incident_occurrence.py copies the monitor config and replaces schedule_type with its human-readable display value, but returns monitor_environment.monitor.config (the original, line 168) instead of the modified copy. The schedule_type transformation therefore never reaches the event context.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

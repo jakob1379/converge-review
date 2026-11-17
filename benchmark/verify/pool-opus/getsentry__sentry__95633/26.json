@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "test_concurrent_processing_across_groups (patch lines 656-668) only checks that 6 items were processed and that 3 groups were seen, and test_thread_queue_parallel_concurrent_subscriptions (patch line 1100) only checks call_count == 2. A serial run would pass both, so neither test checks that work actually overlaps.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0403547
+}

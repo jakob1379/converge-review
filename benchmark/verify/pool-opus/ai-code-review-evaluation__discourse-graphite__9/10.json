@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only call to I18n.fallbacks.ensure_loaded! is in app/controllers/application_controller.rb:159. I18n.translate (lib/freedom_patches/translate_accelerator.rb:67-76) loads only config.locale, so in a non-request path the fallback locales stay unloaded until something else loads them, and the 'translation missing' result is cached in the LRU under a key with no fallback state. \"Never load\" overstates it, since a process that translates in en or the site locale will have loaded it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0698395
+}

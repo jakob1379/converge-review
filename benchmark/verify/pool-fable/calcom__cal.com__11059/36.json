@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In sync mode `packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:5-11,16` parses with `minimumTokenResponseSchema`, whose two computed keys both evaluate to \"[object Object]\", so the schema is effectively `{access_token}` and zod strips `expires_in` (the offset-to-timestamp transform at `office365calendar/lib/CalendarService.ts:53-55` is also skipped). The merge at `CalendarService.ts:264` therefore persists the stale `expires_in`, and `getToken` at `CalendarService.ts:278-281` sees it as expired and refreshes on every call.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5909576999999999
+}

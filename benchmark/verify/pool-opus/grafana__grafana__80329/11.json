@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In cleanup_test.go, each subtest now calls createTestAnnotations and deletes everything in t.Cleanup (patch lines 123-134). The 'running the max count delete again' case seeds 9 fresh annotations (lines 93-96), 3 per type, which is already at MaxCount=3, and runs cleanup once. So it never runs cleanup a second time over state a previous run already cleaned, and its name no longer matches what it does.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0939212
+}

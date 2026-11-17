@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The class javadoc at testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java:59-62 says the 4.8.3-era provider should work without code changes, yet the patch adds `var myUser` (line 232), a new `getCredentials` override (lines 230-252) and `RecoveryAuthnCodesCredentialModel` branches (lines 114, 193-201, 275, 326-340). It is a test-only provider that already used post-4.8.3 APIs (e.g. `getDisableableCredentialTypesStream`, line 255), so there is no runtime effect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4543716
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The server always sends a number: pkg/api/dtos/frontend_settings.go:195 is a plain int64 with no omitempty, and pkg/setting/setting.go defaults it to 0. Yet grafana-data/src/types/config.ts:200 declares `number | undefined`, and the unannotated `anonymousDeviceLimit = undefined;` at grafana-runtime/src/config.ts:97 is typed as just `undefined` because tsconfig.json:8 sets strict mode (compare the annotated `loginError: string | undefined = undefined` at line 85). Nothing in public/ reads the field yet, so for now the problem is latent.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1419811
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`WorkItem.message` is declared at src/sentry/remote_subscriptions/consumers/queue_consumer.py:31 and set at :312, but the only reads of a work item are `.result` (:140) and `.partition`/`.offset` (:149, :211); no other source or test code reads `.message`. Each queued item therefore holds the raw arroyo Message until the worker dequeues and finishes it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.32135990000000003
+}

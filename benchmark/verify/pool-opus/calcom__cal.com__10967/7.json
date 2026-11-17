@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At handleNewBooking.ts:1063-1067, evt.destinationCalendar becomes null when neither the event type nor the organizer has a destination calendar. That makes the optional-chained push at line 1078 a no-op, so the collective members' calendars gathered at lines 992-993 are dropped. Defaulting to [] instead of null would keep them.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0730316
+}

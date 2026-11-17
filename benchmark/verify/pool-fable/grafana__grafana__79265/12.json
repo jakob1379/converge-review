@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The same `30 * 24 * time.Hour` window is declared three times: `anonymousDeviceExpiration` at pkg/services/anonymous/anonimpl/anonstore/database.go:16 (limit enforcement, lines 81 and 110), `anonymousDeviceExpiration` at pkg/services/anonymous/anonimpl/api/api.go:18 (device listing, line 71), and `thirtyDays` at pkg/services/anonymous/anonimpl/impl.go:25 (device count, line 70). All three are equal today, so the disagreement is only a future drift risk.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2151633
+}

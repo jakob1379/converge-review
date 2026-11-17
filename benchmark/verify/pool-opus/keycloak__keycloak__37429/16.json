@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In VerifyMessagePropertiesTest.java:30-52, all four tests check that a known-bad fixture produces a message, and none checks that a valid file (e.g. noHtml_en.properties or changedAnchor_en.properties) returns an empty list. At line 33 the duplicate-keys assertion changed from Matchers.contains(...), which needs exactly one matching item, to Matchers.hasItem(...), which also passes if there are extra messages.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2299535
+}

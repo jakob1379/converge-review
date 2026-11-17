@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/authz/rbac/cache.go:31 builds the key as `namespace + \".perm_\" + userUID + \"_\" + action + \"_\" + name + \"_\" + parent` with no escaping. Grafana UIDs may contain '_', so the pair name=\"a\", parent=\"b_c\" and the pair name=\"a_b\", parent=\"c\" produce the same key. service.go:116-120 then returns Allowed:false straight from that cached entry, before any real permission check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0596664
+}

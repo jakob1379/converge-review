@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`AdminPermissionsSchema.init()` returns as soon as `realm.getAdminPermissionsClient()` is not null (server-spi-private/.../AdminPermissionsSchema.java:248-252), so only newly created admin-permissions clients get the `Groups` resource and the `manage-membership`/`manage-members`/`view-members` scopes (lines 263-278). `init()` is only called from the `ADMIN_PERMISSIONS_ENABLED` listener (model/jpa/.../JpaClientProviderFactory.java:70-73), and the patch adds no migration. On existing realms, `GroupPermissionsV2.hasPermission` gets a null `Groups` resource and `getOrCreateResource` fails with 'No scopes found.'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3154853
+}

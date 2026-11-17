@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:112 is the only place an ErrorEvent is built and it hardcodes category=\"error\"; the only reads of ErrorEvent are title/message/timestamp in generate_error_log_message (lines 127-129) and timestamp at lines 138 and 153-155, so category is never read.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1557195
+}

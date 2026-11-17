@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new app/assets/javascripts/admin/components/embeddable-host.js.es6 (patch lines 65-67), the delete action calls `this.get('host').destroyRecord().then(...)` with no `.catch(popupAjaxError)`. The save path in the same file does have one (patch line 59), so when a delete fails the user sees no error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.034327800000000006
+}

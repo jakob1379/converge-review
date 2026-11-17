@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "add-buffer.lua:62-63 runs ZPOPMIN, which removes the lowest scores, and buffer.py:233-235 scores each span by end_timestamp_precise, so a root span that ends before 1000+ of its children gets evicted. The span-buf:hrs flag at add-buffer.lua:66-70 is never cleared, so has_root_span stays true. Flush copes with a missing root (buffer.py:375-384), but the segment loses its root span payload.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1484573
+}

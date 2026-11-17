@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/annotations/annotationsimpl/cleanup_test.go the subtest seeds at :116 and runs `require`-based count assertions at :117-118 before `t.Cleanup` is registered at :120, so a FailNow in seeding or those assertions skips the DELETEs. The DB is shared across subtests (`fakeSQL` at :23) and seeding uses fixed IDs (:241), so leftover rows would break later subtests' inserts and counts.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2880422
+}

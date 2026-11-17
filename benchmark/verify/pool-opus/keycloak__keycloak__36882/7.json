@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The operator never checks the rolling-updates feature: UpgradeLogicFactory.java:36-42 picks the upgrade logic from spec.update.strategy alone (RecreateOnImageChangeUpgradeLogic when unset, AlwaysRecreateUpgradeLogic for Recreate), and nothing under operator/src/main references rolling-updates or ROLLING_UPDATES. Only the quarkus CLI update-compatibility commands get a feature check (UpdateCompatibilityCheck/UpdateCompatibilityMetadata run()), so the new CAUTION in advanced-configuration.adoc, which says the Operator will fail, is inaccurate.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1395635
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py, a non-list payload gets `Response(status=HTTP_422_UNPROCESSABLE_ENTITY)` with no body (line 104), while a list report that fails validation gets a 422 with a JSON body `{\"error\": ..., \"details\": ...}` (lines 115-118). One small correction: before this patch, an invalid list report made `BrowserReport(**report)` raise a TypeError, which most likely produced a 500, not a 422 with an empty body.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.23855649999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/admin/controllers/admin-group.js.es6:7 and :12 both use `this.get(\"user_count\") == 0`, and .jshintrc:61 sets `\"eqeqeq\": true`. The `eqnull` option (.jshintrc:79) only allows `== null`, so these comparisons break the rule; the default *.js lint globs may not pick up .es6 files.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.21586129999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:83-90 creates each new attendee with `name: \"\"` and the organizer's `timeZone`/`locale`, and that blank name flows into the email `to` header, WhoInfo and the ICS attendee list (packages/emails/lib/generateIcsString.ts:83). It mirrors how guests are already created at booking time (packages/features/bookings/lib/handleNewBooking.ts:751-758, `name: \"\"`), and the email address is still shown beside the blank name.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4059151
+}

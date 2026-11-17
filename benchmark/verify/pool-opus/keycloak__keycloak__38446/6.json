@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "createFromValues does leave the id null and numbers the codes 1..n (RecoveryAuthnCodesCredentialModel.java:58-81), but credentials from a user storage provider are never removed via removeStoredCredentialById. CredentialDeleteHelper.java:61-80 looks up local credentials, then matches federated ones by id, then falls back to the 'recovery-authn-codes-id' placeholder the account console shows (AccountCredentialResource.java:212-219), which calls disableCredentialType. Deletion fails only because the fixture's disableCredentialType handles OTP alone (BackwardsCompatibilityUserStorage.java:217-223), not because of the null id or the renumbering.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2794687
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/constants.ts:103-104 defines APP_CREDENTIAL_SHARING_ENABLED as `process.env.CALCOM_WEBHOOK_SECRET && process.env.CALCOM_APP_CREDENTIAL_ENCRYPTION_KEY`, which yields string | undefined (the encryption key value when both are set), not a boolean. All three usages only test truthiness (apps/web/pages/api/webhook/app-credential.ts:19, refreshOAuthTokens.ts:5, parseRefreshTokenResponse.ts:15), so behaviour is correct.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1204564
+}

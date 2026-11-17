@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In OrganizationCacheTest.java:303, testCacheIDPByOrg registers cleanup with `testRealm().identityProviders().get(\"alias\")::remove` even though the local variable `alias` (\"org-idp-\" + i) is defined at line 300. The cleanup therefore never removes the IDPs the test created.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.08008400000000002
+}

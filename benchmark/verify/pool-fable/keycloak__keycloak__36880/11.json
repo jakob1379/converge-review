@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`ClientPermissionsV2.canExchangeTo` throws `UnsupportedOperationException` (services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java:148-150), and the patch makes `MgmtPermissionsV2.clients()` return that class (MgmtPermissionsV2.java:64-68). `AbstractTokenExchangeProvider.java:276` calls it uncaught for any audience other than the requesting client, so `KeycloakErrorHandler.java:146` maps it to 500 rather than the 403 on line 280; `token-exchange` v1 has no dependency stopping it being enabled alongside `admin-fine-grained-authz:v2` (Profile.java:76).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6532601
+}

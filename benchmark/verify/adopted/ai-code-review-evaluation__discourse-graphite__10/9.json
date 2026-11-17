@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Admin::EmbeddingController#update (app/controllers/admin/embedding_controller.rb:9-11) only re-renders the serialized @embedding and saves nothing, and saveChanges (admin-embedding.js.es6:5-7) is never called by embedding.hbs or embeddable-host.hbs, which use only addHost/save/cancel/edit/delete; the one template that calls saveChanges, site-text-edit.hbs:18, belongs to a different controller. That leaves the PUT route at config/routes.rb:139 unused.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1839817
+}

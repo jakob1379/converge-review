@@ -1,0 +1,556 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/36880",
+ "cost_usd": 0.1222347,
+ "items": [
+  {
+   "id": "c1",
+   "source": "golden",
+   "text": "In ClientPermissionsV2.hasPermission, the method getResourceTypeResource could return null, leading to a NullPointerException in findByResource. Defensive null checks are needed to prevent this issue."
+  },
+  {
+   "id": "c2",
+   "source": "coderabbit",
+   "text": "Feature flag guard at line 77 only checks ADMIN_FINE_GRAINED_AUTHZ (V1), but when only ADMIN_FINE_GRAINED_AUTHZ_V2 is enabled, the entire cleanup block is skipped and permission cleanup won't occur for role, client, and group removal events"
+  },
+  {
+   "id": "c3",
+   "source": "golden",
+   "text": "In getClientsWithPermission(String scope), iterating resourceStore.findByType(server, AdminPermissionsSchema.CLIENTS_RESOURCE_TYPE) and returning resource.getName() will only ever consider the type-level 'Clients' resource (per-client resources have no type) and return its name, while AvailableRoleMappingResource#getRoleIdsWithPermissions expects actual client IDs to pass to realm.getClientById, which can lead to incorrect behavior or a null client and subsequent failures."
+  },
+  {
+   "id": "c4",
+   "source": "golden",
+   "text": "In hasPermission(ClientModel client, String scope), the resource lookup uses findByName(server, client.getId(), server.getId()), but AdminPermissionsSchema.getOrCreateResource creates per-client resources with the owner set to resourceServer.getClientId(), so this lookup will never find those resources and will always fall back to the 'all-clients' resource, effectively ignoring client-specific permissions."
+  },
+  {
+   "id": "c5",
+   "source": "converge-review-replay",
+   "text": "findByResource(server, null) throws NullPointerException when getResourceTypeResource returns null, causing non-short-circuited per-client checks to return HTTP 500 instead of 403"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "hasPermission(ClientModel,String) does not filter on permission.getResourceId().equals(resource.getId()), unlike UserPermissionsV2.java:135, creating inconsistent evaluation between Clients and Users"
+  },
+  {
+   "id": "c7",
+   "source": "qodo-extended-v2",
+   "text": "In ClientPermissionsV2.hasPermission(ClientModel, String), getResourceTypeResource() can return null but the result is passed directly to findByResource(server, resource) at line 219 without a null check, causing a NullPointerException since PolicyStore.findByResource contract states the resource parameter cannot be null"
+  },
+  {
+   "id": "c8",
+   "source": "coderabbit",
+   "text": "Prefer List.of() over Arrays.asList() for single-element immutable lists in ClientPermissionsV2"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "Empty line replaced by line with four spaces (trailing whitespace), violating CONTRIBUTING.md"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "getClientsWithPermission never returns client IDs because findByType('Clients') only matches the typed all-clients resource, not per-client resources which are created without setType"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review-replay",
+   "text": "getClientsWithPermission can never return client IDs because per-client resources are created without a type, so findByType only matches the typed all-clients resource"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review-replay",
+   "text": "No migration is added for realms with pre-existing admin-permissions clients"
+  },
+  {
+   "id": "c13",
+   "source": "augment",
+   "text": "Test uses getDefaultClientScopes().get(1) without asserting the list has at least 2 elements, which can make it flaky if the default client-scope set changes. Consider asserting a minimum size (or selecting a scope deterministically) before indexing."
+  },
+  {
+   "id": "c14",
+   "source": "converge-review-replay",
+   "text": "Creating a Clients permission in realms with pre-existing admin-permissions client fails with 'Scope [configure] does not exist' or 'No scopes found'"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "canExchangeTo throws UnsupportedOperationException, causing HTTP 500 instead of 403 when token-exchange and admin-fine-grained-authz:v2 features are both enabled"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "The evaluate-and-match-scope loop is duplicated three times - hasGrantedPermission duplicates ClientPermissions.hasPermission(Resource,String), and the two hasPermission overloads could be consolidated"
+  },
+  {
+   "id": "c17",
+   "source": "claude-code",
+   "text": "Label 'area/dependencies' could not be found and needs to be created before Dependabot can use it"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "Once a per-client permission exists for client X, all-clients permissions stop applying to X because per-client resources are created without a type and DefaultPolicyEvaluator only adds type-level policies when resource.getType() != null"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "Under V2, deleting a client leaves its per-client resource and scope permissions orphaned, still referencing a client that no longer exists, with no V2 cleanup path"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "The same NPE occurs when realm admin permissions are disabled after the client exists (supportsAuthorizationSchema returns false)"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "Missing test coverage for MAP_ROLES_CLIENT_SCOPE, client-scope endpoints, realm-management escalation, and V2 delete cleanup"
+  },
+  {
+   "id": "c22",
+   "source": "coderabbit",
+   "text": "Javadoc for requireView() incorrectly states 'Returns {@code true}' but requireView() is a void method that throws ForbiddenException - this is a copy-paste error"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "Unrelated reformatting: new gate re-indents listener body and changes cast spacing from (X)event to (X) event, violating CONTRIBUTING.md"
+  },
+  {
+   "id": "c24",
+   "source": "cubic-v2",
+   "text": "Client resources are added but getResourceName() has no CLIENTS case, so these resources resolve to a null label instead of a client name"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "Javadoc 'For V2 only: Also if ... for all clients' misdescribes V2 behavior - V2 replaces the V1 per-client check rather than adding to it, and V2 also honours per-client grants"
+  },
+  {
+   "id": "c26",
+   "source": "golden",
+   "text": "Remove unused getEvaluationContext private method in ClientPermissionsV2 - it is defined but never called"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "New private ClientPermissionsV2 clientPermissions field hides the inherited protected clientPermissions from MgmtPermissions"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "testViewAllClients calls create(null), never testing a real payload"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "An all-clients map-roles (or configure + map-roles-composite) grant covers the realm-management client, allowing an admin with map-roles on users to give themselves or another user realm-admin privileges, bypassing checkAdminRoles validation"
+  },
+  {
+   "id": "c30",
+   "source": "cubic-v2",
+   "text": "The listener skips permission cleanup when only ADMIN_FINE_GRAINED_AUTHZ_V2 is enabled, causing stale fine-grained admin permission resources to remain when removing a role, client, or group for the V2 implementation"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "canView() accepts only VIEW scope, not MANAGE, causing 403 on GET /client-scopes for admins with only all-clients MANAGE permission, contradicting canManageClientScopes() and canView(ClientScopeModel)"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "Javadoc on void methods requireView() and requireViewClientScopes() incorrectly says 'Returns true if...' when both methods throw ForbiddenException"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "Test isolation issues: @AfterEach removes only permissions, testManageOnlyOneClient leaves renamed client and changed client-scope types, testMapRolesAndCompositesOnlyOneClient leaves roles and mappings, causing order-dependent results"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "getResourceName handles only Users type, so Clients resources have null display name since getOrCreateResource never sets displayName"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "Realms whose admin-permissions client existed before this change never get the Clients resource type or new scopes (configure, map-roles-client-scope, map-roles-composite), causing NPE in findByResource and HTTP 500 instead of 403"
+  },
+  {
+   "id": "c36",
+   "source": "coderabbit",
+   "text": "Add CLIENTS branch to getResourceName method in AdminPermissionsSchema for display name consistency with USERS pattern"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review-replay",
+   "text": "Realms whose admin-permissions client predates this change never receive the Clients resource type or the new scopes (configure, map-roles-client-scope, map-roles-composite), causing getResourceTypeResource to return null"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "Role/client/group removal listener is gated on V1 flag ADMIN_FINE_GRAINED_AUTHZ, preventing cleanup of leftover V1 permission data when FGAP is off, and leaving orphaned resources when deleting clients under V2"
+  },
+  {
+   "id": "c39",
+   "source": "qodo-extended-v2",
+   "text": "ClientPermissionsV2.getClientsWithPermission() queries resources by type 'Clients', but per-client resources created via AdminPermissionsSchema.getOrCreateResource() never set Resource.type, so they will not be returned by ResourceStore.findByType, resulting in empty set for per-client permissions or the string 'Clients' being treated as a client UUID by downstream code"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "Uses JUnit 4 import org.junit.Assert.fail while rest of file uses JUnit 5 Assertions, violating test migration guidelines"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review",
+   "text": "createClientPolicy method is never used"
+  },
+  {
+   "id": "c42",
+   "source": "augment",
+   "text": "getClientsWithPermission iterates all resources of type Clients, which includes the schema 'all-clients' resource whose name is also Clients; returning that value can break call sites that treat results as client IDs (e.g. realm.getClientById(cid) in AvailableRoleMappingResource). Consider excluding the resource-type entry (where resource.getName().equals(AdminPermissionsSchema.CLIENTS_RESOURCE_TYPE)) from the returned set."
+  },
+  {
+   "id": "c43",
+   "source": "converge-review-replay",
+   "text": "Dead code copied from V1 token-exchange support: private getEvaluationContext(ClientModel, AccessToken), logger field, static TOKEN_EXCHANGE import, and related imports (ClientModelIdentity, DefaultEvaluationContext, EvaluationContext, Scope) are unused since canExchangeTo throws 'Not supported in V2'"
+  },
+  {
+   "id": "c44",
+   "source": "coderabbit",
+   "text": "Remove unused getEvaluationContext private method in ClientPermissionsV2 - it is defined but never called"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "No documentation added for Clients resource type or its scopes, violating CONTRIBUTING.md"
+  },
+  {
+   "id": "c46",
+   "source": "golden",
+   "text": "Inconsistent feature flag bug causing orphaned permissions. The AdminPermissions event listener, responsible for cleaning up permissions upon role, client, or group removal, is incorrectly guarded by the ADMIN_FINE_GRAINED_AUTHZ (V1) feature flag. This is inconsistent with other methods in the class that use ADMIN_FINE_GRAINED_AUTHZ_V2. Consequently, if ADMIN_FINE_GRAINED_AUTHZ_V2 is enabled but V1 is not, the permission cleanup logic will not execute, leading to orphaned permission data. Cleanup should occur regardless of which fine-grained authorization version is enabled."
+  },
+  {
+   "id": "c47",
+   "source": "claude-code",
+   "text": "Label 'area/ci' could not be found and needs to be created before Dependabot can use it"
+  },
+  {
+   "id": "c48",
+   "source": "coderabbit",
+   "text": "Same IndexOutOfBoundsException risk with defaultClientScopes.get(1) access without verifying the list size"
+  },
+  {
+   "id": "c49",
+   "source": "converge-review",
+   "text": "Dead code: private getEvaluationContext(ClientModel, AccessToken), logger field, TOKEN_EXCHANGE static import, and Scope, ClientModelIdentity, DefaultEvaluationContext and EvaluationContext imports are unused"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review-replay",
+   "text": "The removal listener for roles, clients and groups is wrapped in a V1-only feature gate, causing deployments without V1 to no longer clean up leftover V1 permission resources and policies when a role, client or group is deleted"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "hasPermission(String) runs full policy evaluation of all-clients resource on every call without checking whether any policies exist, potentially causing multiple evaluations per client in GET /clients"
+  },
+  {
+   "id": "c52",
+   "source": "converge-review",
+   "text": "Re-implements existing helpers: hasOneAdminRole(MANAGE_CLIENTS) duplicates canManageClientsDefault(), hasOneAdminRole(VIEW_CLIENTS, MANAGE_CLIENTS) duplicates canViewClientDefault()"
+  },
+  {
+   "id": "c53",
+   "source": "coderabbit",
+   "text": "Potential IndexOutOfBoundsException when accessing clientResource.getDefaultClientScopes().get(1) assuming at least two default client scopes exist"
+  },
+  {
+   "id": "c54",
+   "source": "converge-review-replay",
+   "text": "The Javadoc on void methods requireView() and requireViewClientScopes() incorrectly says 'Returns true if...' when they actually throw ForbiddenException"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In ClientPermissionsV2.hasPermission(ClientModel, String), the result of getResourceTypeResource() can be null and is passed to findByResource(server, resource) without a null check. This causes a NullPointerException, which surfaces as HTTP 500 instead of 403. It can also happen when realm admin permissions are disabled after the client exists.",
+   "path": null,
+   "members": [
+    "c1",
+    "c5",
+    "c7",
+    "c20"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The AdminPermissions role/client/group removal listener is guarded only by the V1 flag ADMIN_FINE_GRAINED_AUTHZ. When only ADMIN_FINE_GRAINED_AUTHZ_V2 is enabled, the permission cleanup block is skipped and permission resources are left orphaned.",
+   "path": null,
+   "members": [
+    "c2",
+    "c30",
+    "c46"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The removal listener is now wrapped in a V1-only feature gate. Deployments without V1 no longer clean up leftover V1 permission resources and policies when a role, client or group is deleted.",
+   "path": null,
+   "members": [
+    "c38",
+    "c50"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "Under V2, deleting a client leaves its per-client resource and scope permissions orphaned, because there is no V2 cleanup path.",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "ClientPermissionsV2.getClientsWithPermission uses findByType(server, 'Clients'). This matches only the typed all-clients resource, because per-client resources are created without a type. As a result it never returns per-client IDs and may return the string 'Clients', which callers such as AvailableRoleMappingResource pass to realm.getClientById.",
+   "path": null,
+   "members": [
+    "c3",
+    "c10",
+    "c11",
+    "c39",
+    "c42"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "hasPermission(ClientModel, String) looks up the resource with findByName(server, client.getId(), server.getId()). AdminPermissionsSchema.getOrCreateResource creates per-client resources with owner resourceServer.getClientId(), so the lookup never finds them and always falls back to the all-clients resource.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "hasPermission(ClientModel, String) does not filter on permission.getResourceId().equals(resource.getId()), unlike UserPermissionsV2.java:135.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "ClientPermissionsV2 uses Arrays.asList() for single-element lists where List.of() could be used.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "An empty line was replaced by a line containing four spaces of trailing whitespace.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "There is no migration for realms whose admin-permissions client already existed. Those realms never receive the Clients resource type or the new scopes (configure, map-roles-client-scope, map-roles-composite). As a result getResourceTypeResource returns null, and creating a Clients permission fails with 'Scope [configure] does not exist' or 'No scopes found'.",
+   "path": null,
+   "members": [
+    "c12",
+    "c14",
+    "c35",
+    "c37"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "Tests access getDefaultClientScopes().get(1) without checking that the list has at least two elements, which risks an IndexOutOfBoundsException.",
+   "path": null,
+   "members": [
+    "c13",
+    "c48",
+    "c53"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "canExchangeTo throws UnsupportedOperationException. When token-exchange and admin-fine-grained-authz:v2 are both enabled, this produces HTTP 500 instead of 403.",
+   "path": null,
+   "members": [
+    "c15"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The evaluate-and-match-scope loop is duplicated three times: hasGrantedPermission duplicates ClientPermissions.hasPermission(Resource,String), and the two hasPermission overloads repeat the same logic.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The label 'area/dependencies' does not exist for Dependabot to use.",
+   "path": null,
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The label 'area/ci' does not exist for Dependabot to use.",
+   "path": null,
+   "members": [
+    "c47"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "Once a per-client permission exists for a client, all-clients permissions stop applying to it. Per-client resources are created without a type, and DefaultPolicyEvaluator adds type-level policies only when resource.getType() != null.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "Tests are missing for MAP_ROLES_CLIENT_SCOPE, the client-scope endpoints, realm-management escalation, and V2 delete cleanup.",
+   "path": null,
+   "members": [
+    "c21"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "The Javadoc on the void methods requireView() and requireViewClientScopes() says 'Returns true if...', but these methods throw ForbiddenException and return nothing.",
+   "path": null,
+   "members": [
+    "c22",
+    "c32",
+    "c54"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "The new feature gate re-indents the listener body and changes cast spacing from (X)event to (X) event, which are formatting changes unrelated to the fix.",
+   "path": null,
+   "members": [
+    "c23"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "AdminPermissionsSchema.getResourceName has no CLIENTS case and handles only Users, so Clients resources resolve to a null display name.",
+   "path": "AdminPermissionsSchema",
+   "members": [
+    "c24",
+    "c34",
+    "c36"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The Javadoc text 'For V2 only: Also if ... for all clients' misdescribes V2 behavior: V2 replaces the V1 per-client check rather than adding to it, and V2 also honours per-client grants.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "ClientPermissionsV2 contains dead code copied from V1 token-exchange support: the private getEvaluationContext(ClientModel, AccessToken) method, the logger field, the static TOKEN_EXCHANGE import, and the Scope, ClientModelIdentity, DefaultEvaluationContext and EvaluationContext imports are all unused.",
+   "path": "ClientPermissionsV2",
+   "members": [
+    "c26",
+    "c43",
+    "c44",
+    "c49"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "A new private ClientPermissionsV2 clientPermissions field hides the inherited protected clientPermissions field from MgmtPermissions.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "testViewAllClients calls create(null) and never tests a real payload.",
+   "path": null,
+   "members": [
+    "c28"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "An all-clients map-roles grant, or configure plus map-roles-composite, also covers the realm-management client. This lets an admin with map-roles on users grant realm-admin privileges, bypassing checkAdminRoles validation.",
+   "path": null,
+   "members": [
+    "c29"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "canView() accepts only the VIEW scope and not MANAGE, so GET /client-scopes returns 403 for admins with only all-clients MANAGE. This is inconsistent with canManageClientScopes() and canView(ClientScopeModel).",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "The tests do not clean up after themselves: @AfterEach removes only permissions, testManageOnlyOneClient leaves a renamed client and changed client-scope types, and testMapRolesAndCompositesOnlyOneClient leaves roles and mappings behind. Results therefore depend on test order.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The test imports the JUnit 4 org.junit.Assert.fail while the rest of the file uses JUnit 5 Assertions.",
+   "path": null,
+   "members": [
+    "c40"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "The createClientPolicy method is never used.",
+   "path": null,
+   "members": [
+    "c41"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "No documentation is added for the Clients resource type or its scopes.",
+   "path": null,
+   "members": [
+    "c45"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "hasPermission(String) runs a full policy evaluation of the all-clients resource on every call without checking whether any policies exist, causing repeated evaluations per client in GET /clients.",
+   "path": null,
+   "members": [
+    "c51"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "hasOneAdminRole(MANAGE_CLIENTS) duplicates canManageClientsDefault(), and hasOneAdminRole(VIEW_CLIENTS, MANAGE_CLIENTS) duplicates canViewClientDefault().",
+   "path": null,
+   "members": [
+    "c52"
+   ]
+  }
+ ]
+}

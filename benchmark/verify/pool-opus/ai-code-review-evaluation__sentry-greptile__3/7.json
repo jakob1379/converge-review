@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The unit tests do import the private helpers and patch `options` (tests/sentry/api/helpers/test_error_upsampling.py:348-353, 378), but the public `is_errors_query_for_error_upsampled_projects` is not untested: the new endpoint tests (tests/snuba/api/endpoints/test_organization_events_stats.py:503-621) run it through organization_events_stats.py:58 and check the upsampled versus normal counts on the cache-miss path. Only the cache-hit branch (error_upsampling.py:156-158) is never exercised on purpose.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.136177
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:118-119 destructures `mainHostDestinationCalendar` from `evt.destinationCalendar ?? []` and reads `.integration` with no optional chaining, so it throws a TypeError when the location is Google Meet and the array is null or empty. That state is reachable: packages/features/bookings/lib/handleNewBooking.ts:1063-1067 sets `destinationCalendar` to null when neither the event type nor the organizer has one, which is exactly the case the Daily fallback exists for.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2322603
+}

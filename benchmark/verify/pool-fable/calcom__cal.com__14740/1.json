@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:70-77 lowercases the blacklist entries but calls `blacklistedGuestEmails.includes(guest)` on the raw guest string, and addGuests.schema.ts:5 (`z.array(z.string().email())`) does no lowercasing or base-email normalization. Other call sites such as packages/features/bookings/lib/handleNewBooking.ts:742-743 use `extractBaseEmail(guest).toLowerCase()`, so a differently cased or plus-aliased blacklisted address passes here.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.20939619999999998
+}

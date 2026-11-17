@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts (patch line 592) calls `sendAddGuestsEmails(evt, guests)` with the raw input instead of `uniqueGuests` (line 498). sendAddGuestsEmails (emails/email-manager.ts, patch line 234) uses `newGuests.includes(attendee.email)` to pick the template, so an existing attendee repeated in the input gets AttendeeScheduledEmail instead of AttendeeAddGuestsEmail. One part of the claim is wrong: emails are only sent to `calEvent.attendees`, so blacklisted guests that were never added get no email.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0980804
+}

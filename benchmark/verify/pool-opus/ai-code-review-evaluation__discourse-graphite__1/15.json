@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a call at app/controllers/uploads_controller.rb:67 that passes `tempfile.path` as both input and output to OptimizedImage.downsize. That path goes straight to convert/gifsicle and then ImageOptim in app/models/optimized_image.rb:126-164, which overwrite the file in place with no temp file or backup, and the `false` return on failure is ignored, so a partial write leaves a corrupted file that is still uploaded.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0722376
+}

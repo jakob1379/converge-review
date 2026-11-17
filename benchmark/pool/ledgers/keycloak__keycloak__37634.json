@@ -1,0 +1,313 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the AccessTokenContext constructor, the requireNonNull call with the message 'Null rawTokenId not allowed' checks grantType a second time instead of rawTokenId. A null rawTokenId is therefore accepted and gets encoded as '<prefix>:null', or causes a later NPE.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher throws StringIndexOutOfBoundsException for prefixes shorter than 5 characters instead of returning false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher extracts the grant shortcut with substring(3, 5). The grant shortcut sits at positions 4-5 of the 2+2+2 prefix, so the correct call is substring(4, 6).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher has inverted logic: it returns false when the extracted value equals the expected grant shortcut, so it rejects correct tokens and accepts wrong grant shortcuts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": "AbstractTokenExchangeProvider.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "V1/legacy, federated and impersonation token-exchange tokens are encoded with grant 'na' because these paths never set Constants.GRANT_TYPE (AbstractTokenExchangeProvider.java:410).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Client-credentials access tokens are encoded with grant 'na' instead of 'cc'. ClientCredentialsGrantType builds tokens via tokenManager.responseBuilder(...).generateAccessToken() and never sets Constants.GRANT_TYPE on the client session context.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": "AuthorizationTokenService.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "UMA/permission-grant tokens are encoded with grant 'na' instead of 'pg' because AuthorizationTokenService.java:358 never sets Constants.GRANT_TYPE.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The factory builds HashMaps for the 3- and 4-value enums SessionType and TokenType, where a static fromShortcut method on the enum would do.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "AbstractOIDCProtocolMapper.getShouldUseLightweightToken reads the requesting client rather than the token's client.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "AbstractOIDCProtocolMapper.getShouldUseLightweightToken is now invoked for every access token and dereferences session.getContext().getClient(). A context without a client causes an NPE even when no mappers run.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Dependabot label 'area/dependencies' does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Dependabot label 'area/ci' does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test catches generic RuntimeException instead of the specific IllegalArgumentException thrown by the parser, so it also passes on unrelated failures such as IndexOutOfBoundsException or NullPointerException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "session.getProvider(TokenContextEncoderProvider.class) is used without a null check, so an NPE occurs during token issuance if the provider is not registered.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OAuth2GrantType.Context captures grantType from formParams once at construction. setFormParams() does not refresh it, so getGrantType() can return stale data.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getShortcut() is added to OAuth2GrantTypeFactory as an abstract method with no default. Custom grant factories compiled against the old interface throw AbstractMethodError in DefaultTokenContextEncoderProviderFactory.postInit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Token ID decoding requires an exact 6-character 2+2+2 prefix. However, the getShortcut() javadoc says shortcuts are usually 3 letters, and nothing validates that shortcuts are 2 characters. Custom grants with 3-letter shortcuts therefore produce IDs that getTokenContextFromTokenId rejects.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": "docs/tests-development.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new unit test calls org.junit.Assert.assertEquals with the actual and expected arguments swapped, contrary to docs/tests-development.md.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An outdated comment saying 'starts at 4th char' is left over from the earlier 3-letter encoding.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": "CONTRIBUTING.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit format breaches CONTRIBUTING.md: there are two commits instead of one, ee2491268a uses lowercase 'closes #37118', and daffb05b5a has no issue link.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "grantsToShortcuts duplicates sessionFactory.getProviderFactory(OAuth2GrantType.class, gt) with a hand-maintained, unsynchronised cache that can go stale on undeploy.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The lazy/hot-deploy refresh paths in getGrantTypeByShortcut (lines 106-137) add entries without the duplicate-shortcut check that postInit performs, so a custom grant can overwrite an existing shortcut mapping.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i23",
+   "path": "PR-CHECKLIST.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The access-token jti and event token_id format changes from a bare UUID to '<ss><tt><gg>:<uuid>' with no upgrade/release note, as required by PR-CHECKLIST.md.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The @Column(name='ID', length = 36) annotation is shorter than the new 43-character access-token IDs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The shortcut maps include UNKNOWN 'un' entries, so decode accepts IDs like 'ununna:x' that encodeTokenId refuses to encode.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The public Context(Context) copy constructor was removed from the grant SPI.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A null return from OAuth2GrantTypeFactory.getShortcut() causes an NPE from ConcurrentHashMap.put in postInit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Constants.GRANT_TYPE is a pure alias of OAuth2Constants.GRANT_TYPE, and the patch uses both inconsistently: OAuth2GrantType.Context reads OAuth2Constants.GRANT_TYPE, while grants and TokenManager write Constants.GRANT_TYPE.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

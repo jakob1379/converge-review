@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GrafanaRuleListItem.tsx:18-32 still declares and forwards an optional `operation` prop, but its only two callers, FilterView.tsx:157-162 and GrafanaGroupLoader.tsx:70-77, don't pass it. The patch removed the call sites that passed RuleOperation.Creating and RuleOperation.Deleting.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.049554
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "handleNewBooking.ts:724-763 rewrites loadUsers (unrelated to the PR's destinationCalendar-array change): an empty dynamicUserList now throws a plain Error that the catch turns into a 500 'Unable to load users' (line 761), where the base returned []. Prisma known errors are re-thrown as 400 with the raw message (line 759), and the organization slug select is dropped although IsFixedAwareUser still declares it (line 355). One correction: other errors become a 500 rather than being swallowed. Also, the base's empty result did not obviously reach the 404 at line 798, since [] is truthy.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1146706
+}

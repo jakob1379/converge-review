@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Credential has an `invalid` flag (packages/prisma/schema.prisma:141), and Zoom, Webex and Google set it to true when a token refresh fails (zoomvideo/lib/VideoApiAdapter.ts:368, webex/lib/VideoApiAdapter.ts:305, googlecalendar/lib/CalendarService.ts:115). The patch's new credential-update path in apps/web/pages/api/webhook/app-credential.ts:110-117 writes only `key: keys`, so a credential re-synced with valid keys stays marked invalid.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23886900000000003
+}

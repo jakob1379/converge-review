@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The handler does build `new CalendarCacheRepository()` directly (connectedCalendars.handler.ts:28), so the flag check is skipped. But the claimed UI effect does not happen: toggling 'calendar-cache' off deletes every CalendarCache row (toggleFeatureFlag.handler.ts:32-34), and while the flag is off, writes go to the mock (calendar-cache.ts:27-28), so the query returns nothing, `cacheUpdatedAt` stays null and the dropdown hides cache status and 'Delete cached data' (CredentialActionsDropdown.tsx `hasCache`); the unused mock method is only a nit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1891066
+}

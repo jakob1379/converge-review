@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch turns `;}` into `; }` on rules that open with `{color` and no space, e.g. app/assets/stylesheets/desktop/queued-posts.scss:14, desktop/topic-list.scss:54 and desktop/topic-post.scss:113, 294; the originals had no space before the brace, and one sibling conversion in the same patch (change.patch:90) kept `));}`. It is whitespace only and compiles identically.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1429629
+}

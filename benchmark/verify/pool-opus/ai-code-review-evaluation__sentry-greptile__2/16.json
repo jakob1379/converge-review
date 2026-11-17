@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch moves span-buf:s:{...}:<id> keys from SET to ZSET without changing the key name (buffer.py:196-199 sadd->zadd; add-buffer.lua:45-52 scard/sunionstore->zcard/zunionstore; buffer.py:434 sscan->zscan). Nothing migrates the data, bumps the prefix or reads both types, so ZADD/ZCARD/ZSCAN on a leftover SET key fail with WRONGTYPE and the spans buffered in it are not flushed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1328601
+}

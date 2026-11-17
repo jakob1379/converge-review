@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`.jshintrc:61` sets `\"eqeqeq\": true`, and the patch adds `this.get(\"user_count\") == 0` at `app/assets/javascripts/admin/controllers/admin-group.js.es6:7` and `:12`; `eqnull` (`.jshintrc:79`) only exempts `== null`, so both lines break the rule.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.49565490000000006
+}

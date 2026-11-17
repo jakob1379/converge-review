@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes how token IDs are built in services/src/main/java/org/keycloak/protocol/oidc/TokenManager.java:1048-1054 (initToken). DefaultTokenContextEncoderProvider.encodeTokenId now returns '<session><tokentype><grant>:<uuid>' (for example 'onrtac:<uuid>'), and AssertEvents changes the TOKEN_ID check from isUUID() to isAccessTokenId(). The patch touches no docs, and docs/documentation/upgrading/topics/changes/changes-26_2_0.adoc does not mention the new jti format, even though PR-CHECKLIST.md:9 asks for release-note and upgrade-guide updates where applicable.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2815974
+}

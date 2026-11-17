@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/emails/src/templates/AttendeeAddGuestsEmail.tsx:5-8 and OrganizerAddGuestsEmail.tsx:5-9 set title/headerType/subject and then spread `{...props}`, whose type (Partial of BaseEmailHtml props) permits those keys, so a caller could override them. The only callers (packages/emails/templates/attendee-add-guests-email.ts:27-30, organizer-add-guests-email.ts:31-34) pass just calEvent and attendee, and the pattern copies the existing AttendeeLocationChangeEmail.tsx:5-8, so nothing misbehaves today.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.43497179999999996
+}

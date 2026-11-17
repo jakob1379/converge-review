@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`hasPermission(String)` at ClientPermissionsV2.java:237-260 calls `root.evaluatePermission` whenever the Clients resource exists, with no policy-existence guard like the one at ClientPermissionsV2.java:219 and no caching across calls (the decision cache is created per `evaluate()` call, UnboundedPermissionEvaluator.java:44). In GET /clients, a caller without the view/manage-clients role triggers `canView(c)` per client (ClientsResource.java:148,151, plus `getAccess` at ClientPermissions.java:660), and each call re-runs `canView()` -> `hasPermission(VIEW)` (ClientPermissionsV2.java:78,87).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.9204121999999999
+}

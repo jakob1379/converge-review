@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `addMembers` action at app/assets/javascripts/admin/controllers/admin-group.js.es6:61-65 sends `usernames` to the model but never resets it (it even carries a `// TODO: should clear the input` comment), and `Group.addMembers` at app/assets/javascripts/discourse/models/group.js:51-60 only reloads the member list.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3414157
+}

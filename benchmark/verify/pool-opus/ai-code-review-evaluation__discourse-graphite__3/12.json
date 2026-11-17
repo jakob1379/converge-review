@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Email.downcase does lowercase only the domain (lib/email.rb:21), but the patch never calls it: BlockedEmail.should_block? runs a raw `where(email: email)` (app/models/blocked_email.rb:12 in the patch), and EmailValidator passes the value through unchanged, so the claimed cause is not in the changed code. The lookup is still case-sensitive, but only because nothing normalizes the email at all, which is a different problem from the one claimed.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0923475
+}

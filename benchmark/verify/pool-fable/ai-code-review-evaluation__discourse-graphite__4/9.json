@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20131219203905_add_cook_method_to_posts.rb:3 runs `add_column :posts, :cook_method, :integer, default: 1, null: false` in one step; on PostgreSQL before 11 (the only versions available for this 2013-era codebase) ADD COLUMN with a non-null default rewrites the whole posts table under an ACCESS EXCLUSIVE lock.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.09352929999999998
+}

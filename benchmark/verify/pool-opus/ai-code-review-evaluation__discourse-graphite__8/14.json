@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The spec added by the patch calls `xhr :put, :remove_member, group_id: 1, user_id: 42` (change.patch ~line 952). The route only allows DELETE: `delete \"members\" => \"groups#remove_member\"` (config/routes.rb:49), and `put \"members\"` goes to add_members (routes.rb:50). Controller specs call the action directly and don't check that the HTTP verb matches the route, so the spec passes anyway.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0449527
+}

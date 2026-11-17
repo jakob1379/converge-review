@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Every page request fetches the replay's full error list and binds it via functools.partial (src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:94-100), while only the segments are paginated by offset/limit. gen_request_data restarts error_idx at 0 on each call and its trailing loop (lines 164-168) flushes all unemitted errors, so every page's Seer payload contains every error, including ones outside that page's time range.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.7057714
+}

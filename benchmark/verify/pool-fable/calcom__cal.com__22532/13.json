@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql:4 keeps the Prisma warning that `updatedAt` is added \"without a default value\", while line 9 runs `ADD COLUMN \"updatedAt\" TIMESTAMP(3) NOT NULL DEFAULT NOW()`. The comment is stale; the SQL itself is safe on a non-empty table.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1054159
+}

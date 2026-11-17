@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "FilterView.tsx:157-162 returns <GrafanaRuleListItem> from rules.map with no key prop, while the patch removed `key={key}` from the old <GrafanaRuleLoader> (change.patch:607-610). The sibling branches at FilterView.tsx:165 and 169 still pass key={key}, so React will log a missing-key warning and fall back to matching rows by index.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0469507
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/lib/payment/handlePayment.ts:26 the patch adds `await appStore[...]` with no try/catch, so a rejected dynamic import (index.ts:87-114 now uses `import()`) propagates to the caller without added context. That is ordinary async error propagation, the same as the unguarded `paymentInstance.create` call at line 33, and the loader error already names the module.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1167118
+}

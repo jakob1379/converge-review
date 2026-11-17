@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "app/controllers/application_controller.rb:21 does call a bare `protect_from_forgery`, but lines 26-33 override `handle_unverified_request` to null the session, clear the current user and render a 403 for non-API requests, so the absence of `with: :exception` is not a defect. The patch does not touch this code; its only change in that file is adding `I18n.fallbacks.ensure_loaded!` in `set_locale` (around line 159).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1392041
+}

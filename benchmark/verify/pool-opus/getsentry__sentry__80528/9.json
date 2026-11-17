@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch does move these names out of src/sentry/monitors/logic/mark_failed.py, into incidents.py and incident_occurrence.py, and SimpleCheckIn into types.py:105. But nothing in the repo still imports or mock-patches them from mark_failed: every remaining reference (e.g. check_missed.py:11, monitor_consumer.py:33, test_mark_failed.py:11) imports only mark_failed, which still exists, so nothing breaks.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1458124
+}

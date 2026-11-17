@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The code does return ErrDeviceLimitReached on zero affected rows (pkg/services/anonymous/anonimpl/anonstore/database.go:95-96), but updateDevice has a single caller that only runs once count >= deviceLimit (database.go:115-116). In that context an unmatched device is a new or expired one that cannot be added because the limit is reached, so the error is accurate.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.31375400000000003
+}

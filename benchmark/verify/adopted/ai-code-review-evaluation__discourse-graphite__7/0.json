@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/assets/stylesheets/desktop/topic-post.scss:291 the patch swaps `scale-color($primary, $lightness: 30%)` for `dark-light-choose(scale-color($primary, $lightness: 70%), scale-color($secondary, $lightness: 30%))`. `dark-light-choose` returns its first argument on light themes (common/foundation/variables.scss:46-51), so the light theme moves from 30% to 70% lightness, and this goes against the patch's own (30%, 70%) mapping for every other 30% line, such as the `.username a` change.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0669489
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The method DB.TablesList (pkg/expr/sql/db.go:12-14) has no callers; sql_command.go:30 calls the package-level sql.TablesList (parser.go:22). That function calls RunCommands, which always returns \"not implemented\" (db.go:16-18), so NewSQLCommand always fails and the db.QueryFramesInto call at sql_command.go:100 is never reached. The stub is named NewInMemoryDB and its exported names (db.go:9,12,16,20,24) have no doc comments.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1750865
+}

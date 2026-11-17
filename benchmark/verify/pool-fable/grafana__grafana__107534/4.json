@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "shardQuerySplitting.test.ts:112 asserts `applyTemplateVariables` was called 5 times, which is exactly 1 call in `runShardSplitQuery` (shardQuerySplitting.ts:52) plus 4 repeat calls from `runSplitQuery` (querySplitting.ts:299) on the already-interpolated shard sub-requests, so the count does pin the redundant re-interpolation. The \"instead of\" wording is overstated, since the same test also checks the sent queries via `runQuery` at lines 114-168.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5016063
+}

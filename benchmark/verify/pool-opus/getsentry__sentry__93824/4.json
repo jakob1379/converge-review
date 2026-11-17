@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds both methods: `_create_process_for_shards(process_index, shards)` at src/sentry/spans/consumers/process/flusher.py:86 and `_create_process_for_shard(shard)` at flusher.py:127. They differ by a single 's' but do different jobs, since the second looks up which process owns the shard and restarts that process. Nothing in the repository calls `_create_process_for_shard`, so the confusing name is also dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0501043
+}

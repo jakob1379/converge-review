@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/integrations/github/integration.py, `safe_urlopen(...)` at line 423 sits before the `try` at line 425 and `get_user_info(...)` at line 434 (which calls `resp.raise_for_status()`, src/sentry/identity/github/provider.py:16) is unguarded, with no catch in `Pipeline.dispatch_to` (src/sentry/pipeline/base.py:196) or `PipelineAdvancerView.handle` (src/sentry/web/frontend/pipeline_advancer.py:63). One part is overstated: `safe_urlopen` does not raise on non-2xx (src/sentry/http.py:106-116), so a non-2xx token exchange reaches the error() page and only network errors there, plus network or non-2xx errors on the user fetch, become a 500.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3338678
+}

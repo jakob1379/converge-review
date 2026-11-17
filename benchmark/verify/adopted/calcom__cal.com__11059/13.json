@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/lib/constants.ts:103-104 the constant is `process.env.CALCOM_WEBHOOK_SECRET && process.env.CALCOM_APP_CREDENTIAL_ENCRYPTION_KEY`, which has type string | undefined, not boolean. Every caller in the patch (for example `if (!APP_CREDENTIAL_SHARING_ENABLED)` and `if (APP_CREDENTIAL_SHARING_ENABLED && ...)`) only checks truthiness, so it behaves correctly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.035531400000000005
+}

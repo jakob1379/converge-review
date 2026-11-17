@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/wipemycalother/lib/reschedule.ts:125-134 uses `bookingRefsFiltered.forEach(async ...)` with `await getCalendar` at line 128 and nothing awaits the returned promises, so rejections from the now-async getCalendar (dynamic app import and CalendarService construction, packages/app-store/_utils/getCalendar.ts:9-22), deleteEvent and deleteMeeting bypass the catch at line 135, and the email send at line 143 runs without waiting for deletions. The deleteEvent/deleteMeeting promises were already unawaited before the patch; the patch adds getCalendar and import failures to what escapes the try/catch.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1449247
+}

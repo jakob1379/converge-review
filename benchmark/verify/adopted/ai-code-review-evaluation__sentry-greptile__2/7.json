@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch switches the span-buf:s:{...} keys from sadd/sscan to zadd/zscan (buffer.py:197-199, 434) and from scard/sunionstore to zcard/zunionstore (add-buffer.lua:191-200), but keeps the same key prefix and adds no migration or fallback read, so a key written by the other version returns WRONGTYPE. The pipelines raise at p.execute() (buffer.py:201, 437), and flusher.py:157-159 reports the error and re-raises it. Until the keys expire after redis_ttl (default 3600s, buffer.py:151), the same segments keep failing and their spans are not flushed.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1842308
+}

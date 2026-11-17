@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In uploads_controller.rb:41-44 the patch calls OptimizedImage.downsize(tempfile.path, ...), and optimize() only uses the animated (gifsicle) path when `from =~ /\\.GIF$/i` (optimized_image.rb:77). Gemfile.lock pins rack 1.5.5, which I recall names multipart tempfiles `Tempfile.new(\"RackMultipart\")` with no extension; I couldn't open the gem source here to check. So the regex fails and downsize_instructions runs `convert #{from}[0]` (optimized_image.rb:129), keeping only the first frame of an animated GIF.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0798932
+}

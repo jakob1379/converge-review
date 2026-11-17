@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The hunk is indeed only a comment, but Cursor already accepts negative offsets: `self.offset = int(offset)` at src/sentry/utils/cursors.py:28 has no bounds check, and `from_string` (line 59) parses values like \"-5\", which the new negative-offset slicing in OptimizedCursorPaginator relies on. The behaviour the comment describes does exist; the comment only wrongly suggests this hunk added it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.12949750000000002
+}

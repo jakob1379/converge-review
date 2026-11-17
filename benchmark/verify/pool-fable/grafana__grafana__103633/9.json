@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`userPermDenialCacheKey` at pkg/services/authz/rbac/cache.go:30 builds the key from namespace, userUID, action, name and parent only, and `Check` at pkg/services/authz/rbac/service.go:116-120 returns a deny on a hit before looking at `IdentityType`. Anonymous and render identities both carry ID \"0\" (pkg/services/user/identity.go:296-298; subjects `anonymous:0` / `render:0`), so a denial cached for anonymous at service.go:154 also denies the renderer, which would otherwise get `*` for `dashboards:read` (service.go:446).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5279129
+}

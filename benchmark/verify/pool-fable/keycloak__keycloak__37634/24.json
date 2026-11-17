@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`init()` fills the shortcut maps from every enum value, including `UNKNOWN(\"un\")` (DefaultTokenContextEncoderProviderFactory.java:52-59, AccessTokenContext.java:40,56), and `\"na\"` is registered as a grant shortcut, so `getTokenContextFromTokenId(\"ununna:x\")` returns a context without error. `encodeTokenId` throws `IllegalStateException` for UNKNOWN session or token type (DefaultTokenContextEncoderProvider.java:101-107).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5343787
+}

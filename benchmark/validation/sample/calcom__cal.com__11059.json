@@ -1,0 +1,71 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": "zoho-bigin/lib/CalendarService.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In zoho-bigin/lib/CalendarService.ts, refreshOAuthTokens is passed credentialId (credential.id) as its third argument, which is userId. The sync endpoint therefore receives the wrong calcomUserId.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The webhook secret is compared with !== instead of a constant-time comparison.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "parseRefreshTokenResponse sets a missing refresh_token to the literal string 'refresh_token'. Callers such as office365calendar and Zoom then persist it over the real stored refresh token.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": "googlecalendar/lib/CalendarService.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "googlecalendar/lib/CalendarService.ts stores the entire parseRefreshTokenResponse safeParse wrapper ({success, data, ...}) as Credential.key instead of its .data. The next googleCredentialSchema.parse(credential.key) then throws.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The credential's invalid flag is never reset when the credential is updated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "parseRefreshTokenResponse throws on parse failure and never returns success: false. The !success branches in Salesforce getClient and Zoom are therefore dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

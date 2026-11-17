@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "self.processes is only ever written at src/sentry/spans/consumers/process/flusher.py:124, which stores a Process or Thread right after it is started. Neither SpawnProcess nor threading.Thread defines __bool__ or __len__, so these objects are always truthy and the `if not process: continue` guard at flusher.py:221-223 can never run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0823919
+}

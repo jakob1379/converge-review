@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In VerifyMessageProperties.java (patch lines 192-204), `santizeAnchors` only loops over the anchors found in the translation (`while (matcher.find())`). It never reports English anchors left unmatched after the loop, so a translation that drops a trailing source anchor, or every source anchor, adds no message and passes.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2175879
+}

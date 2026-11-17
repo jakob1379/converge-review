@@ -1,0 +1,16 @@
+{
+ "findings": [
+  {
+   "issue": "i5",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/features/bookings/lib/handleCancelBooking.ts, `apiDeletes.push(deletedEvent)` pushes the resolved value rather than a promise. The later `Promise.all(prismaPromises.concat(apiDeletes))` therefore does not wait for those deletions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

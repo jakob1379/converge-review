@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/refreshOAuthTokens.ts:3 declares `refreshFunction: () => any`, so the result at line 17 is `any` and the function's return type collapses to `Promise<any>` even though the sync branch returns a raw fetch `Response` (lines 8-15). Callers then read axios/gaxios-style `.data` with no type error (zohocrm/lib/CalendarService.ts:217, zoho-bigin/lib/CalendarService.ts:96, googlecalendar/lib/CalendarService.ts:94), and hubspot/lib/CalendarService.ts:177 assigns the result straight to `HubspotToken`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2676544
+}

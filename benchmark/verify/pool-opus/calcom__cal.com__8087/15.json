@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The loop in packages/core/videoClient.ts:24-26 does await each `appStore[...]` entry one after another, but each entry is a promise created when the module loads (packages/app-store/index.ts:3-11 calls `import(\"./...\")` eagerly). So every module is already loading at the same time, and awaiting them in order takes about as long as Promise.all would; the loading is not serial.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0729886
+}

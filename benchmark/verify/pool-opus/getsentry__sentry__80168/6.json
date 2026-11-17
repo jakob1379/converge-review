@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/sentry/workflow_engine/processors/test_detector.py, MockDetectorStateHandler sets `counter_names = [\"test1\", \"test2\"]` with no `ClassVar` annotation (patch line 214). It overrides the abstract property `counter_names` at src/sentry/workflow_engine/processors/detector.py:142-144, so adding `ClassVar` here could also conflict with that property's type.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0578638
+}

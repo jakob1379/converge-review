@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `.d-header .contents` a flex container (header.scss:14-18) and removes `float: left` from `.title` and `float: right` from `.panel` (header.scss:19, 35). Its direct children (home-logo, `.panel` and the extra-info, header.hbs:4-95) are now flex items, and the CSS spec ignores `float` on flex items, so any theme or plugin that depends on those floats would lay out differently.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0718961
+}

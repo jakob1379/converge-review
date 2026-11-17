@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the reuse branch, scripts/test-gcal-webhooks.sh:28-31 takes the URL only from /tmp/tmole.log via extract_url_from_log (line 24), with no check that the file exists or belongs to the running process. If tmole was started outside the script, the log is missing or left over from an earlier session, so TUNNEL_URL is empty and lines 56-58 print \"Failed to extract Tunnelmole URL\" despite a live tunnel (or a stale URL is written to .env).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10651469999999999
+}

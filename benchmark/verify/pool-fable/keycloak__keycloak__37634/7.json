@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "DefaultTokenContextEncoderProviderFactory.java:51-61 builds two HashMaps in init() keyed by shortcut for SessionType (4 values) and TokenType (3 values), which AccessTokenContext.java:36-67 defines with no static lookup method; the maps are only read by the two getters at lines 98-104. A static fromShortcut on each enum would be equivalent, so this is a design nit only.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2213956
+}

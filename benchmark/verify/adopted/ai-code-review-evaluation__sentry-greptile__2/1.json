@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new branch at src/sentry/api/paginator.py:877-882, a negative cursor offset reaches `queryset[start_offset:stop]` unchanged. Django 5.2.1 (requirements-frozen.txt:36) raises ValueError for that, which `paginate()` does not catch because it only handles BadPaginationError (src/sentry/api/base.py:540), so the response is a 500, not a 400. `Cursor.from_string` (src/sentry/utils/cursors.py:59) accepts negative offsets, so the comments at paginator.py:876-879 promising Django negative slicing and access 'beyond normal pagination bounds' describe behaviour that cannot happen.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2005053
+}

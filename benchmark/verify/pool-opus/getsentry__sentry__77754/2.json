@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`from_dict` just calls `cls(**input_dict)` and never parses or checks `queued` (src/sentry/integrations/services/assignment_source.py:93-97), so a JSON round trip would bring it back as a string. In practice Sentry uses pickle (`CELERY_TASK_SERIALIZER = \"pickle\"` at src/sentry/conf/server.py:739), which keeps the datetime, and nothing reads `.queued` anywhere, so it has no effect today.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1320288
+}

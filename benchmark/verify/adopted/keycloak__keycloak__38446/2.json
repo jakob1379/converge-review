@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the federated branch of BackwardsCompatibilityUserStorage.isValid (patch lines 340-354, about :325-341 in the file), the check is just `generatedKeys.stream().anyMatch(key -> key.equals(input.getChallengeResponse()))`. Nothing in that branch changes stored state, and RecoveryAuthnCodesFormAuthenticator.java:79-92 only reads the credential afterwards without telling user storage the code was used. By contrast, the local RecoveryAuthnCodesCredentialProvider.java:105-112 accepts only the next code and then consumes it with removeRecoveryAuthnCode/updateStoredCredential. The new test testRecoveryKeysSetupAndLogin logs in once with code #0, so it never checks single use or that the prompt moves on to the next code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19524829999999999
+}

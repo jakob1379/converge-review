@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "EmbedController#best (app/controllers/embed_controller.rb:185-191) queues :retrieve_topic for any embed_url not already stored, and the only check is a Referer header that a client can fake. TopicRetriever's throttle uses the key \"retrieved:#{@embed_url}\" (lib/topic_retriever.rb:716), so URLs that differ, for example only in the query string, all pass it, and each one runs Jobs::PollFeed.new.execute synchronously (line 731) and then import_remote, which fetches the page and creates a topic (topic_embed.rb:368-372, 340-349).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1568594
+}

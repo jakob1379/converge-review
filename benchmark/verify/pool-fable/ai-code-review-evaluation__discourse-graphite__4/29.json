@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/jobs/scheduled/poll_feed.rb:5-6 requires post_creator and post_revisor but never references either. app/models/topic_embed.rb:22,35,48 uses PostCreator, PostRevisor and open(url) with only `require_dependency 'nokogiri'` at line 1, and lib/ is not in autoload_paths (config/application.rb:46-48), so those resolve only because other files load them first.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4242793
+}

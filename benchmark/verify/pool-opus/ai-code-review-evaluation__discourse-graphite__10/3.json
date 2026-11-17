@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At db/migrate/20150818190757_create_embeddable_hosts.rb:9-11, `execute(...)[0]['id']` runs with no row check. `embed_category` defaults to '' and is only stored in site_settings once someone changes it, so a fresh install or the test DB returns no rows, and PG::Result#[] raises IndexError before the `category_id == 0` fallback on line 14 can run. The `embeddable_hosts` lookup at line 19 does check `cmd_tuples`, which shows the guard was left off this query.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0524637
+}

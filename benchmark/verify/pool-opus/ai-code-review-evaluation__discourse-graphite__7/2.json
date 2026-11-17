@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In desktop/user.scss:522 and mobile/user.scss:497, `.group-member-info .name` changed from `scale-color($primary, $lightness: 30%)` to `dark-light-choose(... 50%, ... 50%)`. That is the same value as the `.title` rule beside it, so the light theme loses the 30% value. Other 30% rules in the patch were correctly converted to (30%, 70%).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10894799999999999
+}

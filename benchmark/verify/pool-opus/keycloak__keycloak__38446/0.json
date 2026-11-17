@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched test fixture, BackwardsCompatibilityUserStorage.java:326-340 isValid() returns true if any stored code matches (`generatedKeys.stream().anyMatch(...)`). It never checks the expected next code and never removes or marks the used code. So `allCodesUsed()` and the cleanup at RecoveryAuthnCodesFormAuthenticator.java:85-91 can never trigger for federated users.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.16222519999999999
+}

@@ -1,0 +1,125 @@
+{
+  "findings": [
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 43,
+      "severity": "Important",
+      "claim": "website_name is not in untrusted_attributes, so a TL0 user's profile seen by an anonymous visitor hides website but still sends website_name (the host, plus the path on a same-domain match), and the template renders it. This undoes the anti-spam restriction on TL0 profile fields.",
+      "evidence": "user_serializer.rb:25-33: untrusted_attributes generates include_<attr>?, which returns false when scope.restrict_user_fields?(object). The list at :105-111 has website but not website_name. lib/guardian/user_guardian.rb:58-60: restrict_user_fields? is trust_level==0 && anonymous?. The patch's own include_website_name (:153) is never called and does not check the restriction anyway. user.hbs:66-71 renders model.website_name for TL0 users. A fresh verifier CONFIRMED this. Spec that should fail: with a TL0 user, scope Guardian.new and website 'http://spam.example.com/buy', expect(json).not_to have_key(:website_name). Reasoned only, not run.",
+      "seats": ["ponytail:ponytail-review"],
+      "verdict": "fix",
+      "reason": "A fresh verifier confirmed it against the guardian and serializer source. It defeats an existing security/anti-spam control. Fix in one line: add :website_name to untrusted_attributes."
+    },
+    {
+      "path": "app/assets/javascripts/discourse/templates/user/user.hbs",
+      "line": 66,
+      "severity": "Important",
+      "claim": "Regression: website_name is now a static value from the server instead of a client computed property on model.website. After the user edits the website in preferences, the profile shows the old name (or no link at all if no website was set before) until a full page reload.",
+      "evidence": "The removed controllers/user.js.es6 websiteName was computed from model.website. models/user.js.es6 save() (~:206-213) copies only bio_excerpt from the PUT response. controllers/preferences.js.es6:117-123 refreshes only name and bio_cooked. routes/preferences.js.es6:6 reuses modelFor('user'). routes/user.js.es6 afterModel/findDetails does not run again when moving between child routes. Reasoned. An acceptance test would show it: edit the website in preferences, go back to the summary, check the link text.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review"],
+      "verdict": "fix",
+      "reason": "Three seats traced it on their own to the same save/route code paths. It is a user-visible regression that the change introduced."
+    },
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 153,
+      "severity": "Minor",
+      "claim": "include_website_name is missing its trailing '?', so active_model_serializers 0.8.3 never calls it. The method is dead and website_name is always sent, as null when there is no website.",
+      "evidence": "Gemfile.lock:22 pins active_model_serializers 0.8.3, which only calls include_<attr>?. Every other guard in the file uses the '?' (include_email? :117, include_card_image_badge_id? :161).",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "ponytail:ponytail-review", "mattpocock-skills:code-review"],
+      "verdict": "fix",
+      "reason": "All seats agree and the convention evidence is in the source. The same fix as the untrusted_attributes finding covers it: delete the method and add website_name to that list."
+    },
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 143,
+      "severity": "Minor",
+      "claim": "Asymmetric matching: website www.example.com on instance example.com shows the host only, while the reverse (website example.com on instance forum.example.com) shows the path. The most common 'same domain' case is missed.",
+      "evidence": "The label counts differ (3 vs 2), so the else branch runs, and 'example.com'.ends_with?('.www.example.com') is false. Reasoned: Discourse.stubs(:current_hostname).returns('example.com'); website 'http://www.example.com/u' gives 'www.example.com', not 'www.example.com/u'.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review"],
+      "verdict": "fix",
+      "reason": "It falls short of the PR's own stated intent and the fix is cheap: also check that the website host ends with '.' + instance host."
+    },
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 144,
+      "severity": "Minor",
+      "claim": "The sibling-subdomain branch treats any hosts that share everything after the first label as the same site, across public suffixes (attacker.co.uk vs forum.co.uk, a.github.io vs forum.github.io, other *.trydiscourse.com instances), and shows the full path for unrelated sites.",
+      "evidence": "Lines 144-146 compare split('.')[1..-1] whenever the instance host has more than 2 labels and the label counts are equal. Reasoned. The impact is cosmetic: the text is the real, HTML-escaped URL.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review"],
+      "verdict": "defer",
+      "reason": "ponytail: cosmetic only. A correct fix needs public-suffix knowledge (a new dependency) or dropping the sibling branch, and that is a product decision."
+    },
+    {
+      "path": "spec/serializers/user_serializer_spec.rb",
+      "line": 76,
+      "severity": "Minor",
+      "claim": "Test gaps: no spec for the sibling-subdomain branch, a nil/blank website, an unparseable URI (the rescue path), the www-vs-apex case, or the TL0/anonymous restriction on website_name.",
+      "evidence": "Specs at :76-91 cover only exact match, different domain, and website-is-parent-of-instance. CONTRIBUTING.md says 'Include tests'.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review", "ponytail:ponytail-review"],
+      "verdict": "fix",
+      "reason": "The red tests for the accepted fixes (TL0 leak, www-vs-apex) close most of this gap. The remaining edge-case specs are cheap."
+    },
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 137,
+      "severity": "Minor",
+      "claim": "website_name is over-built: it parses URI(website) three times, calls discourse_host.split('.') four times, and nests ternaries inside if/elsif/else that all reduce to one boolean choosing host or host+path.",
+      "evidence": "Lines 137-151. The branches never overlap, so they can be written as one OR condition with a single parse (about 8 lines instead of 15).",
+      "seats": ["ponytail:ponytail-review", "mattpocock-skills:code-review"],
+      "verdict": "defer",
+      "reason": "ponytail: advisory simplification with no behaviour change. Apply it only when the matching fixes above rewrite the method anyway."
+    },
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 140,
+      "severity": "Minor",
+      "claim": "The host comparison is case-sensitive: http://Example.com/u does not match instance example.com.",
+      "evidence": "URI#host keeps the original case and there is no downcase before comparing. Reasoned.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review"],
+      "verdict": "defer",
+      "reason": "ponytail: rare input with cosmetic impact. Fold a downcase into the simplification if the method is rewritten."
+    },
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 141,
+      "severity": "Minor",
+      "claim": "When the path is shown, a same-domain URL with path '/' renders as 'example.com/', and a port is dropped silently ('example.com:8080/u' shows as 'example.com/u').",
+      "evidence": "Only website_host + URI#path is concatenated, and URI#host excludes the port. Reasoned.",
+      "seats": ["superpowers:requesting-code-review", "open-code-review:delegate-review"],
+      "verdict": "defer",
+      "reason": "ponytail: cosmetic display edge cases with no functional impact."
+    },
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 141,
+      "severity": "Minor",
+      "claim": "The 'complete URL path' drops the query string and the fragment.",
+      "evidence": "Only URI#path is appended. The seat itself marked this 'possibly intended'.",
+      "seats": ["mattpocock-skills:code-review"],
+      "verdict": "reject",
+      "reason": "The PR title says 'show complete URL path'. The query and fragment are not part of the path, so the behaviour matches the stated intent."
+    },
+    {
+      "path": "app/assets/javascripts/discourse/models/user.js.es6",
+      "line": 59,
+      "severity": "Minor",
+      "claim": "An unrelated change rides along (the @property doc tag changes from websiteName to profileBackground), against CONTRIBUTING's one-feature-per-branch rule.",
+      "evidence": "models/user.js.es6:59 doc-comment change.",
+      "seats": ["mattpocock-skills:code-review"],
+      "verdict": "reject",
+      "reason": "It is related to the change: the stale tag referenced websiteName, the property this PR removes. superpowers and OCR both checked the edit and found it correct and harmless."
+    },
+    {
+      "path": "app/serializers/user_serializer.rb",
+      "line": 149,
+      "severity": "Minor",
+      "claim": "'.' << website_host mutates a string literal in place and would raise if frozen_string_literal were enabled.",
+      "evidence": "Line 149.",
+      "seats": ["ponytail:ponytail-review", "mattpocock-skills:code-review"],
+      "verdict": "reject",
+      "reason": "The file has no frozen_string_literal magic comment, so the append works on a fresh literal. OCR and mattpocock both checked this and called it not an issue. It goes away with the deferred simplification anyway."
+    }
+  ],
+  "coverage": "Pinned patch: git diff 7a5fbae060..HEAD (267d8be1f5), 5 files. Untracked harness dotfiles in the worktree root (.bashrc, .claude/, .gitconfig, .gitmodules, .mcp.json, .profile, .ripgreprc, .vscode, .zprofile, .zshrc, .bash_profile) were left out as not part of the PR. Every seat reviewed all 5 files; none were skipped. OCR's own file selector left out the two .es6 files and the spec, but that seat reviewed them by hand. Gate: not run (benchmark mode). Every seat reported that no Ruby/JS runtime was available, so every finding is reasoned and none was reproduced. The client-side stale-value regression was not checked in a browser. The AMS 0.8.3 include_<attr>? behaviour was taken from Gemfile.lock and known gem behaviour; the gem source was not read. Spec axis: no spec, only the PR title as intent. Standards axis: CONTRIBUTING.md, docs/TESTING.md, .editorconfig, .jshintrc. No cross-family reviewer seat was available, so all four seats share one model family. Run stopped after the merge: no fixes, no red tests, no rounds 2+."
+}

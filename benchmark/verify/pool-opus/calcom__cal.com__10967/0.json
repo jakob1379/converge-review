@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/core/EventManager.ts:118-119, `const [mainHostDestinationCalendar] = evt.destinationCalendar ?? []` is undefined when destinationCalendar is null, undefined or an empty array. Calendar.d.ts:171 allows those values. `mainHostDestinationCalendar.integration` is then read without `?.`, so when evt.location is Google Meet it throws a TypeError instead of falling back to Daily. The old code used `evt.destinationCalendar?.integration` and was safe.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.07141130000000001
+}

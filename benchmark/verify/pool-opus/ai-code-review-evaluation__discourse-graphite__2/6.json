@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/topics_controller.rb (unsubscribe), a level above regular, meaning watching or tracking, is only lowered to regular; muting happens only on a later visit. Yet the page always shows 'You will stop receiving notifications for <strong>{{title}}</strong>' (config/locales/client.en.yml stop_notifications, rendered by templates/topic/unsubscribe.hbs), and at the regular level Discourse still notifies on replies, mentions and quotes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1072321
+}

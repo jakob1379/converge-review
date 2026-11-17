@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/payment/handlePayment.ts:26 awaits the now-promise-valued `appStore[...]` entry with no try/catch, so a rejected import would reject `handlePayment` unwrapped (the only try/catch is around `afterPayment` at lines 45-49). The practical risk is low: the imports are static-literal `import(\"./x\")` calls in packages/app-store/index.ts, and a rejection would still carry its own module error message and stack.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1303598
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/github/integration.py:501-503 indexes integration.metadata[\"sender\"][\"login\"] with no guard, while build_integration only sets \"sender\" when state has it (integration.py:376-377) and only the webhook supplies it (webhook.py:204). A pipeline-completed install rewrites metadata without sender (pipeline.py:41-42), so an active Integration whose OrganizationIntegration was later removed hits an uncaught KeyError; no handler in src/sentry/pipeline/base.py or pipeline_advancer.py catches it.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5309396000000001
+}

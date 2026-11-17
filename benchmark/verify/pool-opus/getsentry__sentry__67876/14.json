@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In integration.py, OAuthLoginView saves only authenticated_user_info[\"login\"] as github_authenticated_user (patch line 138). GitHubInstallation then compares it to integration.metadata[\"sender\"][\"login\"] (patch lines 235-239), even though webhook.py:204-206 also stores the stable sender id. A user who renames their account between installing and linking would fail the check and be rejected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1009952
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/auth/two-factor/totp/disable.ts:36-38 returns early when `!user.twoFactorEnabled`, so the `user.twoFactorEnabled` operand at line 48 and the `else if (user.twoFactorEnabled)` at line 69 are always true; the `CALENDSO_ENCRYPTION_KEY` guard appears in both branches (lines 49-52 and 80-83). This is redundancy only, with no behavioural effect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1775019
+}

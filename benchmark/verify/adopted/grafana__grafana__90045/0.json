@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/apiserver/rest/dualwriter_mode3.go:106 passes `name` (the object name) to recordStorageDuration, which uses it as the `kind` label value (metrics.go:23, 61), while the error path at line 103 and every other call pass options.Kind. Each successful delete of a different object therefore adds a new histogram series.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.09952419999999998
+}

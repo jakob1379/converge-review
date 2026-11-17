@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java:381 and :425 register `testRealm().identityProviders().get(\"alias\")::remove` while the IDPs are created as \"idp-alias-\" + i (lines 374, 419); TestCleanup.addCleanup (TestCleanup.java:65-71) swallows the resulting failure and the realm is not re-imported per method (AbstractKeycloakTest.java:271), so the IDPs persist. Only idp-alias-1 is removed, by the test itself at line 428, so 20 of the 21 leak rather than all 21.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4770671
+}

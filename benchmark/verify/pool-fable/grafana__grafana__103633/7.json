@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/authz/rbac/service.go:342-368 repeats the identity-type switch of getIdentityPermissions (330-339) and returns cache.ErrNotFound, GetUserIdentifiers store errors and the unsupported-type error alike; both callers (service.go:123-124 and 180-183) only test `err == nil`, so any error is treated as a miss and falls through to getIdentityPermissions. The fallback re-runs the same lookup and surfaces the real error, so the effect is a redundant call and a miscounted cache-miss metric, not wrong authorization.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3138982
+}

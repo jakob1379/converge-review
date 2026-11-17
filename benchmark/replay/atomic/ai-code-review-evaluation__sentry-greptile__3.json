@@ -1,0 +1,545 @@
+{
+ "findings": [
+  {
+   "path": "sentry-repo",
+   "line": null,
+   "severity": "Important",
+   "claim": "The patch commits a stray submodule gitlink (mode 160000, commit a5d29095) at the repo root with no .gitmodules mapping. Nothing in the change uses it, so it was almost certainly committed by accident in 6ad6fe3899.",
+   "evidence": "`git ls-tree HEAD sentry-repo` shows `160000 commit a5d29095...`. `git show HEAD:.gitmodules` exits 128 ('exists on disk, but not in HEAD'). `git submodule status` / `git submodule update` fail with 'no submodule mapping found'. Fresh clones get an empty directory. `git log -- sentry-repo` points to the caching commit 6ad6fe3899.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "All four seats agree. Red: `git -C <repo> submodule status` errors and `git show HEAD:.gitmodules` exits 128 on the pinned code; these are repro commands from the seats, not run here (no repo access, gate not run). Smallest fix: `git rm --cached sentry-repo`.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 137,
+   "severity": "Important",
+   "claim": "`_is_error_focused_query` matches the substring `\"event.type:error\" in query`. So `!event.type:error` (which excludes errors) and `event.type:error OR event.type:transaction` both count as error-focused, and on the discover dataset `count()` is rewritten to `upsampled_count()` (sum(sample_weight)) over non-error events.",
+   "evidence": "Proposed red test (reasoned, not run): `self.request.GET = QueryDict(\"query=!event.type:error\")` then `assert _is_error_focused_query(self.request) is False`; it returns True on the patched code. The docstring claims the check 'errs on the side of caution'.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, three seats. Red test supplied by open-code-review and superpowers; it must be run and seen failing before the fix. The fix should parse the query (search filter AST) rather than match substrings.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 27,
+   "severity": "Important",
+   "claim": "The 60s per-org cache key does not include the allowlist. After a project is removed from `issues.client_error_sampling.project_allowlist` (for example in an incident rollback), its counts stay upsampled for up to 60s.",
+   "evidence": "The cache wraps the allowlist decision for 60s and nothing invalidates it on option change; the option is FLAG_AUTOMATOR_MODIFIABLE (src/sentry/options/defaults.py:3464). Proposed red test (ponytail, reasoned): call the function under `self.options({allowlist: [p.id]})`, then again with `[]`; the second call still returns True.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, four seats. Red test supplied by ponytail; it must be run and seen failing first. The smallest fix proposed is to delete the cache layer.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 27,
+   "severity": "Important",
+   "claim": "The 'performance optimization' cache is likely slower than what it replaces. It swaps the in-process options cache for a Django cache (memcached/redis) network round trip on every events-stats request, and the docstring's 'expensive repeated option lookups' premise is false.",
+   "evidence": "`options.get` is already served from a per-process local cache: src/sentry/options/store.py:123-152 (`get_cache`/`get_local_cache`), cited independently by ponytail and superpowers. Nothing benchmarks the cache path.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Main list, three seats. Unverified: this is a latency claim with no failing test. The check that settles it is a latency measurement of the events-stats endpoint with and without the cache under production cache backends. It is resolved as a side effect if the cache layer is deleted for the staleness finding. ponytail: comment to mark it.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 27,
+   "severity": "Minor",
+   "claim": "The cache lookup runs before the cheap `_should_apply_sample_weight_transform(dataset, request)` check. Transactions, metrics, spans and logs requests, which can never upsample, still pay the cache round trip.",
+   "evidence": "Call order at organization_events_stats.py:220, as described by all three seats.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, three seats. Minor, so no red test is required. Fix: check the dataset first, or remove the cache.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 67,
+   "severity": "Minor",
+   "claim": "`invalidate_upsampling_cache` is dead code: nothing in src/ calls it and no option-change hook triggers it.",
+   "evidence": "Seats report that `grep -rn invalidate_upsampling_cache src tests` finds only the definition.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, four seats. Delete it, together with the cache layer.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 50,
+   "severity": "Minor",
+   "claim": "The `_are_all_projects_error_upsampled` docstring says the allowlist is read 'fresh each time ... intentional', but the new cache in front of it means it is not.",
+   "evidence": "Docstring at lines 48-53 compared with the 60s cache at lines 27-40.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, four seats. Resolved by removing the cache, or otherwise by correcting the docstring.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 22,
+   "severity": "Minor",
+   "claim": "Trailing or whitespace-only lines at 22, 28, 33, 36, 39, 49, 51 and 84 fail the repo's pre-commit (the `trailing-whitespace` hook), breaching the CLAUDE.md rule 'ALWAYS use pre-commit'.",
+   "evidence": "`grep -nP \"[ \\t]+$\"` lists the lines; `.pre-commit-config.yaml:179` defines the hook; `git diff --check 83f40559985e HEAD` flags them. open-code-review's list omits line 51.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, three seats. This is a documented standard and it would fail CI.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 223,
+   "severity": "Minor",
+   "claim": "Trailing whitespace at lines 223, 234 and 278 fails the pre-commit `trailing-whitespace` hook, breaching 'ALWAYS use pre-commit'.",
+   "evidence": "The same grep and `git diff --check 83f40559985e HEAD` evidence as the previous finding; hook at `.pre-commit-config.yaml:179`.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, three seats. This is a documented standard and it would fail CI.",
+   "list": "main"
+  },
+  {
+   "path": "tests/sentry/api/helpers/test_error_upsampling.py",
+   "line": 21,
+   "severity": "Minor",
+   "claim": "The test creates its organization with `Organization.objects.create(name=\"test-org\")` instead of `self.create_organization()`, breaching repo CLAUDE.md Common Gotchas #7 ('Use self.create_* helpers, not direct model creation').",
+   "evidence": "The line itself; the class is a TestCase, so the helper is available.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, four seats. Documented repo standard.",
+   "list": "main"
+  },
+  {
+   "path": "tests/sentry/api/helpers/test_error_upsampling.py",
+   "line": 7,
+   "severity": "Minor",
+   "claim": "The unit tests import and assert on the private helpers `_are_all_projects_error_upsampled`, `_is_error_focused_query` and `_should_apply_sample_weight_transform`, breaching the user's global CLAUDE.md rule 'Never test internal/private functions directly'.",
+   "evidence": "The import block at lines 7-11 and the assertions at 37-101.",
+   "seats": [
+    "mattpocock",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list, three seats. The standard comes from the user's global CLAUDE.md, not the repo's.",
+   "list": "main"
+  },
+  {
+   "path": "tests/sentry/api/helpers/test_error_upsampling.py",
+   "line": 7,
+   "severity": "Minor",
+   "claim": "`transform_query_columns_for_error_upsampling` (transform_*) is a private function tested directly.",
+   "evidence": "mattpocock lists transform_* among four private functions.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "reject",
+   "reason": "Disproved by the seat reports: ponytail identifies `transform_query_columns_for_error_upsampling` as public (no underscore prefix) and keeps its test, and superpowers lists only the three underscore-prefixed helpers as private.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 220,
+   "severity": "Important",
+   "claim": "The eligibility check receives the outer `dataset`, not the `scoped_dataset` that `_get_event_stats` queries. On the dashboard-split path the outer dataset is a metrics dataset, so the ERROR_EVENTS split (which runs on discover with `!event.type:transaction`) is never upsampled.",
+   "evidence": "Reasoned from the dashboard split path at lines ~344-440: `metrics_enhanced` is true, and `_should_apply_sample_weight_transform` returns False for metrics datasets.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, two seats; not fixed this loop. ponytail: comment to mark it.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 220,
+   "severity": "Important",
+   "claim": "The upsampling decision is made once from `request.GET[\"query\"]`, not from the per-call `query`. The transactions-only split call (`... AND event.type:transaction`) is still marked for upsampling when the user query contains `event.type:error`.",
+   "evidence": "Reasoned: `_is_error_focused_query` reads `request.GET` rather than the query passed to `_get_event_stats`.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, two seats; not fixed this loop. ponytail: comment to mark it.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 95,
+   "severity": "Important",
+   "claim": "With `transformAliasToInputFormat=1`, an upsampled request returns silent zero counts. The result column is renamed to the literal 'upsampled_count() as count', while the axis lookup uses 'count()'.",
+   "evidence": "src/sentry/search/events/builder/base.py:1566-1572 (`process_results` renames to `function_details.field`); src/sentry/api/bases/organization_events.py:75 (`resolve_axis_column`); src/sentry/api/serializers/snuba.py:92 (`r.get(column, 0)`). Proposed red: add `transformAliasToInputFormat=1` to `test_error_upsampling_with_allowlisted_projects`; buckets return 0 instead of 10 (reasoned, not run).",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; not fixed this loop. ponytail: comment to mark it.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/search/events/datasets/discover.py",
+   "line": 1042,
+   "severity": "Important",
+   "claim": "`upsampled_count` is `toInt64(sum(sample_weight))` with no null or default handling. Errors in allowlisted projects with NULL or 0 sample_weight (ingested before allowlisting, or from SDKs without client_sample_rate) count as 0, undercounting charts.",
+   "evidence": "Conditional and reasoned: depends on Snuba's sample_weight column default, which is outside this repo. open-code-review explicitly declined to flag it as unverifiable.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat. Unverified: settle by checking the Snuba errors processor/schema default for sample_weight. If NULL is possible, use `sum(ifNull(sample_weight, 1))`. ponytail: comment to mark it.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/search/events/datasets/discover.py",
+   "line": 1042,
+   "severity": "Minor",
+   "claim": "`upsampled_count` is not marked `private=True`, unlike the neighbouring internal helpers. It is exposed as a public discover function, queryable on datasets without sample_weight.",
+   "evidence": "Compare with `private=True` at line 1038.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/search/events/datasets/discover.py",
+   "line": 1042,
+   "severity": "Minor",
+   "claim": "`default_result_type=\"number\"` changes the count meta type from integer to number for allowlisted orgs, although the value is `toInt64`.",
+   "evidence": "Function definition at lines 1042-1052.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/testutils/factories.py",
+   "line": 344,
+   "severity": "Minor",
+   "claim": "The test factory hook `_set_sample_rate_from_error_sampling` (called at 1049) copies production `_derive_client_error_sampling_rate` without its gating (allowlist, numeric type, 0<x<=1). Every test `store_event` with an error_sampling context gets a sample_rate that production would not set.",
+   "evidence": "Production logic at src/sentry/event_manager.py:774-799. superpowers judged the hook test-only and raised no finding.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, two seats; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/testutils/factories.py",
+   "line": 344,
+   "severity": "Minor",
+   "claim": "The factory hook silently swallows errors with bare `except Exception: pass` blocks.",
+   "evidence": "The helper body at lines 344-357.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, two seats; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/api/helpers/test_error_upsampling.py",
+   "line": 37,
+   "severity": "Minor",
+   "claim": "The unit tests patch `sentry.api.helpers.error_upsampling.options`, which is code the project owns, instead of setting the real option. This breaches the user's global CLAUDE.md rule 'Never mock things you own'.",
+   "evidence": "`@patch(\"sentry.api.helpers.error_upsampling.options\")`. superpowers did not confirm that an `override_options` helper exists.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, two seats; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/snuba/api/endpoints/test_organization_events_stats.py",
+   "line": 3603,
+   "severity": "Minor",
+   "claim": "The endpoint tests mock the owned `options` module (decorators at 3603, 3627, 3652, 3696) instead of using `with self.options({...allowlist...})`. That is what forces the factory hook to exist.",
+   "evidence": "The existing pattern at tests/sentry/event_manager/test_event_manager.py:2881.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/api/helpers/test_error_upsampling.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The public entry point `is_errors_query_for_error_upsampled_projects`, and so the new cache path, has no unit test.",
+   "evidence": "The test imports only the private helpers and transform_*; nothing tests or benchmarks the cache.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, two seats; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/api/helpers/test_error_upsampling.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Most of the unit tests duplicate coverage the endpoint tests already provide (allowlisted, partial, none and transaction cases). Only the transform test needs to stay.",
+   "evidence": "ponytail's comparison against the endpoint tests.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/api/helpers/test_error_upsampling.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`self.snuba_params` and `self.project_ids` are built in setup but partly unused.",
+   "evidence": "ponytail's reading of the test setup.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 218,
+   "severity": "Minor",
+   "claim": "`upsampling_enabled = should_upsample` is a redundant second name for the same value.",
+   "evidence": "Lines 218-233.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 218,
+   "severity": "Minor",
+   "claim": "The same `if upsampling_enabled: final_columns = transform(...)` block is repeated in three mutually exclusive branches (218-233, 275-277, 294-296). It could be a single statement before the branches.",
+   "evidence": "The three branch blocks cited.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 218,
+   "severity": "Minor",
+   "claim": "The comments claim 'late transformation ensures we use the most current schema assumptions' and 'allows for better query optimization and caching'. These are false, because the transform is a pure function of query_columns.",
+   "evidence": "Comments around lines 218-233.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 219,
+   "severity": "Minor",
+   "claim": "The comment 'consistent behavior across query execution' is false.",
+   "evidence": "superpowers finding 3.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 275,
+   "severity": "Minor",
+   "claim": "The upsampling branch on the RPC path (275-277, and the top-events RPC branch at 232/236) is unreachable. `use_rpc` requires spans_rpc or ourlogs, both rejected by `_should_apply_sample_weight_transform`, and EAP RPC has no upsampled_count anyway.",
+   "evidence": "Reasoned from the dataset gating.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 124,
+   "severity": "Minor",
+   "claim": "The error message text change ('If topEvents needs' to 'topEvents needs') is unrelated to the upsampling feature.",
+   "evidence": "The diff at line 124. open-code-review judged the change itself fine, which does not dispute that it is out of scope.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_events_stats.py",
+   "line": 218,
+   "severity": "Minor",
+   "claim": "The change to count() on a public endpoint is gated only by the option allowlist, with no `features.has(...)` flag. The repo CLAUDE.md says 'Feature Flags: Always add for new features'.",
+   "evidence": "No feature flag in the patch. The seat itself notes that option allowlists are a common Sentry pattern.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 67,
+   "severity": "Minor",
+   "claim": "`invalidate_upsampling_cache` cannot work as designed even if called. Keys hold arbitrary per-query project sets, so an allowlist change cannot enumerate every affected (org, project-set) key.",
+   "evidence": "superpowers finding 4, reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; not fixed this loop. Moot if the cache is removed.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 58,
+   "severity": "Minor",
+   "claim": "`options.get(key, [])` passes `[]` as the `silent` argument, not as a default. The option is already registered with `default=[]`.",
+   "evidence": "src/sentry/options/manager.py:285; src/sentry/options/defaults.py:3463-3468.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 59,
+   "severity": "Minor",
+   "claim": "`if not allowlist: return False` is redundant, because `all(...)` over non-empty project_ids already returns False.",
+   "evidence": "Lines 59-60.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 63,
+   "severity": "Minor",
+   "claim": "The `result = ...; return result` pattern at 63-64 and 123-124 should return the expression directly.",
+   "evidence": "The cited lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 136,
+   "severity": "Minor",
+   "claim": "The if/return True/return False at 136-140 can be a single return expression.",
+   "evidence": "The cited lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop. Overlaps the main-list rewrite at line 137.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 43,
+   "severity": "Minor",
+   "claim": "The `organization` parameter of `_are_all_projects_error_upsampled` is unused once the cache is removed.",
+   "evidence": "Lines 43-45.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; conditional on removing the cache.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/api/helpers/error_upsampling.py",
+   "line": 103,
+   "severity": "Minor",
+   "claim": "`dataset: Any` here, while the public function types the same value as `ModuleType`.",
+   "evidence": "Line 103.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix, one seat; advisory; not fixed this loop.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate not run (benchmark mode): the review is unanchored, no red test was executed, and every Critical/Important claim is reasoned or backed only by seat-run greps and `git diff --check`. No spec was given, so the spec axis did not run for any seat. Files skipped or partly reviewed: (1) open-code-review's tool excluded both test files (tests/sentry/api/helpers/test_error_upsampling.py and tests/snuba/api/endpoints/test_organization_events_stats.py) by default path; it checked them by hand only for standards and coverage, not their logic. (2) ponytail reviewed pyproject.toml, src/sentry/search/events/datasets/discover.py and tests/snuba/api/endpoints/test_organization_events_stats.py only for over-engineering and standards, not correctness; it could not read .gitmodules (permission denied). (3) No seat inspected the contents of the sentry-repo gitlink; it is empty in the checkout. Unchecked externals: the Snuba sample_weight schema default, and whether an override_options test helper exists. mattpocock skipped the skill's code-smell baseline and sub-agents per the override block, and superpowers did not delegate to a subagent, also per the override. All four seats are the same model family; no cross-family seat was available."
+}

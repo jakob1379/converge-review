@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In add-buffer.lua:62-64, spans over 1000 are removed with `zpopmin` without being counted or logged, and the return value at :72 (`{redirect_depth, span_key, set_key, has_root_span}`) doesn't report how many were dropped. The patch also removes the only signal there was: the `segment_span_count_exceeded` metric and `logger.error` in buffer.py (patch lines 260-267).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0712582
+}

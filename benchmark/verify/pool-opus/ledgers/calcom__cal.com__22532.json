@@ -1,0 +1,653 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "test-gcal-webhooks.sh",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ENV_FILE=\"../.env\" is resolved relative to the caller's current working directory, so running the script from the repo root writes GOOGLE_WEBHOOK_URL to the wrong .env file, outside the repo.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "scripts/test-gcal-webhooks.sh:5 sets ENV_FILE=\"../.env\" as a plain relative path and never resolves it from the script's own location (no dirname \"$0\"/BASH_SOURCE), so running it from the repo root touches, creates or appends to <parent-of-repo>/.env (lines 95-103 of the patch). Nothing in the repo calls the script from a fixed directory, so nothing ensures it runs from scripts/.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0575603
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The script uses the BSD/macOS-only `sed -i '' -E` syntax, which fails on GNU sed (Linux). When it fails, the .env update does not happen but the script still prints that GOOGLE_WEBHOOK_URL was updated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "scripts/test-gcal-webhooks.sh:68 (patch line 601) runs `sed -i '' -E \"s|...|\" \"$ENV_FILE\"`. GNU sed reads `''` as an empty script and the `s|...|` expression as a missing file name, so it errors and leaves .env unchanged. The script has no `set -e` and does not check sed's exit status, so line 73 (patch line 606) still prints \"\u2705 Updated GOOGLE_WEBHOOK_URL\".",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0549582
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The deleteCache handler throws a plain Error when the ownership check fails. tRPC therefore returns INTERNAL_SERVER_ERROR (500) instead of a TRPCError with NOT_FOUND or FORBIDDEN.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "When the ownership check fails, the new packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts:18-20 throws a plain `new Error(\"Credential not found or access denied\")`, not a TRPCError. The repo's errorFormatter (packages/trpc/server/errorFormatter.ts:25-39) only remaps ZodError causes, and no middleware converts plain errors, so tRPC returns INTERNAL_SERVER_ERROR (500).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.06694610000000001
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The handler constructs `new CalendarCacheRepository()` directly, which bypasses the CalendarCache.init feature-flag gate and its mock. As a result, cache status and 'Delete cached data' are shown even when the calendar-cache flag is off.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "connectedCalendars.handler.ts:473 calls `new CalendarCacheRepository()` directly instead of going through the flag check in CalendarCache.init (calendar-cache.ts:22-28), which returns CalendarCacheRepositoryMock (empty status) when the 'calendar-cache' flag is off. So any CalendarCache rows still in the database give a cacheUpdatedAt, and CredentialActionsDropdown.tsx:119 then shows the cache status and 'Delete cached data' even with the flag off. deleteCache.handler.ts:522 also calls prisma without checking the flag.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1526518
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "After the deleteCache mutation in CredentialActionsDropdown succeeds, it only calls onSuccess and does not invalidate viewer.calendars.connectedCalendars. Callers that pass no onSuccess, such as EventAdvancedTab, then show a stale cacheUpdatedAt / 'Last updated'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The deleteCache onSuccess in CredentialActionsDropdown.tsx (patch lines 92-96) only shows a toast and calls onSuccess?.(), and has no connectedCalendars invalidate, unlike disconnectMutation's onSettled (lines 111-113). EventAdvancedTab.tsx:372-384 renders SelectedCalendarsSettingsWebWrapper without onChanged, so after a cache delete the connectedCalendars query (refetchOnWindowFocus false) keeps the old cacheUpdatedAt and the 'Last updated' entry stays on screen.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1631475
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {}) is called with empty data. With updateMany in Prisma 5.4.2 this does not bump @updatedAt, nothing reads SelectedCalendar.updatedAt, and the call adds an extra UPDATE on every fetchAvailabilityAndSetCache run.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {})` in packages/app-store/googlecalendar/lib/CalendarService.ts:1023-1024. It calls `prisma.selectedCalendar.updateMany` with empty data, and Prisma 5.x only adds `@updatedAt` (schema.prisma:860) when the update data is non-empty, so the timestamp is not bumped; this comes from Prisma's query-engine behaviour as I know it, not code in this repo. user.ts selects `updatedAt`, but nothing reads `SelectedCalendar.updatedAt`: the UI uses `CalendarCache.updatedAt` (connectedCalendars.handler.ts:31), so the call does nothing useful and adds a database round-trip on every run.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1272402
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "updateManyByCredentialId is called with empty data {} and relies implicitly on Prisma @updatedAt to auto-touch the timestamp, which is unclear to readers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {})` in packages/app-store/googlecalendar/lib/CalendarService.ts (around line 1024). The call passes empty data, so changing the timestamp depends only on `updatedAt DateTime? @updatedAt` (packages/prisma/schema.prisma:860). The comment above the call names the goal but not how it works, and Prisma may not refresh `@updatedAt` at all when the data is empty, so setting `updatedAt: new Date()` explicitly would be clearer and safer.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.054968600000000006
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cache 'Last updated' timestamp is formatted with a hard-coded `new Intl.DateTimeFormat(\"en-US\", ...)`, which ignores the user's locale (i18n.language from useLocale) and profile timezone.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/apps/components/CredentialActionsDropdown.tsx (new file, patch lines 138-144) formats cacheUpdatedAt with `new Intl.DateTimeFormat(\"en-US\", { dateStyle, timeStyle })` and sets no timeZone. The component only takes `t` from useLocale (line 87), so it ignores the user's i18n.language and profile timezone and falls back to the browser's timezone.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0520682
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "findUnlockedUserForSession adds updatedAt and googleChannelId to the selectedCalendars select, but nothing reads either field. Every session lookup still fetches them.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `updatedAt` and `googleChannelId` to the selectedCalendars select in `findUnlockedUserForSession` (packages/lib/server/repository/user.ts:899-900) and widens the `UserWithCalendars` Pick type to match (getConnectedDestinationCalendars.ts:21-28). Nothing in the patch reads either field: the new cache UI uses `cacheUpdatedAt` from `CalendarCache.updatedAt` via `getCacheStatusByCredentialIds`, and CalendarService only writes `SelectedCalendar.updatedAt`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1590919
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "dev:cron switches from ts-node to `npx tsx`, but tsx is not declared as a dependency and is not in yarn.lock. npx therefore downloads it from the registry at run time.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes apps/web/package.json:11 to `\"dev:cron\": \"npx tsx cron-tester.ts\"`, but no package.json in the repo declares `tsx` and yarn.lock has no `tsx@` entry, so npx will fetch an unpinned copy from the registry when the script runs.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.055195400000000006
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The dev:cron change to tsx is unrelated to the cache feature.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The `dev:cron` script (apps/web/package.json:9-10) runs apps/web/cron-tester.ts, which calls `/calendar-cache/cron` every 5 seconds (cron-tester.ts:26). Switching it to tsx is therefore a fix to the tool developers use to exercise the calendar-cache feature, much like the scripts/test-gcal-webhooks.sh helper the patch also adds.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0649014
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The tunnel script is unrelated to the cache feature.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The new scripts/test-gcal-webhooks.sh (patch lines 528-612) sets GOOGLE_WEBHOOK_URL, which CalendarService.ts:41-42 uses as the address for Google Calendar webhooks. The webhook handler packages/app-store/googlecalendar/api/webhook.ts:43-46 refreshes the calendar cache through fetchAvailabilityAndSetCache, so the script is a local test tool for the cache-update flow.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.09280890000000001
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When an existing tmole process is reused, the script reads /tmp/tmole.log, which may be stale or missing. This can cause a false failure.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In scripts/test-gcal-webhooks.sh:561-564, when `pgrep -f \"tmole 3000\"` finds a tmole process, the script only greps /tmp/tmole.log for the URL. It never checks that this script created that log, so a tmole started by hand or with other output leaves the file missing and TUNNEL_URL empty, which hits the \"Failed to extract Tunnelmole URL\" exit at lines 589-591. A leftover log from an earlier session can also give an old URL.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1261201
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The migration's auto-generated warning header says the required column is added 'without a default value', but the SQL adds DEFAULT NOW().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql, the warning on line 4 says the required `updatedAt` column is added \"without a default value\", but the SQL on line 9 adds it with `NOT NULL DEFAULT NOW()`. The comment is stale and contradicts the SQL.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0400465
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the error/Alert branch, 'Remove app' is now also hidden when disableConnectionModification is set. Users can no longer remove broken credentials in that view.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Before the patch, the Alert (error) branch only checked `!connectedCalendar.delegationCredentialId`. It now passes `disableConnectionModification` to CredentialActionsDropdown (SelectedCalendarsSettingsWebWrapper.tsx:130), and `canDisconnect = !delegationCredentialId && !disableConnectionModification` (CredentialActionsDropdown.tsx:68), so 'Remove app' is hidden in that view, which EventAdvancedTab.tsx:375 sets to true.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15061970000000002
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The deleteCache input schema is an inline z.object instead of a deleteCache.schema.ts file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/calendars/_router.tsx:29, the new deleteCache procedure uses `.input(z.object({ credentialId: z.number() }))` inline, and the patch adds no deleteCache.schema.ts. The other procedures in the same router import their schemas from *.schema.ts files (lines 5-6).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.045558799999999997
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The deleteCache procedure is missing from the CalendarsRouterHandlerCache type, unlike its sibling procedures.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/calendars/_router.tsx:8-11, CalendarsRouterHandlerCache lists only connectedCalendars and setDestinationCalendar. The patch adds deleteCache at lines 28-33 but not to the type. Nothing uses the type, so behaviour is unaffected.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.040648
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests were added for deleteCacheHandler, getCacheStatusByCredentialIds, the cacheUpdatedAt field, or the dropdown UI.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds no test or spec files. It touches only source files, locales, a migration, the schema and scripts/test-gcal-webhooks.sh. No *.test/*.spec file in the repo mentions deleteCacheHandler (deleteCache.handler.ts) or getCacheStatusByCredentialIds (calendar-cache.repository.ts).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.037749700000000004
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getCacheStatusByCredentialIds has no early return for an empty credential list and does not deduplicate or guard credentialIds before the cache lookup query.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The method this patch adds at packages/features/calendar-cache/calendar-cache.repository.ts:173-188 sends credentialIds straight into prisma.calendarCache.groupBy with `credentialId: { in: credentialIds }`. It has no empty-list early return and no dedupe or guard, and the caller at connectedCalendars.handler.ts:27-29 doesn't dedupe either. In practice nothing breaks: Prisma returns an empty result for `in: []`, and duplicate IDs in an IN list don't change the result.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0537401
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "hasCache ignores disableConnectionModification. EventAdvancedTab passes disableConnectionModification={true} and previously showed no credential actions; it now shows a destructive 'Delete cached data' item.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In CredentialActionsDropdown.tsx:68-70, `hasCache = isGoogleCalendar && cacheUpdatedAt` does not check disableConnectionModification, and the dropdown renders whenever `canDisconnect || hasCache`. EventAdvancedTab.tsx:375 passes disableConnectionModification={true} into SelectedCalendarsSettingsWebWrapper, which used to hide the actions for connected calendars entirely. Now a Google calendar with cache shows the destructive 'Delete cached data' item (patch lines 132-159, 351-360).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.16588460000000002
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The conditional rendering in CredentialActionsDropdown changes behavior for delegation credentials: they now render nothing, or a cache-only dropdown if a cache exists.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In CredentialActionsDropdown.tsx:118-123, `canDisconnect` is false whenever `delegationCredentialId` is set, so the component returns null unless `hasCache` (Google Calendar with a `cacheUpdatedAt`) is truthy. In that case it shows only the cache items (lines 132-161), where before the wrapper rendered nothing for delegation credentials. In practice delegation credentials use id -1 (packages/lib/delegationCredential/server.ts:86), so a cache row for them is unlikely and the visible change is small.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1527268
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getCacheStatusByCredentialIds takes the max updatedAt without filtering out expired rows (expiresAt), so a status can be shown for a cache that has fully expired.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new getCacheStatusByCredentialIds in packages/features/calendar-cache/calendar-cache.repository.ts (patch lines 243-258) groups rows only by `credentialId: { in: credentialIds }` and has no expiresAt filter. The repository's read paths (lines 112 and 127) do filter on `expiresAt: { gte: now }`, so connectedCalendars.handler.ts can return a cacheUpdatedAt for a cache that has fully expired until the cleanup cron (apps/web/app/api/cron/calendar-cache-cleanup/route.ts) deletes those rows.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1082005
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The multi-layer feature (17 files, DB migration, data-deletion endpoint, UI replacement) was not tested end-to-end against a real Google Calendar integration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "Whether the feature was tested end-to-end against a real Google Calendar is a fact about the development process, not something the code shows. The patch touches 17 files, including packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts, the migration 20250715160635_add_calendar_cache_updated_at and scripts/test-gcal-webhooks.sh. None of that can prove or disprove that a test against the real service was or wasn't run.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0345414
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "prisma.credential.findFirst has no select, so it loads the full Credential row, including the key (OAuth tokens), only to check existence and ownership.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts (patch lines 511-516), prisma.credential.findFirst has only a where clause on id/userId and no select, so it fetches the whole Credential row, including `key`, just to check that it exists. The result is only null-checked and never returned, so the tokens are not leaked.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.035854300000000006
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cleanup function exits 0 on failure paths.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In scripts/test-gcal-webhooks.sh, `cleanup()` always ends with `exit 0` (line 17). It is also called on the two failure paths: the tunnel rate limit (line 49) and failing to get the Tunnelmole URL (lines 56-58). So the script reports success even when it fails.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.12383949999999999
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The loop variable 'i' in the shell script is unused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In scripts/test-gcal-webhooks.sh (patch lines 574-585), `for i in {1..20}` is used only as a retry counter. The loop body never reads `$i`; it only greps the log, breaks or calls cleanup, and sleeps.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0417662
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cache-status block uses raw text-gray-900/text-gray-500/dark:text-white classes instead of the design-system tokens (text-emphasis, text-subtle).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/apps/components/CredentialActionsDropdown.tsx (change.patch lines 136-137), the patch adds the cache-status block with raw `text-gray-900 dark:text-white` and `text-xs text-gray-500 dark:text-white` classes. Nearby components such as AppCard.tsx and AllApps.tsx use the design-system tokens like `text-subtle` instead.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.05559170000000001
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The read-only cache-status block is a focusable, selectable DropdownMenuItem that does nothing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The cache status display at packages/features/apps/components/CredentialActionsDropdown.tsx:~80-93 (patch lines 134-147) is wrapped in a DropdownMenuItem that has no onSelect, onClick or disabled prop. That component is a Radix DropdownMenuPrimitive.Item (packages/ui/components/dropdown/Dropdown.tsx:63-71), so keyboard users can focus and select it, and selecting it only closes the menu.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0864071
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The mock getCacheStatusByCredentialIds does not accept the credentialIds parameter, so it does not match the interface signature.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The mock at calendar-cache.repository.mock.ts:27 has no parameter, but TypeScript accepts a method with fewer parameters as a valid implementation, so it still matches the interface at calendar-cache.repository.interface.ts:30-32. The other mock methods in the same file (lines 8-25) also leave out their parameters, so this follows the file's existing pattern.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.059456300000000004
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The deleteCache handler only checks credential.userId === user.id, which blocks team members from clearing the cache for team-owned credentials.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "deleteCache.handler.ts:511-516 does filter on `userId: user.id`, but its only caller is the connected-calendars dropdown, and that list comes only from credentials with `userId: user.id` (packages/lib/getConnectedDestinationCalendars.ts:282-291). Team-owned credentials never show up there, so the owner-only check matches the intended scope and is the right access control, not a bug.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.11634760000000001
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The migration's DEFAULT NOW() backfills existing CalendarCache rows with the migration time, so 'Last updated' is wrong for those rows until their next refresh.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The migration at packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql:6 runs `ADD COLUMN \"updatedAt\" TIMESTAMP(3) NOT NULL DEFAULT NOW()`, which stamps every existing CalendarCache row with the time the migration ran. The 'Last updated' label shows the newest of those stamps for each credential (repository `_max.updatedAt`, mapped via cacheStatusMap), so old rows show the migration time until their next write.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0446203
+   }
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The credentialId input validation uses z.number() rather than z.number().int().positive().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new deleteCache procedure at packages/trpc/server/routers/viewer/calendars/_router.tsx:29 validates its input with z.object({ credentialId: z.number() }), with no .int() or .positive(). This has little effect because deleteCache.handler.ts looks the credential up by id and userId and throws if none is found, so an invalid id is still rejected.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.055246300000000005
+   }
+  },
+  {
+   "issue": "i33",
+   "path": "packages/features/package.json",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The code imports @calcom/platform-constants, which packages/features/package.json does not declare as a dependency.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `import { GOOGLE_CALENDAR_TYPE } from \"@calcom/platform-constants\"` to packages/features/apps/components/CredentialActionsDropdown.tsx (patch line 56), and this is the only file in packages/features that imports it. packages/features/package.json:9-29 does not list @calcom/platform-constants as a dependency.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.049735
+   }
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The component takes six props, and the same six-prop block is duplicated at two call sites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "CredentialActionsDropdown.tsx:70-77 declares six props (credentialId, integrationType, cacheUpdatedAt, onSuccess, delegationCredentialId, disableConnectionModification). SelectedCalendarsSettingsWebWrapper.tsx renders the component in two places (around lines 70-79 and 123-132) with the same six-prop block, each inside the same `<div className=\"flex w-32 justify-end\">` wrapper.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.12268290000000001
+   }
+  },
+  {
+   "issue": "i35",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The tRPC handler calls prisma.calendarCache.deleteMany directly for cache deletion, while the cache-status read goes through CalendarCacheRepository.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new deleteCache.handler.ts:28-30 calls prisma.calendarCache.deleteMany directly. In contrast, connectedCalendars.handler.ts:27-29 reads the cache status through `new CalendarCacheRepository().getCacheStatusByCredentialIds(...)`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0490897
+   }
+  },
+  {
+   "issue": "i36",
+   "path": "DisconnectIntegration.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The disconnect mutation, toasts, invalidations and confirm dialog are copied from DisconnectIntegration.tsx instead of reusing it. The copy drops the original's teamId passthrough and its isDelegationCredential({credentialId}) guard.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new CredentialActionsDropdown.tsx:102-115 and 193-204 copies the credentials.delete mutation, the toasts, both invalidations and the confirm dialog from DisconnectIntegration.tsx:26-40. It calls mutate({ id: credentialId }) at line 199 without the `...(teamId ? { teamId } : {})` from DisconnectIntegration.tsx:46, and it has no isDelegationCredential({credentialId}) guard (DisconnectIntegration.tsx:43); it checks only the delegationCredentialId prop (line 118). The practical effect is small: the replaced call sites in SelectedCalendarsSettingsWebWrapper never passed teamId and already hid the button with the same delegationCredentialId check.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.15453340000000002
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

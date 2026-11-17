@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "IssueOccurrence.__eq__ compares only id (src/sentry/issues/issue_occurrence.py:181-184), and the patch's build_mock_occurrence_and_event (test_detector.py:458-489) never reads value and always uses id eb4b0acffadb4d098d48cb14165ab578. Under freeze_time its event_data is also the same for every group, so the tests already pass with mismatched expectations (e.g. 'val1' against 'group_key', 6 against 100/8/10), and passing wrong arguments at detector.py:~299 would not fail them.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1456878
+}

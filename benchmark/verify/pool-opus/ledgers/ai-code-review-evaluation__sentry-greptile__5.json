@@ -1,0 +1,869 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In fetch_error_details, error_ids are zipped with events.values() from nodestore get_multi(). That dict does not preserve input order: it dedupes ids, merges cached items after fetched ones, and omits missing entries. As a result, error IDs get paired with the wrong event data.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's fetch_error_details pairs IDs and data with `zip(error_ids, events.values())` (patch line ~729). It does not look up each event by its node_id key. In src/sentry/nodestore/base.py:184-210, get_multi removes duplicate ids, adds cached items after the fetched ones (`items.update(cache_items)`), and leaves out entries the backend does not return, so the values can come back in a different order or count than error_ids and get matched to the wrong IDs.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.047247700000000004
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When the use-table-widget-visualization feature flag is enabled, TableWidgetVisualization is rendered with columns=[] and empty tableData. The actual results and loading state are ignored, so the table is always blank.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In static/app/views/dashboards/widgetCard/chart.tsx (patch lines 2035-2045), when the flag is on, TableWidgetVisualization gets hardcoded `columns={[]}` and `tableData={{data: [], meta: {fields: {}, units: {}}}}`. `result.data`, `result.meta` and `loading` are never passed, and the component renders GridEditable from exactly those props (patch lines 2600-2612), so the table is always empty.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0772042
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "src/sentry/features/temporary.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The feature flag 'use-table-widget-visualization' is not registered in src/sentry/features/temporary.py, so the new branch is dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only place 'use-table-widget-visualization' appears in the repo is the new check at static/app/views/dashboards/widgetCard/chart.tsx:164, and src/sentry/features/temporary.py does not register it, so no organization can have it turned on and the TableWidgetVisualization branch never runs.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1067495
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The age/timestamp mutual-exclusion validators in BrowserReportSerializer use the truthiness of self.initial_data.get(...). A value of 0 is therefore treated as absent, and age=0 combined with timestamp passes validation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The validators do test truthiness (change.patch:376 and :382), but the stated result is wrong. With age=0 and a non-zero timestamp, DRF still runs validate_age because age is present, and :382 then rejects it since the timestamp is truthy. Only the edge case age=0 with timestamp=0 gets through.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0432867
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Both age and timestamp are required=False with only field-level validators, so a report with neither field is accepted. The docstrings say one of them must be present.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py:47-48, both age and timestamp are required=False. Their field validators (lines 50-60) only reject reports that have both fields, and DRF skips them when a field is missing. There is no object-level validate(), so a report with neither field passes, even though the docstrings say one of them is present.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.11440140000000001
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "enabled: Boolean(normalizedDateRange) is always true because normalizeDateTimeParams returns an object, so it gates nothing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "normalizeDateTimeParams always returns an object built with Object.fromEntries (static/app/components/organizations/pageFilters/parse.tsx:259-272), so `Boolean(normalizedDateRange)` in useFeedbackSummary.tsx (patch line 1596) is always true. Only the feature-flag check actually controls `enabled`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0544764
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "analytics.record('preprod_artifact.api.assemble') runs before the organizations:preprod-artifact-assemble feature check, so the event is recorded for requests that return 404.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/preprod/api/endpoints/organization_preprod_artifact_assemble.py:81-86, the patch adds analytics.record('preprod_artifact.api.assemble', ...) before the features.has('organizations:preprod-artifact-assemble') check at lines 88-91, which returns 404. So the event is recorded even when the feature is off.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0560747
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The HIDDEN_ATTRIBUTES filter (is_segment, project_id, received) is applied only after the early return for an empty searchQuery. In the default no-search view, those attributes are still shown.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In attributes.tsx:61-63, an empty searchQuery returns `sorted` straight away. The `!HIDDEN_ATTRIBUTES.includes(...)` check at line 67 only runs when a search is entered, so the default view passes is_segment, project_id and received through to the render at lines 135-139.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0647117
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Renderer override detection uses a truthy check ('if (cell)'), so custom renderers that return falsy React nodes (0, '', false, null) fall back to the default renderer. The body-cell renderer has the same check.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In static/app/views/dashboards/widgets/tableWidget/defaultTableCellRenderers.tsx, both the head-cell renderer (line 32) and the body-cell renderer (line 71) use `if (cell) return cell;`, so a custom renderer that returns 0, '', or false falls back to the default renderer. For null or undefined this fallback is probably intended, which makes the issue mostly an edge case.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0403292
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "_truncate_title slices to max_length and then appends '...', so the result can exceed max_length (ISSUE_TITLE_MAX_LENGTH) by 3 characters.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/integrations/source_code_management/commit_context.py (patch lines 265-269), `_truncate_title` returns `title[:max_length].rstrip() + \"...\"`. So a title longer than 50 characters can come back as up to 53 characters, 3 more than ISSUE_TITLE_MAX_LENGTH.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.033211
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "get_environment_info calls issue.get_recommended_event() for each issue in the PR-comment task. This adds a Snuba query plus a nodestore/DB fetch per issue, an N+1 pattern.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patch, the GitHub (github/integration.py:~410) and GitLab (gitlab/integration.py:~256) PR-comment bodies call get_environment_info for each issue. That method calls issue.get_recommended_event() (commit_context.py:~587), which runs a Snuba get_events_snql query plus the event and environment lookups, and falls back to a second query through get_latest_event (models/group.py:305, 881-890). The list is capped at the top 5 issues (tasks.py:134-147), so it costs at most about 5-10 extra queries in a background task.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.14605410000000002
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The useGetTraceItemAttributeValues call defaults to page filters instead of using the provided projectIds prop.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In static/app/views/insights/pages/transactionNameSearchBar.tsx:54-57, useGetTraceItemAttributeValues is called without projectIds, even though the component receives a projectIds prop (line 29/36), so the hook falls back to selection.projects at useGetTraceItemAttributeValues.tsx:100. The old useTraceItemAttributeValues call also left out projectIds; the patch only renamed the hook and dropped attributeKey/enabled.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1624206
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A comment contains the typo 'segements' instead of 'segments'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The comment at src/sentry/replays/usecases/delete.py:88 says \"deleting the segements.\" where it should say \"segments\"; this line is added by the patch (patch line 819).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.033452800000000005
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The PR-comment format change (environment added, culprit dropped, link style changed) ships without a feature flag. Tests do not exercise _truncate_title for titles over 50 chars or get_environment_info's exception branch.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The GitHub and GitLab integrations now always build comments with get_merged_pr_single_issue_template and get_environment_info, with no feature flag check (github/integration.py ~L406-410, gitlab/integration.py ~L254-258; template at commit_context.py:254). The updated tests in tests/sentry/integrations/{github,gitlab}/tasks/test_pr_comment.py only use short titles like \"issue 1\" and never make get_recommended_event raise, so the >50-char branch of _truncate_title (commit_context.py:265-269) and the except branch (commit_context.py:278-283) are never run.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.31789509999999993
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ErrorDetectorValidator's create() override does not persist the owner field inherited from BaseDetectorTypeValidator.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `owner = ActorField(...)` to BaseDetectorTypeValidator and stores it only in the base create() (base/detector.py, patch lines 884 and 916-932). ErrorDetectorValidator overrides create() at src/sentry/workflow_engine/endpoints/validators/error_detector.py:45-53 and calls Detector.objects.create with only project_id, name, type and config, so an owner it accepts is silently dropped.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0981669
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Validation requires attempts to be nonzero, but the Reporting API sends first-delivery reports with attempts: 0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "The patch does require `attempts = serializers.IntegerField(min_value=1)` (src/sentry/issues/endpoints/browser_reporting_collector.py, patch line 368). Whether browsers send `attempts: 0` is about real browser behaviour, and nothing in the repo shows it: the test fixtures all use `\"attempts\": 1` (patch lines 5083, 5099), and the W3C report format the code cites may not include `attempts` at all.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.10087460000000001
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SummaryListContainer is given an inline style={{gridArea: 'list'}} instead of having the style defined via Emotion styled.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In feedbackListPage.tsx, patch lines 4456 and 4469-4473 show `<SummaryListContainer style={{gridArea: 'list'}}>` getting gridArea inline, while its styled('div') definition leaves it out. This copies the existing pattern (`<Container style={{gridArea: 'list'}}>`, `<FeedbackFilters style={{gridArea: 'filters'}} />`), so it is only a style point.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0460145
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The plain <Flex> that replaced FlexCenter lacks overflowEllipsis, so long attachment names can widen the 1fr column instead of truncating.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The removed FlexCenter in static/app/components/events/eventAttachments.tsx (patch lines 1293-1297) included theme.overflowEllipsis, whose overflow:hidden let the grid cell shrink. The plain <Flex align=\"center\"> that replaced it (eventAttachments.tsx:143) has no overflow or min-width rule (core/layout/flex.tsx:18-26), so the cell grows to fit the full no-wrap <Name> text and widens the `1fr auto auto` column (eventAttachments.tsx:200). The PanelTable then scrolls sideways (panelTable.tsx:177) instead of truncating.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.42669670000000004
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Each paginated page's Seer request receives the full error list via functools.partial with all error_events. Unemitted errors are appended at the end of every page, so errors repeat across pages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "project_replay_summarize_breadcrumbs.py binds the full error_events list into on_results through functools.partial(analyze_recording_segments, error_events) (patch line 711), so every page gets all errors. gen_request_data (patch lines 753-779) emits errors older than the page's events inline and appends the rest at the end, so each page's Seer request includes every error and errors repeat across pages.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.227692
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new useTraceItemAttributeKeys hook has no colocated spec, and its substringMatch/queryString path is not exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The claim gets the hook's name wrong: useTraceItemAttributeKeys is not new and already has a spec (useTraceItemAttributeKeys.spec.tsx). The hook this patch adds is useGetTraceItemAttributeKeys (static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx:55), and it has no useGetTraceItemAttributeKeys.spec.tsx. Its queryString\u2192substringMatch path (lines 46, 65-71) is never tested, because the existing spec only reaches it through useTraceItemAttributeKeys, which calls getTraceItemAttributeKeys() with no argument (useTraceItemAttributeKeys.tsx queryFn).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1962033
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The rewritten tests no longer post content_type='application/reports+json', so BrowserReportsJSONParser has no positive-path test coverage.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes the only two posts that used content_type=\"application/reports+json\" (change.patch:5146 and :5209). test_basic and test_handles_multiple_reports_both_specs now post without it, and no file under tests/ uses that media type anymore, so the parser at src/sentry/issues/endpoints/browser_reporting_collector.py:69 is never tested on a successful request.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3118569
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Rows include an 'id' column, but meta.fields/meta.units do not list it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new fixture static/app/views/dashboards/widgets/tableWidget/fixtures/sampleHTTPRequestTableData.ts (patch lines 2209-2230), every row has `id: ''`, but `meta.fields` and `meta.units` (patch lines 2233-2240) list only 'http.request_method' and 'count(span.duration)'. The columns are built from meta.fields (tableWidgetVisualization.tsx, patch line 2602), so 'id' is never shown.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.4021688
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The feedbackSummary component and useFeedbackSummary hook have no colocated .spec.tsx, so the tooFewFeedbacks logic and the hide/placeholder states are untested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds static/app/components/feedback/feedbackSummary.tsx:1-64 and static/app/components/feedback/list/useFeedbackSummary.tsx:1-67 but no spec file, and no *.spec.* file under static/ mentions feedbackSummary, useFeedbackSummary or tooFewFeedbacks. That leaves untested the tooFewFeedbacks check (`numFeedbacksUsed === 0 && !success`, useFeedbackSummary.tsx:65) and the return-null and Placeholder branches (feedbackSummary.tsx:16-26).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1128608
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The fit, frameless and scrollable props (and FRAMELESS_STYLES) have no caller, and the required tableData prop is read with optional chaining.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In static/app/views/dashboards/widgets/tableWidget/tableWidgetVisualization.tsx, the props fit, frameless and scrollable (lines 31-63) and FRAMELESS_STYLES (line 66) are only used inside the component itself. No caller sets them: not chart.tsx:165, the stories file or the spec file. The required `tableData: TabularData` (line 21) is still read as `tableData?.meta.fields` and `tableData?.data` (lines 94-103).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.32675160000000003
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useProjectFromId returns undefined while the projects store loads, so the page shows 'Project not found. Unable to load AI summary.' instead of a loading state.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "useProjectFromId (static/app/utils/useProjectFromId.tsx:7-13) just searches `useProjects().projects` and ignores the `fetching`/`initiallyLoaded` loading flags that useProjects provides (useProjects.tsx:301-313). So while the store is still loading it returns undefined, and the check this patch adds at static/app/views/replays/detail/ai/index.tsx:90-96 shows the 'Project not found' error before it ever reaches the isPending loading branch at line 98.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1051218
+   }
+  },
+  {
+   "issue": "i26",
+   "path": "src/sentry/replays/usecases/delete.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test sets max_segment_id: None but mocks delete_matched_rows, so the None guard in delete.py is never exercised; the 0 case was removed from the fixture.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/sentry/replays/tasks/test_delete_replays_bulk.py:82-97 the patch changes the fixture's `max_segment_id` from 0 to None, but that test patches `delete_matched_rows`, so the new None check in `_make_recording_filenames` (src/sentry/replays/usecases/delete.py:87-90) never runs; no test calls `_make_recording_filenames` directly. The 0 value was dropped only from that one test; the first-run test at line 50 still uses 0.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2816802
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "After the single-yAxis refactor, several sites still build 'const dedupedYAxes = [visualize.yAxis]' and map over a one-element array. Visualize.stack is always 'all' but is typed optional and computed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch replaces `dedupeArray(visualize.yAxes)` with `const dedupedYAxes = [visualize.yAxis]` (or `[yAxis]` / `[chart.yAxis]`) at several sites and still maps over the one-element array (change.patch:2662, 3298, 3307, 3360, 3806, 4202, 4433). In the Visualize class, `stack?: string` is still optional, yet the constructor now always sets `this.stack = 'all'` (change.patch:3153, 3166).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0452978
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Error node ids are built with the replay's project_id, so errors from other projects in the replay's error_ids are dropped.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`fetch_error_details` does build node ids from the replay's project id (src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:718), but the `error_ids` it receives come from `query_replay_instance(project_id=project.id, ...)` (line 680; src/sentry/replays/query.py:83-101), which only reads rows for that project. Errors linked from other projects are written as rows under their own project (src/sentry/replays/lib/event_linking.py:137), so they never reach `error_ids` and the node-id step has nothing from other projects to drop.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3093825
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Snuba replay query for error ids runs even when enable_error_context is false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py, get() calls query_replay_instance() and process_raw_response() to collect error_ids (patch lines 680-694) before it reads enable_error_context (lines 697-699), so the Snuba query runs even when the flag is false and its result is then thrown away.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.23827759999999998
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The code uses a broad 'except Exception' catch instead of catching specific exceptions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds two broad `except Exception` handlers: one in `src/sentry/integrations/source_code_management/commit_context.py` `get_environment_info` (patch line 278), which logs and returns \"\", and one in `src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py` `fetch_error_details` (patch line 732), which reports the error to Sentry and returns []. Both are deliberate best-effort fallbacks that record the error rather than silently dropping it, so the broad catch is a style choice, not a bug.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08555560000000001
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The story text contains a duplicated 'the' in 'Below is the the most basic example'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new file static/app/views/dashboards/widgets/tableWidget/tableWidgetVisualization.stories.tsx:27 contains 'Below is the the most basic example of the table which requires'. The patch adds this file (patch line 2388).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0365663
+   }
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Recording analytics with request.user.id may raise an error for anonymous users.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "With org-auth-token auth, request.user is Django's AnonymousUser, whose `id` attribute is None, so `request.user.id` at src/sentry/preprod/api/endpoints/organization_preprod_artifact_assemble.py:85 returns None rather than raising. The event declares `analytics.Attribute(\"user_id\", required=False)` (src/sentry/preprod/analytics.py:11), so None is accepted.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.25699310000000003
+   }
+  },
+  {
+   "issue": "i33",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When useApiQuery is disabled or idle, data can be undefined, so accessing data.summary throws.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In useFeedbackSummary.tsx (patch lines 1602-1621), the hook returns early when isPending or isError is true. In TanStack Query v5, a disabled or idle query with no data has status 'pending', so it hits the isPending branch. The only way to reach data.summary is status 'success', where data is always defined.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.047400700000000004
+   }
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The error/breadcrumb interleave compares nodestore error timestamps (seconds) against rrweb event timestamps (milliseconds). As a result, every error is emitted before the first breadcrumb.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py, fetch_error_details reads `data.get(\"timestamp\")` from nodestore, which is a float in seconds. gen_request_data then checks it with `< event.get(\"timestamp\", 0)` against rrweb event timestamps, which are in milliseconds, so the check is always true and every error is emitted before the first rrweb event; the new test passes only because it puts both in the same made-up units (patch lines 5831-5873).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.27249389999999996
+   }
+  },
+  {
+   "issue": "i35",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "_handle_regex_match inside parametrize_w_experiments is dead code after its only caller branch was deleted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch deletes the only call, the `experiment.run(content, _handle_regex_match)` else-branch (change.patch:156-159). That leaves the nested `_handle_regex_match` in parametrize_w_experiments (src/sentry/grouping/parameterization.py:335-343) defined but never used. Only `_incr_counter` is passed at line 349.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.06780960000000001
+   }
+  },
+  {
+   "issue": "i36",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The issue title is interpolated unescaped into markdown link text [**{title}**]({url}), so titles containing ']' break the link.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/integrations/source_code_management/commit_context.py, MERGED_PR_SINGLE_ISSUE_TEMPLATE is now \"* \u203c\ufe0f [**{title}**]({url}){environment}\\n\". get_merged_pr_single_issue_template only shortens the title with _truncate_title and fills it in with .format, without escaping ']' or other markdown characters. Before the patch the title was only bold text (\"**{title}**\") and sat outside any link, so a ']' in it could not break a link.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0698548
+   }
+  },
+  {
+   "issue": "i37",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BrowserReportingCollectorEndpoint returns HttpResponse objects although it inherits from Endpoint, which expects rest_framework Response objects.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch replaces every HttpResponse with rest_framework Response in src/sentry/issues/endpoints/browser_reporting_collector.py (lines 91, 104, 115, 130), drops the django.http HttpResponse import, and changes the return annotation to Response.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.084223
+   }
+  },
+  {
+   "issue": "i38",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requests.post call to Snuba in tests has no timeout.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `store_replays` in the replay summarize-breadcrumbs test (change.patch lines 5670-5674). It calls `requests.post(settings.SENTRY_SNUBA + \"/tests/entities/replays/insert\", json=[replay])` with no `timeout` argument.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0442529
+   }
+  },
+  {
+   "issue": "i39",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The pending/error/success branches build the same return object three times, and the feature flag is checked both here and in feedbackSummary.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "useFeedbackSummary.tsx:43-66 builds a return object with the same four keys three times (pending, error, success), with only the values changing. The 'user-feedback-ai-summaries' flag is checked at useFeedbackSummary.tsx:38 (query `enabled`) and again at feedbackSummary.tsx:16.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.28911499999999996
+   }
+  },
+  {
+   "issue": "i40",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The owner-to-owner_user_id/owner_team_id mapping is duplicated between update and create.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The same is_user/is_team \u2192 owner_user_id/owner_team_id branching appears twice: once in update() at src/sentry/workflow_engine/endpoints/validators/base/detector.py:66-79 and again in create() at detector.py:120-127. No shared helper exists; both copies were added by this patch.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.24047969999999996
+   }
+  },
+  {
+   "issue": "i41",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "UseGetTraceItemAttributeValuesProps extends UseTraceItemAttributeBaseProps, which provides projects?: Project[], while the hook uses projectIds?: number[]. The two types are incompatible.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`projects?: Project[]` (types.tsx:4373 in the patch) and `projectIds?: PageFilters['projects']` (useGetTraceItemAttributeValues.tsx, patch line 3582) are differently named properties, so the interface extends its base cleanly with no type conflict. At most, `projects` is accepted but ignored by the hook, and that was already true before the patch.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0771831
+   }
+  },
+  {
+   "issue": "i42",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TriggerLabelWrap renders a span that wraps Flex's div, nesting a div inside a span.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`TriggerLabelWrap` is `styled('span')` (for example, static/app/components/codecov/branchSelector/branchSelector.tsx:79 and repoPicker/repoSelector.tsx:165), and `Flex` is `styled('div')` (static/app/components/core/layout/flex.tsx:18,48), so a div sits inside a span. The removed `FlexContainer` was also a `styled('div')`, so the same nesting existed before the patch.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.09315670000000001
+   }
+  },
+  {
+   "issue": "i43",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "format_comment_subtitle in the github and gitlab integrations has no remaining caller, and _truncate_title's max_length parameter is never passed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Searching the whole repo, tests included, finds only the definitions of format_comment_subtitle (github/integration.py:394, gitlab/integration.py:240), because the patch removed their only callers (patch lines 213, 239). The one caller of _truncate_title (commit_context.py:601) passes only `title`, so max_length (commit_context.py:578) always takes its default.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.24146030000000002
+   }
+  },
+  {
+   "issue": "i44",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ErrorEvent.category is always 'error' and is never read; generate_error_log_message uses only title, message and timestamp.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patched project_replay_summarize_breadcrumbs.py, fetch_error_details always sets category=\"error\" (patch line 723), and generate_error_log_message reads only error[\"title\"], error[\"message\"] and error[\"timestamp\"] (patch lines 737-742). No other code reads ErrorEvent's category; the other category lookups under src/sentry/replays work on replay breadcrumb payloads, not ErrorEvent.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0587907
+   }
+  },
+  {
+   "issue": "i45",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Invalid list reports now return a 422 with a JSON body, where the old response had an empty body. The non-list branch still returns a body-less Response(status=422), so error formats are inconsistent.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py, a non-list payload gets `Response(status=HTTP_422_UNPROCESSABLE_ENTITY)` with no body (line 104), while a list report that fails validation gets a 422 with a JSON body `{\"error\": ..., \"details\": ...}` (lines 115-118). One small correction: before this patch, an invalid list report made `BrowserReport(**report)` raise a TypeError, which most likely produced a 500, not a 422 with an empty body.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.23855649999999998
+   }
+  },
+  {
+   "issue": "i46",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The refactor changes behaviour: it drops staleTime:0/retry:false, makes isLoading reflect isFetching, and discards responseJSON in the thrown Error. It also makes useMemos recompute every render because projectIds is a fresh array, builds options twice, and leaves the search parameter with no caller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In useTraceItemAttributeKeys.tsx:26-33 the new useQuery call omits staleTime:0 and retry:false; staleTime 0 is already the default, so the real change is that failed requests now retry. That file also returns `isLoading: isFetching` and builds a fresh `projects.map(...)` array every render, which the useMemo/useCallback hooks list as a dependency. In useGetTraceItemAttributeKeys.tsx the catch block throws `new Error(`...${e}`)`, which loses responseJSON; the options are built a second time inside the callback; and `queryFn: () => getTraceItemAttributeKeys()` is the only caller, so the search parameter is never passed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4797714
+   }
+  },
+  {
+   "issue": "i47",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BaseDetectorTypeValidator.update() sets instance.type from validated_data.get('detector_type') instead of validated_data.get('type').",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/workflow_engine/endpoints/validators/base/detector.py:64, update() reads validated_data.get(\"detector_type\", instance.group_type). The serializer field is `type` (line ~35, set by validate_type), and nothing in workflow_engine ever fills in a `detector_type` key, so update() always falls back to the existing type and a requested type change is silently ignored.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0682675
+   }
+  },
+  {
+   "issue": "i48",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The serializer makes destination and attempts required, but browsers do not send them, and one invalid report rejects the whole batch.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py:43-44, `destination` and `attempts` are required fields. In the patched post(), the first report that fails validation returns HTTP 422 for the whole array before any report is processed (patch lines 418-429). Under the W3C Reporting spec, browsers send only age/timestamp, type, url, user_agent and body; destination and attempts stay inside the browser. So real payloads fail validation, and the patch's tests pass only because their fixtures include both fields (tests/sentry/api/endpoints/test_browser_reporting_collector.py:23-25, 39-41).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.2800296
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

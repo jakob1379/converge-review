@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "error_upsampling.py:27-38 caches the eligibility result for 60s under a key built only from the org id and a hash of the project ids, not the allowlist. `invalidate_upsampling_cache` (line 67) is never called anywhere, so after a project is removed from the FLAG_AUTOMATOR_MODIFIABLE allowlist (defaults.py:3464-3467), its counts stay upsampled for up to 60s. That defeats the 'fresh each time ... intentional' note at lines 50-53.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.070078
+}

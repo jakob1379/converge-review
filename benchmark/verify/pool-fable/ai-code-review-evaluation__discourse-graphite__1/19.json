@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`FileHelper.images` includes \"svg\" (lib/file_helper.rb:31), and the new loop at app/controllers/uploads_controller.rb:64-69 is gated only on `FileHelper.is_image?(filename)`, so an oversized SVG is passed to `convert <path>[0] -resize 80% <same path>` (app/models/optimized_image.rb:126-134) with no SVG guard, unlike the special-casing at app/models/optimized_image.rb:45 and app/models/upload.rb:63. What ImageMagick actually writes back was not run here; it depends on the installed delegates.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2514071
+}

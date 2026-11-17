@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/server/wire.go:374-375 still registers anonstore.ProvideAnonDBStore and binds AnonStore, but the patch changed the provider to ProvideAnonDBStore(sqlStore db.DB, deviceLimit int64) (anonstore/database.go:52) and no Wire provider returns int64. ProvideAnonymousDeviceService now builds its own store from cfg.AnonymousDeviceLimit (impl.go:43), and wire_gen.go is not checked in, so Wire generation fails and the binding has no consumers.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.12827210000000003
+}

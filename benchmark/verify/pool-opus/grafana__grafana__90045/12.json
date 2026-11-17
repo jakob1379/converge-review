@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new Mode3 Delete, any error from Storage.Delete, NotFound included, causes an immediate `return res, async, err` (change.patch:177-181), so the legacy delete goroutine (change.patch:185-191) never runs. The old code ignored NotFound and still called Legacy.Delete (change.patch:154-162), so objects that exist only in legacy are no longer deleted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0584621
+}

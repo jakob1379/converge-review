@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In scheduleSMSReminders.ts:159-177, if twilio.scheduleSMS succeeds but the update that stores `scheduled: true`/`referenceId` throws, the catch block at 189-197 only increments retryCount. The next run schedules the SMS on Twilio again, and once retryCount > 1 the new OR branch in deleteMany (lines 38-42) deletes the row while those Twilio jobs are still scheduled and have no stored referenceId.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0782434
+}

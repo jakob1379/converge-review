@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `rejectedEmails: Em.A([])` to the controller definition (create_account_controller.js:17) and only ever pushes to it (line 275). It has no `onShow` hook and nothing clears it, so `emailValidation` (line 69) keeps failing for that address until the page is reloaded, even after the address is unblocked.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.07541429999999999
+}

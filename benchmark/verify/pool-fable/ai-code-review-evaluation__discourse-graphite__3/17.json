@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`pushObject` at app/assets/javascripts/discourse/controllers/create_account_controller.js:275 does not dedupe, but the same email cannot be resubmitted: once it is in `rejectedEmails`, `emailValidation` fails (line 69) and `submitDisabled` (line 22) blocks both the button and the Enter-key path (create_account_view.js:22). The server echoes the email unmodified (app/models/user.rb:87, app/controllers/users_controller.rb:199), so the strict `contains` check always matches.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.49332600000000004
+}

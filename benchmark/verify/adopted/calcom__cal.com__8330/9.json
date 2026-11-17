@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/slots.ts:212-213 (added by the patch) call `dayjs(override.start.toString())`. `Date#toString()` produces a non-ISO string with no milliseconds, so dayjs hands it to `new Date(string)`, which is engine-dependent. Using `dayjs(override.start)` gives the same instant directly, as lines 219-223 already do.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0780883
+}

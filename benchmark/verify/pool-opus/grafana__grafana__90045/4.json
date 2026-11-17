@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3_test.go:72-74, the error from `meta.Accessor(obj)` is checked with `assert.NoError`, which does not stop the test. The next line calls `acc.GetResourceVersion()`, so if the accessor fails it returns nil and that call panics instead of failing cleanly. `require.NoError` would stop the test first.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0435361
+}

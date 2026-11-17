@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:24-27 compares the request header to process.env.CALCOM_WEBHOOK_SECRET with plain `!==`, and no constant-time comparison such as crypto.timingSafeEqual is used; the file is newly added by this patch.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2015382
+}

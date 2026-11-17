@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The second `def self.downsize(from, to, dimensions, opts={})` (app/models/optimized_image.rb:149) replaces the 5-argument version at :145, so `OptimizedImage.downsize(path, path, 100, 100, opts)` in app/jobs/regular/resize_emoji.rb:14 raises ArgumentError even though it passes allow_animation: true. In app/controllers/uploads_controller.rb:67, the Rack 1.5 upload tempfile path most likely has no .gif extension (from memory; I couldn't open the gem), so the animated branch at optimized_image.rb:155 is skipped; if it were taken, gifsicle `--resize-fit 80%` (:120) would fail because it needs WxH (also from memory). Note: allow_animation still works for resize (upload.rb:98, create_for); it is dead only for downsizing.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1357645
+}

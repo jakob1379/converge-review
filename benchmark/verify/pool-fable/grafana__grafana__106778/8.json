@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/hooks/useIsRuleEditable.ts:19-25 calls featureDiscoveryApi.endpoints.discoverDsFeatures.useQuery() unconditionally, and the `if (!rule)` early return only comes at line 43. This file is not in the patch, the hook cannot be called after an early return anyway, and for the Grafana source the query resolves locally with no network request (featureDiscoveryApi.ts:46-55).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3219657
+}

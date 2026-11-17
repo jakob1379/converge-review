@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/anonymous/anonimpl/impl.go:83-87 returns nil on a cache hit and sets the key before CreateOrUpdateDevice (impl.go:93), with no eviction when it returns ErrDeviceLimitReached (anonstore/database.go:96). Only the first request from an over-limit device is rejected in client.go:44-46; later ones get nil from TagDevice and authenticate as anonymous until the 29-minute cache TTL (impl.go:42) expires.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.33745959999999997
+}

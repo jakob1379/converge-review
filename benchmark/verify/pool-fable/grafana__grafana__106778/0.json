@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/rule-list/FilterView.tsx:157-162 renders <GrafanaRuleListItem> inside rules.map without key, while the siblings at :165 and :169 pass key={key}; the patch removed the GrafanaRuleLoader that had key={key} (change.patch:607-608). The list is append-only (:106), so the effect is mainly a React missing-key warning and index-based reconciliation, not visibly wrong behaviour.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1675904
+}

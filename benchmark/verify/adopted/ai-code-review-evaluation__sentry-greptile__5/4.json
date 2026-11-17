@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "normalizeDateTimeParams always returns an object built with Object.fromEntries (parse.tsx:272), so Boolean(normalizedDateRange) at useFeedbackSummary.tsx:37 is always true. The query is gated only by the 'user-feedback-ai-summaries' feature flag check (line 38).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0658811
+}

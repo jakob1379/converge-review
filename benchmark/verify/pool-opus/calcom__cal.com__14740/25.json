@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At apps/web/components/dialog/AddGuestsDialog.tsx:26-29, ZAddGuestsInputSchema checks uniqueness with `new Set(emails)` on the raw strings, without lowercasing, so User@x.com and user@x.com count as different. The server schema (addGuests.schema.ts:3-6) has no uniqueness check, and the handler compares guests to existing attendees case-sensitively (addGuests.handler.ts:76-79), so both addresses would be stored.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1398535
+}

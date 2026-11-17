@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new testCacheIDPForLogin, OrganizationCacheTest.java:380 and :424 call testRealm().identityProviders().create(idpRep).close() and never check the response status. The pre-existing test at :302 does the same. A failed create would only show up indirectly, when the later assertEquals on the IDP counts fail.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11987989999999998
+}

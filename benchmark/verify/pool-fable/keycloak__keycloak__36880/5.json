@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The owner ids are the same value: `ResourceServer.getClientId()` returns `getId()` in both implementations (model/jpa/.../ResourceServerAdapter.java:91-93, model/infinispan/.../ResourceServerAdapter.java:121-123). So the lookup at ClientPermissionsV2.java:214 (name `client.getId()`, owner `server.getId()`) matches resources created at AdminPermissionsSchema.java:104 (name from `resolveClient` = `client.getId()`, owner `resourceServer.getClientId()`).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5241481
+}

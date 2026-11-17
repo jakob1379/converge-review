@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The fetch at packages/app-store/_utils/oauth/refreshOAuthTokens.ts:8 has no local try/catch, but a network failure is not unhandled: it rejects the awaited promise and propagates to the callers, exactly as the direct fetch/axios calls this patch replaced did. Several callers already wrap it in try/catch (googlecalendar/lib/CalendarService.ts:85-86, hubspot/lib/CalendarService.ts:176-177, larkcalendar/lib/CalendarService.ts:65-67), and the rest (e.g. zoomvideo/lib/VideoApiAdapter.ts:79) propagate as they did before the patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.6928722
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/index.ts:3-30, every value is a bare `import(\"./x\")` call inside the object literal, so all 28 dynamic imports start as soon as the module is evaluated. Nothing defers them to key access (no getter or `() => import(...)` thunk), so the change only makes loading async, not lazy.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1131286
+}

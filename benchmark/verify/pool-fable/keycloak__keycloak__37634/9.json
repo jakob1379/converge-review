@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "TokenManager.initToken (services/.../TokenManager.java:1052-1054) now unconditionally calls DefaultTokenContextEncoderProvider.getTokenContextFromClientSessionContext, which at DefaultTokenContextEncoderProvider.java:54 calls AbstractOIDCProtocolMapper.getShouldUseLightweightToken, which dereferences session.getContext().getClient() with no null check (AbstractOIDCProtocolMapper.java:86). The hazard is latent, though: every in-tree caller I traced (token endpoint grants, ClientsResource.java:251, PermissionGrantType.java:85/108) sets the context client first, and before the patch any standard mapper already hit the same dereference.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.0861861
+}

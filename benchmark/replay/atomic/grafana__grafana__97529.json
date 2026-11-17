@@ -1,0 +1,266 @@
+{
+ "findings": [
+  {
+   "path": "pkg/storage/unified/resource/server.go",
+   "line": 320,
+   "severity": "Minor",
+   "claim": "Every per-request s.Init(ctx) call was removed, so nothing reads s.initErr after construction. Requests made after Stop are no longer rejected, and the 'service is stopping' / 'service is stopped' values that Stop writes to initErr are now dead.",
+   "evidence": "Before the patch, Create, Update, Delete, Read, List, Watch, Search, History, Origin, IsHealthy, PutBlob and GetBlob each called Init, and Init returned the stored initErr once the sync.Once had run. mattpocock: `grep -n initErr pkg/storage/unified/resource/*.go` finds no reader outside Init and Stop. open-code-review: after Stop, writes still reach the open DB but no watch events are published, and Watch returns io.EOF. superpowers: RPCs now run against a cancelled broadcaster and a stopped backend. ponytail: the initErr values are read only by Stop's own return. No test covers this (`grep 'service is stop' pkg --include=*_test.go` finds nothing). All seats reasoned it; none reproduced it.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Severity is normalised to Minor: both correctness seats rated it Minor, and superpowers cites that Stop is not on the ResourceServer interface and has no external callers today. mattpocock rated it Important. Fix: either gate the handlers on a stopped state or delete the dead initErr writes. Choosing between the two is a design decision.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/storage/unified/resource/search.go",
+   "line": 216,
+   "severity": "Important",
+   "claim": "The new log line calls s.search.TotalDocs(), which ranges over b.cache without holding cacheMu. A concurrent BuildIndex write to b.cache can therefore cause the fatal, unrecoverable runtime error 'concurrent map iteration and map write' during startup.",
+   "evidence": "TotalDocs iterates b.cache unlocked (bleve.go:144-154). Writes happen under cacheMu.Lock() (bleve.go:137-139). The event goroutine starts at search.go:207-213, before the call at :216. Its path handleEvent \u2192 getOrCreateIndex \u2192 build \u2192 BuildIndex writes b.cache[key]. BleveIndexMetrics.Collect (bleve_index_metrics.go:96) reaches the same unlocked read on every Prometheus scrape. The narrowed lock now lets up to index_workers (default 10) builds write the cache in parallel. Proposed red test (open-code-review): TestTotalDocsRace calls BuildIndex for N keys concurrently with a TotalDocs loop, run under `go test -race ./pkg/storage/unified/search/`. It has not been run.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Severity is normalised to Important because the failure is an unrecoverable process crash. superpowers rated it Minor because the window is small (the first poller tick is 100 ms away). open-code-review and ponytail rated it Important. It is unverified until the -race test fails on the pinned code. Proposed fix: take b.cacheMu.RLock() in TotalDocs.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/server/module_server_test.go",
+   "line": 35,
+   "severity": "Important",
+   "claim": "The patch skips the only postgres integration test that covers storage-server startup ('test not working with postgres in Drone. Works locally.'). The skip hides a failure that this patch's eager init exposed instead of fixing it.",
+   "evidence": "The branch history shows the failure being worked around before the skip: 29db0d39b0 'wait 1 second before querying metrics', 1095580dce 'try with big timeout', 6f4d70876a 'skips postgres integration test\u2026 Will fix later', 45e0089891 'put delay back to 500 ms'. Eager init now moves lifecycle.Init (DB migrations and ping), the search index build and the watcher start into the constructor that sql/service.go:start calls. The seats disagree on the root cause. mattpocock and open-code-review suspect startup latency or blocking. superpowers says the test hardcodes db_host 'localhost' for postgres while Drone runs postgres at POSTGRES_HOST=postgres. mattpocock adds that the skip goes against contribute/create-pull-request.md:22.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red check: remove the skip and run `GRAFANA_TEST_DB=postgres POSTGRES_HOST=postgres go test ./pkg/server -run TestIntegrationWillRunInstrumentationServerWhenTargetHasNoHttpServer` with postgres not on localhost. This red check also settles the root-cause disagreement. It is unverified until run.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/storage/unified/resource/server.go",
+   "line": 260,
+   "severity": "Minor",
+   "claim": "One init failure is logged twice with the same message 'error initializing resource server': once inside Init and again in NewResourceServer just before the error is returned.",
+   "evidence": "The two log sites are server.go:313-315 (Init) and server.go:258-262 (constructor), with the same message and the same 'error' key. mattpocock: instrumentation.md reserves Error level for errors the program cannot handle, and this error is returned to the caller.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Drop the constructor's log line and return the error.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/storage/unified/resource/server.go",
+   "line": 934,
+   "severity": "Minor",
+   "claim": "IsHealthy no longer consults initErr, so it reports healthy from diagnostics even while the server is stopping or stopped.",
+   "evidence": "IsHealthy previously called s.Init and returned initErr after Stop. It now goes straight to diagnostics. Reasoned, not run.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat, so not fixed in this loop. Same cause as the main-list post-Stop finding. mattpocock rated it Important as part of that finding. It is normalised to Minor because Stop has no external callers (per superpowers).",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/resource/server.go",
+   "line": 258,
+   "severity": "Minor",
+   "claim": "When Init fails, NewResourceServer returns without calling s.cancel() or lifecycle.Stop. This leaks the context and goroutines. If search.init succeeded and initWatcher then failed, the search watch goroutine and its sql poller keep running.",
+   "evidence": "The search goroutine at search.go:204-212 subscribes with context.Background() and loops forever. The sql poller stops only on b.done. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats, so not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/resource/search.go",
+   "line": 189,
+   "severity": "Minor",
+   "claim": "This data race existed before the patch but is now more likely. errgroup workers in searchSupport.init write the shared outer err and totalBatchesIndexed++ without synchronization.",
+   "evidence": "Previously the function-wide cacheMu lock in BuildIndex serialized most of the build work. Now up to index_workers (default 10) builds run in parallel. Seats expect `go test -race` on an init with 2 or more stats rows to flag it. Not run.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats, so not fixed in this loop. mattpocock named this race only as something it did not check, so it is not counted as raising it.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/search/bleve.go",
+   "line": 85,
+   "severity": "Minor",
+   "claim": "With the global build lock removed, two builds of the same key can now overlap. getOrCreateIndex is check-then-act with no per-key guard. The build that finishes last overwrites b.cache[key], and writes that handleEvent made to the discarded index are lost.",
+   "evidence": "getOrCreateIndex is at resource/search.go:288-306. The lost-write problem existed before: the old lock serialized builds but never re-checked the cache. The patch makes overlap more likely. Reasoned.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat, so not fixed in this loop. superpowers judged narrowing the lock safe in itself because the old lock never prevented duplicate builds. That agrees the problem predates the patch but does not disprove the increased likelihood, so the finding is not rejected.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/resource/server.go",
+   "line": 258,
+   "severity": "Important",
+   "claim": "Eager Init now runs inside the wire graph of every Grafana process. A failure or hang in the resource DB or in search now blocks Grafana from booting, where before it only broke unified-storage requests. Every boot also runs MigrateResourceStore and starts a poller that runs forever. All of this runs on context.Background() with no deadline.",
+   "evidence": "ProvideUnifiedStorageClient (pkg/storage/unified/client.go:100) calls sql.NewResourceServer, and apiserver.ProvideService always takes that client (pkg/services/apiserver/service.go:147). The poller queries listLatestRVs every 100 ms (defaultPollingInterval, sql/backend.go:28), and a second poller starts when unifiedStorageSearch is on. The blast radius may be intended but is not documented. Reasoned, no test.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat, so not fixed in this loop. It needs a deliberate design decision on boot-time impact.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/search/bleve.go",
+   "line": 98,
+   "severity": "Important",
+   "claim": "With search enabled, Grafana fails to start on every restart after the first. bleve.New returns ErrorIndexPathExists for an existing on-disk index directory, and eager init turns that error into a NewResourceServer failure.",
+   "evidence": "index_file_threshold defaults to 10 and index_path defaults to '' (setting_unified_storage.go:41-44). Any resource with more than 10 objects gets a file index via bleve.New(dir, \u2026). Nothing deletes or reopens that directory, and the RV check is still a TODO. superpowers says bleve v2 indexMeta.Save opens index_meta.json with O_EXCL. Both seats recall the bleve behaviour from memory; neither read the v2.4.3 source.",
+   "seats": [
+    "superpowers",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats, so not fixed in this loop. It is unverified until the bleve v2.4.3 source is read or a second start is tried against an existing index directory.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/server/module_server_test.go",
+   "line": 76,
+   "severity": "Important",
+   "claim": "Proposed root cause of the Drone failure: the test helper hardcodes db_host 'localhost' for postgres. Eager init now opens the DB in NewResourceServer, so the wrong host breaks storage-server startup in Drone. The fix is to read POSTGRES_HOST and remove the skip.",
+   "evidence": "Drone sets POSTGRES_HOST: postgres (.drone.yml:1155; scripts/drone/steps/lib.star:1071). The mysql branch of the same helper already parses the host because 'cant use localhost as hostname in drone tests' (line 81). sqlutil.go:138 shows the POSTGRES_HOST pattern.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat, so not fixed in this loop. The red check for the main-list test-skip finding will settle this cause.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/resource/server.go",
+   "line": 258,
+   "severity": "Minor",
+   "claim": "No test covers the new contract. Nothing checks that NewResourceServer returns an error when lifecycle.Init, search init or watcher init fails, or that handlers work without a lazy Init.",
+   "evidence": "The patch touches no test file except the skip. The existing server_test.go and watcher_test.go never exercise the eager-init failure path. mattpocock cites contribute/create-pull-request.md:22.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats, so not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/apistore/watcher_test.go",
+   "line": 148,
+   "severity": "Minor",
+   "claim": "The test still calls Init itself before constructing the server. That call is now redundant.",
+   "evidence": "The constructor now calls Init eagerly. The extra call is harmless.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat, so not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/resource/server.go",
+   "line": 286,
+   "severity": "Minor",
+   "claim": "The sync.Once guard and the Init wrapper are leftover lazy-init scaffolding. Init has exactly one caller, so it could be a plain unexported init with sequential early returns.",
+   "evidence": "`grep -rn \"\\.Init(\" pkg --include=*.go` finds only server.go:258 for this type. *server is unexported, Init is not on the ResourceServer interface (server.go:27-32), and nothing type-asserts it. The change would save about 12-15 lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 advisory seat, so not fixed in this loop. The initErr part of this point is merged into the main-list post-Stop finding.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/resource/search.go",
+   "line": 216,
+   "severity": "Minor",
+   "claim": "The log message 'search index initialized' does not start with a capital letter.",
+   "evidence": "contribute/backend/instrumentation.md, 'Logs / Naming conventions': 'Start the log message with a capital letter'. Every other s.log message in the package is lowercase too.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 advisory seat, so not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/resource/search.go",
+   "line": 216,
+   "severity": "Minor",
+   "claim": "The log keys 'duration_secs' and 'total_docs' use snake_case instead of camelCase.",
+   "evidence": "contribute/backend/instrumentation.md: 'prefer using camelCase style when naming log keys'.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 advisory seat, so not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/server/module_server_test.go",
+   "line": 35,
+   "severity": "Minor",
+   "claim": "The new 'TODO - fix this test for postgres' has no owner or issue link, and the test skip depends on it.",
+   "evidence": "No documented Grafana Go rule covers TODO format. This is a judgement call.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 advisory seat, so not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/storage/unified/search/bleve.go",
+   "line": 100,
+   "severity": "Minor",
+   "claim": "The new 'TODO, check last RV\u2026' is a log line turned into a comment, padded with blank lines, with no owner or issue link.",
+   "evidence": "No documented rule covers this. This is a judgement call.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 advisory seat, so not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "(commit history 871af07203..HEAD)",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Commit subjects such as 'dont lazy init unified storage' and 'linter fix' do not follow the documented commit and PR title style.",
+   "evidence": "contribute/create-pull-request.md:90-125 asks for a capitalized imperative subject and a PR title of the form '<Area>: <Summary>'. Commits are squashed, so this matters only if the PR title is not fixed.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 advisory seat, so not fixed in this loop.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "No seat skipped any file: all 5 patch files were reviewed by every seat (pkg/server/module_server_test.go, resource/search.go, resource/server.go, search/bleve.go, sql/backend.go). open-code-review's default path rules would have excluded module_server_test.go, but that seat reviewed it anyway. Axes that did not run or ran only partly: (1) The gate was not run (benchmark mode), so the review is unanchored and has no executed ground truth. (2) There is no spec; every seat inferred intent from the branch name 'unified-storage-dont-lazy-init'. (3) No seat ran builds, tests or -race, so every finding is reasoned, not reproduced, and no red tests exist yet. (4) The bleve ErrorIndexPathExists behaviour is recalled from memory, not read from the v2.4.3 source. (5) The standards axis ran against contribute/backend/instrumentation.md, style-guide.md, create-pull-request.md and style-guides/code-comments.md; the repo has no AGENTS.md or CLAUDE.md. (6) There was no reviewer from another model family. (7) No rejection verifier could be dispatched, but no rejection was needed because no seat report disproves another's finding. (8) mattpocock did not check whether wire-time eager init runs before DB migrations; no other seat covered that question either. (9) Items superpowers set aside as pre-existing or by design were not raised as findings by any seat, so they are not merged here: the nil-dereference panic on a closed events channel after Stop, events missed between GetResourceStats and WatchWriteEvents, the nil IndexMetrics in handleEvent, and the unbounded synchronous index build."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/paginator.py:877-882 slices `queryset[start_offset:stop]` with a negative `cursor.offset`, which `Cursor.from_string` (src/sentry/utils/cursors.py:53-61) accepts unvalidated from e.g. `0:-5:0`. Django (pinned 5.2.1, behaviour known rather than read here since Django is not installed in the checkout) raises ValueError on negative QuerySet indexing, and `paginate()` (src/sentry/api/base.py:540) catches only BadPaginationError, so gated users on organization_auditlogs.py:73-83 get a 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.4694321
+}

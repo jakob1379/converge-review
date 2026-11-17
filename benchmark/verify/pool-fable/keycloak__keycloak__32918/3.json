@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`update()` passes the org-aware wrapper from `getById()` as `original` (InfinispanIdentityProviderStorageProvider.java:91-93, wrapper `isEnabled()` at :436-441) and the raw model as `updated`, so with the org disabled, hiding/link-only/un-publicing an IdP fails the predicate on both sides and returns early at :405-407. Org enable/disable never invalidates the login keys (InfinispanOrganizationProvider.java:300-308), and after re-enable the bean only re-checks `isEnabled()` (OrganizationAwareIdentityProviderBean.java:75,80), so the stale cached id is shown.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.0740746
+}

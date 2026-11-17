@@ -1,0 +1,248 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/76186",
+ "cost_usd": 0.054096000000000005,
+ "items": [
+  {
+   "id": "c1",
+   "source": "golden",
+   "text": "The `TestLogger.FromContext` method returns a new `TestLogger` instance via `NewTestLogger()` instead of returning the receiver (f). This causes logs to be recorded on an un-referenced instance, leading to broken test assertions that expect logs to be recorded on the original logger."
+  },
+  {
+   "id": "c2",
+   "source": "converge-review-replay",
+   "text": "TestLogger.FromContext returns a new empty NewTestLogger() instead of returning f (self), making the fake unusable for testing LoggerMiddleware since InfoLogs.Calls will always be 0"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review-replay",
+   "text": "No test exists for LoggerMiddleware's output - no logger_middleware_test.go in clientmiddleware/"
+  },
+  {
+   "id": "c4",
+   "source": "cubic-v2",
+   "text": "Returning a fresh `TestLogger` in `FromContext` drops all log writes made through `FromContext`, so tests can no longer observe logs emitted by code paths that use contextual logging - should return `f` instead"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review-replay",
+   "text": "The 'should live at the top of the middleware stack' comment was deleted from metrics_middleware.go with no replacement documentation"
+  },
+  {
+   "id": "c6",
+   "source": "coderabbit",
+   "text": "The ContextualLoggerMiddleware dereferences req.PluginContext unconditionally in QueryData, CallResource, CheckHealth, and CollectMetrics methods, which can cause a panic when req is nil"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "LoggerMiddleware no longer sets pluginId/endpoint/uname/dsName/dsUID/traceID on the 'Plugin Request Completed' log line itself; it silently depends on ContextualLoggerMiddleware being earlier in the chain, and reordering or omitting it drops those fields with no error"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review-replay",
+   "text": "If middleware chain is reordered or contextual middleware is dropped, log fields (pluginId, endpoint, uname, dsName, dsUID, traceID) vanish silently with no failure"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "New ContextualLoggerMiddleware, grafanaInfraLogWrapper.FromContext and the changed LoggerMiddleware output have no tests; the refactor moves the egress-log fields to a new component with nothing pinning them"
+  },
+  {
+   "id": "c10",
+   "source": "claude-code",
+   "text": "Test function on line 21 is still named TestInstrumentationMiddleware but the struct was renamed to MetricsMiddleware - should be TestMetricsMiddleware for consistency with the rest of the rename"
+  },
+  {
+   "id": "c11",
+   "source": "golden",
+   "text": "The ContextualLoggerMiddleware methods (QueryData, CallResource, CheckHealth, CollectMetrics) panic when a nil request is received. This occurs because they directly access req.PluginContext (via the instrumentContext function) without first checking if req is nil. This is a regression, as previous middleware layers gracefully handled nil requests."
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "Rename from Instrumentation to Metrics is incomplete: test is still func TestInstrumentationMiddleware and the local variable in NewMetricsMiddleware is still named 'imw'"
+  },
+  {
+   "id": "c13",
+   "source": "augment",
+   "text": "TestLogger.FromContext returns a fresh logger instance, so call sites like m.logger.FromContext(ctx).Info(...) won't record logs on the original TestLogger value that tests typically assert against"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "Exported type ContextualLoggerMiddleware and its exported methods lack doc comments, violating the style guide requirement for doc comments on exported top-level names"
+  },
+  {
+   "id": "c15",
+   "source": "cubic-v2",
+   "text": "The contextual log attributes omit `traceID` - since this middleware now owns the contextual logging setup, it should include `traceID` from `tracing.TraceIDFromContext` so plugin request logs still carry trace correlation"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "Helper function is still named instrumentContext (old instrumentation-middleware wording) which is misleading as it reads as a metrics/tracing function"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review-replay",
+   "text": "LoggerMiddleware silently depends on traceID log provider being registered globally, with no documentation or test for this dependency"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "LoggerMiddleware silently depends on ContextualLoggerMiddleware being positioned above it in CreateMiddlewares chain, with no documentation or test for this dependency"
+  },
+  {
+   "id": "c19",
+   "source": "golden",
+   "text": "The traceID is no longer logged for plugin requests. During a refactoring, the tracing import and the logic to extract and add traceID from the context to log parameters were removed from the LoggerMiddleware. The newly introduced ContextualLoggerMiddleware does not add this information, resulting in missing traceID in plugin request logs and impacting debugging and request tracing capabilities."
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "No test exists for ContextualLoggerMiddleware (contextual_logger_middleware.go:1-69)"
+  },
+  {
+   "id": "c21",
+   "source": "augment",
+   "text": "QueryData (and the other request methods) dereference req without a nil guard, but other middlewares in this stack defensively handle req == nil; if a nil request ever propagates here this will panic"
+  },
+  {
+   "id": "c22",
+   "source": "cubic-v2",
+   "text": "Accessing `req.PluginContext` without a nil guard will panic if `req` is nil - the middleware should guard against nil requests like LoggerMiddleware does in all four methods"
+  },
+  {
+   "id": "c23",
+   "source": "qodo-extended-v2",
+   "text": "TestLogger.FromContext returns a brand-new disconnected TestLogger instance via NewTestLogger() instead of returning the receiver, causing log output from LoggerMiddleware.logRequest to go to a throwaway logger that no test code holds a reference to, silently breaking log assertions on the original TestLogger"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "Doc comment on Logger.FromContext is copy-pasted from New and does not document that attributes come from context.Context via registered log providers"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "TestLogger.FromContext returns a fresh NewTestLogger() instead of the injected fake (f), so anything logged via logger.FromContext(ctx) is invisible to the test and InfoLogs.Calls will always be 0"
+  },
+  {
+   "id": "c26",
+   "source": "claude-code",
+   "text": "TestLogger.FromContext returns a new disconnected TestLogger via NewTestLogger() instead of returning the receiver (f), causing any test using TestLogger to assert on LoggerMiddleware logging behavior to see zero calls since logs go to a throwaway instance - fix by changing 'return NewTestLogger()' to 'return f' on line 47"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "TestLogger.FromContext returns a new instance via NewTestLogger() instead of the receiver f. Logs written through FromContext(ctx), such as those from LoggerMiddleware, go to a throwaway logger, so tests asserting on the original TestLogger see no calls.",
+   "path": null,
+   "members": [
+    "c1",
+    "c2",
+    "c4",
+    "c13",
+    "c23",
+    "c25",
+    "c26"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "There is no test for LoggerMiddleware's log output; clientmiddleware/ has no logger_middleware_test.go.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The new ContextualLoggerMiddleware has no tests. The egress-log fields it now provides, along with grafanaInfraLogWrapper.FromContext, are not pinned by any test.",
+   "path": "contextual_logger_middleware.go",
+   "members": [
+    "c9",
+    "c20"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The 'should live at the top of the middleware stack' comment was removed from metrics_middleware.go and nothing replaces it.",
+   "path": "metrics_middleware.go",
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "ContextualLoggerMiddleware's QueryData, CallResource, CheckHealth and CollectMetrics dereference req.PluginContext with no nil check on req, so a nil request panics. Other middlewares, including LoggerMiddleware, guard against nil requests.",
+   "path": null,
+   "members": [
+    "c6",
+    "c11",
+    "c21",
+    "c22"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "LoggerMiddleware no longer adds pluginId, endpoint, uname, dsName, dsUID and traceID to its 'Plugin Request Completed' log line. It relies on ContextualLoggerMiddleware being earlier in the CreateMiddlewares chain, so reordering or omitting it drops those fields with no error, and this is neither documented nor tested.",
+   "path": null,
+   "members": [
+    "c7",
+    "c8",
+    "c18"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "LoggerMiddleware depends on a traceID log provider being registered globally, and this is neither documented nor tested.",
+   "path": null,
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The rename from Instrumentation to Metrics is incomplete: the test function is still named TestInstrumentationMiddleware, and the local variable in NewMetricsMiddleware is still named 'imw'.",
+   "path": null,
+   "members": [
+    "c10",
+    "c12"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The exported type ContextualLoggerMiddleware and its exported methods have no doc comments.",
+   "path": null,
+   "members": [
+    "c14"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "traceID is no longer added to plugin request logs. The tracing extraction was removed from LoggerMiddleware, and ContextualLoggerMiddleware does not add traceID from tracing.TraceIDFromContext to its contextual attributes.",
+   "path": null,
+   "members": [
+    "c15",
+    "c19"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The helper function in ContextualLoggerMiddleware is still named instrumentContext, the old instrumentation-middleware name.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The doc comment on Logger.FromContext is copied from New and does not describe that attributes come from context.Context via registered log providers.",
+   "path": null,
+   "members": [
+    "c24"
+   ]
+  }
+ ]
+}

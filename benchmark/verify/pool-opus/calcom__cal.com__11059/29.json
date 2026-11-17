@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/refreshOAuthTokens.ts (patch lines 227-237), when the sync endpoint is configured, the function awaits `fetch(CALCOM_CREDENTIAL_SYNC_ENDPOINT, \u2026)` and returns the raw Response without checking `response.ok` or validating the body. Callers then treat it as a token payload: Google reads `res?.data` and HubSpot types it as a `HubspotToken`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0876773
+}

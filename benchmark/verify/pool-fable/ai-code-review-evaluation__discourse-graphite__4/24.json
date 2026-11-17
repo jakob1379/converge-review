@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/jobs/poll_feed_spec.rb:18-28 stub only `feed_polling_url` or `embed_by_username` and leave `feed_polling_enabled?` at its default of false (config/site_settings.yml:355; overrides are reset before each spec in spec/spec_helper.rb:61-63). The `&&` chain in app/jobs/scheduled/poll_feed.rb:15-17 therefore short-circuits on the first condition, so both specs would pass even if the url/username checks were removed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3644476
+}

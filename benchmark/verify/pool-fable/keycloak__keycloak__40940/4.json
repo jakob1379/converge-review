@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:139-149 the reader thread is started anonymously with no reference kept and is never joined; line 155 sets deletedAll and line 157 asserts on caughtExceptions immediately, so an in-flight groups() call that fails after the assertion is missed and the thread can still be running when the test returns.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1103947
+}

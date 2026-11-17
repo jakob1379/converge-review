@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`use_rpc` is `dataset in {spans_rpc, ourlogs}` (src/sentry/api/endpoints/organization_events_stats.py:204), and `_should_apply_sample_weight_transform` returns False for anything but errors/discover (src/sentry/api/helpers/error_upsampling.py:103-127), so the transform at organization_events_stats.py:276-277 is dead and transformed columns never reach the RPC top-events call at :236; `upsampled_count` exists only in the discover config, not in src/sentry/search/eap. Caveat: the top-events transform itself at :232-233 is still reachable for non-RPC errors/discover queries, so only the RPC side is unreachable.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.44568280000000005
+}

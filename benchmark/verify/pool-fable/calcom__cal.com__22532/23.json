@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts:17-22 calls prisma.credential.findFirst with only a where clause and no select, so the full row including `key Json` (packages/prisma/schema.prisma:226) is loaded, and the result is used only for the null check at line 24. The key is not returned to the client or logged, so this is unnecessary loading of secrets rather than a leak.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10108810000000001
+}

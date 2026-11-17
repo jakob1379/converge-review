@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/requestReschedule.handler.ts:240-242 tests `bookingToReschedule?.destinationCalendar` for truthiness and then re-applies `?.` in the true branch, where `bookingToReschedule` must be non-null; it is also non-nullable throughout, coming from `findFirstOrThrow` (line 43) and dereferenced without chaining at lines 76-235, so the second `?.` is redundant but harmless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1499594
+}

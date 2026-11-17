@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`OptimizedCursorPaginator.get_item_key` (src/sentry/api/paginator.py:838-840) passes `getattr(item, self.key)` straight to `math.floor`/`math.ceil`; the audit logs endpoint uses it with `order_by=\"-datetime\"` (src/sentry/api/endpoints/organization_auditlogs.py:76-83), a `DateTimeField` (src/sentry/models/auditlogentry.py:69), so `build_cursor` raises TypeError on any non-empty result (src/sentry/utils/cursors.py:122). `DateTimePaginator` converts via `strftime(\"%s.%f\")` first (paginator.py:233-236).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.29377260000000005
+}

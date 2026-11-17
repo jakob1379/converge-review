@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "useAllAlertRuleAbilities now just calls useAllRulerRuleAbilities (useAbilities.ts:222-229), which sets isFederated = false behind a TODO (useAbilities.ts:243-245); before the patch it used isFederatedRuleGroup(rule.group). useIsRuleEditable has no federated check either, so for Mimir federated groups Update and Delete are no longer blocked as immutable, which surfaces the Edit button at RuleActionsButtons.tsx:57. One part of the claim is wrong: Pause and Restore stay unsupported, because they also require isGrafanaManagedAlertRule (useAbilities.ts:269-270) and federated groups are always Mimir rules, never Grafana-managed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3089931
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/integrations/github/integration.py the new error() helper calls `_(error_short)` on a parameter (patch line 59), and callers now pass plain literals (\"GitHub installation pending deletion.\", \"Github installed on another Sentry organization.\", and the default \"Invalid installation request.\"). makemessages can't extract strings from these, even though the first two are msgids in src/sentry/locale/*/LC_MESSAGES/django.po. Those entries all have empty msgstr, so no real translation is lost.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1433737
+}

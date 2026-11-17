@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/salesforce/lib/CalendarService.ts:86 reads `if (response.statusText !== \"OK\") throw new HttpError({ statusCode: 400, message: response.statusText })` right after the refresh-token fetch in getClient, and `response.ok` is not used anywhere in the file. The line is added by this patch (change.patch:697); statusText is empty over HTTP/2, so the check would reject a successful refresh there.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1065112
+}

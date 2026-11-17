@@ -1,0 +1,401 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "error_upsampling.py and organization_events_stats.py contain trailing-whitespace or whitespace-only lines. The repo's pre-commit trailing-whitespace hook rejects these lines.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds whitespace-only or trailing-whitespace lines at src/sentry/api/helpers/error_upsampling.py:22,28,33,36,39,49,51,84 and src/sentry/api/endpoints/organization_events_stats.py:223,234,278. The `trailing-whitespace` hook at .pre-commit-config.yaml:179 excludes only svg, fixtures/ and scripts/patches/, so it would flag these lines.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08336199999999999
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch commits a stray `sentry-repo` submodule gitlink (mode 160000, commit a5d29095) at the repository root. It has no .gitmodules entry and is unrelated to the upsampling feature.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "change.patch:21-27 adds `sentry-repo` as a new file with mode 160000 and `Subproject commit a5d290951def84afdcc4c88d2f1f20023fc36e2a`; the repository has no `.gitmodules` file and the patch adds none, and nothing in the upsampling code references that path.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1077728
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "factories.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "_set_sample_rate_from_error_sampling in factories.py checks `if client_sample_rate:`. A valid client_sample_rate of 0 or 0.0 is therefore falsy and never set as sample_rate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "src/sentry/testutils/factories.py:353 does use `if client_sample_rate:` and so skips 0, but 0 is not a valid rate: production code at src/sentry/event_manager.py:786 only accepts `0 < client_sample_rate <= 1`, and tests/sentry/event_manager/test_event_manager.py:3115-3127 expects a rate of 0 to be ignored. Skipping 0 in this test-only helper therefore matches intended behaviour.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2217084
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "factories.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "_set_sample_rate_from_error_sampling copies client_sample_rate into sample_rate without production's checks. It skips the allowlist, type and 0<x<=1 range checks, swallows errors with a bare except, and lets invalid values reach the weighting logic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/testutils/factories.py:344-357 copies any truthy client_sample_rate into sample_rate via float() with no allowlist, isinstance or 0<x<=1 check and swallows errors with `except Exception: pass` (not a literal bare except), unlike production's src/sentry/event_manager.py:776-786. The mutated data is then saved by store_event (factories.py:1049, 1065), but this is a test-only helper, so only test-supplied values are affected.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.34729540000000003
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 60s Django-cache layer in is_errors_query_for_error_upsampled_projects replaces the in-process-cached options.get with a network cache round trip. It also runs before the cheap dataset check, on every events-stats request.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/helpers/error_upsampling.py:30 calls Django's `cache.get` (and `cache.set` at :38 on a miss) before `_should_apply_sample_weight_transform` at :32/:40, and it is called unconditionally at the top of `_get_event_stats` (src/sentry/api/endpoints/organization_events_stats.py:220). The lookup it fronts, `options.get`, already checks an in-process local cache first (src/sentry/options/store.py:132), so the layer adds a shared-cache round trip rather than saving one; a hit skips `options.get`, a miss pays for both.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3894761
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 60s per-org/project-set upsampling cache key does not include the allowlist contents, and nothing invalidates it when issues.client_error_sampling.project_allowlist changes. A project removed from the allowlist keeps being upsampled until the entry expires.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The cache key at src/sentry/api/helpers/error_upsampling.py:27 is built only from the org id and the sorted project ids, and the eligibility result is cached for 60s at line 38 with no allowlist content in the key. `invalidate_upsampling_cache` (line 67) has no callers anywhere in the repo, so a project removed from the allowlist keeps being upsampled for up to 60s.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.26733830000000003
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The allowlist lookup is a linear search per project instead of a set lookup.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/helpers/error_upsampling.py:58-63 reads the allowlist option (registered as type=Sequence with a list default at src/sentry/options/defaults.py:3464-3466) and runs `all(project_id in allowlist for project_id in project_ids)`, an O(n) list membership scan per project with no conversion to a set.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3008516
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The unit tests import and test private helpers (_are_all_projects_error_upsampled, _is_error_focused_query, _should_apply_sample_weight_transform) and patch sentry.api.helpers.error_upsampling.options. The public entry point is_errors_query_for_error_upsampled_projects and its cache path are untested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/sentry/api/helpers/test_error_upsampling.py:7-12 imports only the three private helpers plus transform_query_columns_for_error_upsampling, and :37 patches sentry.api.helpers.error_upsampling.options; is_errors_query_for_error_upsampled_projects is never called directly by any test. It is reached only indirectly by the endpoint tests (tests/snuba/api/endpoints/test_organization_events_stats.py:3604-3722), which make one request each, so the cache-hit branch (src/sentry/api/helpers/error_upsampling.py:30-32) and invalidate_upsampling_cache (:67-74) are not exercised anywhere.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3130532
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "invalidate_upsampling_cache has no callers and no option-change hook. It cannot work as designed, because cache keys are per (org, project-set) and an allowlist change cannot enumerate them.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`invalidate_upsampling_cache` is defined at src/sentry/api/helpers/error_upsampling.py:67 and a repo-wide grep finds no callers or option-change hook. Its key (line 73) hashes one exact sorted project-id set, matching the read key at line 27, so an allowlist change cannot enumerate the affected entries; staleness is bounded only by the 60s TTL at line 38.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2510645
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'organization' parameter of _are_all_projects_error_upsampled is unused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/api/helpers/error_upsampling.py:43-64 the function accepts `organization: Organization` but the body only reads `project_ids` and the `issues.client_error_sampling.project_allowlist` option; `organization` is never referenced.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1575454
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "options.get(key, []) passes [] as the `silent` argument rather than as a default. The module also has a redundant `if not allowlist: return False`, a needless result variable, and `dataset` is typed Any instead of ModuleType.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/helpers/error_upsampling.py:58 calls options.get(key, []) but OptionsManager.get is `get(self, key, silent=False)` (src/sentry/options/manager.py:285), so [] binds to `silent`; it is harmless only because [] is falsy and the option already defaults to [] (src/sentry/options/defaults.py:3463-3468). The other three points also hold: the `if not allowlist` guard at :59 is redundant given the non-empty project_ids check and `all(... in allowlist)`, `result` at :63-64 is returned immediately, and `dataset: Any` at :103 contrasts with `ModuleType` at :16.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3318331
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "organization_events_stats.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In OrganizationEventsStatsEndpoint._get_event_stats, upsampling eligibility is computed from the outer `dataset` and raw request query instead of `scoped_dataset` and the executed query. As a result, dashboard-split subqueries (e.g. discover when the outer dataset is metrics) are not upsampled or are upsampled incorrectly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/endpoints/organization_events_stats.py:220-222 computes eligibility from the closed-over outer `dataset` and `request` (helper reads `request.GET['query']`), not the `scoped_dataset`/`query` arguments. The dashboard-split path only runs when the outer dataset is metrics (line 344) and then executes against `discover` with a rewritten query (lines 363-364, 387, 428, 445), so the helper always returns False and those error subqueries are never upsampled.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3721921
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "_is_error_focused_query uses a plain substring test for 'event.type:error'. It matches negated ('!event.type:error') and OR'd queries, and misses variants like 'event.type: error'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/helpers/error_upsampling.py:135-138 lowercases the raw query string and tests `\"event.type:error\" in query`, so `!event.type:error` and `event.type:error OR event.type:transaction` both return True, while any non-identical spelling such as `event.type: error` returns False. For the discover dataset this result alone decides whether the upsampling transform is applied (lines 122-124).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1304808
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The upsampling cache keys are built with Python's built-in hash() of project IDs. hash() is process-dependent (PYTHONHASHSEED) and can collide, so keys do not match across workers and different project sets can share a key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The keys do use `hash(tuple(sorted(project_ids)))` (src/sentry/api/helpers/error_upsampling.py:27 and :73), but `project_ids` is `list[int]` (src/sentry/search/events/types.py:182-184) and PYTHONHASHSEED only randomises str/bytes hashes, so a tuple of ints hashes identically in every worker. The remaining collision risk is a 64-bit hash collision within one organisation's key namespace, which is theoretical only.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1725467
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "upsampled_count is toInt64(sum(sample_weight)) with no null or zero handling. Errors lacking sample_weight in allowlisted projects count as 0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/search/events/datasets/discover.py:1046-1050 defines upsampled_count as toInt64(sum(Column(\"sample_weight\"))) with no ifNull/coalesce or zero fallback, and src/sentry/api/helpers/error_upsampling.py:92-95 rewrites count() to it for allowlisted projects. An error stored without a sample rate therefore adds nothing to the sum instead of 1; that such rows hold NULL/0 rather than a default of 1 is Snuba-side behaviour not in this repo, so that half is inferred, not read.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3514364
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'upsampled_count' SnQLFunction lambda has an unused parameter named 'args' instead of '_'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/search/events/datasets/discover.py:1046 defines `snql_aggregate=lambda args, alias: Function(\"toInt64\", [Function(\"sum\", [Column(\"sample_weight\")])], alias)` and never uses `args`; the same file uses `lambda _, alias` for unused-arg aggregates in 6 other places.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1280888
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test creates the organization with Organization.objects.create(name='test-org') instead of self.create_organization(), contrary to the repo's CLAUDE.md factory rule.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/sentry/api/helpers/test_error_upsampling.py:21 (a file added by this patch) does `self.organization = Organization.objects.create(name=\"test-org\")`, while CLAUDE.md:322 says \"Use factories for test data\" and its test pattern at CLAUDE.md:341 uses `self.create_organization(...)`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.10454359999999999
+   }
+  },
+  {
+   "issue": "i18",
+   "path": "discover.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "upsampled_count in discover.py is not marked private=True. It is therefore exposed as a public Discover function that can bypass the allowlist and error-query checks and reference sample_weight on datasets without that column.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`upsampled_count` is registered at src/sentry/search/events/datasets/discover.py:1041-1052 without `private=True` (default is `private=False`, src/sentry/search/events/fields.py:1310), so `is_accessible` returns True for any caller (fields.py:1529, enforced at src/sentry/search/events/builder/base.py:737). The allowlist and error-query checks only gate the `count()` rewrite in src/sentry/api/helpers/error_upsampling.py, and `DiscoverDatasetConfig` also serves Transactions and IssuePlatform (src/sentry/search/events/builder/discover.py:65-71), so a user can request `upsampled_count()` directly and hit `sum(sample_weight)` on datasets without that column.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5270834000000001
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "upsampled_count uses default_result_type='number' while wrapping its result in toInt64() and replacing count(), which is 'integer'. Response metadata therefore reports a different type when upsampling is active.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`upsampled_count` is declared with `default_result_type=\"number\"` while wrapping `sum(sample_weight)` in `toInt64` (src/sentry/search/events/datasets/discover.py:1042-1051), whereas the `count` it replaces is `\"integer\"` (discover.py:251-258). Response meta is taken from the function's result type (src/sentry/search/events/fields.py:720-723), so the `count` column reports `number` instead of `integer` when upsampling is active.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4247484000000001
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Rewriting count() to 'upsampled_count() as count' changes the result column name. With transformAliasToInputFormat=1, process_results renames columns to 'upsampled_count() as count' while resolve_axis_column looks up 'count()', so the serializer emits 0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The rewrite to \"upsampled_count() as count\" is local to `_get_event_stats` (src/sentry/api/endpoints/organization_events_stats.py:296), so with transformAliasToInputFormat=1 `process_results` renames the result key `count` to \"upsampled_count() as count\" (src/sentry/search/events/builder/base.py:1566-1571, 1613), while `get_event_stats_data` resolves the axis from the untouched `query_columns` to \"count()\" (src/sentry/api/bases/organization_events.py:75-76, 605-607) and the serializer's `r.get(column, 0)` returns 0 (src/sentry/api/serializers/snuba.py:92). Without the flag both sides resolve to `count`, so only the flagged path breaks.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.8448705
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The upsampling branch in the RPC path and in top-events is unreachable. use_rpc requires spans_rpc/ourlogs, for which _should_apply_sample_weight_transform returns False, and EAP RPC has no upsampled_count.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`use_rpc` is `dataset in {spans_rpc, ourlogs}` (src/sentry/api/endpoints/organization_events_stats.py:204), and `_should_apply_sample_weight_transform` returns False for anything but errors/discover (src/sentry/api/helpers/error_upsampling.py:103-127), so the transform at organization_events_stats.py:276-277 is dead and transformed columns never reach the RPC top-events call at :236; `upsampled_count` exists only in the discover config, not in src/sentry/search/eap. Caveat: the top-events transform itself at :232-233 is still reachable for non-RPC errors/discover queries, so only the RPC side is unreachable.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.44568280000000005
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The same transform_query_columns_for_error_upsampling block is repeated in three mutually exclusive branches. upsampling_enabled is a pure alias of should_upsample.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/api/endpoints/organization_events_stats.py the identical `if upsampling_enabled: final_columns = transform_query_columns_for_error_upsampling(query_columns)` block appears at lines 232-233, 276-277 and 295-296, in three paths separated by early returns (top_events, use_rpc, default), and line 226 `upsampling_enabled = should_upsample` is a plain alias never reassigned or otherwise used.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.12084030000000001
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

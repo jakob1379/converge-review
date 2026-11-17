@@ -1,0 +1,27 @@
+{
+ "findings": [
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The three paginated getSubGroupsStream(...) overloads in GroupAdapter (lines 256, 262, 268) still call modelSupplier.get().getSubGroupsStream(...) without a null check. They throw a NullPointerException when the group is deleted concurrently, which is reachable through the GET /admin/realms/{realm}/groups/{id}/children endpoint.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The regression test never joins the background reader thread before asserting on caughtExceptions. The assertion runs immediately after deletedAll.set(true), so exceptions from in-flight reads can be missed and the thread can outlive the test.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

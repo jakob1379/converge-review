@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/server/wire.go:374-375 still registers anonstore.ProvideAnonDBStore, which now takes (db.DB, int64) (database.go:76), and binds AnonStore to it. But impl.go:283 now builds its own store, and the only remaining AnonStore users are impl.go:32 and api/api.go:28-36, so the registration is dead in OSS. Wire only resolves providers it needs, so OSS generation should still pass; the int64 failure or a second store without the limit only happens if out-of-repo (e.g. Enterprise) code injects AnonStore.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12754479999999999
+}

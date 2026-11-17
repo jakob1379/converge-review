@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In queue_consumer.py:102, `list(self.all_offsets.keys())` copies the keys in a single C-level pass, and CPython's GIL is not released mid-copy, so a concurrent insert from add_offset (line 87) cannot make it fail. Even if it did raise, `_commit_loop` catches every Exception (lines 318-319) and simply runs again on the next pass, so the commit loop would not break.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2237699
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/api/webassets/webassets.go:45-49 skips the early return whenever cfg.Env is Dev or the cached pointer is nil, then takes the exclusive Lock (deferred unlock) around readWebAssetsFromFile at line 60. A failed read stores nil at line 69, so every later production request re-reads serially under the lock, and there is no re-check after acquiring it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1495543
+}

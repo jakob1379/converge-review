@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/api/endpoints/organization_auditlogs.py:71 the gate is `request.user.is_superuser or organization_context.member.has_global_access`. It reads the raw user flag rather than calling is_active_superuser(request), and nothing else in the file checks for an active superuser session.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1210525
+}

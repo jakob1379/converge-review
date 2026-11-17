@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "federation/ldap/src/main/java/org/keycloak/storage/ldap/LDAPStorageProvider.java:1214-1217 throws IllegalStateException when the LDAP entry is gone, and the patch's server-spi/src/main/java/org/keycloak/models/utils/RecoveryAuthnCodesUtils.java:57-61 now calls that path uncaught before the local-store fallback, from RecoveryAuthnCodeInputLoginBean.java:17 and RecoveryAuthnCodesFormAuthenticator.java:80. It is only reachable in a narrow window: a still-cached imported user (UserStorageManager.java:143-146 skips validation) whose LDAP entry was deleted; otherwise the user is removed or disabled first (UserStorageManager.java:152-159), and with the entry present the local fallback works.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.2179421999999998
+}

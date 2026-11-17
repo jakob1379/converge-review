@@ -1,0 +1,563 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requireManageMembers() Javadoc references canManage() when it should reference canManageMembership(GroupModel).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The only Javadoc on requireManageMembers (services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:132-135) already links to {@link #canManageMembership(GroupModel)}, not canManage(), so the claim is wrong on both counts. The real copy-paste slip is the opposite: it should link to canManageMembers(GroupModel), which is what GroupPermissions.java:376-377 actually checks.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.17332119999999998
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requireManageMembers Javadoc says it throws when canManageMembership(GroupModel) is false, but the implementation checks canManageMembers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The Javadoc on requireManageMembers at services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:133-135 links to canManageMembership(GroupModel), but the implementation at GroupPermissions.java:376-377 checks canManageMembers(group); GroupPermissionsV2 does not override it. The Javadoc is a copy-paste of the requireManageMembership comment at line 128.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2062308
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RealmAdminPermissionsConfig adds AdminRoles.QUERY_GROUPS to the shared test fixture. This can hide regressions in the Groups resource-type permission path for tests that should not satisfy the group list gate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch does add QUERY_GROUPS to the shared fixture (tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/RealmAdminPermissionsConfig.java:34-36), but that role is read only by the list gate (services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java:149), so per-group view/manage/membership checks in GroupPermissionsV2 are still exercised. No test under tests/base/.../fgap expects the list gate to deny: the only group-listing test, testViewGroups (GroupResourceTypeEvaluationTest.java:254), needs the role to get an empty list instead of a 403, mirroring the existing QUERY_USERS setup.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.867
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.getGroupIdsWithViewPermission() passes groupResource.getId() to hasPermission() and adds it to the result. That is the authorization resource ID, not the group ID (groupResource.getName()). hasPermission() resolves by name, so the per-group lookup fails, and the returned IDs do not match group IDs used in user filtering and counts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:122-123 passes and collects groupResource.getId(), but hasPermission() resolves via resourceStore.findByName (line 141) and group resources are created with name = group ID and a generated resource ID (AdminPermissionsSchema.java:109,121; JPAResourceStore.java:65-66). The lookup therefore misses and falls back to the all-groups resource, and the returned resource IDs are used as group IDs in user filtering and counts (UsersResource.java:398-450, JpaUserProvider.java:762-765).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.5283720000000001
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Per-group resources are created without a type, because getOrCreateResource() never calls setType. As a result, findByType(server, 'Groups', ...) returns only the all-groups type resource and not the per-group resources.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Per-group resources are created at server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:121-127 with only name, owner and scopes; `setType` is called only on the all-resource entries in `init()` (AdminPermissionsSchema.java:274). `findByType` filters on `r.type = :type` (model/jpa/src/main/java/org/keycloak/authorization/jpa/entities/ResourceEntity.java:64), so the call at services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:121 can only match the typed 'Groups' all-resource, never an untyped per-group resource.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 1.2751748
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "With only per-group VIEW_MEMBERS permission in V2, getGroupIdsWithViewPermission() returns an empty set. users().count()/getUsersCount then returns 0 while /users returns members through the post-filter. Pagination is applied before the canView post-filter, which produces short pages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Per-group resources are created without a type (AdminPermissionsSchema.java:121), so findByType(\"Groups\") in GroupPermissionsV2.java:121-123 only yields the all-groups resource and then passes its resource ID to a name lookup, leaving the set empty when only a per-group VIEW_MEMBERS permission exists. UsersResource.java:430 then gets 0 from JpaUserProvider.java:600-601, while UsersResource.java:448-460 skips the DB group filter, paginates in SQL (JpaUserProvider.java:773) and only afterwards filters with canView, which does grant members via canViewMembers (GroupPermissionsV2.java:83-87).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 1.4006226000000002
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The getGroupIdsWithViewPermission Javadoc says '@return Stream of IDs', but the method returns Set<String>.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:145 says '@return Stream of IDs of groups with view permission.' while the method declared at line 147 returns Set<String>; the Javadoc was added by this patch (change.patch:418-420).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.195422
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The getGroupIdsWithViewPermission Javadoc does not mention that V2 returns the type-resource ID instead of actual group IDs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The Javadoc at services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:142-146 only promises \"IDs of groups with view permission\". GroupPermissionsV2.java:121-123 instead adds `groupResource.getId()` for resources of type \"Groups\", and only the all-groups type resource carries that type (AdminPermissionsSchema.java:271-276; per-group resources are created untyped at :121), so V2 returns that resource's ID, not group IDs.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.583589
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.canManage() (no-arg) falls back to hasPermission(null, VIEW, MANAGE). An admin with only all-groups VIEW permission therefore passes requireManage(). This lets them create top-level groups and move groups to top level in GroupsResource.addTopLevelGroup, which is guarded only by requireManage().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:65-70 has the no-arg canManage() return hasPermission(null, VIEW, MANAGE), so a granted all-groups VIEW scope alone satisfies it. The inherited requireManage() (GroupPermissions.java:279-283) calls that override, and it is the only guard on GroupsResource.addTopLevelGroup (GroupsResource.java:181), which then runs realm.moveGroup(child, null) or realm.createGroup(groupName) with no per-group check.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.46948720000000005
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The canManage() Javadoc states that V2 VIEW permission is enough to manage groups.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The Javadoc on `canManage()` at services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:73-78 says \"For V2 only: Also if it has permission to VIEW or MANAGE groups\". The implementation matches it: GroupPermissionsV2.java:65-71 checks `hasPermission(null, VIEW, MANAGE)`, and `requireManage()` gates top-level group creation at GroupsResource.java:181.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2627115
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The canViewGlobal short-circuit was removed from group listing in GroupsResource and GroupResource getSubGroups, so every listing goes through canView(g), which lacks the realm-wide canView() check. Admins with global Groups VIEW/MANAGE but no per-group grants get empty listings.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The short-circuit was removed (GroupsResource.java:113, GroupResource.java:179), but canView(g) still covers the realm-wide case: V1 GroupPermissions.java:255 starts with `canView() || canManage()`, and V2 GroupPermissionsV2.java:141-150 falls back to the all-groups type resource when the group has no resource of its own. The patch's own testViewGroups expects topGroup (no per-group grant) to be listed under an all-groups VIEW permission, so listings are not empty.",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0.8805719999999999
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The V1 feature check was moved from event time to listener registration time. Runs that enable V1 at runtime with skipRestart=true never register the role/client/group-removed cleanup listener.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch moves the `ADMIN_FINE_GRAINED_AUTHZ` check outside `manager.register(...)` (services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java:73-99), and `registerListener` is called only once at session-factory init (DefaultKeycloakSessionFactory.java:122, QuarkusKeycloakSessionFactory.java:88). The `skipRestart=true` path only re-runs `Profile.init` with no restart (TestingResourceProvider.java:987-993, KeycloakContainerFeaturesController.java:161), so a server booted with V1 off never gets the role/client/group-removed cleanup listener, e.g. UsersTest.java:228.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.9045943000000001
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The AdminPermissions cleanup listener for role/client/group removal is registered only when ADMIN_FINE_GRAINED_AUTHZ (V1) is enabled. In V2-only deployments, removed roles, clients and groups leave orphaned authorization resources and permissions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "services/.../admin/permissions/AdminPermissions.java:74 registers the removal listener only under ADMIN_FINE_GRAINED_AUTHZ, and nothing else cleans up V2: per-object resources created by AdminPermissionsSchema.java:92-131 are deleted only when the permission itself is edited or removed (AdminPermissionsSchema.java:294-317), and AuthorizationStoreFactory.java:48-50 has no group/role synchronizer. Caveats: this holds for groups and clients only (V2 has no role resource type), the pre-patch guard inside onEvent was equally V1-only, and registering the listener under V2 would not help because GroupPermissionsV2.java:173 and ClientPermissionsV2.java:193 throw UnsupportedOperationException.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 1.2230936000000001
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "response.getLocation() can be null even with a 201 status, which causes an NPE when parsing the path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The dereference at test-framework/core/src/main/java/org/keycloak/testframework/util/ApiUtil.java:11 is unguarded, but every endpoint its callers hit sets Location whenever it returns 201 (UsersResource.java:160, ClientsResource.java:222, GroupsResource.java:206, GroupResource.java:226), so no NPE is reachable. The line is also unchanged from before the patch, which only wrapped it in try-with-resources, and it sits in a test-only helper.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.3231102
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "UserPermissionsV2 dropped the AdminRoles.ADMIN fast-path. Users with only the umbrella admin role fail the canView/canManage/canMapRoles/canManageGroupMembership checks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch does remove `AdminRoles.ADMIN` from the checks (UserPermissionsV2.java:48,57), but that entry never matched: `MgmtPermissions.hasOneAdminRole` (MgmtPermissions.java:163-173) only tests client roles on the master-admin/realm-management client, and `admin` is a master realm role. That role is a composite of every `ALL_REALM_ROLES` client role, including manage-users and view-users (RealmManager.java:346,362-366), so admin-only users still pass via `MANAGE_USERS`/`VIEW_USERS`.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.9724822000000001
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The switch(resourceType) throws NullPointerException for a null resource type, where the previous if-chain threw IllegalStateException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:107 switches on the String `resourceType` with no null check, so a null value throws NullPointerException before reaching the `default` branch at :111. The removed if-chain used `USERS.getType().equals(resourceType)`, which left `name` null and fell through to the IllegalStateException at :114-116; null is only guarded for ScopePermissionRepresentation (:219-221), so other callers such as RepresentationToModel.java:1423 can still pass it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.262482
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new Groups resource type and its scopes (manage-membership, manage-members, view-members) have no documentation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch itself adds Javadoc describing what each new scope grants (services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java, patch lines 374-396 for MANAGE_MEMBERS, MANAGE_MEMBERSHIP, VIEW_MEMBERS), and the admin console already carries descriptions for the type and scopes (js/apps/admin-ui/maven-resources/theme/keycloak.v2/admin/messages/messages_en.properties:3351, 3413-3417). No .adoc guide covers the V2 Groups type, but none covers the V2 Users or Clients types either and the feature is EXPERIMENTAL (common/src/main/java/org/keycloak/common/Profile.java:58).",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.5247263
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getResourceName is not extended for GROUPS. Group permission resources show a null display name, and the type resource has no 'All groups' label.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds GROUPS to the schema and to `getOrCreateResource` (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:79,109), but `getResourceName` at AdminPermissionsSchema.java:328-350 still only special-cases USERS, so group resources and the \"Groups\" type resource fall through to `resource.getDisplayName()`. That display name is never set for them (created at AdminPermissionsSchema.java:121 and :273), so PolicyResourceService.java:218 returns null and there is no \"All groups\" label.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.40333379999999996
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new test file has a copyright year of 2024.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new test file tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java:2 reads \"Copyright 2024 Red Hat, Inc. and/or its affiliates\", while the other new file in the same patch, GroupPermissionsV2.java, uses 2025 (change.patch:529).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0886757
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In GroupPermissionsV2.hasPermission, getResourceTypeResource can return null, and the result is passed directly to policyStore.findByResource(server, null). This causes an NPE (HTTP 500) on group checks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupPermissionsV2.java:144-147 passes the result of getResourceTypeResource straight to policyStore.findByResource with no null check, and that method returns null (AdminPermissionsSchema.java:134-135) whenever the realm's adminPermissionsEnabled is false while the admin-permissions client and resource server still exist (e.g. enabled then disabled, or imported via RealmManager.java:567-570); findByResource then dereferences resource.getId() (StoreFactoryCacheSession.java:938, JPAPolicyStore.java:215). The NPE is limited to that state and to admins lacking the short-circuiting roles, not every group check.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 1.3623201999999999
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is a stray ';;' at line 68 of the new test file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java:68 reads `private final GroupRepresentation topGroup = new GroupRepresentation();;` \u2014 a redundant extra semicolon in a file the patch adds as new (change.patch:1154). It compiles fine and has no behavioural effect.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0883548
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No migration adds the Groups type resource and the new scopes to realms whose admin-permissions client already exists, because init() returns early in that case.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`init()` returns as soon as `realm.getAdminPermissionsClient() != null` (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:250-252), and it is the only code that creates the schema's scopes and type resources; the patch adds the `Groups` type (line 79) but touches no migration code, and nothing under any `migration` package references the admin-permissions schema. In such a realm `getResourceTypeResource` returns null for Groups, which `GroupPermissionsV2.hasPermission` passes to `policyStore.findByResource` (JPAPolicyStore.java:215 dereferences `resource.getId()`).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.8384509
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "hasPermission evaluates either the per-group resource or the all-groups type resource, never both. Once a per-group permission exists for a group, all-groups grants no longer apply to it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupPermissionsV2.java:141-152 picks one resource (the per-group one if it exists, else the \"Groups\" type resource) and evaluates only that. Nothing downstream adds the all-groups policies back: per-group resources are created without a type (AdminPermissionsSchema.java:121), so DefaultPolicyEvaluator.java:71-87 only finds policies bound to that resource, while all-groups permissions are bound to the \"Groups\" resource (AuthorizationProvider.java:323-326).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.8307928
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.hasPermission lacks the resourceId filter that UserPermissionsV2.hasPermission uses to prevent permission leakage across resources.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The filter is indeed absent in GroupPermissionsV2.java:156-162 (present at UserPermissionsV2.java:123), but it is a no-op: hasPermission evaluates a single ResourcePermission, and DecisionPermissionCollector.java:187-190 only ever emits a Permission for that same requested resource. No cross-resource leakage can result from omitting it; ClientPermissionsV2.java:226 omits it too.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.8155757
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.hasPermission is a third near-copy of the V2 evaluator in UserPermissionsV2 and ClientPermissionsV2, and the copies have already diverged.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupPermissionsV2.java:130-165 repeats the same evaluator body as UserPermissionsV2.java:94-133 and ClientPermissionsV2.java:207-235. The copies differ: only the user version filters on `permission.getResourceId().equals(resource.getId())` (UserPermissionsV2.java:123) and takes an EvaluationContext, while the client version uses a three-argument `findByName` and fetches the policy store via `authz.getStoreFactory()` (ClientPermissionsV2.java:214,219).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.31763849999999993
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test wraps the call in try(Response) and assertEquals(CREATED) before ApiUtil.handleCreatedResponse. This is redundant, since handleCreatedResponse already asserts 201 and closes the response.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupResourceTypeEvaluationTest.java:73-75 (also 195-197, 261-263) wraps `groups().add(...)` in try-with-resources and asserts CREATED (via `assertThat(..., equalTo(...))`, not `assertEquals`) before calling `ApiUtil.handleCreatedResponse`, which itself asserts 201 and closes the response at test-framework/core/src/main/java/org/keycloak/testframework/util/ApiUtil.java:8-14. The same test file calls it directly without the wrapper at lines 165 and 302.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.6474933
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When a group has no per-group resource, evaluating the all-groups type resource pulls in every per-group permission. A VIEW permission on one group therefore grants VIEW on every group that lacks its own resource.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupPermissionsV2.java:141-152 falls back to the typed all-groups resource, and DefaultPolicyEvaluator.java:73-74 then loads every permission with defaultResourceType 'Groups' (PolicyEntity.java:64 has no resource filter), whose scopes DecisionPermissionCollector.java:80-91 grants without checking the resource. The leak needs at least one all-groups permission to exist (guard at GroupPermissionsV2.java:147) that does not itself deny VIEW; traced by reading only, not executed.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 1.9645649
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The @BeforeEach comment contains the typo 'initializaed'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java:70 reads `@BeforeEach // cannot use @BeforeAll, realm is not initializaed yet`, and the line is added by the patch (change.patch:1156).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0789299
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The canView() Javadoc says 'Or if it has a permission to VIEW or MANAGE groups' without the 'For V2 only' qualifier, but V1 canView() checks roles only.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The Javadoc on canView() at GroupPermissionEvaluator.java:85-92 says \"Or if it has a permission to VIEW or MANAGE groups\" with no \"For V2 only\" qualifier (unlike canList() at :36 and canManage() at :75), while V1 GroupPermissions.canView() at GroupPermissions.java:286-288 checks only the MANAGE_USERS/VIEW_USERS roles; only GroupPermissionsV2.java:47-53 adds the permission check.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.274288
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There are no tests for all-groups VIEW_MEMBERS/MANAGE_MEMBERS, users().count(), VIEW-only write attempts, or mixed all-groups and per-group permissions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/GroupResourceTypeEvaluationTest.java, all-groups permissions are only created with MANAGE (line 160) and VIEW (line 276), while VIEW_MEMBERS/MANAGE_MEMBERS are per-group only (lines 100, 126); no V2 fgap test calls users().count(), and none grants VIEW then attempts a write. The one partial exception is testViewGroups (lines 268-280), which combines a per-group VIEW with an all-groups VIEW but tests no conflict or differing scopes.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.7492768
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "canMapRole() checks root.hasOneAdminRole(AdminRoles.MANAGE_USERS) and then calls checkAdminRoles(role) instead of returning true, which removes the users-manage shortcut.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "RolePermissions.java:302 does call checkAdminRoles(role) after the MANAGE_USERS check, but the patch only swapped `root.users().canManageDefault()` for its inlined body `root.hasOneAdminRole(AdminRoles.MANAGE_USERS)`; the pre-patch line already returned checkAdminRoles(role), so no shortcut was removed. checkAdminRoles (RolePermissions.java:149) is the existing guard against granting admin roles the caller lacks, and behaviour is unchanged.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.3176642
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:66-69 discards the return value of OptimizedImage.downsize (which returns false on failure, app/models/optimized_image.rb:160-169), so a failing convert is re-run up to 5 times and the still-oversized tempfile is passed to Upload.create_for at line 72. The file is not actually stored, though: lib/validators/upload_validator.rb:80-87 rejects it with a too-large error, so the cost is wasted work and no early exit.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.289144
+}

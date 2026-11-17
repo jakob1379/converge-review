@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Kernel#open is called on a URL string at app/jobs/scheduled/poll_feed.rb:29 (`open(SiteSetting.feed_polling_url)`, an unvalidated setting from config/site_settings.yml:356) and app/models/topic_embed.rb:48 (`open(url).read`, before the https? check in `import`), so a value like `|cmd` spawns a subprocess. The anonymous embed_url path is blocked by the host check at lib/topic_retriever.rb:15, so it is reachable only through the admin setting or a link in a Disqus export (lib/tasks/disqus.thor:148).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.43057310000000004
+}

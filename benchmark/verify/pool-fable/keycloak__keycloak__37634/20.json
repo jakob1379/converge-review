@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/protocol/oidc/encode/DefaultTokenContextEncoderProviderFactory.java:67-79,106-119 keeps a hand-filled grant\u2192shortcut map that mirrors `sessionFactory.getProviderFactory(OAuth2GrantType.class, grantType).getShortcut()` (the fallback at line 110 is exactly that call), entries are only ever added, and `DefaultKeycloakSessionFactory.undeploy` (services/src/main/java/org/keycloak/services/DefaultKeycloakSessionFactory.java:244-264) evicts nothing from it, so it can go stale. \"Unsynchronised\" is overstated: both maps are `ConcurrentHashMap`, and only the paired update of the two maps is non-atomic.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.6758187999999999
+}

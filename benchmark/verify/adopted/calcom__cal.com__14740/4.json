@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts:74-78 removes existing attendees to build `uniqueGuests`, but line 168 passes the raw `guests` input to `sendAddGuestsEmails`. In email-manager.ts:541-545 (`newGuests.includes(attendee.email)`), any existing attendee whose email was re-submitted is treated as new and gets AttendeeScheduledEmail instead of AttendeeAddGuestsEmail, provided at least one real new guest keeps line 80 from throwing.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1616901
+}

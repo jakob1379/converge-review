@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/api/paginator.py:182, `start_offset = max(0, offset) if not cursor.is_prev else offset` only clamps non-prev cursors. Cursor.from_string (src/sentry/utils/cursors.py:59) accepts negative offsets such as `0:-5:1`, so `queryset[start_offset:stop]` at paginator.py:184 gets a negative start, and Django querysets raise a ValueError for negative indexing.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1737342
+}

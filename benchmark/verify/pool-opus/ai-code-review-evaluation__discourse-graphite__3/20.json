@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Only the specs use :do_nothing (spec/models/blocked_email_spec.rb:41-42). Outside the specs, no code creates BlockedEmail rows: no admin UI, controller, rake task or site setting does. The enum (app/models/blocked_email.rb:8) and the default to :block (blocked_email.rb:22) are only read by should_block?, which EmailValidator calls (lib/validators/email_validator.rb:13).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08007310000000001
+}

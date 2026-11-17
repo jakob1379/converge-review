@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:13 runs `contents << ...` without checking for nil, so a nil `contents` raises NoMethodError. The callers in this patch probably never pass nil: poll_feed.rb:35 passes the String returned by `CGI.unescapeHTML(i.content.scrub)`, and topic_embed.rb:52 passes Readability's `doc.content`, which is normally a String.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0707431
+}

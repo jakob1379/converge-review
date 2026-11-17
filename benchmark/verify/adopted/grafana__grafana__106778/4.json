@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At useAbilities.ts:301 the comment says all GrafanaPromRuleDTO rules are Grafana-managed, but the next line (302) sets `isAlertingRule` from `prometheusRuleType.grafana.alertingRule(rule)`, which checks alerting vs. recording. The comment explains why the old Grafana-managed check was dropped, not what the new line checks, so it is misleading.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0508411
+}

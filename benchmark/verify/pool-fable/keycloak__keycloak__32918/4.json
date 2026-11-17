@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `idp.getOrganizationId() == null || BROKER_PUBLIC` to the shared `getLoginPredicate()` (server-spi/src/main/java/org/keycloak/models/IdentityProviderStorageProvider.java:254), which `IdentityProviderBean.federatedProviderPredicate()` returns unchanged (services/src/main/java/org/keycloak/forms/login/freemarker/model/IdentityProviderBean.java:226). With the Organization feature off the plain bean is used (FreeMarkerLoginFormsProvider.java:482-486) and models still carry the stored organizationId (JpaIdentityProviderStorageProvider.java:539), so an org-linked non-public IdP among a user's federated identities is now filtered out where it previously passed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.8006156
+}

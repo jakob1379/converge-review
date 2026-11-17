@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The field is declared as `anonymousDeviceLimit = undefined;` with no annotation at packages/grafana-runtime/src/config.ts:97 (the class lives there, not in grafana-data), and root tsconfig.json:8 sets `strict: true`, so its type is inferred as `undefined` rather than the interface's `number | undefined` (packages/grafana-data/src/types/config.ts:200). The effect is type-level only: `merge(this, defaults, options)` at config.ts:191 still assigns the backend number at runtime, and nothing in the frontend reads the field yet.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.200908
+}

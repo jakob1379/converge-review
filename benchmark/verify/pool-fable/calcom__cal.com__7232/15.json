@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The last hunk of packages/trpc/server/routers/viewer/workflows.tsx only strips leading whitespace from lines at 904-960, all inside the commented-out `testAction` block (comment opens at :848, reopens at :901, closes at :967), so there is no behaviour change. The count is loose: 38 lines are actually re-indented, within a 63-line hunk.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3870683
+}

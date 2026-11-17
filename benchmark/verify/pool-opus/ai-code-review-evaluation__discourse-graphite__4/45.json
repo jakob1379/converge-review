@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/embed/best.html.erb:10 (patch line 424) writes the avatar as `<img src='<%= post.user.small_avatar_url %>'>`, while the logo in the same file (line 8) uses image_tag. ERB `<%=` still HTML-escapes the URL, so this is an inconsistency rather than an injection.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.147596
+}

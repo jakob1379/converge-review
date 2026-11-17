@@ -1,0 +1,134 @@
+{
+ "findings": [
+  {
+   "path": "app/assets/stylesheets/desktop/topic-post.scss",
+   "line": 291,
+   "severity": "Important",
+   "claim": "In `.topic-meta-data h5 a` the light and dark values are swapped. The original `scale-color($primary, $lightness: 30%)` became `dark-light-choose(scale-color($primary, $lightness: 70%), scale-color($secondary, $lightness: 30%))` instead of (30%, 70%). On the default light theme the bold poster-name link goes from dark grey to pale grey, which is a light-theme change outside the commit's dark-theme-only intent. The dark-theme value is also wrong.",
+   "evidence": "The diff text shows `- $lightness: 30%` paired with `+ (70%, 30%)` (`git diff 7554b5e3c4 d38c4d5f74 -- app/assets/stylesheets/desktop/topic-post.scss`). The superpowers pairing script prints this line with orig=30 light=70 dark=30. Superpowers computed light-theme contrast against white dropping from #646464 (5.92:1) to #bdbdbd (1.88:1), which is below WCAG AA. That figure assumes the default #222/#fff palette. Nothing was compiled because no sass toolchain was available, so the effect is reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted, Important, raised by 3 seats. Red check: the superpowers pairing script over the pinned patch, which flags this line (orig=30 light=70 dark=30). Turn it green by restoring (30%, 70%).",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/mobile/modal.scss",
+   "line": 102,
+   "severity": "Important",
+   "claim": "In `.custom-message-length` the light and dark values are swapped. The original 70% became (30%, 70%) instead of (70%, 30%). The faint hint text turns dark on the light theme and near-white on the dark theme, the reverse of the intent. The desktop twin at desktop/modal.scss:94 was converted correctly to (70%, 30%), so mobile and desktop now disagree.",
+   "evidence": "`git diff -U0 7554b5e3c4 HEAD -- app/assets/stylesheets/mobile/modal.scss` shows `- color: scale-color($primary, $lightness: 70%);` replaced by `+ color: dark-light-choose(scale-color($primary, $lightness: 30%), ...)`. `grep -n -A2 custom-message-length app/assets/stylesheets/{desktop,mobile}/modal.scss` shows the desktop/mobile mismatch. Superpowers computed light-theme contrast going from 1.88 to 5.92 and dark-theme contrast going to 8.47:1 instead of 2.69:1. Nothing was compiled, so the effect is reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted, Important, raised by 3 seats. Red check: the superpowers pairing script flags this line (orig=70 light=30 dark=70). Turn it green by restoring (70%, 30%).",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/mobile/topic-post.scss",
+   "line": 182,
+   "severity": "Important",
+   "claim": "The light-theme value of `h3` changed. The original 20% became (50%, 50%) instead of (20%, 80%), so mobile post headings get noticeably lighter on the light theme. The desktop twin at desktop/topic-post.scss:321 was converted correctly to (20%, 80%).",
+   "evidence": "The diff text pairs `- $lightness: 20%` with `+ (50%, 50%)`. The superpowers pairing script prints orig=20 light=50 dark=50. Superpowers computed light-theme contrast dropping from #4e4e4e (8.32:1) to #909090 (3.19:1), which fails AA for normal text. Nothing was compiled, so the effect is reasoned. Severity was normalised to Important: two seats rated it Important and open-code-review rated it Minor.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted, Important, raised by 3 seats. Red check: the superpowers pairing script flags this line (orig=20 light=50 dark=50). Turn it green by restoring (20%, 80%).",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/desktop/user.scss",
+   "line": 522,
+   "severity": "Important",
+   "claim": "The light-theme value of `.group-member-info .name` changed. The original 30% became (50%, 50%) instead of (30%, 70%). The name becomes as light as the `.title` beneath it, which is a light-theme change outside the commit's stated scope.",
+   "evidence": "The diff text pairs `- $lightness: 30%` with `+ (50%, 50%)`. The superpowers pairing script prints orig=30 light=50 dark=50. In the light theme the colour goes from #646464 to #909090 (superpowers). Nothing was compiled, so the effect is reasoned. Severity was normalised to Important: two seats rated it Important and open-code-review rated it Minor.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted, Important, raised by 3 seats. Red check: the superpowers pairing script flags this line (orig=30 light=50 dark=50). Turn it green by restoring (30%, 70%).",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/mobile/user.scss",
+   "line": 497,
+   "severity": "Important",
+   "claim": "The light-theme value of `.group-member-info .name` changed in the mobile stylesheet. The original 30% became (50%, 50%) instead of (30%, 70%). This is the same defect as in desktop/user.scss:522, but it is a separate site with its own fix.",
+   "evidence": "The diff text pairs `- $lightness: 30%` with `+ (50%, 50%)`. The superpowers pairing script prints orig=30 light=50 dark=50. Nothing was compiled, so the effect is reasoned. Severity was normalised to Important: two seats rated it Important and open-code-review rated it Minor.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted, Important, raised by 3 seats. Red check: the superpowers pairing script flags this line (orig=30 light=50 dark=50). Turn it green by restoring (30%, 70%).",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/_topic-list.scss",
+   "line": 115,
+   "severity": "Minor",
+   "claim": "The conversion is incomplete. `.topic-list.categories .category .badge-notification` still uses a bare `scale-color($primary, $lightness: 50%)`, which the commit message says must use $secondary for dark themes. On dark themes this badge will differ from its neighbours.",
+   "evidence": "`git grep -nE 'scale-color\\(\\s*\\$primary\\s*,\\s*\\$lightness:\\s*[0-9]' -- app/assets plugins | grep -v dark-light-choose` finds only this line plus a comment (mattpocock; ponytail confirms). Superpowers states the opposite: that no unwrapped `scale-color($primary` remains.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats, so it is not fixed this loop. Superpowers' contrary completeness claim does not disprove it, because two seats cite a concrete grep hit. ponytail: one-line wrap at _topic-list.scss:115 when dark-theme greys are next touched.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/discourse.scss",
+   "line": 73,
+   "severity": "Minor",
+   "claim": "The comment describes the old bare `scale-color($primary, ...)` default and is now stale.",
+   "evidence": "The same grep matches this comment line (mattpocock). Ponytail notes the match is a comment but does not call it stale.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 1 seat, so it is not fixed this loop. ponytail: refresh the comment alongside any follow-up to _topic-list.scss:115.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/foundation/variables.scss",
+   "line": 46,
+   "severity": "Minor",
+   "claim": "The same `dark-light-choose(scale-color($primary, X%), scale-color($secondary, (100-X)%))` expression is copied by hand 115 times across 32 files, starting at common/admin/admin_base.scss:385. The 100-X rule is never written down, so a later edit that changes one number but not the other compiles silently. A one-argument helper next to `dark-light-choose` or `dark-light-diff` would encode the rule.",
+   "evidence": "Ponytail's script checked that all 115 added lines satisfy dark = 100 - light. The repo precedent is `dark-light-diff` in variables.scss and commit 54c0bea294. Mattpocock flags the same pattern as an advisory Duplicated Code smell. Open-code-review explicitly declined to flag it, so it does not count as a seat.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 advisory seats only. The finding is non-blocking, and no new abstraction is added inside the fix loop. ponytail: consider a primary-faded($pct) helper beside dark-light-choose in a follow-up.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/desktop/queued-posts.scss",
+   "line": 14,
+   "severity": "Minor",
+   "claim": "The patch adds a stray space before `}` in single-line rules (`...)); }`), here and in desktop/topic-list.scss:39-54 and several desktop/topic-post.scss one-liners. This does not match the surrounding style.",
+   "evidence": "Superpowers raised this from reading the diff, with no command. Mattpocock's report states that the `{color: ...;}` brace spacing in these single-line rules already existed at base and was not introduced by the patch, and that no trailing whitespace was added.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "reject",
+   "reason": "Disproved by a seat report: mattpocock states this single-line brace spacing pre-exists at base 7554b5e3c4, so the patch did not introduce it. The finding is Minor, so no verifier is needed.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats report reviewing all 32 patched files. Mattpocock and ponytail checked most files by script and read context manually only at the flagged sites. Open-code-review worked from a partial clone, so it took base values from the patch's - lines rather than base blobs. Axes that did not run: (1) The gate did not run (benchmark mode), so the review is unanchored by executed checks. (2) There is no spec; every seat judged against the commit message 'scale-color $lightness must use $secondary for dark themes'. (3) No sass compiler was available, so there is no compiled-CSS or rendered check. Every main-list colour effect and the superpowers contrast figures are reasoned from the diff and from scale-color semantics, assuming the default #222/#fff palette. The repo has no SCSS tests. (4) Standards docs are limited to CONTRIBUTING.md; there is no scss-lint config and no CODING_STANDARDS file. (5) Nobody checked visually whether the 100-X dark-theme mirror looks right per rule. (6) Superpowers' claim that no unwrapped scale-color($primary remains is contradicted by the grep from mattpocock and ponytail (see _topic-list.scss:115). (7) No fix rounds or scoped re-reviews ran, so nothing has converged; all five main-list Important findings remain open."
+}

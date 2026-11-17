@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/spans/consumers/process/factory.py:141 reads val[\"end_timestamp_precise\"] by direct index inside process_batch's loop with no try/except anywhere in the file, so a payload without the field raises KeyError and aborts the whole batch. Whether such a payload can actually arrive depends on the ingest_spans_v1 schema, which is not in this checkout; trace_id, span_id and project_id are indexed the same way at lines 136-139.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3445135
+}

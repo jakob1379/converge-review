@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The test still hardcodes `db_host` \"localhost\" for postgres (pkg/server/module_server_test.go:76) while Drone sets `POSTGRES_HOST: postgres` (scripts/drone/steps/lib.star:1071), and the patch's eager `s.Init(ctx)` (pkg/storage/unified/resource/server.go:258) now opens the DB at startup via the backend lifecycle hook (pkg/storage/unified/sql/backend.go:94-106). The patch masks this rather than fixing it by skipping the test for postgres (module_server_test.go:36-38), so CI does not actually fail; the failure itself was traced statically, not run.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5285656999999999
+}

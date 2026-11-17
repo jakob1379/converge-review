@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched src/sentry/api/paginator.py (OptimizedCursorPaginator.get_result, patch lines 133-138), when enable_advanced_features is true and cursor.offset < 0, the negative offset goes straight into queryset[start_offset:stop]. Cursor.from_string (src/sentry/utils/cursors.py:53-61) accepts a negative offset, and Django rejects negative slicing with ValueError/AssertionError, which Endpoint.paginate (src/sentry/api/base.py:540) does not catch because it only catches BadPaginationError, so the request returns a 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.11022219999999999
+}

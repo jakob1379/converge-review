@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/topic_retriever.rb:49 calls `SiteSetting.embed_by_username.downcase` with no blank/nil guard on any path through `perform_retrieve` (lines 35-46), whereas the same call at app/jobs/scheduled/poll_feed.rb:25 is guarded by `.present?` at line 17. The setting defaults to `''` (config/site_settings.yml:357), so the unguarded call normally yields `''` and returns early at line 50; it only raises if the setting is nil.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1545495
+}

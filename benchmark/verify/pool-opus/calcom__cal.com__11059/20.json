@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:62-77 (new file) uses prisma.credential.findFirst on {userId, appId} with no orderBy and then updates the row it finds. The Credential model in packages/prisma/schema.prisma:127-146 only has @@index([userId]) and @@index([appId]), not a unique constraint on the pair. A user can link several credentials for one app, such as more than one Google Calendar account, so the webhook overwrites an arbitrary one.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2263812
+}

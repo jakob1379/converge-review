@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/embed.js:5 assigns `document.getElementById('discourse-comments')` to `comments`, and embed.js:12 calls `comments.appendChild(iframe)` with no null check, so a page without that element throws a TypeError.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.31713510000000006
+}

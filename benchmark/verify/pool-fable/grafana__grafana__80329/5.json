@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:608 branches on `r.cfg.AnnotationCleanupJobBatchSize > sqliteParameterLimit` rather than `len(ids)`, so on SQLite with a large configured batch size even a small final batch takes the inlined-ID path (lines 609-613). This is functionally harmless: the IDs are int64 values formatted with %d and both paths delete the same rows.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1422018
+}

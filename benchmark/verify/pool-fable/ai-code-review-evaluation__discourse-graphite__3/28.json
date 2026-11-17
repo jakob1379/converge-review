@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/models/blocked_email_spec.rb:5 defines the only email used, the lowercase 'block@spamfromhome.org', and every example (lines 9, 15, 20, 36, 42) reuses it, so no case variant is tested. The gap matters because app/models/blocked_email.rb:12 matches with an exact `where(email: email)` and nothing normalises case.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1615581
+}

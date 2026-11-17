@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java:380 and :424 the test calls `testRealm().identityProviders().create(idpRep).close()` and discards the JAX-RS `Response` (IdentityProvidersResource.java:63 returns `Response`, so a 409 does not throw). A failed create would only surface indirectly through the later count assertions.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.25488669999999997
+}

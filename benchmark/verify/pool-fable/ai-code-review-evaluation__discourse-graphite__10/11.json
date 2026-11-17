@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/admin/components/embeddable-host.js.es6:57 sets host.category from the local categoryId (null/empty when no category is chosen, so Category.findById returns undefined at models/category.js:242), while the server substitutes uncategorized at app/controllers/admin/embeddable_hosts_controller.rb:25 and the update path only copies the returned category_id without hydrating category (models/rest.js.es6:26). The blank-until-reload effect is only visible when suppress_uncategorized_badge is turned off, since its default of true (config/site_settings.yml:814) makes the uncategorized badge render blank after reload too (helpers/category-link.js.es6:15-20).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.8238518
+}

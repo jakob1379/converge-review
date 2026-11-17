@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The cache keys at error_upsampling.py (patch lines 153 and 199) hash `tuple(sorted(project_ids))`, and `project_ids` are ints (`Sequence[int]`). PYTHONHASHSEED only randomizes str/bytes hashes, so the hash of a tuple of ints is the same in every worker and keys do match across processes; a 64-bit collision between project sets is possible in theory but negligible in practice.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.04976230000000001
+}

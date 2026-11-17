@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "All four parts hold in apps/web/components/dialog/AddGuestsDialog.tsx: onSuccess (lines 36-41) never calls setIsInvalidEmail(false) and onOpenChange={setIsOpenDialog} (line 61) resets nothing, while the component stays mounted in BookingListItem.tsx:357, so the stale error and emails survive a reopen. handleAdd returns silently when multiEmailValue.length === 0 (lines 49-51), and uniqueness uses new Set(emails) with no case normalisation (lines 26-29).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.22353470000000003
+}

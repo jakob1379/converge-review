@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Before the patch, deployments without V1 never cleaned up V1 leftovers either. With no fine-grained feature enabled, `authz` is null (MgmtPermissions.java:85-88), so `realmResourceServer()` returns null (MgmtPermissions.java:251) and `deletePermissions` exits early (ClientPermissions.java:189-190). With V2 enabled, `getRealmPermissionsClient()` points at the V2 admin-permissions client, not realm-management (MgmtPermissionsV2.java:52-53), and `ClientPermissionsV2.setPermissionsEnabled` throws an exception; the new gate at AdminPermissions.java:77 avoids that throw.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3655113000000001
+}

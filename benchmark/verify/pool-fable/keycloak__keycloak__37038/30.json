@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "RolePermissions.java:302 does call checkAdminRoles(role) after the MANAGE_USERS check, but the patch only swapped `root.users().canManageDefault()` for its inlined body `root.hasOneAdminRole(AdminRoles.MANAGE_USERS)`; the pre-patch line already returned checkAdminRoles(role), so no shortcut was removed. checkAdminRoles (RolePermissions.java:149) is the existing guard against granting admin roles the caller lacks, and behaviour is unchanged.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3176642
+}

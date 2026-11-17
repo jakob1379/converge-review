@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In admin-group.js.es6:59, `next` clamps the offset to `Math.min(offset + limit, user_count)`. Lines 17-20 compute `totalPages = floor(user_count/limit) + 1`, so with user_count == limit (e.g. 50/50) the controller reports 2 pages, `showingLast` is false on page 1, and `next` sets offset = 50 = user_count, which loads an empty page.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0512208
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/monitors/logic/incident_occurrence.py:25 defines `logger = logging.getLogger(__name__)`, but the file has no other `logger` reference, and nothing else in the repo imports or patches `incident_occurrence.logger`. The patch adds this file as new.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0443875
+}

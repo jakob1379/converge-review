@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/slots.ts:114 the patch compares two separately built Dayjs objects with `===`, which checks object identity, so the condition is always false and the start==end ('unavailable all day') branch never runs. A slot starting exactly at that instant is not caught by isBefore/isSame at :118-119 (its end is after the instant) or by isAfter at :123 (its start equals the instant), so it falls through to `dateOverrideExist` \u2192 return true at :133-134 and is reported available.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0771677
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/salesforce/lib/CalendarService.ts:75-84 (added by this patch) calls fetch on login.salesforce.com/services/oauth2/token directly instead of wrapping the call in refreshOAuthTokens. Only refreshOAuthTokens posts to CALCOM_CREDENTIAL_SYNC_ENDPOINT (_utils/oauth/refreshOAuthTokens.ts:5-8), which the other apps such as hubspot, zoho and google do use, so Salesforce never calls the sync endpoint.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.119116
+}

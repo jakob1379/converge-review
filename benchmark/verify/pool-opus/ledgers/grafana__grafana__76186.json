@@ -1,0 +1,221 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TestLogger.FromContext returns a new instance via NewTestLogger() instead of the receiver f. Logs written through FromContext(ctx), such as those from LoggerMiddleware, go to a throwaway logger, so tests asserting on the original TestLogger see no calls.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `TestLogger.FromContext`, which returns `NewTestLogger()` (pkg/plugins/log/fake.go:46-48), and `LoggerMiddleware` now logs through `m.logger.FromContext(ctx).Info(...)`, so those calls never reach the original fake. This copies the existing `New()` pattern (fake.go:18-19), and no current test checks `LoggerMiddleware` output through a `TestLogger`, so nothing fails yet.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1370468
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no test for LoggerMiddleware's log output; clientmiddleware/ has no logger_middleware_test.go.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/pluginsintegration/clientmiddleware/ has no logger_middleware_test.go, and no _test.go file anywhere references NewLoggerMiddleware or builds a LoggerMiddleware. The patch changes logger_middleware.go:243 to log through m.logger.FromContext(ctx) but adds no test for that. Its TestLogger.FromContext (pkg/plugins/log/fake.go:46-48) returns a fresh logger, so a test using it could not see the log calls anyway.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.134079
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "contextual_logger_middleware.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new ContextualLoggerMiddleware has no tests. The egress-log fields it now provides, along with grafanaInfraLogWrapper.FromContext, are not pinned by any test.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds contextual_logger_middleware.go and grafanaInfraLogWrapper.FromContext (pkg/plugins/log/logger.go:103-111) but no test file for either: there is no contextual_logger_middleware_test.go or logger_middleware_test.go in clientmiddleware/, pkg/plugins/log has no tests, and no _test.go mentions instrumentContext or ContextualLogger. The \"endpoint\" labels in metrics_middleware_test.go:97,105 are Prometheus labels, not log fields.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1577355
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "metrics_middleware.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'should live at the top of the middleware stack' comment was removed from metrics_middleware.go and nothing replaces it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch deletes the 'For those reasons, this middleware should live at the top of the middleware stack' doc line (change.patch:312-313), and the new MetricsMiddleware doc comment (metrics_middleware.go, ~lines 24-25) has no ordering guidance. The new contextual_logger_middleware.go has none either; the ordering is now shown only by the list in pluginsintegration.go:158-160.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1064547
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ContextualLoggerMiddleware's QueryData, CallResource, CheckHealth and CollectMetrics dereference req.PluginContext with no nil check on req, so a nil request panics. Other middlewares, including LoggerMiddleware, guard against nil requests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In contextual_logger_middleware.go:40, 45, 50 and 55, `req.PluginContext` is read with no `req == nil` check, while logger_middleware.go:63/77/90/104 and most other middlewares check for nil first. In the real chain (pluginsintegration.go:158-160), the tracing and metrics middlewares run earlier and also read `req.PluginContext` without a nil check (tracing_middleware.go:85, metrics_middleware.go:149), so a nil request would already panic before reaching this middleware. That makes this a consistency gap, not a new crash path.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.09790779999999999
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "LoggerMiddleware no longer adds pluginId, endpoint, uname, dsName, dsUID and traceID to its 'Plugin Request Completed' log line. It relies on ContextualLoggerMiddleware being earlier in the CreateMiddlewares chain, so reordering or omitting it drops those fields with no error, and this is neither documented nor tested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch takes pluginId, endpoint, uname, dsName and dsUID out of LoggerMiddleware.logRequest and now uses m.logger.FromContext(ctx) (logger_middleware.go:58). Those fields only appear if ContextualLoggerMiddleware's instrumentContext ran earlier in the chain (contextual_logger_middleware.go:27-37, pluginsintegration.go:160). Nothing comments on or tests this ordering, and TestLogger.FromContext returns a blank logger (fake.go), so tests can't see the fields. One detail is wrong: traceID comes from the tracing log provider (pkg/infra/tracing/tracing.go:91), not this middleware, so reordering would not drop it.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1933474
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "LoggerMiddleware depends on a traceID log provider being registered globally, and this is neither documented nor tested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes the explicit `tracing.TraceIDFromContext` call and switches to `m.logger.FromContext(ctx)` (logger_middleware.go, patch L228-243). That call adds traceID only through the global `ctxLogProviders` list (pkg/infra/log/log.go:203-210), and the traceID provider is registered only as a side effect of tracing's service constructor (pkg/infra/tracing/tracing.go:91). No comment explains this, and the clientmiddleware package has no logger_middleware test.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1558186
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The rename from Instrumentation to Metrics is incomplete: the test function is still named TestInstrumentationMiddleware, and the local variable in NewMetricsMiddleware is still named 'imw'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "After the patch renames the type to MetricsMiddleware, the test function is still named TestInstrumentationMiddleware (metrics_middleware_test.go:21) and NewMetricsMiddleware still uses the local variable 'imw' (metrics_middleware.go:77).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1233572
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The exported type ContextualLoggerMiddleware and its exported methods have no doc comments.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new file pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go (patch lines 139-186), the exported type `ContextualLoggerMiddleware` and its methods `QueryData`, `CallResource`, `CheckHealth`, `CollectMetrics`, `SubscribeStream`, `PublishStream` and `RunStream` have no doc comments. Only `NewContextualLoggerMiddleware` and the unexported `instrumentContext` have them.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0512065
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "traceID is no longer added to plugin request logs. The tracing extraction was removed from LoggerMiddleware, and ContextualLoggerMiddleware does not add traceID from tracing.TraceIDFromContext to its contextual attributes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The traceID is still logged, by a different route. LoggerMiddleware now logs through `m.logger.FromContext(ctx)` (logger_middleware.go, patch line 243), and the wrapper passes this to `ConcreteLogger.FromContext` (pkg/plugins/log/logger.go FromContext \u2192 pkg/infra/log/log.go:203-217), which runs every registered context provider, including the one at pkg/infra/tracing/tracing.go:91-97 that adds \"traceID\" from `TraceIDFromContext`.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1882939
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The helper function in ContextualLoggerMiddleware is still named instrumentContext, the old instrumentation-middleware name.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch moves the helper from instrumentation_middleware.go (change.patch:361-362, now metrics_middleware.go) into contextual_logger_middleware.go without renaming it. It is still `func instrumentContext(...)` at contextual_logger_middleware.go:26-27, and lines 40/45/50/55 call it under that name.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.043684
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The doc comment on Logger.FromContext is copied from New and does not describe that attributes come from context.Context via registered log providers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/plugins/log/ifaces.go:22 uses the same wording as New at line 7 (\"has this logger's context plus the given context\"). It does not say that the key/value attributes come from the context.Context through the registered context log providers. The patch copies the same pre-existing comment from pkg/infra/log/interface.go:33.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0537707
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

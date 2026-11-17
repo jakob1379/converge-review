@@ -1,0 +1,181 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The process-wide translation cache in I18n.translate (translate_accelerator.rb) is keyed only on the key, the locale and the backend object id. It does not include SiteSetting.default_locale or the site, even though FallbackLocaleList#[] puts the default locale in the fallback chain. As a result, stale fallback strings stay cached after an admin changes default_locale, and in multisite one site's fallback text is served to another site.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "protect_from_forgery is not configured with 'with: :exception'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In ensure_loaded!, the lazy initialization `@loaded_locales ||= []` is not protected by LOAD_MUTEX. Concurrent threads read and write @loaded_locales without synchronization, which can cause lost writes or double loading.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The '# order: after 02-freedom_patches.rb' comment implies an ordering directive, but nothing reads it; load order is purely the alphabetical sort of file names.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SiteSetting.default_locale.to_sym is called without a nil guard, so it raises NoMethodError if default_locale is nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The PR adds no tests for the new i18n fallback system, including FallbackLocaleList#[], FallbackLocaleList#ensure_loaded!, I18n.ensure_loaded!, the fallback order, and fallback/cache interaction.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Locales are not normalized to one type (Symbol or String) before the @loaded_locales include? check and insertion. Because :en != 'en', the same locale passed as a String and as a Symbol produces duplicate entries and redundant loads.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new public I18n.ensure_loaded! duplicates load_locale's existing already-loaded guard. Its `@loaded_locales ||= []` is also inconsistent with translate, which dereferences @loaded_locales without a guard.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "I18n::Backend::Pluralization is included via send(:include, ...) even though include is public since Ruby 2.1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "I18n::Backend::Fallbacks is included via send(:include, ...) even though include is public since Ruby 2.1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "I18n.fallbacks.ensure_loaded! is called only in ApplicationController#set_locale. Non-request paths (Sidekiq jobs, mailers, I18n.with_locale callers, rake tasks, console) therefore never load the fallback locales, so lookups yield 'translation missing' and the LRU cache stores that result.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Fallbacks are now enabled in all environments, including development and test, instead of only production/profile/cloud66. This hides missing translations behind English text and can break specs that expect missing-translation output.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backend classes are monkey-patched via send(:include), which is fragile across gem upgrades.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "FallbackLocaleList inherits from Hash but only implements [] and ensure_loaded!. Because the underlying Hash storage is never populated, other Hash methods (fetch, keys, each, to_h) return empty results or raise.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ensure_loaded! is called on every request in set_locale.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The custom fallback list drops the standard locale-ancestor fallbacks, so regional locales skip the matching base-language translations.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,145 @@
+{
+  "findings": [
+    {
+      "path": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/idp/InfinispanIdentityProviderStorageProvider.java",
+      "line": 91,
+      "severity": "Important",
+      "claim": "update() evaluates the login predicate on the org-aware wrapped 'original' from getById(), whose isEnabled() is false while the linked organization is disabled; if the update also makes the IdP fail the predicate (hideOnLogin, linkOnly, BROKER_PUBLIC removed), registerIDPLoginInvalidationOnUpdate returns early and the ORG_ONLY/ALL login caches are not invalidated. After the org is re-enabled, the stale cached id list surfaces a hidden/link-only/non-public IdP on the login page.",
+      "evidence": "original comes from getById (line 91) -> createOrganizationAwareIdentityProviderModel (lines 430-445) whose isEnabled() reflects org enabled state; updated comes unwrapped from IdentityProviderResource.updateIdpFromRep -> RepresentationToModel.toModel. Early return at lines 403-407 when both fail the predicate. Org enable/disable (InfinispanOrganizationProvider.registerOrganizationInvalidation) does not touch cacheKeyForLogin keys. getForLogin cached path (lines 244-252) reloads ids via getById and OrganizationAwareIdentityProviderBean:75,80 re-checks only isEnabled(), not hideOnLogin/linkOnly/BROKER_PUBLIC. Proposed red test (not run): fill ORG_ONLY cache, disable org, set hideOnLogin=true on an org IdP, assert cacheKeyForLogin(realm, ORG_ONLY) entry is null (non-null on patched code); re-enable org, assert getForLogin(ORG_ONLY, orgId) excludes the IdP. Reasoned; both correctness seats traced the same path independently.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two independent correctness seats traced the same concrete path with source citations; evaluate the predicate on the raw stored model (idpDelegate.getById), as remove() already does. Requires a red test before the fix (not run: benchmark mode stops after merge)."
+    },
+    {
+      "path": "server-spi/src/main/java/org/keycloak/models/IdentityProviderStorageProvider.java",
+      "line": 254,
+      "severity": "Minor",
+      "claim": "getLoginPredicate() is a public SPI predicate; the added 'organizationId == null || BROKER_PUBLIC' clause changes behaviour beyond the cache, notably IdentityProviderBean.federatedProviderPredicate() (used when organizations are off) now hides a user's already-linked org-bound non-public IdP. Unannounced scope beyond the commit title.",
+      "evidence": "IdentityProviderBean.java:226 uses getLoginPredicate(); FreeMarkerLoginFormsProvider.java:481-485 selects the plain bean when orgs are off; Infinispan provider line 433 does not wrap when the feature is off. CONTRIBUTING.md / PR-CHECKLIST.md: no unrelated changes. Counter-evidence: the OCR seat checked this path and found no practical regression, and OrganizationAwareIdentityProviderBean already applied an equivalent BROKER_PUBLIC check.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Likely intended (needed so invalidation matches what the login query returns) and seats disagree on impact; settle by confirming intent against issue #32573 and the realm-only search path. Advisory/Minor, non-blocking."
+    },
+    {
+      "path": "server-spi/src/main/java/org/keycloak/models/IdentityProviderStorageProvider.java",
+      "line": 151,
+      "severity": "Minor",
+      "claim": "Javadoc is stale: getForLogin (151-152), getFederatedIdentityProviders (202-203) and the LoginFilter enum doc (216) still describe only enabled/linkOnly/hideOnLogin, while getLoginPredicate() now also hard-codes the org/BROKER_PUBLIC condition, so getLoginSearchOptions() and getLoginPredicate() no longer encode the same criteria.",
+      "evidence": "Diff adds the clause at line 254 without updating the surrounding docs; CONTRIBUTING.md requires relevant documentation to stay current.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap doc correction on a public SPI; two seats raised it independently."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java",
+      "line": 381,
+      "severity": "Minor",
+      "claim": "Cleanup registers testRealm().identityProviders().get(\"alias\")::remove with the literal alias \"alias\" instead of the created idp-alias-N, so the 21 IdPs created by testCacheIDPForLogin are never cleaned up; create(idpRep).close() also ignores the response status.",
+      "evidence": "Lines 381 and 425; pattern copied from pre-existing line 303. Impact depends on whether the test realm is re-imported between tests (unchecked).",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "New code introduced the bug (copy of an existing one); one-token fix in the new lines. Line 303 is pre-existing and goes to the ledger as non-blocking."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java",
+      "line": 370,
+      "severity": "Minor",
+      "claim": "testCacheIDPForLogin asserts only cache-entry presence and id counts; it does not cover disabled or removed organizations, the isEnabled() re-check added in OrganizationAwareIdentityProviderBean:75,80, or what the login page actually renders. The Important invalidation bug sits in exactly this gap.",
+      "evidence": "Test body lines 370-535; no disabled-org or bean-level assertions.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Closed by the red test required for the Important invalidation finding; no separate work."
+    },
+    {
+      "path": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/idp/InfinispanIdentityProviderStorageProvider.java",
+      "line": 232,
+      "severity": "Minor",
+      "claim": "ORG_ONLY/ALL login results for all organizations live in one IdentityProviderListQuery per realm+mode; each new org miss invalidates the shared entry (revision bump) and copies the entire previous map (putAll), so the entry grows unbounded, concurrent misses for different orgs defeat addRevisioned, and any login-IdP change drops results for every org.",
+      "evidence": "Lines 215, 232-241; IdentityProviderListQuery copy constructor uses putAll(previous.searchKeys). getByOrganization keys per org and avoids this. Reasoned, no load test.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Performance under many orgs, not correctness; settle with a load test of concurrent logins across many organizations before re-keying to realm+mode+orgId. ponytail: per-mode entry acceptable until org count is large."
+    },
+    {
+      "path": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/idp/InfinispanIdentityProviderStorageProvider.java",
+      "line": 213,
+      "severity": "Minor",
+      "claim": "getForLogin (213-255) duplicates getByOrganization (167-211) nearly line for line; the copies have already drifted (getByOrganization bypasses on isInvalid(orgId), getForLogin does not).",
+      "evidence": "Side-by-side comparison of the two blocks; only cache key, search key and delegate call differ.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory over-engineering finding; extracting a shared helper refactors pre-existing code outside this change's purpose. ponytail: merge into one cachedIdpList helper if the caching algorithm is touched again."
+    },
+    {
+      "path": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/idp/InfinispanIdentityProviderStorageProvider.java",
+      "line": 382,
+      "severity": "Minor",
+      "claim": "registerIDPLoginInvalidationOnUpdate spends ~28 lines (12 of Javadoc restating code) on one boolean condition, repeats the FetchMode invalidation loop from registerIDPLoginInvalidation, and evaluates the predicate up to four times per update.",
+      "evidence": "Lines 382-418; condition reduces to invalidate iff before != after || (before && !Objects.equals(orgBefore, orgAfter)).",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory; the method must change anyway for the Important invalidation fix, so fold the simplification into that fix only if it keeps the diff smaller. ponytail: compute before/after once."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java",
+      "line": 370,
+      "severity": "Minor",
+      "claim": "testCacheIDPForLogin repeats the FetchMode assertNull/assertNotNull loop five times and the REALM_ONLY/ORG_ONLY/ALL size triple three times; two static helpers would roughly halve it.",
+      "evidence": "Repeated blocks at lines 393, 434, 458, 475, 511 and 401-414, 482-497, 518-533.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory test-readability finding; non-blocking. ponytail: extract assertLoginCaches/assertLoginCacheSizes when the test is next extended."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java",
+      "line": 404,
+      "severity": "Minor",
+      "claim": "New test uses org.junit.Assert assertEquals/assertNull/assertNotNull instead of hamcrest assertThat as docs/tests-development.md recommends.",
+      "evidence": "docs/tests-development.md assertion guidance; e.g. lines 404, 522.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "reject",
+      "reason": "The guideline says 'where possible' and every existing test in OrganizationCacheTest uses org.junit.Assert; the new test follows its file's convention, which the repo's own CONTRIBUTING favours over mixing styles within a file."
+    },
+    {
+      "path": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/idp/InfinispanIdentityProviderStorageProvider.java",
+      "line": 100,
+      "severity": "Minor",
+      "claim": "remove() now calls idpDelegate.getByAlias on every remove even when a cached model is available.",
+      "evidence": "Line 100; one extra DB read per IdP removal.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "The OCR seat verified the raw (unwrapped) read is what makes remove()'s login-predicate evaluation correct, the same fix the Important finding needs in update(); cost is one read on a rare admin operation."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode: no dependency install, build, tests or linters), so every finding is reasoned, not executed, and no red tests were written. Spec axis did not run: no spec supplied; issue #32573 referenced by the commit was not fetched (no network to github.com). Standards axis ran (mattpocock-skills:code-review against CONTRIBUTING.md, PR-CHECKLIST.md, docs/pull_request_template.md, docs/tests-development.md). No patch file was skipped by any seat; the OCR tool auto-excluded the testsuite file (default_path) but its seat read it manually without deep assertion validation. Not examined by any seat: Infinispan cluster invalidation propagation beyond registerInvalidation, concurrency under load. Untracked harness dotfiles in the worktree (.bashrc, .claude/, .mcp.json, etc.) were excluded from the pinned patch as unrelated to the PR. Stopped after round-1 merge per benchmark override: no fixes, no rounds 2+."
+}

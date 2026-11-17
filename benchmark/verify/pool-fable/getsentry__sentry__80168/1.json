@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/incidents/grouptype.py:11-12 defines `MetricAlertDetectorHandler(StatefulDetectorHandler[QuerySubscriptionUpdate])` with only `pass`, while `StatefulDetectorHandler` declares `counter_names`, `get_dedupe_value`, `get_group_key_values` and `build_occurrence_and_event_data` abstract (src/sentry/workflow_engine/processors/detector.py:142-170), so `group_type.detector_handler(self)` at src/sentry/workflow_engine/models/detector.py:86 raises TypeError for a `metric_alert_fire` detector. Nothing in non-test code calls `process_detectors` or creates such a detector yet, so the crash is currently latent.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4334227
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds an abstract `int order()` with no default to the ServiceLoader-loaded interface at common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java:44, which breaks any out-of-tree implementation, yet it touches no docs file and no .adoc in the repo mentions CryptoProvider. PR-CHECKLIST.md:9 asks for release-note and upgrade-guide updates only \"if applicable\" and allows them in an associated PR, so the requirement is conditional and this is a documentation gap for an undocumented internal interface.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.49668500000000004
+}

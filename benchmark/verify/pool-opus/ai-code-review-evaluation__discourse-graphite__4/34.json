@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The new spec does use `be_true` (spec/models/topic_embed_spec.rb, patch line 948), but the project is pinned to RSpec 2.14 (Gemfile.lock:360-365), where `be_true` is current and not deprecated. The rest of the suite uses `should be_true` about 251 times across 69 files, so this line follows the codebase convention.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0457966
+}

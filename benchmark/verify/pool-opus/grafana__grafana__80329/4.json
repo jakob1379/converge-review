@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In xorm_store.go, three log lines (\"Annotations to clean by time\", \"Annotations to clean by count\" and \"Tags to clean\", patch lines 239, 263 and 289) log \"err\" right after an `if err != nil { return 0, err }` check on the fetchIDs result, so that value is always nil. The \"cleaned ...\" log lines log `y` before any check, so they are not affected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09264109999999999
+}

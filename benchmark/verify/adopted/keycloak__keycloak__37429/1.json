@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes account-ui messages_en.properties:188 to use `{0}`/`{2,choice,...}` syntax. But account-ui/src/i18n.ts:25-43 sets up plain i18next with the default `{{ }}` delimiters, and package.json has no ICU plugin. ThemeResource.getLocalizationTexts (ThemeResource.java:121-154) sends the raw property values, and ui-shared setUserProfileServerError (utils.ts:64-89) passes them to t() unchanged, so the placeholders and the choice block appear literally.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1320735
+}

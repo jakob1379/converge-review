@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only remaining caller of `server.Init` is `NewResourceServer` (pkg/storage/unified/resource/server.go:258) and `Init` is not on the `ResourceServer` interface (server.go:27-32), so the \"stopping\"/\"stopped\" writes at server.go:321 and :339 are never read and no longer reject requests after `Stop`. One caveat: the write at server.go:328 is still read locally by `return s.initErr` at server.go:337.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.35423920000000003
+}

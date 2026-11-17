@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The removed `FlexCenter` applied `theme.overflowEllipsis` (`overflow: hidden`, static/app/utils/theme/theme.tsx:477-483) to the grid cell itself, letting the `1fr` track shrink below its content; the replacement `<Flex align=\"center\">` at static/app/components/events/eventAttachments.tsx:143 sets no overflow or min-width (static/app/components/core/layout/flex.tsx:18-26). The cell's automatic minimum is therefore the nowrap `Name` width, so a long attachment name widens the `1fr` column (eventAttachments.tsx:200) and the table scrolls (panelTable.tsx:177) instead of truncating; this follows from CSS grid sizing rules, not from a rendered test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3424783
+}

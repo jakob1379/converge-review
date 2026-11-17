@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AdminPermissionsSchema.java:104 creates the per-client resource with no type, and an all-clients permission is attached only to the typed 'Clients' resource (AuthorizationProvider.java:323-326). Once a per-client resource exists, ClientPermissionsV2.hasPermission(client, scope) (patch lines ~500-510) evaluates only that resource, and DefaultPolicyEvaluator.java:73 skips type-level policies when getType() is null, so all-clients grants are ignored for canManage/canConfigure/canMapRoles on that client.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.3944502999999999
+}

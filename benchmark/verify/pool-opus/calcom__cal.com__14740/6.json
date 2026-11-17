@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "sendAddGuestsEmails (packages/emails/email-manager.ts:525-550 after the patch) sends AttendeeScheduledEmail and AttendeeAddGuestsEmail to every attendee without the `hideCalendarNotes && { additionalNotes: undefined }` stripping used at email-manager.ts:119 and 267. The addGuests handler also never reads eventType.hideCalendarNotes and puts booking.description, where the booker's additional notes are stored (createBooking.ts:212), into evt.description, which BaseScheduledEmail.tsx:87 renders, so hidden notes reach both old attendees and new guests.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2120596
+}

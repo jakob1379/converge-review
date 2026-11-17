@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the constructor parameter (insightsBooking.ts:58) to the hand-written flat `InsightsBookingServicePublicOptions` (lines 29-34). That type has `teamId?: number` for every scope, so `{scope: \"team\", userId, orgId}` with no teamId type-checks. The zod discriminated union (lines 10-27) still requires teamId for team scope, so safeParse fails at line 62 and options becomes null. Every query then gets `NOTHING_CONDITION` (1=0), which is an empty result and never a leak (lines 126-127, 72-73).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11909419999999998
+}

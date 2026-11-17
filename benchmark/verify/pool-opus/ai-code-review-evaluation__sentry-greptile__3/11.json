@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/api/endpoints/organization_events_stats.py:220-222, eligibility is checked with the outer `dataset` and `request` instead of `scoped_dataset` and `query`. The dashboard-split path only runs when `metrics_enhanced` is true (line 344), so the outer dataset is a metrics dataset and `_should_apply_sample_weight_transform` returns False. That means the discover error subqueries at lines 363, 387 and 445 are never upsampled, even though `split_query`/`errors_only_query` exclude transactions.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1620904
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new hook sets `isAlertingRule = prometheusRuleType.grafana.alertingRule(rule)` (public/app/features/alerting/unified/hooks/useAbilities.ts:302) and gates ModifyExport, Pause, Restore and DeletePermanently on it (lines 324-330), whereas the ruler hook uses `rulerRuleType.grafana.rule(rule)` (line 246), which also matches Grafana recording rules. In the list view only `promRule` is passed (rule-list/GrafanaRuleListItem.tsx:47), so the ruler abilities are false and Grafana recording rules lose Export in AlertRuleMenu.tsx:100.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5059154
+}

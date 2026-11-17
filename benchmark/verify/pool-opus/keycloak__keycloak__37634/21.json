@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In DefaultTokenContextEncoderProviderFactory.java, the lazy refresh in getShortcutByGrantType (~lines 107-119) runs `grantsByShortcuts.put(shortcut, grantType)` without checking first, and getGrantTypeByShortcut (~lines 122-137) also adds entries unchecked. postInit (~lines 79-84) is the only place that checks for duplicate shortcuts, so a grant deployed later with an existing shortcut such as \"ac\" silently replaces the old mapping, and tokens using that shortcut then decode to the wrong grant type.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2488964
+}

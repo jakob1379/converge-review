@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/server/module_server_test.go:35-38 adds an unconditional postgres skip, marked with a TODO, to TestIntegrationWillRunInstrumentationServerWhenTargetHasNoHttpServer. This is the only test that starts the StorageServer target and checks /metrics. The patch also makes NewResourceServer call Init eagerly (resource/server.go:258-262), so postgres startup now fails in CI, likely because the test uses db_host \"localhost\" (lines 75-79). The skip hides that failure instead of fixing it, and only mysql keeps this coverage.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0986041
+}

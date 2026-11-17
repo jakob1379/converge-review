@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "DefaultTokenContextEncoderProvider.java:74-81 throws unless the prefix is exactly 6 chars (2+2+2), while encodeTokenId (lines 109-117) concatenates the grant shortcut unchecked and DefaultTokenContextEncoderProviderFactory.java:70-85 only checks uniqueness, not length; the javadoc at OAuth2GrantTypeFactory.java:30 says \"usually like 3-letters shortcut\". All built-in grants use 2-char shortcuts and getTokenContextFromTokenId is only called from tests in this patch, so only custom grants following the javadoc are affected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3495678
+}

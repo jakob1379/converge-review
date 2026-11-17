@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At ClientPermissionsV2.java:217, getResourceTypeResource returns null when the realm has no 'Clients' resource, or when supportsAuthorizationSchema is false (AdminPermissionsSchema.java:117-118, 144-152). Line 219 then calls findByResource, which reads resource.getId() with no null check (JPAPolicyStore.java:215, StoreFactoryCacheSession.java:938/946), so it throws a NullPointerException. Existing realms never get the new resource or scopes because init returns early when the client already exists (AdminPermissionsSchema.java:226-228), and the patch adds no migration.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.44741530000000007
+}

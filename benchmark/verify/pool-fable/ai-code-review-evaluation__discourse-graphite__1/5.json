@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/lib/utilities.js:246 sets `maxSizeKB = 10 * 1024` in the 413 branch, replacing `Discourse.SiteSettings.max_image_size_kb`, so a 413 from a web server configured below 10 MB (which config/nginx.sample.conf:60-61 says to keep in sync with the site setting) reports \"maximum size is 10240kb\". Rejections by the app's own size validator are unaffected (lib/validators/upload_validator.rb:85 sends the configured limit via `data.errors`), so only the 413 path is wrong.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4706071
+}

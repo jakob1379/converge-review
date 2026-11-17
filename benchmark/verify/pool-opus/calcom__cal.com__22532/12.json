@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In scripts/test-gcal-webhooks.sh:561-564, when `pgrep -f \"tmole 3000\"` finds a tmole process, the script only greps /tmp/tmole.log for the URL. It never checks that this script created that log, so a tmole started by hand or with other output leaves the file missing and TUNNEL_URL empty, which hits the \"Failed to extract Tunnelmole URL\" exit at lines 589-591. A leftover log from an earlier session can also give an old URL.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1261201
+}

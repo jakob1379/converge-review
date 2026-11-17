@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Every mode-3 test builds `ls := legacyStoreMock{m, l}` and `us := storageMock{m, s}` from a single `m := &mock.Mock{}` (dualwriter_mode3_test.go, patch lines 414-417 and similar). Both mock types call `m.Called` with the same method names (storage_mocks_test.go:32/96, 57/121), so the Create error case's only expectation, set in `setupLegacyFn` (patch line 404), is met by the storage call, and the Update success `setupLegacyFn` repeats the storage expectation exactly (lines 674/677). The tests never call AssertExpectations or AssertNotCalled and never wait for the legacy goroutines.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.20382549999999997
+}

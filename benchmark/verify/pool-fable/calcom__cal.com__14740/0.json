@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:46-48 computes isTeamAdminOrOwner as `isTeamAdmin(...) && isTeamOwner(...)`; isTeamAdmin matches ADMIN or OWNER (packages/lib/server/queries/teams/index.ts:264-284) while isTeamOwner matches only OWNER (286-295), so the conjunction is owner-only and a team ADMIN who is neither organizer nor attendee hits the FORBIDDEN throw at line 54-55.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1539602
+}

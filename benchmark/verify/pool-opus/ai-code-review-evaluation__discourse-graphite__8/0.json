@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes groups_controller.rb `members` so every group defaults to `limit = (params[:limit] || 50)`; before, only automatic groups were limited, to 200. The public group-members.js.es6 route only calls `model.findMembers()`, which sends the model's default limit 50 and offset 0. members.hbs, group.js.es6 and the missing group-members controller/view have no next, previous or load-more control, so the public page can never show members after the 50th.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1722546
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new public/app/features/alerting/unified/rule-list/GrafanaRuleListItem.tsx:40 builds href as createRelativeUrl(`/alerting/grafana/${uid}/view`) with no returnTo, whereas the deleted GrafanaRuleLoader.tsx passed { returnTo } from createReturnTo() and DataSourceRuleListItem.tsx:36-42 still does; RuleViewer.tsx:96 then falls back to plain '/alerting/list', so the back button drops the list's search/filter query.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2441967
+}

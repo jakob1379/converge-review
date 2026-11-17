@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "All four async legacy goroutines in pkg/apiserver/rest/dualwriter_mode3.go (Create 50-57, Delete 108-114, Update 134-141, DeleteCollection 161-167) drop the legacy error and only pass `err != nil` to recordLegacyDuration/recordStorageDuration, which just sets the is_error histogram label (pkg/apiserver/rest/metrics.go:54-62). The patch removed the previous log.Error calls for legacy failures.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.43503559999999997
+}

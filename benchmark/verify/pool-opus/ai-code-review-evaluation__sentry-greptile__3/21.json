@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/endpoints/organization_events_stats.py, the same `if upsampling_enabled: final_columns = transform_query_columns_for_error_upsampling(query_columns)` block appears three times (lines 232-233, 276-277 and 295-296). Each sits in a branch that returns, so only one ever runs. `upsampling_enabled = should_upsample` at line 226 just copies the value under a second name; both lines are added by the patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.054229400000000004
+}

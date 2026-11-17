@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/monitors/logic/incident_occurrence.py:139-156, statuses outside HUMAN_FAILURE_STATUS_MAP are filtered out, so an all-unmapped list gives an empty Counter, skips the singular branch at :145, and returns \" check-ins detected\" (Django's get_text_list returns \"\" for an empty list, from memory of Django rather than read here); the docstring's \"A failed check-in was detected\" at :136 has no implementing branch. The function was moved verbatim from mark_failed.py, and the case is hard to reach because callers normally pass a check-in with an ERROR/MISSED/TIMEOUT status.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3330022
+}

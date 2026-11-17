@@ -1,0 +1,148 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "userPermDenialCacheKey joins its components (action, name, parent) with '_' without escaping. UIDs can contain '_', so different (name, parent) pairs produce the same cache key, and a cached denial for one resource wrongly denies another.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test 'Should deny on explicit cache deny entry' seeds permCache with false for dashboards:uid:dash1, although its comment says the entry allows access. The fallback fakeStore is empty, so the test passes even if the permDenialCache lookup is removed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Check trusts cached permission grants and returns them immediately, but ignores cached denials from the same permission cache and re-queries the DB. As a result, stale cached grants can give access to revoked resources.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Check returns a denial immediately from permDenialCache but ignores denials in the permission cache so that new grants are picked up. Once a denial is stored in permDenialCache, any permission granted afterward is blocked for up to the cache TTL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TestService_getUserPermissions no longer has a cacheHit:true case, so the cacheHit field and both 'if tc.cacheHit' branches are dead. No test asserts the always-go-to-store behavior or the removed anonymous cache read.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The denial cache key uses the raw checkReq.UserUID instead of the resolved userIdentifiers.UID used by getCachedIdentityPermissions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Denial cache keys share the '.perm_<uid>_' prefix with userPermCacheKey in the same cache, so the two key types can collide.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getCachedIdentityPermissions returns an error that is used only as a hit/miss flag and duplicates the identity-type switch of getIdentityPermissions. Callers treat any error, including store errors and unsupported types, as a cache miss rather than only cache.ErrNotFound.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Removing the permCache read from getUserPermissions/getAnonymousPermissions, adding a per-(user, action, name, parent) denial cache, and using NoopCache for the in-process client make DB and permission-decode load scale with the number of distinct denied resources rather than with users x actions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The denial cache key omits the identity type. Anonymous and render-service identities both have UID '0', so a cached anonymous denial also denies the render service on the same resource for the cache TTL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A new exported NoopCache type in the public authz package has only one in-package call site and may duplicate functionality from authlib.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The NoopCache methods use the receiver name 'lc' (a LocalCache abbreviation), which does not reflect the type.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The newly added log message 'could not check permission' starts with a lowercase letter, which violates the convention that messages start with a capital letter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

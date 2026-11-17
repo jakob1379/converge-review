@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes only src/sentry/api/paginator.py, src/sentry/api/endpoints/organization_auditlogs.py and src/sentry/utils/cursors.py, and adds no tests. A repo-wide search finds `OptimizedCursorPaginator` and `optimized_pagination` only in those two source files, not in tests/sentry/api/test_paginator.py or tests/sentry/api/endpoints/test_organization_auditlogs.py. Existing paginator tests still run `BasePaginator.get_result` (paginator.py:179-184), but nothing tests the new negative-offset clamping and passthrough behaviour.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0706616
+}

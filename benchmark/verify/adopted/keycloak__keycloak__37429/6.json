@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "VerifyMessageProperties.java:70 and :79 wrap read failures in a raw RuntimeException, while verify() at :52-53 uses MojoExecutionException. The English file path comes from replaceAll on the absolute path (:74-75), so a bundle with no _en sibling crashes with an unchecked exception instead of producing a clean mojo error. This is why the patch renamed duplicate_keys.properties to duplicateKeys_en.properties.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2645233
+}

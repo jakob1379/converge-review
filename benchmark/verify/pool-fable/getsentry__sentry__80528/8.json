@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/monitors/logic/incident_occurrence.py:146 reads `return SINGULAR_HUMAN_FAILURE_MAP[list(status_counts.keys())[0]]`, exactly as claimed. It is a pure style nit, and the line is an added line in the patch only because the function was moved verbatim from another file (the patch deletes the identical line there).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1335433
+}

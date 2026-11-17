@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/calendars/_router.tsx:29, the new deleteCache procedure uses `.input(z.object({ credentialId: z.number() }))` inline, and the patch adds no deleteCache.schema.ts. The other procedures in the same router import their schemas from *.schema.ts files (lines 5-6).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.045558799999999997
+}

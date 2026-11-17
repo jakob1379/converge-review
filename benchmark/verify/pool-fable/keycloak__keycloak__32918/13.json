@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Only partly as stated, and not new: InfinispanIdentityProviderStorageProvider.java:103 passes a possibly-null storedIdp to registerIDPInvalidation, which dereferences it at :366, but only when the alias cache key is already invalidated in the session (before the patch the same line passed idpDelegate.getByAlias(alias) inline). The call the patch adds at :111 is null-safe via the Objects::nonNull guard in getLoginPredicate (IdentityProviderStorageProvider.java:253), so an ordinary missing alias still returns false.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4886766
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In VerifyMessageProperties.java (patch lines 144-153), `start` and `end` are counted separately, and neither is capped so that start+end stays within the shorter string's length. For example, with value=\"aa\" and sanitized=\"a\", the code reaches start=1 and end=1, so `sanitized.substring(1, 0)` throws StringIndexOutOfBoundsException. verify() only catches IOException (VerifyMessageProperties.java:52), so the exception propagates through ThemeVerifierMojo.java:51.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0665722
+}

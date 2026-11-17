@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a required `anonymousDeviceLimit: number | undefined` to GrafanaConfig (packages/grafana-data/src/types/config.ts:200) and to the DTO (pkg/api/dtos/frontend_settings.go:195, set at pkg/api/frontendsettings.go:198); the only other frontend occurrence is the default in packages/grafana-runtime/src/config.ts:97, and nothing in public/ or packages/ reads it. The sole in-repo implementer, GrafanaBootConfig (packages/grafana-runtime/src/config.ts:37), was updated, so only external implementers are affected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1086199
+}

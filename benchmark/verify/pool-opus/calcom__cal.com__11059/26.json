@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "There is no try/catch around the fetch in packages/app-store/_utils/oauth/refreshOAuthTokens.ts:230-236, but a network error just rejects the awaited promise and passes up to the caller. That is how the replaced fetch, axios and SDK calls already behaved, and several callers wrap the call in try/catch (googlecalendar CalendarService.ts:84, hubspot CalendarService.ts:176, larkcalendar CalendarService.ts:65), so it is not an unhandled exception.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.21755380000000002
+}

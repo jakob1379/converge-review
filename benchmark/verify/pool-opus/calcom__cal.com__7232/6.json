@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch merges `import type { App, Credential, EventTypeCustomInput, Prisma }` into a value import at packages/features/bookings/lib/handleNewBooking.ts:1-10, but those four names are only used as types (lines 73, 79, 82, 90, 109, 349, 402, 776, 805, 899, 1289). packages/config/eslint-preset.js:35-44 sets @typescript-eslint/consistent-type-imports to 'error' with prefer 'type-imports', so lint will flag it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0826339
+}

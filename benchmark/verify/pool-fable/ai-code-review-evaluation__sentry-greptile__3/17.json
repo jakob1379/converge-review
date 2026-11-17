@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`upsampled_count` is registered at src/sentry/search/events/datasets/discover.py:1041-1052 without `private=True` (default is `private=False`, src/sentry/search/events/fields.py:1310), so `is_accessible` returns True for any caller (fields.py:1529, enforced at src/sentry/search/events/builder/base.py:737). The allowlist and error-query checks only gate the `count()` rewrite in src/sentry/api/helpers/error_upsampling.py, and `DiscoverDatasetConfig` also serves Transactions and IssuePlatform (src/sentry/search/events/builder/discover.py:65-71), so a user can request `upsampled_count()` directly and hit `sum(sample_weight)` on datasets without that column.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5270834000000001
+}

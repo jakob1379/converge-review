@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After the patch the only call to `(*server).Init` is in the constructor at pkg/storage/unified/resource/server.go:258; every per-RPC `s.Init(ctx)` call was removed, `ResourceServer` (server.go:27-32) has no `Init`, and no code type-asserts to an interface with `Init`. So `s.once.Do` (server.go:294) runs exactly once per instance, and `initErr` is only a local accumulator there \u2014 the values `Stop` writes to it (server.go:321-339) are never read by any request path.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4629419
+}

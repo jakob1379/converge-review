@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/admin/controllers/admin-group.js.es6:33 clamps the next offset to `user_count`, and `totalPages` at line 13 is `floor(user_count/limit)+1`, so with 50 members and limit 50 `showingLast` is false on page 1 of 2 and `next` sets offset 50. `findMembers` (app/assets/javascripts/discourse/models/group.js:23) also clamps only to `user_count`, and the server (app/controllers/groups_controller.rb:26) returns an empty member list for offset == total.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3477218
+}

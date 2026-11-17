@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/auth/lib/next-auth-options.ts:121-129 the password is checked only when `!credentials.totpCode`. The new branch at line 131 (`twoFactorEnabled && credentials.backupCode`) accepts a matching backup code and never checks totpCode, so the TOTP check at 157-186 is skipped. A valid backupCode plus any non-empty totpCode therefore logs the user in without a password check.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1776838
+}

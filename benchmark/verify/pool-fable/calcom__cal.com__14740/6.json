@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`sendAddGuestsEmails` (packages/emails/email-manager.ts:525-550) passes the event to `AttendeeScheduledEmail`/`AttendeeAddGuestsEmail` with no `hideCalendarNotes` masking, unlike `sendScheduledEmails` at :119. The caller never sets `hideCalendarNotes` and puts the booker's notes in `description: booking.description` (addGuests.handler.ts:127; stored from `additionalNotes` at createBooking.ts:212), which BaseScheduledEmail.tsx:87 renders \u2014 so the leak is via `description`, and masking `additionalNotes` alone would not fix it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3733228
+}

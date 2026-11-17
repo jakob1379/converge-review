@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "PasskeysUsernamePasswordFormTest.java:291-296 and 312-317 wrap `assertThat(driver.findElement(By.xpath(\"//form[@id='webauth']\")), nullValue())` plus `fail(...)` in `catch (Exception nsee)`; Selenium's `findElement` throws `NoSuchElementException` and never returns null, so the `nullValue()` matcher can never pass and `fail` is unreachable, while the broad catch also swallows any other WebDriver runtime exception. The assertion is not strictly dead (it still fails the test with an uncaught AssertionError if the form is present), so the test works but is misleading and over-broad.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1618836
+}

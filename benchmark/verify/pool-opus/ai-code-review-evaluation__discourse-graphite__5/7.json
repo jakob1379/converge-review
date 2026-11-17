@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "header.hbs:2 still has `<div class='contents clearfix'>`, and the patch makes `.contents` a flex container (header.scss:13-14 via the new flexbox mixin). The `.clearfix` rule in helpers.scss:53-61 adds `::before`/`::after` with `content: \" \"`, `display: table` and `clear: both`. In a flex container those pseudo-elements become empty flex items and `clear` does nothing. Because they have order 0, `::after` ends up between `.title` and the order-2/order-3 items. With no `justify-content: space-between`, the visible effect is negligible.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08978069999999999
+}

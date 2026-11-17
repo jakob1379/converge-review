@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/topics_controller.rb:107-111 only lowers a watching/tracking user to :regular on the first visit, yet app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6:5-7 always shows \"You will stop receiving notifications\" (config/locales/client.en.yml:985). The repo's own description of regular (client.en.yml:1099-1101) says the user is still notified on @mentions and replies.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2943539
+}

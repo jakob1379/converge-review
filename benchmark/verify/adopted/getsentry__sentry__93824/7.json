@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py, lines 185 and 195 tag their metrics with `shard`, while line 199 tags `spans.buffer.flusher.wait_produce` with `shards`. All three tags were added by this patch, so the tag key really is inconsistent.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10248650000000001
+}

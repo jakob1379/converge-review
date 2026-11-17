@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new controllers/topic-unsubscribe.js.es6 (patch lines 26-31) only defines `stopNotificiationsText`, which calls I18n.t with `{title: model.fancyTitle}`. The `i18n` helper in helpers/i18n.js.es6:3-4 already passes hash params through to I18n.t, and templates already use it this way (e.g. templates/topic.hbs:94 `{{{i18n \"queue.has_pending_posts\" count=...}}}`), so `{{{i18n \"topic.unsubscribe.stop_notifications\" title=model.fancyTitle}}}` would do the same job.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1311974
+}

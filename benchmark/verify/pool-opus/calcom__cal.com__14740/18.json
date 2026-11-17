@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/emails/email-manager.ts (the new sendAddGuestsEmails, patch lines 235/237), both AttendeeScheduledEmail and AttendeeAddGuestsEmail are built as (calendarEvent, attendee) with no third argument. The constructor at attendee-scheduled-email.ts:21 then trims attendees down to the recipient whenever calEvent.seatsPerTimeSlot is set, even though addGuests.handler.ts sets seatsShowAttendees on evt.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16735730000000001
+}

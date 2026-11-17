@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In VerifyMessageProperties.java (patch lines 192-203), santizeAnchors moves through the translation and English matchers together and requires each `matcher.group()` to equal the English anchor at the same index, so a translation that puts links in a different order fails at the first mismatch and gets the \"Didn't find anchor tag\" message. ANCHOR_PATTERN `</?a[^>]*>` (patch line 187) has no word boundary after `a`, so `[^>]*` also matches tags like `<abbr>`, `<area ...>` and `<audio>`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2157022
+}

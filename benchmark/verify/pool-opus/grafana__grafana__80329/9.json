@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In xorm_store.go, `deleteByIDs` (patch lines 311-344) inlines the IDs for SQLite when the batch size is over 999 and uses `?` placeholders with `asAny` otherwise. The IDs are `[]int64` loaded by `fetchIDs` (patch line 297), so inlining them with `%d` cannot cause injection, and a single inlined path would work on every database without the `GetDBType` branch, `sqliteParameterLimit`, args/`asAny`, or the migrator import (patch line 218).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0671136
+}

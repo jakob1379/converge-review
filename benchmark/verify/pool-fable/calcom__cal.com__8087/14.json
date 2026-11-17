@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch turns `appStore` into a map of dynamic `import()` promises (packages/app-store/index.ts:3-30) and awaits them with no try/catch at packages/app-store/_utils/getCalendar.ts:15, packages/core/videoClient.ts:26 and packages/lib/payment/handlePayment.ts:26, so a rejected import propagates as an uncaught rejection. In packages/app-store/vital/lib/reschedule.ts:125-131 the surrounding try cannot catch it, because the await sits inside a `forEach(async ...)` callback.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3040013
+}

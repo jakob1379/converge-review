@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In queue_consumer.py:185 each queue is created as `queue.Queue()` with no maxsize. `FixedQueuePool.submit` (:211-212) and `SimpleQueueProcessingStrategy.submit` (:293-325) always `put()` without blocking or raising MessageRejected, so the 'Natural backpressure' promised in the docstring at :253 never happens. Under lag, queued WorkItems, each holding the full Message, and the OffsetTracker sets (:59-60) keep growing until offsets are committed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.076264
+}

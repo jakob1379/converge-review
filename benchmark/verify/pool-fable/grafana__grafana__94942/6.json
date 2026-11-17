@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The method `(*DB).TablesList` at pkg/expr/sql/db.go:12 has no callers: every use in the repo is the package-level `TablesList` defined at pkg/expr/sql/parser.go:22 (called from pkg/expr/sql_command.go:30 and parser_test.go), and no interface requires the method. The claim's wording is slightly off, since parser.go defines rather than calls the package-level function, but the dead-code finding holds.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.292575
+}

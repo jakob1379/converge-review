@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/paginator.py:182 clamps only when `not cursor.is_prev`, and `Cursor.from_string` (src/sentry/utils/cursors.py:59) accepts a negative offset, so a cursor like `0:-5:1` reaches `queryset[start_offset:stop]` at paginator.py:184; Django 5.2.1 rejects negative slice indices with a ValueError (known Django behaviour, not read from this repo), which `except BadPaginationError` at src/sentry/api/base.py:540 does not catch, giving a 500. The same crash existed before the patch (`queryset[offset:stop]` was unclamped), but the patch rewrote this line and left the is_prev branch unclamped while its comment calls negative offsets safe.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5388306
+}

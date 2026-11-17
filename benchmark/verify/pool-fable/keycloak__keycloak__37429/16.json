@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "misc/theme-verifier/src/test/java/org/keycloak/themeverifier/VerifyMessagePropertiesTest.java:30-52 holds only four tests, each asserting `hasItem(containsString(...))` on an error message; none asserts an empty result for a valid bundle, and no valid-bundle fixture is exercised. Line 33 changes the duplicate-keys assertion from `Matchers.contains` to `Matchers.hasItem` (change.patch:228-230).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5336697
+}

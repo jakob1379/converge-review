@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/api/helpers/test_error_upsampling.py:7-12 imports only the three private helpers plus transform_query_columns_for_error_upsampling, and :37 patches sentry.api.helpers.error_upsampling.options; is_errors_query_for_error_upsampled_projects is never called directly by any test. It is reached only indirectly by the endpoint tests (tests/snuba/api/endpoints/test_organization_events_stats.py:3604-3722), which make one request each, so the cache-hit branch (src/sentry/api/helpers/error_upsampling.py:30-32) and invalidate_upsampling_cache (:67-74) are not exercised anywhere.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3130532
+}

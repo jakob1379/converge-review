@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `firstName: \"\"` and `lastName: \"\"` to each team-member object at packages/features/bookings/lib/handleNewBooking.ts:998-999, while `TeamMember` in packages/types/Calendar.d.ts:41-46 declares only name, email, timeZone and language. These objects become `evt.team.members` (handleNewBooking.ts:1784-1785), and `evt` is spread into the webhook payload (2296-2297) and passed to the email senders (2236-2237), so the serialized shape gains two always-empty fields.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2554727
+}

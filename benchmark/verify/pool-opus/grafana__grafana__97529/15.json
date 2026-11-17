@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/storage/unified/resource/search.go:190, every errgroup goroutine assigns to the shared outer `err` from line 181 with `=` and then returns it at line 191. With no synchronization, worker B can write nil after worker A writes its error, so A returns nil and group.Wait (line 195) never sees the failure. The patch removes the lock that covered the whole of bleve BuildIndex (bleve.go:231-232) and now locks only the cache write (bleve.go:254-256), so builds really overlap and the race is easier to hit.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0895436
+}

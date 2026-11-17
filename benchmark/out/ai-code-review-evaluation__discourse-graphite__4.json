@@ -1,0 +1,441 @@
+{
+  "findings": [
+    {
+      "path": "app/models/topic_embed.rb",
+      "line": 13,
+      "severity": "Critical",
+      "claim": "Stored XSS: the 'Imported from' footer interpolates url unescaped into <a href='#{url}'>, and the post is created with cook_method raw_html, so the sanitizer never runs; an anonymous request with a quote-bearing embed_url on the embeddable host plants script in the forum origin.",
+      "evidence": "Post#cook returns raw for raw_html (app/models/post.rb:133); TopicEmbed.import passes cook_method raw_html (topic_embed.rb:22); embed_url comes from the unauthenticated param via EmbedController#best -> RetrieveTopic -> TopicRetriever, gated only by host equality and a forgeable Referer. Proposed red test: TopicEmbed.import(user, \"http://eviltrout.com/?a='onmouseover='alert(1)\", title, 'x'); post.cooked.should_not =~ /onmouseover/. Reasoned, not run.",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review",
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two independent correctness seats traced the same path; unauthenticated stored XSS."
+    },
+    {
+      "path": "app/models/post.rb",
+      "line": 133,
+      "severity": "Important",
+      "claim": "raw_html cook method bypasses sanitization for all remote content: RSS item HTML (CGI.unescapeHTML only) and Readability output (keeps javascript: hrefs) are stored as cooked HTML verbatim; later edits of such posts are also cooked raw.",
+      "evidence": "return raw if cook_method == Post.cook_methods[:raw_html]; content sources topic_embed.rb:48-50 and poll_feed.rb:35. Red test: import contents '<script>alert(1)</script>' and assert cooked has no <script>. Reasoned.",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review",
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Whoever controls the feed (or MITMs an http feed) or the embed_by_username account controls script on the forum origin."
+    },
+    {
+      "path": "app/jobs/scheduled/poll_feed.rb",
+      "line": 29,
+      "severity": "Important",
+      "claim": "open(SiteSetting.feed_polling_url) uses Kernel#open, so a setting value starting with '|' runs a shell command on the server (admin -> RCE), also triggered synchronously via TopicRetriever#perform_retrieve.",
+      "evidence": "Kernel#open pipe semantics; open-uri only intercepts URI-looking strings. Red test: feed_polling_url = \"|touch #{tmp}\", run poller.execute({}), assert file absent. Reasoned.",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Admin is not meant to imply shell access; fix is URI.parse(url).open with an http/https scheme check."
+    },
+    {
+      "path": "app/jobs/scheduled/poll_feed.rb",
+      "line": 35,
+      "severity": "Important",
+      "claim": "i.content.scrub assumes every item has <content>; SimpleRSS RSS 2.0 items normally expose only description (content:encoded maps to content_encoded), so i.content is nil and NoMethodError aborts the whole hourly run (retry: false, no per-item rescue). Fallback i.id at :33 is Atom-only (RSS uses guid).",
+      "evidence": "Reasoned from SimpleRSS item tag mapping (from memory, not gem source); spec/jobs/poll_feed_spec.rb stubs poll_feed so no coverage. Red test: SimpleRSS.parse an RSS 2.0 doc with description-only items into poll_feed.",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review",
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three seats agree; the most common WordPress feed shape would crash every poll. Mapping is unverified against gem source - the red test settles it."
+    },
+    {
+      "path": "app/jobs/scheduled/poll_feed.rb",
+      "line": 35,
+      "severity": "Important",
+      "claim": "String#scrub does not exist on Ruby 2.0 (.travis.yml rvm 2.0.0), so feed polling raises NoMethodError on the first item.",
+      "evidence": "Seat cited .travis.yml and absence of a scrub gem.",
+      "seats": [
+        "OCR delegate-review"
+      ],
+      "verdict": "reject",
+      "reason": "Backport exists: lib/freedom_patches/scrub.rb, loaded for every file in lib/freedom_patches by config/initializers/02-freedom_patches.rb:1. Also noted by the mattpocock seat."
+    },
+    {
+      "path": "app/controllers/embed_controller.rb",
+      "line": 15,
+      "severity": "Important",
+      "claim": "Anonymous requests can force unlimited outbound fetches and topic creation: every distinct embed_url on the embeddable host (?a=1, ?a=2, ...) passes the host check, enqueues RetrieveTopic, runs a full synchronous PollFeed, and creates a new topic as embed_by_username; the throttle key retrieved:#{url} is per exact URL.",
+      "evidence": "lib/topic_retriever.rb:9-33 and :40-41; only gate is the forgeable Referer check (embed_controller.rb:26); topic_id_for_embed matches exact URL string. Red test: two get :best with Referer=host and embed_url ...?x=1 / ...?x=2 with fetch stubbed, expect TopicEmbed.count to stay bounded. Reasoned.",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review",
+        "ponytail review"
+      ],
+      "verdict": "fix",
+      "reason": "Spam-topic creation plus work amplification reachable unauthenticated."
+    },
+    {
+      "path": "app/models/topic_embed.rb",
+      "line": 34,
+      "severity": "Important",
+      "claim": "Deleting an imported post or topic breaks the embed permanently: TopicEmbed rows are never cleaned up; a missing post makes embed.post nil and PostRevisor.new(nil).revise! raise inside the feed loop; a trashed topic keeps topic_id_for_embed returning its id so TopicView raises NotFound and that page's comments 404 forever.",
+      "evidence": "Trashable default scope (app/models/concerns/trashable.rb:5); topic_view.rb:300 raises NotFound; no association/dependent cleanup from Topic to topic_embeds. Reasoned.",
+      "seats": [
+        "superpowers requesting-code-review",
+        "OCR delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Normalised to Important (superpowers Important, OCR Minor): routine moderation causes a permanent 404 and a recurring job crash."
+    },
+    {
+      "path": "lib/tasks/disqus.thor",
+      "line": 143,
+      "severity": "Important",
+      "claim": "Disqus import regressions: --category option removed and created_at no longer preserved; each thread now does a live HTTP fetch via import_remote with no rescue so one 404 aborts the whole import; open-uri is not required by the task or topic_embed.rb; re-runs duplicate comments because import returns the existing post and the comment loop runs again.",
+      "evidence": "git diff of lib/tasks/disqus.thor; open-uri is required only in poll_feed.rb:7 among the new code. Reasoned.",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Normalised to Important (OCR Important, superpowers Minor): silent behavior loss in an existing tool unrelated to the feature's stated goal."
+    },
+    {
+      "path": "app/jobs/scheduled/poll_feed.rb",
+      "line": 24,
+      "severity": "Important",
+      "claim": "New feed-import and remote-fetch paths have no tests (breach of CONTRIBUTING.md section 3, 'Include tests'): PollFeed#poll_feed is always stubbed, TopicEmbed.import_remote and absolutize_urls are never exercised, TopicRetriever#perform_retrieve/fetch_http are always mocked.",
+      "evidence": "spec/jobs/poll_feed_spec.rb, spec/components/topic_retriever_spec.rb, spec/models/topic_embed_spec.rb contents.",
+      "seats": [
+        "mattpocock code-review",
+        "superpowers requesting-code-review",
+        "OCR delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented repo standard; the untested paths are exactly where the Important bugs above live. Red tests from the fix round close this."
+    },
+    {
+      "path": "db/migrate/20131223171005_create_top_topics.rb",
+      "line": 3,
+      "severity": "Minor",
+      "claim": "Patch edits an already-shipped migration to add force: true; unrelated to embedding. New create_topic_embeds migration also uses force: true and has a timestamp (20131217) older than merged migrations (20131223), so it runs out of order.",
+      "evidence": "git diff 62db063e1e -- db/migrate/20131223171005_create_top_topics.rb shows only create_table :top_topics -> create_table :top_topics, force: true.",
+      "seats": [
+        "superpowers requesting-code-review",
+        "OCR delegate-review",
+        "ponytail review"
+      ],
+      "verdict": "fix",
+      "reason": "Severity downgraded from Important (superpowers): Rails will not re-run a migration recorded in schema_migrations, and on a fresh database top_topics does not yet exist, so force: true drops nothing in normal operation. Still unrelated churn on a shipped migration; revert the hunk."
+    },
+    {
+      "path": "app/models/topic_embed.rb",
+      "line": 64,
+      "severity": "Minor",
+      "claim": "absolutize_urls mangles protocol-relative URLs: //cdn.example.com/x.png starts with '/' and is rewritten to http://host/cdn.example.com/x.png (same for a[href] at :64 and img[src] at :70).",
+      "evidence": "start_with?('/') check followed by sub(/^\\/+/, '').",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review",
+        "ponytail review"
+      ],
+      "verdict": "fix",
+      "reason": "Breaks images/links on common feeds; one-condition fix."
+    },
+    {
+      "path": "lib/topic_retriever.rb",
+      "line": 27,
+      "severity": "Minor",
+      "claim": "Throttle uses setnx then expire as two calls; a crash between them leaves a non-expiring key and the URL is throttled forever.",
+      "evidence": "lib/topic_retriever.rb:27-28. Use SET key 1 NX EX 60.",
+      "seats": [
+        "OCR delegate-review",
+        "ponytail review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap atomic replacement."
+    },
+    {
+      "path": "app/assets/javascripts/embed.js",
+      "line": 17,
+      "severity": "Minor",
+      "claim": "postMessage origin check is a substring/prefix match (discourseUrl.indexOf(e.origin)), accepting e.g. http://forum.example.co for http://forum.example.com/.",
+      "evidence": "embed.js:17. Impact limited to resizing the iframe.",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Exact origin comparison is a one-line change."
+    },
+    {
+      "path": "app/views/embed/best.html.erb",
+      "line": 6,
+      "severity": "Minor",
+      "claim": "'<%- end if %>' typo: the if/else becomes conditional on the next buffer append and only renders because that expression is truthy.",
+      "evidence": "Erubis statement compilation; controller specs do not render views.",
+      "seats": [
+        "OCR delegate-review",
+        "superpowers requesting-code-review",
+        "ponytail review",
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "All four seats flagged it; should be '<%- end %>'."
+    },
+    {
+      "path": "app/controllers/embed_controller.rb",
+      "line": 19,
+      "severity": "Minor",
+      "claim": "discourse_expires_in caches via Middleware::AnonymousCache keyed only on HTTP_HOST + REQUEST_URI, so a cached response is served to any Referer for a minute without ensure_embeddable running, and the first requester's referer is baked into the cached layout as the postMessage target.",
+      "evidence": "lib/middleware/anonymous_cache.rb:14 per seat.",
+      "seats": [
+        "superpowers requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: single embeddable_host limits impact today; revisit if multiple embedding hosts are supported."
+    },
+    {
+      "path": "app/controllers/embed_controller.rb",
+      "line": 28,
+      "severity": "Minor",
+      "claim": "X-Frame-Options: ALLOWALL is not a valid header value; it works only because browsers ignore invalid values.",
+      "evidence": "embed_controller.rb:28.",
+      "seats": [
+        "superpowers requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: harmless in practice; replace with CSP frame-ancestors <embeddable_host> when tightening framing."
+    },
+    {
+      "path": "app/views/layouts/embed.html.erb",
+      "line": 10,
+      "severity": "Minor",
+      "claim": "request.referer is written into a JS string in the layout without JS-context escaping.",
+      "evidence": "Out-of-lane note from the advisory seat; not analysed by a correctness seat.",
+      "seats": [
+        "ponytail review"
+      ],
+      "verdict": "defer",
+      "reason": "Unverified: settle by rendering the layout with a Referer containing a quote and </script> and checking the output; ERB HTML-escaping may or may not suffice in this JS context."
+    },
+    {
+      "path": "db/migrate/20131219203905_add_cook_method_to_posts.rb",
+      "line": 3,
+      "severity": "Minor",
+      "claim": "add_column on posts with default: 1, null: false rewrites the whole table under an exclusive lock on PostgreSQL < 11; downtime on large forums.",
+      "evidence": "Migration line 3.",
+      "seats": [
+        "superpowers requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: operational concern for large installs; split into add nullable column + backfill + constraint if it matters."
+    },
+    {
+      "path": "Gemfile",
+      "line": 209,
+      "severity": "Minor",
+      "claim": "New gems (simple-rss, ruby-readability) added only to Gemfile_rails4.lock; Gemfile.lock and Gemfile_rails_master.lock not updated, so bundle install --deployment fails in those modes.",
+      "evidence": "grep for simple-rss/ruby-readability in Gemfile.lock and Gemfile_rails_master.lock returns nothing (verified by orchestrator).",
+      "seats": [
+        "superpowers requesting-code-review",
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Confirmed by grep."
+    },
+    {
+      "path": "spec/jobs/poll_feed_spec.rb",
+      "line": 18,
+      "severity": "Minor",
+      "claim": "'requires feed_polling_url' and 'requires embed_by_username' pass vacuously because feed_polling_enabled defaults to false, so execute short-circuits on the first guard.",
+      "evidence": "config/site_settings.yml feed_polling_enabled default false; specs stub only their own setting.",
+      "seats": [
+        "OCR delegate-review",
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Tests do not test what they name."
+    },
+    {
+      "path": "spec/controllers/embed_controller_spec.rb",
+      "line": 8,
+      "severity": "Minor",
+      "claim": "'is 404 without an embed_url' passes because ensure_embeddable raises InvalidAccess (403) first; the missing-param path is never exercised.",
+      "evidence": "embeddable_host defaults to ''; spec asserts only should_not be_success.",
+      "seats": [
+        "mattpocock code-review",
+        "superpowers requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Test passes for the wrong reason."
+    },
+    {
+      "path": "spec/components/topic_retriever_spec.rb",
+      "line": 9,
+      "severity": "Minor",
+      "claim": "Specs stub private methods (perform_retrieve, retrieved_recently?) and the controller spec mocks TopicRetriever.new which the controller never calls directly; the redis throttle itself is never tested.",
+      "evidence": "spec/components/topic_retriever_spec.rb:9-42; spec/controllers/embed_controller_spec.rb:40-46.",
+      "seats": [
+        "ponytail review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: covered by the test-gap finding's red tests; the standard cited is the user's global test philosophy, not a repo standard."
+    },
+    {
+      "path": "spec/models/topic_embed_spec.rb",
+      "line": 5,
+      "severity": "Minor",
+      "claim": "shoulda belong_to/validate_presence_of checks only re-test ActiveRecord declarations; poll_feed_spec requires jobs/regular/process_post without using it.",
+      "evidence": "spec/models/topic_embed_spec.rb:5-8; spec/jobs/poll_feed_spec.rb:2.",
+      "seats": [
+        "ponytail review"
+      ],
+      "verdict": "reject",
+      "reason": "shoulda association/validation one-liners are the repo convention (32 files under spec/models use them). The unused process_post require in poll_feed_spec is trivial and dies with the test rewrite."
+    },
+    {
+      "path": "app/jobs/scheduled/poll_feed.rb",
+      "line": 20,
+      "severity": "Minor",
+      "claim": "feed_key method and require 'digest/sha1' (line 4) are dead code.",
+      "evidence": "grep feed_key finds only the definition.",
+      "seats": [
+        "ponytail review"
+      ],
+      "verdict": "fix",
+      "reason": "Delete."
+    },
+    {
+      "path": "app/jobs/scheduled/poll_feed.rb",
+      "line": 5,
+      "severity": "Minor",
+      "claim": "PollFeed requires PostCreator/PostRevisor it never uses, while TopicEmbed (which uses them and open-uri) has no requires and works only by load order; lib/ is not autoloaded.",
+      "evidence": "config/application.rb autoload paths; PostCreator at topic_embed.rb:22, PostRevisor :35, open :48.",
+      "seats": [
+        "ponytail review",
+        "OCR delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Move the requires (and add require 'open-uri') to topic_embed.rb; also fixes the disqus.thor open-uri gap."
+    },
+    {
+      "path": "app/jobs/regular/retrieve_topic.rb",
+      "line": 1,
+      "severity": "Minor",
+      "claim": "Unused require of email/sender.",
+      "evidence": "No Email:: reference in the file.",
+      "seats": [
+        "ponytail review"
+      ],
+      "verdict": "fix",
+      "reason": "Delete."
+    },
+    {
+      "path": "app/models/topic_embed.rb",
+      "line": 62,
+      "severity": "Minor",
+      "claim": "absolutize_urls duplicates the a[href]/img[src] loop, so fixes (e.g. protocol-relative) must be made twice.",
+      "evidence": "topic_embed.rb:62-73.",
+      "seats": [
+        "ponytail review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: fold into the protocol-relative fix only if it shrinks the diff; not worth a separate change."
+    },
+    {
+      "path": "config/locales/server.en.yml",
+      "line": null,
+      "severity": "Minor",
+      "claim": "embed.permalink locale key is unused.",
+      "evidence": "grep permalink in embed views/layout/controller finds nothing (verified by orchestrator).",
+      "seats": [
+        "ponytail review"
+      ],
+      "verdict": "fix",
+      "reason": "Delete the key."
+    },
+    {
+      "path": "app/views/embed/best.html.erb",
+      "line": 2,
+      "severity": "Minor",
+      "claim": "Header branch duplicates link_to differing only by i18n key.",
+      "evidence": "best.html.erb:2-6.",
+      "seats": [
+        "ponytail review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: style-level; the end-if fix is the one that matters."
+    },
+    {
+      "path": "lib/topic_retriever.rb",
+      "line": 3,
+      "severity": "Minor",
+      "claim": "opts=nil followed by opts = opts || {} (also topic_embed.rb:44,47); use opts={}. Also lacks spaces around '=' per CONTRIBUTING section 4.",
+      "evidence": "Both call sites pass a hash or nothing.",
+      "seats": [
+        "ponytail review",
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Trivial simplification."
+    },
+    {
+      "path": "db/migrate/20131210181901_migrate_word_counts.rb",
+      "line": 3,
+      "severity": "Minor",
+      "claim": "Unrelated whitespace churn in a shipped migration and a removed blank line in lib/post_revisor.rb:11.",
+      "evidence": "git diff of those files.",
+      "seats": [
+        "ponytail review",
+        "OCR delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Revert unrelated hunks so the real PostRevisor change (save(validate: !@opts[:skip_validations])) is visible."
+    },
+    {
+      "path": "app/controllers/embed_controller.rb",
+      "line": 13,
+      "severity": "Minor",
+      "claim": "{best: 5} lacks spaces inside braces (CONTRIBUTING section 4); same in spec/controllers/embed_controller_spec.rb:50.",
+      "evidence": "CONTRIBUTING.md section 4.",
+      "seats": [
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented standard, trivial."
+    },
+    {
+      "path": "app/models/topic_embed.rb",
+      "line": 10,
+      "severity": "Minor",
+      "claim": "def self.method used instead of class << self, against CONTRIBUTING section 4.",
+      "evidence": "CONTRIBUTING.md section 4.",
+      "seats": [
+        "mattpocock code-review"
+      ],
+      "verdict": "reject",
+      "reason": "CONTRIBUTING section 3 says follow existing conventions; app/models + lib contain 474 'def self.' definitions vs 11 'class << self', and post.rb:63 matches neighbours."
+    },
+    {
+      "path": "app/models/topic_embed.rb",
+      "line": 13,
+      "severity": "Minor",
+      "claim": "contents << mutates the caller's string argument.",
+      "evidence": "topic_embed.rb:13.",
+      "seats": [
+        "mattpocock code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Address together with the Critical escaping fix on the same line."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode): no dependencies installed, no project checks executed; no Ruby toolchain present, so every finding is reasoned, none executed. No spec: spec-compliance axis did not run. Skipped/partly reviewed: Gemfile_rails4.lock (generated; all seats only checked new gem entries); app/assets/stylesheets/embed.css.scss (skimmed only by all seats); config/locales/client.en.yml and server.en.yml (key presence only); db/migrate/20131210181901_migrate_word_counts.rb (whitespace only, skimmed); lib/tasks/disqus.thor (skimmed by mattpocock seat; OCR tool excluded it and the 4 spec files but the seat read them for context). Untracked harness dotfiles in the worktree root were excluded from the pinned patch as not part of the PR. SimpleRSS field mapping and Erubis end-if behaviour are from reviewer memory, not verified against gem source. Rounds 2+ (fix, red tests, scoped re-review) not run per benchmark override."
+}

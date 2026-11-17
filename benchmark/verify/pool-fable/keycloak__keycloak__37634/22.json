@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/protocol/oidc/TokenManager.java:1052-1054 now sets the access-token id via encoder.encodeTokenId(), which returns sessionType+tokenType+grant shortcut+':'+UUID (DefaultTokenContextEncoderProvider.java:114-117), and AssertEvents.java switches TOKEN_ID from isUUID() to isAccessTokenId(). The patch touches no docs files and docs/ has no mention of the new format, while PR-CHECKLIST.md:9 asks for release-note/upgrade-guide updates \"if applicable\".",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5540258
+}

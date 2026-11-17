@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds 115 lines of the form `dark-light-choose(scale-color($primary, $lightness: X%), scale-color($secondary, $lightness: (100-X)%))` across 32 SCSS files (e.g. change.patch:10, :19, :28), every one with complementary percentages. The only helper is the two-argument `dark-light-choose` at app/assets/stylesheets/common/foundation/variables.scss:46; no one-argument wrapper exists.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2722285
+}

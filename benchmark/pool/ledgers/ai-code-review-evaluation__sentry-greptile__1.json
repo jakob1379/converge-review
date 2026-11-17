@@ -1,0 +1,181 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil directly on the sort key. With order_by='-datetime' in the audit logs endpoint, that key is a datetime, so a TypeError is raised. DateTimePaginator avoids this by converting to an epoch timestamp first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.value_from_cursor returns the raw integer cursor.value without converting it back to a datetime as DateTimePaginator does. build_queryset therefore compares a datetime field against an integer on subsequent pages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The enable_advanced check in the audit logs endpoint accesses organization_context.member.has_global_access without a None check. member is None for callers without membership, such as superusers, API keys/org auth tokens, legacy org ApiKeys and internal-integration proxy users, so an AttributeError is raised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When enable_advanced_features is true, OptimizedCursorPaginator.get_result passes a user-supplied negative cursor.offset directly into queryset[start_offset:stop]. Django QuerySets do not support negative indexing, so a crafted cursor (e.g. 0:-10:0) raises an error that is not converted to BadPaginationError and results in a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Comments and docstrings in the patch contain false or marketing-style claims. Examples are that the Django ORM properly handles negative slicing, 'sophisticated pagination patterns', and 'safe because permissions are checked at the queryset level'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The change to the shared BasePaginator.get_result clamps negative next-cursor offsets to 0 with max(0, offset). Negative prev-cursor offsets still reach the queryset slice and raise errors, which contradicts the comment saying negative offsets are allowed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BasePaginator.get_result uses start_offset = max(0, offset) for slicing but still uses the raw offset in the duplicate-trim check (len(results) == offset + limit + extra), so the two diverge.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": "cursors.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The comments added to the Cursor class in cursors.py say negative offsets are now allowed or optimized. No code in Cursor changed, and int(offset) already accepted negative values.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator is a near line-for-line copy of BasePaginator.get_result and Paginator's key/cursor methods, plus broken additions. It builds the same queryset, makes the same count call and uses the same slice, so it does not deliver the claimed performance improvement.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover OptimizedCursorPaginator, the optimized_pagination=true endpoint branch and its cursor handling, or the change to BasePaginator.get_result.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch adds trailing whitespace and extra blank lines at end of file, which fail the repo's trailing-whitespace and end-of-file-fixer pre-commit hooks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The endpoint's if/else block repeats the same self.paginate(...) call, differing only in paginator_cls and one kwarg.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The enable_advanced_features constructor flag has a single caller that always passes True. Its name does not indicate that it enables negative-offset slicing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The code imports OptimizedCursorPaginator, which does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The admin gate checks the raw request.user.is_superuser DB flag instead of is_active_superuser(request), which bypasses the active superuser-session check. has_global_access also defaults to True for members, so the gate does not restrict access to admins.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new optimized_pagination query parameter is not documented in the API docs or changelog.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

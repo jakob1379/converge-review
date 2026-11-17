@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the `go func()` with `recover()` and the 2-minute `context.WithTimeout(context.Background(), timeoutTag)`, and `pkg/services/anonymous/anonimpl/client.go:44` now calls `TagDevice(ctx, ...)` inline in `Authenticate` with the request context. The write at `impl.go:93` (plus a `CountDevices` query when a limit is set, `anonstore/database.go`) therefore runs on the request path, though the local cache at `impl.go:83-87` limits it to roughly once per device per 29 minutes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.28888369999999997
+}

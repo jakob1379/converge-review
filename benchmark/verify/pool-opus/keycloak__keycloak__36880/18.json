@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In AdminPermissions.java (patch lines 76-95), the listener body is wrapped in a new `Profile.isFeatureEnabled(ADMIN_FINE_GRAINED_AUTHZ)` check, and every cast changes from `(X)event` to `(X) event`, e.g. `(RoleContainerModel.RoleRemovedEvent) event` and `((ClientModel) role.getContainer())`. The re-indent follows from adding the wrapper, but the cast spacing changes no behaviour and only adds diff noise.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.20240689999999997
+}

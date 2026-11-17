@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "isProvisionedPromRule (utils/rules.ts, patch line 1409) reads promRule.provenance on PromRuleDTO = PromAlertingRuleDTO | PromRecordingRuleDTO (unified-alerting-dto.ts:162), and neither type has provenance; the patch adds it only to GrafanaPromRuleDTOBase (line 135). prometheusRuleType.grafana.rule (rules.ts:133) is a plain arrow function returning boolean, not a type predicate, so the && check does not narrow the type and TypeScript will report that the property does not exist.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.08066300000000001
+}

@@ -1,0 +1,165 @@
+{
+ "findings": [
+  {
+   "path": "app/models/optimized_image.rb",
+   "line": 145,
+   "severity": "Critical",
+   "claim": "The patch defines `self.downsize` twice. The second definition, (from, to, dimensions, opts={}), silently replaces the 5-arity (from, to, max_width, max_height, opts={}) one, so any caller that passes width and height now raises ArgumentError.",
+   "evidence": "app/jobs/regular/resize_emoji.rb:14 calls OptimizedImage.downsize(path, path, 100, 100, opts). That is 5 args against an arity of 3..4. The job is enqueued from app/models/emoji.rb:73, so every custom emoji resize fails in Sidekiq. No spec covers ResizeEmoji or downsize. Repro: `ruby -w` warns 'method redefined; discarding old downsize'; `Jobs::ResizeEmoji.new.execute(path: ...)` raises ArgumentError. Reasoned only, because Ruby is not installed.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review",
+    "ponytail:ponytail-review",
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Unanimous. Backed by a concrete in-repo caller citation. Delete the old definition and pass \"100x100\" from resize_emoji.rb."
+  },
+  {
+   "path": "app/assets/javascripts/discourse/lib/utilities.js",
+   "line": 182,
+   "severity": "Important",
+   "claim": "The client-side size check replaces SiteSettings['max_'+type+'_size_kb'] with a hardcoded 10*1024 for every upload type, attachments included.",
+   "evidence": "Attachments between max_attachment_size_kb (default 3072) and 10 MB now pass the client check, upload in full, and are then rejected by lib/validators/upload_validator.rb:81-86. Sites whose image limit is above 10240 KB are now capped in the browser. The existing QUnit test test/javascripts/lib/utilities-test.js.es6 ('prevents files that are too big from being uploaded', max_image_size_kb=5) expects rejection, so it would fail. Not run.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "Three correctness or standards seats agree, and an existing test is cited as breaking. The feature only needs the image limit relaxed, not the limit for every type."
+  },
+  {
+   "path": "app/assets/javascripts/discourse/lib/utilities.js",
+   "line": 246,
+   "severity": "Minor",
+   "claim": "The HTTP 413 handler now always tells the user the limit is 10240 KB, whatever the actual proxy or server limit is.",
+   "evidence": "A 413 comes from nginx client_max_body_size. 10m is only the sample default in config/nginx.sample.conf:61. The hardcoded number duplicates the constant at utilities.js:182 and uploads_controller.rb:55.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "Normalised to Minor. Only the wording of an error message is wrong, and the uploads themselves behave correctly. It should be fixed together with the utilities.js:182 constant."
+  },
+  {
+   "path": "app/controllers/uploads_controller.rb",
+   "line": 55,
+   "severity": "Minor",
+   "claim": "The API URL download cap changes from max_image_size_kb to a hardcoded 10.megabytes for every type, ignoring site settings.",
+   "evidence": "FileHelper.download stops reading once the file passes max_file_size, so a file over 10 MB on a site with higher limits comes out truncated instead of being rejected cleanly. This is a third copy of the 10 MB magic number.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "open-code-review:delegate-review",
+    "mattpocock-skills:code-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "It regresses configurability with no setting behind it. Low blast radius, because it only affects API uploads by URL."
+  },
+  {
+   "path": "app/controllers/uploads_controller.rb",
+   "line": 67,
+   "severity": "Important",
+   "claim": "Downsizing animated GIFs with '80%' fails or corrupts them. With allow_animated_thumbnails on, the call becomes `gifsicle --resize-fit 80%`, which takes a WxH geometry and fails. With it off, `convert file[0]` writes only the first frame back over the original.",
+   "evidence": "optimized_image.rb:113-122 (downsize_instructions_animated) and the convert [0] frame selection. convert_with returns false and the loop burns all 5 attempts while the GIF is still rejected for size. Reasoned from gifsicle CLI syntax; not executed.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "fix",
+   "reason": "Unverified. Settle it by running `gifsicle --resize-fit 80% in.gif -o out.gif` and by uploading an oversized animated GIF with the setting off and checking the frame count. Accepted because the failing geometry comes straight from the patched instruction builder."
+  },
+  {
+   "path": "app/controllers/uploads_controller.rb",
+   "line": 64,
+   "severity": "Important",
+   "claim": "Oversized SVGs enter the downsize loop because FileHelper.is_image? matches .svg, so ImageMagick rewrites the user's SVG in place with re-encoded output.",
+   "evidence": "Upload.create_for (upload.rb:63) and OptimizedImage.create_for (optimized_image.rb:44) both skip SVG on purpose. The new guard does not.",
+   "seats": [
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Only one seat raised it, but it is backed by source citations showing the codebase already excludes SVG from ImageMagick processing everywhere else."
+  },
+  {
+   "path": "app/controllers/uploads_controller.rb",
+   "line": 66,
+   "severity": "Important",
+   "claim": "Each upload can trigger up to 5 sequential ImageMagick plus ImageOptim runs on files up to 10 MB. The downsize return value is ignored, so a failing conversion is retried until the attempts run out.",
+   "evidence": "Non-API uploads run in Scheduler::Defer.later (uploads_controller.rb:19), a shared queue, so large uploads stall unrelated deferred work. API uploads run synchronously in the request. The loop has no break on a false return from downsize.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "fix",
+   "reason": "Fix the missing break on failure. The cost profile of a single successful pass is accepted feature cost. Normalised to Important, between SP's Important and OCR's Minor."
+  },
+  {
+   "path": "app/controllers/uploads_controller.rb",
+   "line": 66,
+   "severity": "Important",
+   "claim": "After an in-place downsize, ImageOptim replaces the file by rename, so `tempfile.size` (fstat on the old fd) goes stale. The loop condition never changes, all 5 passes run, and Upload.create_for gets a stale filesize, stale FastImage dimensions and a mismatched sha1.",
+   "evidence": "Reasoned. It depends on image_optim 0.20.2 ImagePath#replace using rename, which the seat recalled rather than read (the gem source is not in the checkout). Tempfile#size on an open file uses File#size, which is fstat.",
+   "seats": [
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "defer",
+   "reason": "Unverified and rests on recalled gem internals. Settle it by reading image_optim-0.20.2 lib/image_optim/path.rb#replace, or with a controller spec that uploads a PNG above max_image_size_kb with ImageOptim binaries present and asserts upload.filesize == File.size(stored_path)."
+  },
+  {
+   "path": "app/controllers/uploads_controller.rb",
+   "line": null,
+   "severity": "Important",
+   "claim": "No tests cover the new downsize loop, the changed OptimizedImage.downsize/optimize signatures, or the client validation change.",
+   "evidence": "The patch touches no spec or QUnit file. That is why the duplicate-downsize Critical got through: there is no ResizeEmoji spec, and optimized_image_spec stubs resize. CONTRIBUTING asks for 'Include tests, and ensure they pass'.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Breaches a documented standard and contributed directly to the Critical getting through."
+  },
+  {
+   "path": "app/controllers/uploads_controller.rb",
+   "line": 64,
+   "severity": "Minor",
+   "claim": "The `tempfile &&` and `tempfile.size > 0` checks in the new guard are redundant. The loop condition already handles an empty file, and a nil tempfile crashes later at Upload.create_for anyway.",
+   "evidence": "Reading the guard against the loop condition (tempfile.size > max_image_size_kb.kilobytes) and line 72.",
+   "seats": [
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "Advisory, trivial deletion, non-blocking."
+  },
+  {
+   "path": "app/models/optimized_image.rb",
+   "line": 141,
+   "severity": "Minor",
+   "claim": "Removing public OptimizedImage.dimensions and changing optimize's signature without spec changes may break plugins.",
+   "evidence": "Two seats grepped and found no in-repo callers of dimensions or optimize outside the patch.",
+   "seats": [
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "reject",
+   "reason": "Grep shows no in-repo callers. Plugin compatibility for model class methods is not a documented contract in this repo. The real in-repo breakage (downsize) is already covered by the Critical finding."
+  },
+  {
+   "path": "app/models/optimized_image.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Commit ffbaf8c542 has a summary line only and no body, contrary to CONTRIBUTING \u00a75.",
+   "evidence": "`git log -1 --format=%B HEAD`.",
+   "seats": [
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "reject",
+   "reason": "This is commit metadata, not part of the patch's code. Fixing it means rewriting published history, and it has no runtime impact. The path is a placeholder: no file applies."
+  }
+ ],
+ "coverage": "No files skipped: all 4 seats reviewed all 3 patched files (utilities.js, uploads_controller.rb, optimized_image.rb). Gate not run (benchmark mode); no project checks executed, Ruby not installed, so every claim is reasoned and none was executed. Spec axis did not run (no spec). No cross-family reviewer (codex CLI absent), so the 4 seats are same-family and correlated. Untracked environment dotfiles in the worktree were excluded from the pinned patch."
+}

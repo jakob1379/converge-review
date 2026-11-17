@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/app-store/vital/lib/reschedule.ts:125-128 the callback is now `forEach(async ...)` with `await getCalendar(...)`, and getCalendar (packages/app-store/_utils/getCalendar.ts:9-22) is now async and ends in `new CalendarService(credential)`. A constructor or app-import failure therefore becomes a rejected promise that `forEach` ignores, so the try/catch at lines 124-139 never logs it. Before the patch that throw was synchronous and was caught there.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0746792
+}

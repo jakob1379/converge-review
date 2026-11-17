@@ -1,0 +1,487 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/38446",
+ "cost_usd": 0.11473,
+ "items": [
+  {
+   "id": "c1",
+   "source": "cubic-v2",
+   "text": "`getCredential(...)` can return a user-storage credential, but the code below still removes and evaluates it as if it were a local stored credential. That breaks the \"last code used\" cleanup/prompt logic for federated users and can also inspect the wrong credential when both sources exist."
+  },
+  {
+   "id": "c2",
+   "source": "converge-review-replay",
+   "text": "Federated credentials are now read before local ones, changing the order of precedence"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "Fixture isValid accepts any of the stored codes in any order and never consumes them; single-use and 'next code #N' behaviour on the federated path are untested, and core never enforces single use for federated codes"
+  },
+  {
+   "id": "c4",
+   "source": "claude-code",
+   "text": "RecoveryAuthnCodesFormAuthenticator.isRecoveryAuthnCodeInputValid() calls removeStoredCredentialById() which targets local storage, not federated storage, so cleanup would fail for federated credentials"
+  },
+  {
+   "id": "c5",
+   "source": "qodo-extended-v2",
+   "text": "RecoveryAuthnCodesFormAuthenticator loads recovery code credentials from user storage but deletes exhausted credentials via removeStoredCredentialById() which only deletes locally-stored credentials, leaving federated users marked as configured while having no usable recovery codes"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "The User Storage SPI contract for recovery codes is undocumented and asymmetric: updateCredential receives plaintext codes as JSON list, getCredentials must return Keycloak's internal hashed format, and single-use enforcement is delegated entirely to the provider with no documentation"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review-replay",
+   "text": "The reference provider accepts any of the 12 codes in any order and never consumes one - nothing tells user storage that a code was used, making federated recovery codes appear reusable"
+  },
+  {
+   "id": "c8",
+   "source": "cubic-v2",
+   "text": "The reconstructed `RecoveryAuthnCodesCredentialModel` loses the stored credential's ID. `createFromValues` does not call `setId()`, so the returned model will have a `null` ID. Add `model.setId(myUser.recoveryCodes.getId())` after the `createFromValues` call to preserve the original credential ID."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "The new getCredentials override in BackwardsCompatibilityUserStorage also returns the OTP credential, which reroutes the Issue 19575 regression test from the backwards-compat branch to the federated-id branch, leaving the legacy path untested"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "Fixture getCredentials dereferences getMyUser(user) without a null check, returns a recovery-codes model with a null id, and disableCredentialType/getDisableableCredentialTypesStream ignore recovery codes, so removing them via account console fails or silently does nothing"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review-replay",
+   "text": "The patch adds post-4.8.3 features (var, recovery-code branches) to a provider whose javadoc says it must stay unchanged"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "Unrelated whitespace/formatting changes in CredentialHelper, BackwardsCompatibilityUserStorage, BackwardsCompatibilityUserStorageTest, and RecoveryAuthnCodesAction inflate the diff"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review-replay",
+   "text": "updateCredential now receives the recovery codes as a plaintext JSON list in challengeResponse, while the local store keeps them hashed"
+  },
+  {
+   "id": "c14",
+   "source": "coderabbit",
+   "text": "Lines 19 and 21 call .get() on Optionals that may be empty (RecoveryAuthnCodesUtils.getCredential(user) and getNextRecoveryAuthnCode()), which will throw NoSuchElementException if either is empty during login form rendering"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "RecoveryAuthnCodeInputLoginBean calls .get() on RecoveryAuthnCodesUtils.getCredential(user); for a storage provider that supports recovery-authn-codes but does not override CredentialInputUpdater.getCredentials and has no local credential, the login page throws NoSuchElementException (500)"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review-replay",
+   "text": "The new test (one login, always code #0) checks neither single use nor the advancing 'code #N' prompt"
+  },
+  {
+   "id": "c17",
+   "source": "qodo-extended-v2",
+   "text": "BackwardsCompatibilityUserStorage validates recovery-authn-codes by matching any code in the stored list and never consumes/removes the used code, allowing unlimited reuse of recovery codes and diverging from Keycloak's one-time sequential recovery-code semantics"
+  },
+  {
+   "id": "c18",
+   "source": "coderabbit",
+   "text": "Line 340 only checks whether the submitted code exists but never updates the stored list, allowing the same recovery code to be replayed indefinitely and preventing the federated path from reaching exhausted-credential cleanup"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "RecoveryAuthnCodesFormAuthenticator takes the allCodesUsed decision from the federated model and calls removeStoredCredentialById with the federated credential's id (null in fixture), which cannot remove the provider's copy; exhaustion of coexisting local credential is never observed"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "The storage path forwards only the codes; userLabel and generatedAt from the credential model are dropped, so storage-backed credentials lose metadata the local path keeps"
+  },
+  {
+   "id": "c21",
+   "source": "claude-code",
+   "text": "In getCredentials(), recovery codes credential is reconstructed via createFromValues() which does not set an ID on the model, so the original ID is lost making federated recovery codes undeletable via admin/account API"
+  },
+  {
+   "id": "c22",
+   "source": "qodo-extended-v2",
+   "text": "RecoveryAuthnCodeInputLoginBean calls Optional.get() on the credential returned from RecoveryAuthnCodesUtils.getCredential() and getNextRecoveryAuthnCode().get() without checking presence, causing NoSuchElementException and 500 errors when federated user-storage provider doesn't expose credentials"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review-replay",
+   "text": "In the fixture, removeStoredCredentialById gets a null id because createFromValues leaves the id null"
+  },
+  {
+   "id": "c24",
+   "source": "cubic-v2",
+   "text": "Persisting recovery codes through the generic user-storage path can make them reusable for federated users, because user-storage validators are not required to consume a code after successful use."
+  },
+  {
+   "id": "c25",
+   "source": "converge-review-replay",
+   "text": "Single-use enforcement for federated codes is left entirely to the provider with no guidance"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "RecoveryAuthnCodesUtils.getCredential queries getFederatedCredentialsStream for every federated user (including LDAP), adding an LDAP round trip per challenge render and submit"
+  },
+  {
+   "id": "c27",
+   "source": "claude-code",
+   "text": "getDisableableCredentialTypesStream() does not handle recovery codes credential type, preventing credential disabling for federated users"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "Test helpers take parameters that never vary: setupRecoveryKeysForUserWithRequiredAction(logoutOtherSessions) and assertUserHasRecoveryKeysCredentialInUserStorage(boolean) are each called once with true, leaving dead code branches"
+  },
+  {
+   "id": "c29",
+   "source": "golden",
+   "text": "Unsafe raw List deserialization without type safety. Calling Optional.get() directly on the Optional returned by RecoveryAuthnCodesUtils.getCredential(user) without checking isPresent() can lead to a NoSuchElementException if the Optional is empty."
+  },
+  {
+   "id": "c30",
+   "source": "qodo-extended-v2",
+   "text": "When createRecoveryCodesCredential stores credentials in user storage (updateCredential returns true), it skips recoveryCodeCredentialProvider.createCredential() which normally deletes pre-existing local recovery codes, allowing stale old codes to remain valid through UserCredentialManager.isValid() fallback"
+  },
+  {
+   "id": "c31",
+   "source": "augment",
+   "text": "RecoveryAuthnCodesUtils.getCredential() can return credentials from user storage (CredentialInputUpdater#getCredentials); if those CredentialModels don't have credentialData/secretData in Keycloak's expected JSON format, the subsequent RecoveryAuthnCodesCredentialModel.createFromCredentialModel(...) will throw at runtime and break login"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "LDAPStorageProvider.getCredentials throws IllegalStateException when the LDAP entry is missing, breaking recovery-code login for imported users that previously used local codes"
+  },
+  {
+   "id": "c33",
+   "source": "claude-code",
+   "text": "Recovery codes validation in BackwardsCompatibilityUserStorage.isValid() accepts any matching code rather than only the next sequential one, violating the security contract"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review-replay",
+   "text": "disableCredentialType and getDisableableCredentialTypesStream do not handle recovery codes"
+  },
+  {
+   "id": "c35",
+   "source": "coderabbit",
+   "text": "Lines 197-200 only store raw codes and Lines 237-242 rebuild a new RecoveryAuthnCodesCredentialModel with createFromValues() which drops the id generated on Line 195 and renumbers codes from 1..n, causing issues with deleting exhausted federated credentials and prompting for wrong code numbers"
+  },
+  {
+   "id": "c36",
+   "source": "augment",
+   "text": "RecoveryAuthnCodesCredentialModel.createFromValues(...) doesn't set an id, so the credential returned from getCredentials() will have a null id; this can break flows that rely on credential IDs (e.g., removal via removeStoredCredentialById)"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review-replay",
+   "text": "The authenticator makes the allCodesUsed decision from the federated model, but removeStoredCredentialById only touches local or fed storage and cannot remove the provider's copy"
+  },
+  {
+   "id": "c38",
+   "source": "cubic-v2",
+   "text": "`getMyUser(user)` can return `null` for an unknown user, causing a `NullPointerException` at `myUser.recoveryCodes`. Add a null check like the other credential methods do (e.g., `isConfiguredFor`)."
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "configureBrowserFlowWithRecoveryAuthnCodes is copied from RecoveryAuthnCodesAuthenticatorTest with unused machinery: delay parameter (only caller passes 0), delayed-authenticator execution, 'delayed-suthenticator-config' typo, and testingClient parameter that is already a field"
+  },
+  {
+   "id": "c40",
+   "source": "augment",
+   "text": "TestAppHelper.logout() relies on refreshToken set by completeLogin(), but this test never calls completeLogin() after submitting the recovery code; logout may become a no-op and leave sessions behind for later tests"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review-replay",
+   "text": "getCredentials must return Keycloak's internal hashed RecoveryAuthnCodesCredentialModel format but this is not documented"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review-replay",
+   "text": "The new getCredentials override returns the fixture's OTP credential with a newly generated id, rerouting testOTPSetupAndRemoveThroughAccountMgmtAndLogin away from the 'otp-id' placeholder and CredentialDeleteHelper '-id' fallback, causing those paths to lose their only test coverage"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review-replay",
+   "text": "getCredentials rebuilds the recovery-codes model with createFromValues which drops the stored id, resulting in a null id"
+  },
+  {
+   "id": "c44",
+   "source": "claude-code",
+   "text": "disableCredentialType() does not handle recovery codes credential type, preventing credential deletion for federated users"
+  },
+  {
+   "id": "c45",
+   "source": "claude-code",
+   "text": "Recovery codes in BackwardsCompatibilityUserStorage.isValid() are never consumed after use, allowing infinite reuse of the same recovery code"
+  },
+  {
+   "id": "c46",
+   "source": "augment",
+   "text": "Recovery-code validation accepts any stored code and never consumes/removes it, which makes recovery codes reusable and ignores the sequential 'code #N' behavior enforced by RecoveryAuthnCodesCredentialProvider"
+  },
+  {
+   "id": "c47",
+   "source": "converge-review-replay",
+   "text": "In a mixed local+federated state, the authenticator inspects or removes a different credential from the one that validated"
+  },
+  {
+   "id": "c48",
+   "source": "converge-review",
+   "text": "Commit message lacks the required issue link ('Closes #NNNN')"
+  },
+  {
+   "id": "c49",
+   "source": "coderabbit",
+   "text": "Line 125 returns on the user-storage path without removing any existing local recovery-code credentials, leaving stale DB entries in the database after a successful user-storage write"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review-replay",
+   "text": "Deleting the federated recovery-codes credential through the account console fails or silently does nothing due to null id matching"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "When user storage accepts regenerated recovery codes, createRecoveryCodesCredential returns without deleting the existing local recovery-authn-codes credential, so previously issued (possibly leaked) local codes remain valid for login"
+  },
+  {
+   "id": "c52",
+   "source": "converge-review-replay",
+   "text": "The patch changes the User Storage SPI contract but documents it nowhere: no docs, release notes, upgrade guide or javadoc"
+  },
+  {
+   "id": "c53",
+   "source": "golden",
+   "text": "After creating the RecoveryAuthnCodesCredentialModel, consider setting its id from the stored credential (e.g., myUser.recoveryCodes.getId()); otherwise getId() will be null and downstream removal by id (e.g., removeStoredCredentialById in the authenticator flow) may not work."
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "BackwardsCompatibilityUserStorage.isValid() (the fixture provider) accepts any stored recovery code in any order and never consumes it. Federated recovery codes are therefore reusable, the sequential 'code #N' behaviour is not enforced, and the exhausted-credential cleanup path is never reached.",
+   "path": null,
+   "members": [
+    "c3",
+    "c7",
+    "c17",
+    "c18",
+    "c33",
+    "c45",
+    "c46"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "Core Keycloak does not enforce single use for recovery codes stored through the generic user-storage path. It leaves consuming a used code entirely to the user-storage provider, with no guidance.",
+   "path": null,
+   "members": [
+    "c24",
+    "c25"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The changed User Storage SPI contract for recovery codes is not documented anywhere. getCredentials must return Keycloak's internal hashed RecoveryAuthnCodesCredentialModel format, while updateCredential receives plaintext codes.",
+   "path": null,
+   "members": [
+    "c6",
+    "c41",
+    "c52"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "updateCredential receives the recovery codes as a plaintext JSON list in challengeResponse, whereas the local store keeps them hashed.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "RecoveryAuthnCodesFormAuthenticator takes the credential returned by getCredential(), which may come from user storage, makes the allCodesUsed decision on it, and calls removeStoredCredentialById(). That method only removes local/fed-storage credentials, so the provider's copy is not removed. When local and federated credentials both exist, the authenticator inspects or removes a different credential from the one that validated.",
+   "path": null,
+   "members": [
+    "c1",
+    "c4",
+    "c5",
+    "c19",
+    "c37",
+    "c47"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "Recovery-code credentials from federated user storage are now read before local ones, which changes the order of precedence.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "In the fixture's getCredentials(), the recovery-codes model is rebuilt with RecoveryAuthnCodesCredentialModel.createFromValues(), which does not set an id. The returned credential has a null id and the codes are renumbered, so removal by id (removeStoredCredentialById, admin/account deletion) fails.",
+   "path": null,
+   "members": [
+    "c8",
+    "c21",
+    "c23",
+    "c35",
+    "c36",
+    "c43",
+    "c50",
+    "c53"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "disableCredentialType() and getDisableableCredentialTypesStream() in the fixture provider do not handle the recovery-codes credential type, so recovery codes cannot be disabled or removed for federated users.",
+   "path": null,
+   "members": [
+    "c10",
+    "c27",
+    "c34",
+    "c44"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The fixture's getCredentials dereferences getMyUser(user) without a null check, so myUser.recoveryCodes throws NullPointerException for an unknown user.",
+   "path": null,
+   "members": [
+    "c38"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "RecoveryAuthnCodeInputLoginBean calls .get() on the Optionals from RecoveryAuthnCodesUtils.getCredential(user) and getNextRecoveryAuthnCode() without checking presence. This throws NoSuchElementException (500) when no credential is available, e.g. for a storage provider that does not override getCredentials.",
+   "path": null,
+   "members": [
+    "c14",
+    "c15",
+    "c22",
+    "c29"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The new getCredentials override in BackwardsCompatibilityUserStorage also returns the OTP credential, with a generated id. This reroutes existing tests (Issue 19575 regression, testOTPSetupAndRemoveThroughAccountMgmtAndLogin) away from the backwards-compat / 'otp-id' / '-id' fallback paths, which lose test coverage.",
+   "path": null,
+   "members": [
+    "c9",
+    "c42"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The patch adds post-4.8.3 features (var, recovery-code branches) to a provider whose javadoc says it must stay unchanged.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The diff includes unrelated whitespace/formatting changes in CredentialHelper, BackwardsCompatibilityUserStorage, BackwardsCompatibilityUserStorageTest and RecoveryAuthnCodesAction.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The new test performs one login using code #0 only and checks neither single use nor the advancing 'code #N' prompt.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The storage path forwards only the codes; userLabel and generatedAt from the credential model are dropped for storage-backed credentials.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "RecoveryAuthnCodesUtils.getCredential queries getFederatedCredentialsStream for every federated user, including LDAP, which adds an LDAP round trip per challenge render and submit.",
+   "path": null,
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The test helpers setupRecoveryKeysForUserWithRequiredAction(logoutOtherSessions) and assertUserHasRecoveryKeysCredentialInUserStorage(boolean) are each called once with true, leaving dead branches.",
+   "path": null,
+   "members": [
+    "c28"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "When createRecoveryCodesCredential stores codes in user storage (updateCredential returns true), it returns without calling recoveryCodeCredentialProvider.createCredential(), so existing local recovery-code credentials are not deleted and old codes remain valid.",
+   "path": null,
+   "members": [
+    "c30",
+    "c49",
+    "c51"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "Credentials returned from user storage via getCredentials are passed to RecoveryAuthnCodesCredentialModel.createFromCredentialModel(), which throws at runtime if their credentialData/secretData are not in Keycloak's expected JSON format.",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "LDAPStorageProvider.getCredentials throws IllegalStateException when the LDAP entry is missing, which breaks recovery-code login for imported users that previously used local codes.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "configureBrowserFlowWithRecoveryAuthnCodes is copied from RecoveryAuthnCodesAuthenticatorTest with unused machinery: a delay parameter (only caller passes 0), a delayed-authenticator execution, the 'delayed-suthenticator-config' typo, and a redundant testingClient parameter.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The test calls TestAppHelper.logout(), which relies on a refreshToken set by completeLogin(), but never calls completeLogin() after submitting the recovery code, so logout may be a no-op and leave sessions behind.",
+   "path": null,
+   "members": [
+    "c40"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "The commit message lacks the required issue link ('Closes #NNNN').",
+   "path": null,
+   "members": [
+    "c48"
+   ]
+  }
+ ]
+}

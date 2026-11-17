@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `.small-action` a flex container (topic-post.scss:264-265), and `.small-action-desc` (topic-post.scss:279-304) has no flex-grow or width, so it shrinks to fit its content. The edit/delete buttons are inside `.small-action-desc` (small-action.hbs:4-9) with `float: right` (topic-post.scss:306-310), so they sit right after a short description instead of at the right edge of the 755px row (desktop/topic-post.scss:731).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10067870000000001
+}

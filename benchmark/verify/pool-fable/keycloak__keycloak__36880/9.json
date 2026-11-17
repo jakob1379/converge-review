@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`AdminPermissionsSchema.init` returns early when the admin-permissions client already exists (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:224-228) and no migration code references the schema, so pre-existing realms never get the `Clients` resource or the new scopes. `getResourceTypeResource` then returns null from `findByName` (:133), and permission creation throws 'Scope [configure] does not exist.' (:210) or 'No scopes found.' (:108).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.0398302
+}

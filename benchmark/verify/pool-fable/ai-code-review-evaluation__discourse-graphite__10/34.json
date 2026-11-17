@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Feed polling calls `TopicEmbed.import` (app/jobs/scheduled/poll_feed.rb:39), which now passes `category: eh.try(:category_id)` from `EmbeddableHost.record_for_host(url)` (app/models/topic_embed.rb:36-43), so an unregistered host gives a nil category. The `embed_category` setting is removed from config/site_settings.yml, so the only way left to set a feed category is to register the feed's host as an embeddable host with a category.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5957907
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In xorm_store.go:614-617, every non-SQLite path binds one `?` per ID with no chunking, and a batch can hold up to cfg.AnnotationCleanupJobBatchSize IDs (LIMIT at :529/:549/:571). Grafana does not set interpolateParams, so MySQL uses server-side prepares; both MySQL and Postgres cap these at 65535 placeholders, so a batch size above that makes full batches fail. The old single-statement LIMIT SQL bound no parameters at all.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1340108
+}

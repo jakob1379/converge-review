@@ -1,0 +1,323 @@
+{
+ "pr_url": "https://github.com/getsentry/sentry/pull/67876",
+ "cost_usd": 0.0671854,
+ "items": [
+  {
+   "id": "c1",
+   "source": "claude-code",
+   "text": "integration.metadata[\"sender\"][\"login\"] at line 503 will raise a KeyError for pre-existing integrations that lack the sender key in their metadata, since build_integration only adds sender conditionally and other code paths already guard against this"
+  },
+  {
+   "id": "c2",
+   "source": "augment",
+   "text": "OAuth authorize redirect URL is assembled via string interpolation; if redirect_uri or other params contain characters needing escaping, this can produce a malformed URL or unintended query parsing; should use a proper query encoder"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review-replay",
+   "text": "The predictable OAuth state allows an attacker to send a forged setup callback that binds the attacker's GitHub login and installation_id into a victim's pipeline, defeating the user-match check"
+  },
+  {
+   "id": "c4",
+   "source": "augment",
+   "text": "safe_urlopen() and get_user_info() can raise network errors or non-2xx via raise_for_status(), which would 500 the install flow; should catch those exceptions and return the error() page to keep failures user-safe"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "test_installation_not_found now passes for the wrong reason: it sends a state that doesn't match the pipeline signature, so OAuthLoginView rejects at the state check before build_integration runs; the 404 stub is never hit and the 'installation could not be found' path is untested"
+  },
+  {
+   "id": "c6",
+   "source": "augment",
+   "text": "integration.metadata[\"sender\"][\"login\"] assumes the nested keys always exist; if metadata is missing/older/unexpected this will raise and 500 the flow; should treat missing sender/login the same as a mismatch (invalid installation request)"
+  },
+  {
+   "id": "c7",
+   "source": "qodo-extended-v2",
+   "text": "get_user_info(payload[\"access_token\"]) at line 434 is called without exception handling, and since the function calls resp.raise_for_status() which raises HTTPError on non-2xx responses, it causes an unhandled 500 error instead of the graceful error page used by other failure modes"
+  },
+  {
+   "id": "c8",
+   "source": "coderabbit",
+   "text": "Guard against missing sender metadata before dereference - if sender is absent (e.g., legacy integrations), this raises a KeyError and yields a 500; should treat it as invalid instead"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "The authenticated-user == installer check is skipped entirely when no Integration row exists yet; build_integration then resolves any installation_id via the app JWT, so anyone knowing an installation id can claim it into their org until the installation webhook is processed"
+  },
+  {
+   "id": "c10",
+   "source": "cubic-v2",
+   "text": "`pipeline.fetch_state(\"github_authenticated_user\")` can return `None` if the OAuth step was skipped or state was lost. Add an explicit `None` check before the comparison so the code fails clearly rather than relying on `None != <string>` semantics."
+  },
+  {
+   "id": "c11",
+   "source": "qodo-extended-v2",
+   "text": "OAuthLoginView uses pipeline.signature as the OAuth state, but pipeline.signature is a deterministic MD5 of pipeline view class names, making the state guessable and not session-specific, which breaks OAuth CSRF/replay protection"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "Integration is fetched twice with inconsistent filters (first without status, second with status=ACTIVE): an extra query, and a non-active Integration without OrganizationIntegration now gets the generic error where it previously proceeded to next_step/ensure_integration"
+  },
+  {
+   "id": "c13",
+   "source": "cubic-v2",
+   "text": "The `redirect_uri` should be URL-encoded before being included in the query string. Use `urllib.parse.quote()` to properly encode the URL."
+  },
+  {
+   "id": "c14",
+   "source": "claude-code",
+   "text": "The token exchange request at lines 427-431 is missing redirect_uri, but the authorize URL at line 408 explicitly includes it, violating RFC 6749 Section 4.1.3 which requires redirect_uri to be included in the token exchange request with an identical value if it was included in the authorization request"
+  },
+  {
+   "id": "c15",
+   "source": "cubic-v2",
+   "text": "Test uses an invalid OAuth state, so the test never reaches the installation 404 path it is meant to cover."
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "OAuthLoginView hand-rolls an OAuth2 flow that already exists (OAuth2LoginView/OAuth2CallbackView via NestedPipelineView + IdentityProviderPipeline); the copy lost the random state, urlencode and error logging"
+  },
+  {
+   "id": "c17",
+   "source": "golden",
+   "text": "The code attempts to access integration.metadata[sender][login] without checking for the existence of the sender key. This causes a KeyError for integrations where the sender metadata was not set during creation"
+  },
+  {
+   "id": "c18",
+   "source": "claude-code",
+   "text": "OAuthLoginView.dispatch() accepts installation_id from GET params unconditionally at lines 397-399, even during the OAuth callback phase, allowing an attacker to craft a callback URL containing their own installation_id, code, and the predictable state value to overwrite both sides of the sender comparison and bypass sender verification"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "error() calls _(error_short) on a variable while call sites now pass plain literals, so makemessages no longer extracts these strings and existing translations will drop on the next catalog rebuild"
+  },
+  {
+   "id": "c20",
+   "source": "golden",
+   "text": "OAuth state uses pipeline.signature (static) instead of a per-request random value"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "The OAuth state used for CSRF protection is pipeline.signature, which is a constant computed from view class names that anyone can calculate, providing no actual CSRF protection"
+  },
+  {
+   "id": "c22",
+   "source": "cubic-v2",
+   "text": "The OAuth `state` parameter is set to `pipeline.signature`, which is a deterministic MD5 hash of pipeline identifiers \u2014 not a per-request random value. OAuth 2.0 requires `state` to be an unpredictable, per-request nonce to prevent CSRF. Consider generating a cryptographically random token and storing it in the pipeline state for verification on callback."
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "Token-exchange/user-fetch failures are mishandled: safe_urlopen and get_user_info are outside the try block, so network errors or GitHub 4xx/5xx give a 500 instead of the error page; meanwhile the broad except Exception around safe_urlread/parse silently swallows errors with no logging"
+  },
+  {
+   "id": "c24",
+   "source": "qodo-extended-v2",
+   "text": "integration.metadata[\"sender\"][\"login\"] at line 503 will raise a KeyError for any Integration whose metadata lacks a sender key, since the sender field is only conditionally added during build_integration"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "The setup_path + urlencode({code, state=<md5>}) block is copy-pasted six times with the magic state hash hardcoded each time in tests"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "Authorize URL built by f-string without URL-encoding client_id, state, redirect_uri"
+  },
+  {
+   "id": "c27",
+   "source": "cubic-v2",
+   "text": "`integration.metadata[\"sender\"]` raises `KeyError` when the integration was built without a `sender` in state (the key is set conditionally in `build_integration`). Use `.get()` with a safe default, e.g., `integration.metadata.get(\"sender\", {}).get(\"login\")`."
+  },
+  {
+   "id": "c28",
+   "source": "golden",
+   "text": "Null reference if github_authenticated_user state is missing"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review-replay",
+   "text": "The new user-match check reads integration.metadata[\"sender\"][\"login\"] with no guard, causing KeyError and HTTP 500 on the reinstall path when an Integration exists without a 'sender' key in metadata"
+  },
+  {
+   "id": "c30",
+   "source": "converge-review",
+   "text": "Identity check compares mutable GitHub login strings instead of stable user id; a user who renamed their account between install and link is wrongly rejected"
+  },
+  {
+   "id": "c31",
+   "source": "coderabbit",
+   "text": "Test uses mismatched state which triggers state check failure instead of exercising the installation-not-found 404 path as intended"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "integration.metadata['sender']['login'] raises KeyError (HTTP 500) when the Integration has no 'sender' metadata, which is the normal state for pipeline-created or pre-existing integrations on the reinstall path"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review-replay",
+   "text": "The authorize URL at :404-408 is built with an f-string without URL-encoding redirect_uri, client_id and state parameters, which will break if any parameter contains &, ? or # characters"
+  },
+  {
+   "id": "c34",
+   "source": "coderabbit",
+   "text": "Broad exception catch when parsing OAuth token response can mask unexpected failures - catching Exception is too general, and parse_qsl() with default parameters won't raise ValueError as expected"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "OAuth state is pipeline.signature, a constant md5 of view class names identical for every user/session, so the state check provides no CSRF protection; an attacker can forge the setup callback into a victim's in-progress pipeline, binding the attacker's GitHub login"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The user-match check reads integration.metadata[\"sender\"][\"login\"] without a guard. Integrations whose metadata lacks a 'sender' key (build_integration only adds it conditionally, and older or pre-existing integrations may not have it) raise a KeyError, which produces an HTTP 500.",
+   "path": null,
+   "members": [
+    "c1",
+    "c6",
+    "c8",
+    "c17",
+    "c24",
+    "c27",
+    "c29",
+    "c32"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The OAuth authorize redirect URL is built with an f-string or string interpolation and does not URL-encode client_id, state or redirect_uri. Parameters containing characters such as &, ? or # produce a malformed URL or unintended query parsing.",
+   "path": null,
+   "members": [
+    "c2",
+    "c13",
+    "c26",
+    "c33"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "OAuthLoginView uses pipeline.signature as the OAuth state. This is a deterministic MD5 of pipeline view class names, identical for every user and session, so it is guessable. As a result the state check gives no CSRF protection, and an attacker can forge a setup callback that binds the attacker's GitHub login and installation into a victim's pipeline.",
+   "path": null,
+   "members": [
+    "c3",
+    "c11",
+    "c20",
+    "c21",
+    "c22",
+    "c35"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "OAuthLoginView.dispatch() accepts installation_id from GET params unconditionally, including during the OAuth callback phase. A crafted callback URL with an attacker's installation_id, code and the predictable state can therefore overwrite both sides of the sender comparison.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "safe_urlopen() and get_user_info() (which calls raise_for_status()) are outside exception handling. Network errors or non-2xx responses during the token exchange or user fetch cause an unhandled 500 instead of the error() page.",
+   "path": null,
+   "members": [
+    "c4",
+    "c7",
+    "c23"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The token-response parsing is wrapped in a broad 'except Exception', which masks unexpected failures. Also, parse_qsl() with default parameters does not raise ValueError as expected.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "test_installation_not_found sends an OAuth state that does not match the pipeline signature. OAuthLoginView rejects it at the state check before build_integration runs, so the 404 installation-not-found path is never exercised.",
+   "path": null,
+   "members": [
+    "c5",
+    "c15",
+    "c31"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The authenticated-user vs installer check is skipped when no Integration row exists yet. build_integration then resolves any installation_id via the app JWT, so anyone who knows an installation id can claim it into their org before the installation webhook is processed.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "pipeline.fetch_state(\"github_authenticated_user\") can return None if the OAuth step was skipped or the state was lost. The comparison has no explicit None check.",
+   "path": null,
+   "members": [
+    "c10",
+    "c28"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "Integration is fetched twice with inconsistent filters: first without a status filter, then with status=ACTIVE. This adds a query, and a non-active Integration without an OrganizationIntegration now gets the generic error instead of proceeding to next_step/ensure_integration.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The token exchange request omits redirect_uri even though the authorize URL includes it. RFC 6749 Section 4.1.3 requires the same redirect_uri in the token request.",
+   "path": null,
+   "members": [
+    "c14"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "OAuthLoginView hand-rolls an OAuth2 flow that already exists as OAuth2LoginView/OAuth2CallbackView via NestedPipelineView and IdentityProviderPipeline. The copy lost the random state, urlencode and error logging.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "error() calls _(error_short) on a variable, while call sites pass plain literals. makemessages therefore no longer extracts these strings, and their translations will be dropped on the next catalog rebuild.",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "In the tests, the setup_path + urlencode({code, state=<md5>}) block is duplicated six times, with the magic state hash hardcoded each time.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The identity check compares GitHub login strings, which can change, rather than the stable user id. A user who renamed their account between install and link is wrongly rejected.",
+   "path": null,
+   "members": [
+    "c30"
+   ]
+  }
+ ]
+}

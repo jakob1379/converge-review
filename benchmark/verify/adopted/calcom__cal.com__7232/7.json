@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a value import `import { Prisma, WorkflowReminder } from \"@calcom/prisma/client\"` at scheduleEmailReminders.ts:10. Both names are used only in the type annotation at line 54, and packages/config/eslint-preset.js:35-38 sets `@typescript-eslint/consistent-type-imports` to `error` with `prefer: \"type-imports\"` for `*.ts` files, so lint fails on this line (I did not run eslint).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0709407
+}

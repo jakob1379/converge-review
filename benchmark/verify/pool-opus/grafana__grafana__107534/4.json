@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The count of 5 at shardQuerySplitting.test.ts:112 is one applyTemplateVariables call per target in runShardSplitQuery (shardQuerySplitting.ts:52) plus four more in runSplitQuery (querySplitting.ts:296-299), one per shard subrequest delegated at shardQuerySplitting.ts:163. So the test requires that redundant second pass. The 'instead of' part is overstated, though: the same test also checks the queries sent via runQuery toHaveBeenCalledWith (test lines 114-140).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1055721
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The code matches the claim. In app/controllers/admin/groups_controller.rb:22-44, create and update now read top-level params[:name], params[:visible] and params[:alias_level], and nothing reads group[...] or group[usernames]. A legacy update therefore sets visible = (nil == \"true\"), which is false, and a legacy create gets a blank name that the name-format validator should reject with render_json_error. The PATCH changes[add|delete] handling (update_patch) is deleted, so a PATCH request reaches update and ignores changes. app/controllers/groups_controller.rb:29-35 now returns {members, meta} instead of an array. Only the in-repo JS client was updated (group.js), I could not check the commit body from here, and no external API consumers were checked.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1765332
+}

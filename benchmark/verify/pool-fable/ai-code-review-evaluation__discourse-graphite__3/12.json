@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`Email.downcase` only lowercases the part after the `@` (lib/email.rb:21, spec/components/email/email_spec.rb:29), and the new lookup `BlockedEmail.where(email: email)` (app/models/blocked_email.rb:12) is an exact match on the raw value passed from lib/validators/email_validator.rb:13. The patch never calls `Email.downcase` on this path at all, so a blocked address is bypassed by changing letter case, and would still be for the local part if it did.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2635619
+}

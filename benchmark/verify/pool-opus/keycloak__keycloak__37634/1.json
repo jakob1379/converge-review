@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched AssertEvents.java (around line 480), matchesSafely calls items[0].substring(3, 5) without checking the prefix length, so a prefix shorter than 5 characters throws StringIndexOutOfBoundsException instead of returning false.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06772299999999999
+}

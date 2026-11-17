@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The only code that sets `cancelled: true` is `deleteScheduledEmailReminder` (emailReminderManager.ts:225-230). It reaches that line only when `referenceId` is non-null, because null-reference reminders are deleted earlier at :202-209, and every caller invokes it only for `WorkflowMethods.EMAIL`. SMS reminders are deleted outright in `deleteScheduledSMSReminder`, so the `cancelled: true` query in scheduleEmailReminders.ts:44-50 can only return scheduled EMAIL reminders that have a `referenceId`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15131619999999998
+}

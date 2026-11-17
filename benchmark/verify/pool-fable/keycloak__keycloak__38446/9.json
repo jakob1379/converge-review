@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/forms/login/freemarker/model/RecoveryAuthnCodeInputLoginBean.java:19 and :21 call .get() on both Optionals with no presence check, and the bean is built unguarded at FreeMarkerLoginFormsProvider.java:272. RecoveryAuthnCodesUtils.getCredential (RecoveryAuthnCodesUtils.java:56-61) returns empty when a storage provider accepts the credential via updateCredential but inherits the default getCredentials returning Stream.empty() (CredentialInputUpdater.java:50-52), because the patch's CredentialHelper.createRecoveryCodesCredential then skips local storage.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.7908697
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:92-99 sanitizes the value and requires string equality with the sanitizer's re-serialized output, and any mismatch becomes a MojoFailureException at ThemeVerifierMojo.java:54-55. The patch itself had to rewrite `<br/>` to `<br />`, `</ b>` to `</b>` and `< p>` to `<p>` across the translation files to pass, though `< p>` and `</ b>` are arguably malformed rather than equivalent markup.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.529799
+}

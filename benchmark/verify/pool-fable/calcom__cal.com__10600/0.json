@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Codes are stored as lowercase hex (apps/web/pages/api/auth/two-factor/totp/setup.ts:61) and matched with exact `backupCodes.indexOf(input.replaceAll(\"-\", \"\"))` at packages/features/auth/lib/next-auth-options.ts:144 and apps/web/pages/api/auth/two-factor/totp/disable.ts:61, with no trim or lowercase anywhere, so uppercase or whitespace-padded input is rejected. BackupCode.tsx holds no comparison, only the un-normalised input field (no autoCapitalize off), so that part of the claim is loosely worded.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23107609999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:189-195, both computed keys evaluate to \"[object Object]\", so in sync mode the schema only keeps access_token and Zod's default strip mode drops expires_in. VideoApiAdapter.ts:122 then sets expiry_date to NaN and stores it, and the next getToken call fails at zoomTokenSchema.parse (line 132, `expiry_date: z.number()` at line 54) because the value is NaN, or null once serialised.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2541528
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:118 zips error_ids positionally with events.values(), but get_multi dedupes ids (src/sentry/nodestore/base.py:184), appends cached items after fetched ones (base.py:205), and the Django backend omits missing rows (src/sentry/nodestore/django/backend.py:49), so ids can pair with another event's data. The mispaired `id` is not read by generate_error_log_message (line 126-131), so today only the id field is wrong.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2435241
+}

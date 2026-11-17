@@ -1,0 +1,185 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "incident_occurrence.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "get_monitor_environment_context() in incident_occurrence.py copies the monitor config and replaces schedule_type with its human-readable display value, but returns monitor_environment.monitor.config (the original, line 168) instead of the modified copy. The schedule_type transformation therefore never reaches the event context.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incident_occurrence.py:160-162 builds a modified copy `config` with the schedule_type display value, but line 168 returns `monitor_environment.monitor.config` (the original), so the copy is dead code. The patch only moved this function verbatim from mark_failed.py (identical removed lines at change.patch:563-575), so the bug pre-exists.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.10517910000000001
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The code re-fetches MonitorCheckIn objects by ID from the database to pass as the failed_checkin parameter, even though previous_checkins already holds the needed data and monitor_environment is known at the call site. This is an unnecessary database query.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The re-fetch at src/sentry/monitors/logic/incidents.py:93 is needed: `previous_checkins` only holds id/date_added/status (incidents.py:44), while `create_incident_occurrence` reads each check-in's `trace_id` (src/sentry/monitors/logic/incident_occurrence.py:83-84). The patch also only moves this code verbatim from mark_failed.py.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.29789859999999996
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "incident_occurrence.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The docstring at incident_occurrence.py line 132 contains the typo 'humam readible' instead of 'human readable'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incident_occurrence.py:132 reads \"Builds a humam readible string from a list of failed check-ins.\" The patch adds this line (change.patch:138), though it is carried over verbatim from a docstring the patch removes elsewhere (change.patch:536), so the typo is moved rather than newly written.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0635244
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "incidents.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "incidents.py defines `logger = logging.getLogger(__name__)` but never uses it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incidents.py:3 imports logging and :11 defines `logger = logging.getLogger(__name__)`, but a search of the file finds no other reference to `logger` or `logging`, and nothing else in the repo imports it from this module.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1208592
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "incident_occurrence.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "incident_occurrence.py defines `logger = logging.getLogger(__name__)` but never uses it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incident_occurrence.py:3 imports logging and :25 defines `logger = logging.getLogger(__name__)`; a search of the file finds no other reference to `logger` or `logging`, so it is unused. Both lines are added by the patch (change.patch lines 9 and 31).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0695605
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When fewer than failure_issue_threshold check-ins exist, previous_checkins[:failure_issue_threshold] returns a shorter list and the code still opens an incident. This contradicts the N-consecutive-failures threshold semantics; for example, a new monitor can get an incident on its first failure.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incidents.py:48 slices `previous_checkins[:failure_issue_threshold]` and line 52 only rejects when an OK check-in is present; there is no length check, so a new (ACTIVE) monitor with threshold > 1 falls through to set ERROR and create a MonitorIncident at lines 56-70 on its first failure. The logic is a verbatim move of the removed `mark_failed_threshold` in mark_failed.py, so the behaviour predates this patch.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.30021359999999997
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "If failed_checkins contains only statuses not in HUMAN_FAILURE_STATUS_MAP, status_counts is empty and the evidence message becomes \" check-ins detected\". There is no generic fallback, although the docstring mentions one.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/monitors/logic/incident_occurrence.py:139-156, statuses outside HUMAN_FAILURE_STATUS_MAP are filtered out, so an all-unmapped list gives an empty Counter, skips the singular branch at :145, and returns \" check-ins detected\" (Django's get_text_list returns \"\" for an empty list, from memory of Django rather than read here); the docstring's \"A failed check-in was detected\" at :136 has no implementing branch. The function was moved verbatim from mark_failed.py, and the case is hard to reach because callers normally pass a check-in with an ERROR/MISSED/TIMEOUT status.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.3330022
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The comment on line 51 says 'commits' where it should say 'check-ins'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incidents.py:50-51 reads \"If we have any successful check-ins within the threshold of commits we have NOT reached an incident state\", while the code at line 52 checks the last `failure_issue_threshold` check-ins, so \"commits\" is a typo for \"check-ins\". The wording was copied verbatim from the removed `mark_failed_threshold` in mark_failed.py, but the patch adds it as a new line in a new file.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2211786
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Line 146 uses list(status_counts.keys())[0] instead of next(iter(status_counts.keys())).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incident_occurrence.py:146 reads `return SINGULAR_HUMAN_FAILURE_MAP[list(status_counts.keys())[0]]`, exactly as claimed. It is a pure style nit, and the line is an added line in the patch only because the function was moved verbatim from another file (the patch deletes the identical line there).",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.1335433
+   }
+  },
+  {
+   "issue": "i10",
+   "path": "sentry/monitors/logic/mark_failed.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch removes public names from sentry.monitors.logic.mark_failed: mark_failed_threshold, create_issue_platform_occurrence, SimpleCheckIn, get_failure_reason and get_monitor_environment_context. Downstream imports or mock.patch targets that reference them will break.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The names are indeed gone from src/sentry/monitors/logic/mark_failed.py (now only `mark_failed`, lines 14-79), but nothing in the repo breaks: every importer takes only `mark_failed` (e.g. src/sentry/monitors/consumers/monitor_consumer.py:33, tests/sentry/monitors/logic/test_mark_failed.py:11) and no `mock.patch` targets `sentry.monitors.logic.mark_failed.*`. The helpers were moved to logic/incidents.py, logic/incident_occurrence.py and src/sentry/monitors/types.py:105; code outside this repo was not checkable.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.4257016
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

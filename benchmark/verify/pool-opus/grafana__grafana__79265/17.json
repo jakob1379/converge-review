@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `ErrDeviceLimitReached = fmt.Errorf(\"device limit reached\")` (anonstore/database.go:18), not an errutil error, and anonimpl/client.go now returns it from Authenticate. errorLogFunc in authnimpl/service.go:356-365 logs any non-errutil error at Warn, and the API path's notAuthorized (middleware/auth.go:37-39) goes through WriteErrOrFallback (model.go:104-120), which returns a generic 'Unauthorized' 401 with no device-limit message. Non-API requests are redirected to login instead of getting a 401.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1786486
+}

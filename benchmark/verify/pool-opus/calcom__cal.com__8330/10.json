@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts:108-109, the override is matched by comparing `dayjs(date.start).add(utcOffset).format('YYYY MM DD')`, which is the override's shifted start formatted in the server's local zone, with `slotStartTime.format(...)`, which is UTC. So for a host at +6 with an override starting 02:00 local, the date that gets compared is the previous UTC day. That day's ordinary slots then hit the reject branches at lines 115-123, and slots later in the override day skip the override and fall through to the working-hours check.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1019618
+}

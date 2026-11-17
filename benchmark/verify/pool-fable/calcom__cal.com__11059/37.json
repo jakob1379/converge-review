@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "After the patch, `parseRefreshTokenResponse` throws `Error(\"Invalid refreshed tokens were returned\")` on a failed parse (packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:21-23), so the `prisma.credential.update` at packages/app-store/office365calendar/lib/CalendarService.ts:265 is never reached on parse failure. Persisting stale credentials after a failed `safeParse` was the pre-patch behaviour, which this patch removed.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5138731
+}

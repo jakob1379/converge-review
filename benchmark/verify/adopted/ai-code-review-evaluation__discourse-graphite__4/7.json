@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/models/topic_embed.rb:64 and :70, any href or src starting with '/' (which includes '//cdn.example.com/x.png') matches, and lines 65 and 71 strip the leading slashes, producing '<scheme>://<host>/cdn.example.com/x.png'. The scheme comes from the source URL and is not always 'http', but the link or image is still broken in both blocks.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0494891
+}

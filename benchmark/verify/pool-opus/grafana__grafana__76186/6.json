@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the explicit `tracing.TraceIDFromContext` call and switches to `m.logger.FromContext(ctx)` (logger_middleware.go, patch L228-243). That call adds traceID only through the global `ctxLogProviders` list (pkg/infra/log/log.go:203-210), and the traceID provider is registered only as a side effect of tracing's service constructor (pkg/infra/tracing/tracing.go:91). No comment explains this, and the clientmiddleware package has no logger_middleware test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1558186
+}

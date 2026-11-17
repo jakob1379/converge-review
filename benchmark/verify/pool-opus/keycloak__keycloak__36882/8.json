@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Before `cmd.execute()` runs the command, Picocli.java:118/176 sets the parsed command to UpdateCompatibilityCheck and Picocli.java:128 calls `PropertyMappers.sanitizeDisabledMappers()`. That method creates the feature Profile if none exists, via `Environment.getCurrentOrCreateFeatureProfile()` (PropertyMappers.java:297-306), so `Profile.isFeatureEnabled` at UpdateCompatibilityCheck.java:46 will not throw a NullPointerException.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1885662
+}

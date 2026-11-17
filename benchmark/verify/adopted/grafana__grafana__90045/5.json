@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In dualwriter_mode3.go:51, 110, 135 and 163, the background goroutines build their timeout context from the request ctx using context.WithTimeoutCause, then return right away. Go's net/http cancels the request ctx when ServeHTTP returns, so the legacy Create/Update/Delete/DeleteCollection can be cancelled partway through, and the only trace is a metric (lines 56, 113, 140, 166), not a log. I could not read the k8s.io/apiserver handler source here; this relies on Go's documented net/http behaviour.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2407629
+}

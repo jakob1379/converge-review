@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The Javadoc at services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:142-146 only promises \"IDs of groups with view permission\". GroupPermissionsV2.java:121-123 instead adds `groupResource.getId()` for resources of type \"Groups\", and only the all-groups type resource carries that type (AdminPermissionsSchema.java:271-276; per-group resources are created untyped at :121), so V2 returns that resource's ID, not group IDs.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.583589
+}

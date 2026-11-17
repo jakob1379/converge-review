@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The localhost hardcoding is real (pkg/server/module_server_test.go:76), and Drone does set POSTGRES_HOST to postgres (.drone.yml:1155). But this patch adds a skip for postgres at module_server_test.go:36-38, before addStorageServerToConfig is called, so the test never starts up against postgres and the claimed failure cannot happen as the code stands.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1011917
+}

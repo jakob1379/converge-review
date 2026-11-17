@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At pkg/storage/unified/resource/search.go:177-192, each errgroup goroutine runs `totalBatchesIndexed++` on a plain shared int with no lock or atomic, and `group.SetLimit(s.initWorkers)` lets more than one of them run at once, so this is a data race. The shared `err` assignment at line 190 races the same way; none of these lines are in the patch, and the counter is read only for a tracing attribute at line 199.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0896325
+}

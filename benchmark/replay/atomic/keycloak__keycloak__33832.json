@@ -1,0 +1,309 @@
+{
+ "findings": [
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java",
+   "line": 57,
+   "severity": "Important",
+   "claim": "The fail-fast 'Multiple crypto providers loaded' IllegalStateException is replaced by order-based selection. DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider all return order 200, so on a tie the stable sort leaves the choice to ServiceLoader/classpath order. A FIPS deployment that picks up a stray non-FIPS jar can now silently run on the non-FIPS provider.",
+   "evidence": "All three seats cite `return 200` at DefaultCryptoProvider.java:83-84, WildFlyElytronProvider.java:76-77 and FIPS1402Provider.java:114-115. Losers are logged only at debug. Base threw IllegalStateException. Affected init() callers: KeycloakApplication.java:89, admin-cli Globals.java:44 (dist packages both default and fips1402 jars), testsuite CryptoInitRule.java:14, AuthzClient.create. Quarkus is unaffected (setProvider at KeycloakRecorder.java:214). Proposed red test (superpowers): two order-200 providers on the ServiceLoader path; assert init() throws. It throws on base and returns a provider on HEAD. Not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree and the evidence is source-cited. Before fixing, it must be made red with the proposed two-provider ServiceLoader test. Smallest fix: keep the throw when the top two orders are equal.",
+   "list": "main"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java",
+   "line": 44,
+   "severity": "Important",
+   "claim": "`int order()` is added as an abstract method on the public CryptoProvider SPI with no default. External implementations stop compiling. Already-compiled ones loaded via ServiceLoader throw AbstractMethodError when detectProvider's comparator calls order(), which crashes CryptoIntegration.init.",
+   "evidence": "Comparator.comparingInt(CryptoProvider::order) in detectProvider. keycloak-common is consumed outside this repo, e.g. the keycloak-client authz-client copy of AuthzClientCryptoProvider. All in-repo implementations are updated (Fips1402StrictCryptoProvider inherits). Reasoned, not run. Seat severities ranged from Minor to Important; normalised to Important because the result is a runtime crash of init.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Four seats agree. Red test: a provider compiled against the base interface, loaded alongside another provider, must throw AbstractMethodError on HEAD. Smallest fix: make order() a default method.",
+   "list": "main"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/AuthzClientCryptoProvider.java",
+   "line": 114,
+   "severity": "Minor",
+   "claim": "Dead code: `ASN1Encoder.create().write(rBigInteger); ASN1Encoder.create().write(sBigInteger);` build encoders and discard the results. Lines 117-121 redo the encoding.",
+   "evidence": "Lines 114-115 versus the real encode at 117-121. mattpocock noted it but excluded it as a generic smell, so that seat is not counted.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Minor, so no red test is required. Delete the two lines.",
+   "list": "main"
+  },
+  {
+   "path": "authz/client/pom.xml",
+   "line": 15,
+   "severity": "Minor",
+   "claim": "The new test-scope dependency org.hamcrest:hamcrest is unused.",
+   "evidence": "ECDSAAlgorithmTest imports only org.junit.Assert and org.junit.Test. mattpocock: `grep -rn hamcrest authz/client/src/test` finds nothing. mattpocock cites lines 67-71; open-code-review and ponytail cite 15-19. Whether the BOM manages the version was not checked.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Remove the dependency. PR-CHECKLIST rule against irrelevant changes.",
+   "list": "main"
+  },
+  {
+   "path": "authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java",
+   "line": 42,
+   "severity": "Minor",
+   "claim": "One default KeyPairGenerator.getInstance(\"EC\") key is used for ES256, ES384 and ES512. The ES384/ES512 tests never use their own curves, so the DER long-form length paths (ASN1Encoder.writeLength / ASN1Decoder.readLength for length > 127) and full-width P-521 integers are never exercised.",
+   "evidence": "Test lines 42 and 65-71. The default curve gives a DER sequence of about 70 bytes. superpowers' standalone harness passed 500 signatures per curve on P-256/384/521, including the long-form path, so this is a coverage gap, not a codec bug.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted as a test gap. Generate one key per curve (secp256r1/384r1/521r1).",
+   "list": "main"
+  },
+  {
+   "path": "authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java",
+   "line": 56,
+   "severity": "Minor",
+   "claim": "The assertion is only a self round-trip (rsConcat == rsConcat2). Output is never checked against an independent encoding (JCA Signature.verify / SHAxxxwithECDSAinP1363Format), so an encoder/decoder bug that is symmetric would pass.",
+   "evidence": "open-code-review #6, superpowers #4.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java",
+   "line": 57,
+   "severity": "Minor",
+   "claim": "No test covers the new order-based selection in detectProvider with several providers on the classpath.",
+   "evidence": "mattpocock #3. superpowers #1: 'No test covering the new selection logic exists in the patch.'",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java",
+   "line": 44,
+   "severity": "Minor",
+   "claim": "The breaking SPI change ships without release-note or upgrade-guide documentation.",
+   "evidence": "PR-CHECKLIST.md requires release notes and upgrade guide where applicable. CONTRIBUTING.md #8. `grep -rl CryptoProvider docs` finds nothing. open-code-review: no migration or upgrading note.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java",
+   "line": 94,
+   "severity": "Minor",
+   "claim": "Whitespace-only reformatting of untouched code: CryptoProvider.java:94, DefaultCryptoProvider.java:186, FIPS1402Provider.java:203,208,230,234/235.",
+   "evidence": "Hunks only strip trailing whitespace. CONTRIBUTING.md: 'Do not format or refactor code that is not directly related to your contribution.'",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "(commit message)",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The issue link is 'closes #33831': lowercase, and on the line directly after the summary with no blank line. The documented format is a separate trailing 'Closes #1234' line.",
+   "evidence": "CONTRIBUTING.md 'Commit messages and issue linking': 'please only use the above formats'.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/AuthzClient.java",
+   "line": 95,
+   "severity": "Minor",
+   "claim": "AuthzClient.create now calls JVM-global CryptoIntegration.init, and the first caller wins. If only the stub provider is visible, AuthzClientCryptoProvider is fixed for the JVM. getBouncyCastleProvider() returns the JDK keystore provider, so BouncyIntegration.PROVIDER becomes e.g. 'SUN'. Later Keycloak code then gets UnsupportedOperationException, and a later init (e.g. KeycloakApplication) does nothing.",
+   "evidence": "AuthzClientCryptoProvider.java:61-66. init is a no-op once cryptoProvider is set. Mitigation: on the testsuite classpath crypto-default (200) beats the stub (100), and the module is testsuite-only. No concrete failure found.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java",
+   "line": 52,
+   "severity": "Minor",
+   "claim": "Tag checks compare only tag & 0x1f and ignore the class and constructed bits, so a primitive 0x10 is accepted as a SEQUENCE.",
+   "evidence": "open-code-review #5. Input is trusted JCA Signature.sign() output.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java",
+   "line": 68,
+   "severity": "Minor",
+   "claim": "readInteger with length 0 calls new BigInteger(new byte[0]), which throws an unchecked NumberFormatException instead of IOException.",
+   "evidence": "open-code-review #5. superpowers observed the same behaviour (NumberFormatException for `30 04 02 00 02 00`) but judged it consistent with intent, so did not raise it.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java",
+   "line": 73,
+   "severity": "Minor",
+   "claim": "Trailing bytes after the DER sequence are silently ignored.",
+   "evidence": "open-code-review #5.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java",
+   "line": 133,
+   "severity": "Minor",
+   "claim": "The indefinite-length branch returns -1, so readInteger calls new byte[-1] and throws NegativeArraySizeException instead of IOException.",
+   "evidence": "ponytail #4 side effect. Reasoned.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java",
+   "line": 93,
+   "severity": "Minor",
+   "claim": "Over-engineering: high-tag-number and indefinite-length decoding are never needed. The only caller passes JDK DER ECDSA output (0x30 holding two 0x02 integers).",
+   "evidence": "ponytail #4. Sole production caller is ECDSASignatureSignerContext.java:33. About -25 lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java",
+   "line": 65,
+   "severity": "Minor",
+   "claim": "logger.debugf(builder.toString()) passes runtime-built text as the format string, so a '%' in a class name would be misinterpreted.",
+   "evidence": "ponytail #3, superpowers #6.",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java",
+   "line": 65,
+   "severity": "Minor",
+   "claim": "The ignored-providers debug message ends with a stray trailing ', '.",
+   "evidence": "ponytail #3, superpowers #6.",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java",
+   "line": 64,
+   "severity": "Minor",
+   "claim": "Over-engineering: a hand-built StringBuilder loop for one debug line, where a one-line subList/join would do.",
+   "evidence": "ponytail #3. About -6 lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "crypto/default/src/main/java/org/keycloak/crypto/def/DefaultCryptoProvider.java",
+   "line": 82,
+   "severity": "Minor",
+   "claim": "Over-engineering: because order() is abstract, the identical `return 200` override is pasted into DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider. A default in the interface would need only the AuthzClientCryptoProvider override.",
+   "evidence": "ponytail #2. DefaultCryptoProvider.java:82-85, WildFlyElytronProvider.java:75-78, FIPS1402Provider.java:113-116.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/AuthzClientCryptoProvider.java",
+   "line": 151,
+   "severity": "Minor",
+   "claim": "The r/s padding and trimming logic (integerToBytes, concatenatedRSToASN1DER) nearly duplicates ElytronECDSACryptoProvider, and BC has a third copy, so fixes will not propagate.",
+   "evidence": "ponytail #5. The seat says no fix is needed now, because the modules deliberately share no dependencies.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats. The seat itself recommends no action now.",
+   "list": "appendix"
+  },
+  {
+   "path": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Encoder.java",
+   "line": 38,
+   "severity": "Minor",
+   "claim": "ASN1Encoder (38-44) and ASN1Decoder (39-47) each have a static create() that only calls the constructor. These are package-private classes with one caller.",
+   "evidence": "ponytail #7. About -6 lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files: all four seats report 12/12 files reviewed. open-code-review's tool skipped META-INF/services/org.keycloak.common.crypto.CryptoProvider (unsupported extension) and ECDSAAlgorithmTest.java (default path); the seat read both by hand. superpowers checked the whitespace-only hunks in DefaultCryptoProvider.java, FIPS1402Provider.java and CryptoProvider.java only for being whitespace. ponytail reviewed only for over-engineering. mattpocock checked the ASN.1 internals only for correctness on the ES256/384/512 paths. Axes not run: the gate was not run (benchmark mode), so the review is unanchored by executed checks, and nothing was built or tested in the repo. The only executed evidence is superpowers' standalone javac harness outside the repo. There is no spec: only the commit title, and issue #33831 was not fetched. The standards axis ran against CONTRIBUTING.md and PR-CHECKLIST.md. No reviewer from another model family took a correctness seat. Left unchecked: whether the Elytron/FIPS test profiles ever put two order-200 providers on one classpath, and whether the Maven BOM manages the hamcrest version. No red tests have been written yet: the two Important main-list findings each have a proposed failing test that has not been run. No finding was rejected, because no seat report disproves another's claim."
+}

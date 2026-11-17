@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`Picocli.exit()` only calls `System.exit()` conditionally (quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/Picocli.java:203-207): in test launch mode without a rebuild check it returns normally, so the `return` at UpdateCompatibilityCheck.java:49 and UpdateCompatibilityMetadata.java:49 is reachable and needed to stop the command running on. The hard exit outside test mode is the deliberate, pre-existing design (\"hard exit wanted\" comment at Picocli.java:205; same call at UpdateCompatibilityCheck.java:57).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.35415779999999997
+}

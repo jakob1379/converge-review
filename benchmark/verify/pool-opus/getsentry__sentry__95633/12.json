@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`identifier` is indeed unused in the `track_calls` stub (change.patch:1026-1027), but the repo has no Ruff config: no `[tool.ruff]` in pyproject.toml and no ruff.toml. Linting runs through flake8 (.pre-commit-config.yaml:45, setup.cfg:86-109) with no unused-argument rule, and a mock side_effect stub has to accept that argument anyway, so no lint error is triggered.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08310640000000001
+}

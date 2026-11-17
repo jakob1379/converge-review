@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/helpers/error_upsampling.py, the cache key is built only from the org id and a hash of the sorted project ids, with no allowlist contents in it, and the result is cached for 60s (patch lines 153 and 164). invalidate_upsampling_cache (error_upsampling.py:67) is never called anywhere in the repo, so after a project is removed from the allowlist it stays upsampled until the cache entry expires.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0383511
+}

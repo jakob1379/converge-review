@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/scripts/spans/add-buffer.lua:62-64 evicts the lowest-scored spans with zpopmin once a segment exceeds 1000, but the script's return value at line 72 carries no eviction count and src/sentry/spans/buffer.py:237-279 emits no metric or log for it. The patch also removed the only span-count signal, the `segment_span_count_exceeded` metric and `logger.error` in flush_segments, leaving `max_segment_spans` unused (buffer.py:150,158).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3106076
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:21-24, `val.present?` guarantees a non-whitespace character, so `val.split(\"\\n\")` always returns a non-empty array; `records.each` on an empty array would be a no-op anyway, so the `if records.present?` guard at line 23 has no effect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1198318
+}

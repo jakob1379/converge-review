@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:117-136 hard-codes exceptions that strip `CLAIM.<NAME>` (templateHelp), `<Extensions>` (optimizeLookupHelp), whole `{n,choice,...}` blocks (linkExpirationFormatter.timePeriodUnit*, error-invalid-multivalued-size) and ` style=\"direction: rtl;\"` in email files before the policy check at line 92, so that content is never sanitized. The exceptions are narrow, commented and deliberate, in a build-time verifier.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2131974
+}

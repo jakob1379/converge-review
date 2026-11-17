@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes `padding-top: 4px` from `.small-action-desc > p` (app/assets/stylesheets/common/base/topic-post.scss:301-303), and no other stylesheet rule sets padding on a `p` inside `.small-action-desc`. The mobile override `p { padding-top: 0 }` at app/assets/stylesheets/mobile/topic-post.scss:517-519 therefore resets a value that is already the default and has no effect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3305654
+}

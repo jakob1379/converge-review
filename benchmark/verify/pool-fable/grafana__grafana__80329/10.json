@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:528-539, 548-559 and 570-581 hold three near-identical closures (fetchIDs -> r.log.Error -> deleteByIDs into `x, y` -> r.log.Error -> return x, y) that differ only in condition, table and log text (\"Annotations to clean by time\" / \"by count\" / \"Tags to clean\"). All three were added by this patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1986293
+}

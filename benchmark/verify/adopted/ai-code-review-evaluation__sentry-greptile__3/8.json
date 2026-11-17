@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/api/helpers/test_error_upsampling.py:7-12 imports the private helpers `_are_all_projects_error_upsampled`, `_is_error_focused_query` and `_should_apply_sample_weight_transform`, and lines 41-101 call them directly. Lines 37-38 patch `sentry.api.helpers.error_upsampling.options`, which is Sentry's own `sentry.options` (imported at src/sentry/api/helpers/error_upsampling.py:7). I couldn't read ~/.claude/CLAUDE.md (permission denied), so I took the quoted rules as given.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0640144
+}

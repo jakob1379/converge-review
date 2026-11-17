@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientCredentialsGrantType.process calls tokenManager.responseBuilder(...).generateAccessToken() directly (services/src/main/java/org/keycloak/protocol/oidc/grants/ClientCredentialsGrantType.java:140-141) and never sets Constants.GRANT_TYPE, nor goes through OAuth2GrantTypeBase.createTokenResponse, which does set it (OAuth2GrantTypeBase.java:109). DefaultTokenContextEncoderProvider.java:57-60 therefore falls back to UNKNOWN \"na\", so the token id carries 'na' rather than the 'cc' shortcut declared in ClientCredentialsGrantTypeFactory.java:39-41.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6179265
+}

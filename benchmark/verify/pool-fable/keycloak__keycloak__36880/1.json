@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The removal listener is wrapped only in `Profile.isFeatureEnabled(Profile.Feature.ADMIN_FINE_GRAINED_AUTHZ)` (services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java:77), so with only V2 enabled the whole block is skipped. No other ClientRemovedEvent handler deletes the per-client V2 resources created by AdminPermissionsSchema.getOrCreateResource (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:93-104); note the skipped block would not have removed them anyway, since ClientPermissionsV2.setPermissionsEnabled throws UnsupportedOperationException (ClientPermissionsV2.java:193-194).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.0598521
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In useIsRuleEditable.ts, the hook calls `featureDiscoveryApi.endpoints.discoverDsFeatures.useQuery({ rulesSourceName })` at lines 19-25, and the `if (!rule)` early return comes later, at line 43. React's rules of hooks require this order, and the patch does not change useIsRuleEditable.ts; it only moves the existing callers in useAbilities.ts.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1111309
+}

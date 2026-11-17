@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After this patch, when a reminder already has a SendGrid referenceId, deleteScheduledEmailReminder only sets cancelled=true (emailReminderManager.ts, patch lines 357-364). The SendGrid batch is cancelled only later, by the cron in scheduleEmailReminders.ts:44-64, which runs every 15 minutes (cron-scheduleEmailReminders.yml:8). So a booking cancelled less than 15 minutes before its reminder's send time can reach the send time before the next cron pass, and SendGrid sends the email. The old code cancelled the batch immediately.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1779499
+}

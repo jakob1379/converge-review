@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes js/apps/admin-ui/maven-resources/theme/keycloak.v2/admin/messages/messages_en.properties:3138 to `{0}`/`{2,choice,...}`, but js/apps/admin-ui/src/i18n/i18n.ts:13-37 uses plain i18next with no ICU plugin, and ThemeResource.getLocalizationTexts (services/.../ThemeResource.java:153) returns the raw text unconverted. UserResource.java:272 sends the bare key plus params, which ui-shared/src/user-profile/utils.ts:79-85 passes to `t()` as `{0:..,1:..,2:..}`, so i18next shows the single-brace template text without filling in the values.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.355628
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "There is no appConfig anywhere in packages/app-store/zoho-bigin/lib/CalendarService.ts, and line 12 is just the `NewCalendarEventType` type import. The patch never replaced appConfig.slug: it added a new refreshOAuthTokens call that passes the literal \"zoho-bigin\" (line 92), the same value as this.integrationName (line 37).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0659246
+}

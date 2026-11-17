@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The validators do test truthiness (change.patch:376 and :382), but the stated result is wrong. With age=0 and a non-zero timestamp, DRF still runs validate_age because age is present, and :382 then rejects it since the timestamp is truthy. Only the edge case age=0 with timestamp=0 gets through.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0432867
+}

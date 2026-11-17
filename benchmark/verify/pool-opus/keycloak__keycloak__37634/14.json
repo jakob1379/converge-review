@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a `grantType` field that is set only in the constructor, from `formParams.getFirst(GRANT_TYPE)` (OAuth2GrantType.java:102). `setFormParams()` replaces `formParams` but leaves `grantType` untouched (OAuth2GrantType.java:105-107), so `getGrantType()` (line 173) can return a stale value. Nothing in the repository calls `setFormParams()`, though, so this only affects outside SPI users.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.076868
+}

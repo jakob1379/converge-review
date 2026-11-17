@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:152-155 the delete loop is followed by a plain `deletedAll.set(true)` with no try/finally, so if `remove()` at line 153 throws, the flag is never set. The reader thread started at lines 139-149 (not a daemon, swallows every exception) then loops on `while (!deletedAll.get())` forever, hammering the server and accumulating exceptions.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1112634
+}

@@ -1,0 +1,442 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2",
+ "cost_usd": 0.08327659999999999,
+ "items": [
+  {
+   "id": "c1",
+   "source": "qodo-extended-v2",
+   "text": "The GET unsubscribe endpoint will be triggered unintentionally by email client link prefetchers, silently changing users' notification settings"
+  },
+  {
+   "id": "c2",
+   "source": "claude-code",
+   "text": "The unsubscribe action requires ensure_logged_in but the unsubscribe URL is embedded in notification emails - when logged-out users click the link, they are silently redirected to the homepage with no error message and no unsubscribe action taken, making the per-topic email unsubscribe feature non-functional for the most common use case"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "The property name stopNotificiationsText is misspelled in controllers/topic-unsubscribe.js.es6 and templates/topic/unsubscribe.hbs"
+  },
+  {
+   "id": "c4",
+   "source": "golden",
+   "text": "Typo in property name: 'stopNotificiationsText' should be 'stopNotificationsText' (missing 'n' in 'Notifications')"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review-replay",
+   "text": "unsubscribe returns a 500 error when the logged-in user has no TopicUser row for the topic because TopicUser.find_by returns nil and the next line calls tu.notification_level on it without a nil check"
+  },
+  {
+   "id": "c6",
+   "source": "coderabbit",
+   "text": "Test for List-Unsubscribe header only checks presence but should assert the value uses the provided unsubscribe_url"
+  },
+  {
+   "id": "c7",
+   "source": "golden",
+   "text": "logic: Potential nil pointer exception - if no TopicUser record exists, tu will be nil and calling methods on it will crash"
+  },
+  {
+   "id": "c8",
+   "source": "coderabbit",
+   "text": "Header class has leading dot preventing CSS targeting - Line 10 includes '.previous-discussion' instead of 'previous-discussion' in the class attribute"
+  },
+  {
+   "id": "c9",
+   "source": "augment",
+   "text": "TopicUser.find_by(...) can return nil if the user has no topic_users row yet, and the subsequent tu.notification_level access will raise, causing 500 errors when hitting the unsubscribe URL"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "Adding render :show inside perform_show_response renders the template before topics#show sets canonical_url, so every server-rendered topic page loses its <link rel=\"canonical\"> tag"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "The view exists only to add a CSS class that the template wrapper div could carry directly"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "About 100 of the 225 changed lines are formatting-only edits unrelated to the feature, obscuring the real change and breaching CONTRIBUTING.md's one-feature-per-branch guidance"
+  },
+  {
+   "id": "c13",
+   "source": "cubic-v2",
+   "text": "Rendering {{title}} inside HTML translation creates an XSS vulnerability on the unsubscribe page because the title is interpolated and inserted with triple-stash without escaping"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "unsubscribe is behind ensure_logged_in, so a logged-out recipient clicking the email link is redirected to / with no message and no return path; nothing gets unsubscribed"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "The slug-mismatch redirect uses status: 301 on a URL with side effects; browsers cache it permanently, causing extra redirect hops after slug changes"
+  },
+  {
+   "id": "c16",
+   "source": "qodo-extended-v2",
+   "text": "TopicsController#unsubscribe dereferences the result of TopicUser.find_by(...) without handling the no-row case, which will raise and return a 500 when the current user has no topic_users record for that topic"
+  },
+  {
+   "id": "c17",
+   "source": "cubic-v2",
+   "text": "Template is named for a nested topic.unsubscribe route, but the router/controller/view use the top-level topicUnsubscribe route, so the new page content will not be picked up unless the template is renamed to match that route"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "TopicUser.find_by can return nil and the next line calls tu.notification_level, causing unsubscribe to return 500 (NoMethodError) for a logged-in user with no topic_users row"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "The post_number: /\\d+/ constraint was quietly dropped from both summary routes and moderator-liked was reordered inside a feature commit"
+  },
+  {
+   "id": "c20",
+   "source": "coderabbit",
+   "text": "Missing trailing comma in multiline filter list - the array passed to skip_before_filter should include a trailing comma after :unsubscribe to match project style and fix lint warning"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "The new state-changing endpoint, Topic#unsubscribe_url and the email footer change have no tests, breaching CONTRIBUTING.md 'Include tests' guidance"
+  },
+  {
+   "id": "c22",
+   "source": "qodo-extended-v2",
+   "text": "The unsubscribe route is defined as GET but the controller action mutates TopicUser.notification_level and saves it, making it vulnerable to CSRF via link/image injection since no CSRF token is required on GET requests"
+  },
+  {
+   "id": "c23",
+   "source": "qodo-extended-v2",
+   "text": "TopicsController#unsubscribe bypasses TopicUser.change() so notifications_reason_id/notifications_changed_at aren't set for a user-initiated notification_level change, allowing update_last_read auto-tracking to later overwrite the user's choice"
+  },
+  {
+   "id": "c24",
+   "source": "coderabbit",
+   "text": "State-changing unsubscribe action uses GET request - topics#unsubscribe mutates notification state but is mapped to GET, should use POST/PUT or require a signed token"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "The List-Unsubscribe header still points to user preferences, not the per-topic unsubscribe URL"
+  },
+  {
+   "id": "c26",
+   "source": "coderabbit",
+   "text": "Typo in stopNotificiationsText property name - should be stopNotificationsText"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "An in-app Ember transition to topicUnsubscribe only loads topic JSON and never hits the server action, yet still shows the 'stop receiving notifications' confirmation"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "tu.save! bypasses TopicUser.change, so MessageBus notification_level_change publish, notifications_reason_id=:user_changed and notifications_changed_at are all skipped; other open tabs go stale and the old notification reason stays"
+  },
+  {
+   "id": "c29",
+   "source": "claude-code",
+   "text": "The unsubscribe_link i18n string now requires %{unsubscribe_url} interpolation but Email::MessageBuilder provides no default value for it - any plugin using build_email with add_unsubscribe_link: true without providing unsubscribe_url will raise I18n::MissingInterpolationArgument"
+  },
+  {
+   "id": "c30",
+   "source": "converge-review-replay",
+   "text": "The unsubscribe action steps the notification level down instead of setting a target level, making it non-idempotent - watching/tracking goes to regular on first visit, then to muted on reload/second click, muting topics the user never chose to mute"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "The shared unsubscribe_link string now requires %{unsubscribe_url}, so any MessageBuilder caller passing add_unsubscribe_link: true without unsubscribe_url hits missing-interpolation handling, and non-English locales keep the old string so they never see the per-topic link"
+  },
+  {
+   "id": "c32",
+   "source": "coderabbit",
+   "text": "Duplicate respond instructions in email template - Line 6 duplicates the respond instructions that already appear at Line 19 when context_posts are present"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review-replay",
+   "text": "The new state-changing behaviour has no tests covering TopicsController#unsubscribe, Topic#unsubscribe_url, the new email footer, the login requirement, the slug redirect, the missing-TopicUser path and the Ember route, breaching CONTRIBUTING.md \u00a73"
+  },
+  {
+   "id": "c34",
+   "source": "coderabbit",
+   "text": "TopicUser.find_by can return nil and the current toggle logic can re-subscribe users or flip state due to email link prefetching - should make unsubscribe idempotent by always setting to muted and creating the record if needed"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "The controller exists only to format one i18n string but could be eliminated by using the i18n helper with named params directly in the template"
+  },
+  {
+   "id": "c36",
+   "source": "converge-review",
+   "text": "The rewritten tracking scope uses 3-space and 5-space continuation indents, against the file's 2-space convention"
+  },
+  {
+   "id": "c37",
+   "source": "augment",
+   "text": "topicUnsubscribe is declared as a top-level route, but the template lives at templates/topic/unsubscribe.hbs (which resolves to topic.unsubscribe), so Ember may not find/render the intended template and the unsubscribe page may render incorrectly or blank"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "Unsubscribe changes state on a plain GET with no CSRF protection or signed token, allowing any third-party page to change a logged-in victim's notification level for any topic they can see"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review-replay",
+   "text": "The unsubscribe endpoint uses plain GET with no CSRF protection and no per-user token, allowing any third-party page to change a logged-in visitor's notification level for any topic (including PMs) via techniques like <img src=.../unsubscribe>"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "The action toggles the level downward instead of setting a target, so it is not idempotent (watching/tracking -> regular, then reload goes regular -> muted), and the confirmation copy is misleading because regular still notifies on replies, mentions and quotes"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review-replay",
+   "text": "After a watching/tracking user's first click, the confirmation says 'You will stop receiving notifications' but the server only lowered the level to regular which still notifies on replies, mentions and quotes - the copy promises a state that was not set"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review",
+   "text": "The module ends in }) without a semicolon, unlike its sibling .js.es6 controllers"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The unsubscribe endpoint is a GET route whose action changes and saves TopicUser.notification_level without CSRF protection or a signed token, so a third-party page (e.g. via <img src=.../unsubscribe>) can change a logged-in user's notification level for any topic they can see.",
+   "path": null,
+   "members": [
+    "c22",
+    "c24",
+    "c38",
+    "c39"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "Because the unsubscribe endpoint is a GET, email client link prefetchers can trigger it and change users' notification settings without the user acting.",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The unsubscribe action requires ensure_logged_in, but its URL is sent in notification emails. A logged-out recipient who clicks the link is redirected to / with no message and no return path, and nothing is unsubscribed.",
+   "path": null,
+   "members": [
+    "c2",
+    "c14"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The property name stopNotificiationsText is misspelled; it should be stopNotificationsText.",
+   "path": "controllers/topic-unsubscribe.js.es6",
+   "members": [
+    "c3",
+    "c4",
+    "c26"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "In TopicsController#unsubscribe, TopicUser.find_by can return nil when the user has no topic_users row for the topic. The next line calls tu.notification_level without a nil check, which raises and returns a 500.",
+   "path": null,
+   "members": [
+    "c5",
+    "c7",
+    "c9",
+    "c16",
+    "c18"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The unsubscribe action steps the notification level down instead of setting a target level, so it is not idempotent. Watching/tracking goes to regular on the first visit and to muted on a reload or prefetch.",
+   "path": null,
+   "members": [
+    "c30",
+    "c34",
+    "c40"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "After a watching/tracking user's first click, the confirmation says 'You will stop receiving notifications', but the level was only lowered to regular, which still notifies on replies, mentions and quotes.",
+   "path": null,
+   "members": [
+    "c41"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The test for the List-Unsubscribe header only checks that the header is present, not that its value uses the provided unsubscribe_url.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The List-Unsubscribe header still points to the user preferences page rather than the per-topic unsubscribe URL.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "On line 10, the header's class attribute contains '.previous-discussion' with a leading dot, which prevents CSS from targeting it.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "Adding render :show inside perform_show_response renders the template before topics#show sets canonical_url, so server-rendered topic pages lose their <link rel=\"canonical\"> tag.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The view exists only to add a CSS class that the template's wrapper div could carry directly.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "About 100 of the 225 changed lines are formatting-only edits unrelated to the feature, contrary to CONTRIBUTING.md's one-feature-per-branch guidance.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "On the unsubscribe page, {{title}} is interpolated into an HTML translation and inserted with triple-stash without escaping, which allows XSS.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The slug-mismatch redirect for the unsubscribe URL, which has side effects, uses status 301, so browsers cache it permanently.",
+   "path": null,
+   "members": [
+    "c15"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The template is at templates/topic/unsubscribe.hbs, which resolves to a nested topic.unsubscribe route. The router, controller and view use the top-level topicUnsubscribe route, so Ember will not pick up the template.",
+   "path": "templates/topic/unsubscribe.hbs",
+   "members": [
+    "c17",
+    "c37"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The post_number: /\\d+/ constraint was dropped from both summary routes, and moderator-liked was reordered, inside a feature commit.",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "The multiline array passed to skip_before_filter has no trailing comma after :unsubscribe.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "There are no tests for the new state-changing TopicsController#unsubscribe endpoint, Topic#unsubscribe_url, or the email footer change, contrary to CONTRIBUTING.md's 'Include tests' guidance.",
+   "path": null,
+   "members": [
+    "c21",
+    "c33"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "TopicsController#unsubscribe calls tu.save! directly instead of TopicUser.change. As a result, notifications_reason_id/notifications_changed_at are not set and the MessageBus notification_level_change publish is skipped, so update_last_read auto-tracking can later overwrite the user's choice.",
+   "path": null,
+   "members": [
+    "c23",
+    "c28"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The shared unsubscribe_link i18n string now requires %{unsubscribe_url}, but Email::MessageBuilder gives it no default. Any build_email caller passing add_unsubscribe_link: true without unsubscribe_url hits a missing-interpolation error, and non-English locales keep the old string.",
+   "path": null,
+   "members": [
+    "c29",
+    "c31"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "An in-app Ember transition to topicUnsubscribe only loads the topic JSON and never calls the server action, yet still shows the 'stop receiving notifications' confirmation.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "On line 6, the email template repeats the respond instructions that already appear on line 19 when context_posts are present.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "The controller exists only to format one i18n string, which the i18n helper with named params could do directly in the template.",
+   "path": null,
+   "members": [
+    "c35"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "The rewritten tracking scope uses 3-space and 5-space continuation indents, unlike the file's 2-space convention.",
+   "path": null,
+   "members": [
+    "c36"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The module ends in }) without a semicolon, unlike its sibling .js.es6 controllers.",
+   "path": null,
+   "members": [
+    "c42"
+   ]
+  }
+ ]
+}

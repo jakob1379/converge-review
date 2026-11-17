@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:8 and :10, the keys `[z.string().toString()]` and `[z.string().optional().toString()]` both evaluate to the same literal string, \"[object Object]\", so the second overwrites the first. The schema therefore checks only `access_token` plus one optional key, and zod's default strip mode removes every other field (`refresh_token`, `expires_in`, etc.) when it is used at line 16. Payloads don't fail validation; their extra fields are silently dropped.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0527586
+}

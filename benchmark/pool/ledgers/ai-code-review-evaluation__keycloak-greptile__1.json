@@ -1,0 +1,137 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new `user != null` term in `isConditionalPasskeysEnabled(UserModel user)` reverses the old `context.getUser() == null` condition. As a result, `webauthnAuth.fillContextForm(context)` no longer runs on the initial login page, where no user is set yet. Conditional passkey UI (`enableWebAuthnConditionalUI`) is therefore not set up for unidentified, first-time passkey login in `UsernamePasswordForm` and `UsernameForm`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": "UsernameForm.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`UsernameForm.authenticate` (line 47) calls `isConditionalPasskeysEnabled()` with no arguments. The only declaration in `UsernamePasswordForm` now requires a `UserModel` parameter and has no zero-argument overload, so the call does not compile.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test methods `webauthnLoginWithExternalKey_reauthentication` and `webauthnLoginWithDiscoverableKey_reauthentication` duplicate about 60 lines of code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The change enables passkeys during re-authentication (`prompt=login`) and changes the identity-first organization flow, but no documentation was updated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`shouldShowWebAuthnAuthenticators` overrides `WebAuthnAuthenticator.shouldShowWebAuthnAuthenticators` without an `@Override` annotation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": "PasskeysUsernamePasswordFormTest",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The webauthn-form absence checks in `PasskeysUsernamePasswordFormTest` (around lines 289-295 and 310-317) use `try { assertThat(findElement(...), nullValue()); fail(...) } catch (Exception)`. The inner assertion is dead code because `findElement` throws `NoSuchElementException` rather than returning null. Catching the generic `Exception` treats unrelated WebDriver failures as expected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new `user` parameter is only null-checked; the user's passkey credentials are never checked. During re-authentication, a user with no passkey is still shown the passkey form.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `reauthenticationOfUserWithoutPasskey` test disables passkeys for the whole realm via `setWebAuthnPolicyPasskeysEnabled(FALSE)` instead of testing a user without a passkey while passkeys are enabled.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The change has two unsquashed commits. The second commit lacks a Signed-off-by trailer and a 'Closes #' link. The first commit uses lowercase 'closes' and links two issues.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Line 413 contains the typo 'Succesful' instead of 'Successful'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`setupReauthenticationInUsernamePasswordFormError` re-implements the auth-note parsing in `AbstractUsernameFormAuthenticator.isUserAlreadySetBeforeUsernamePasswordAuth`. It also widens `USER_SET_BEFORE_USERNAME_PASSWORD_AUTH` from protected to public.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch adds an unused `PasswordCredentialModel` import.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

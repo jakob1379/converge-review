@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/payment/deletePayment.ts:16 awaits the appStore entry (an eager `import()` promise, packages/app-store/index.ts:19) with no try/catch, so a rejected import would propagate out of deletePayment. The only caller already wraps the call in try/catch and logs (packages/trpc/server/routers/viewer.tsx:1061-1065), so there is no practical consequence.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1526957
+}

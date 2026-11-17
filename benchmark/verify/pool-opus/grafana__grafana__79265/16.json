@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "client.go:44-47 does return the error when TagDevice reports ErrDeviceLimitReached, but the patch adds that branch on purpose to enforce the new limit, and it is not a total block. Only a new device that arrives once the limit is reached is refused: database.go's updateDevice still succeeds for devices already tracked, requests with no device-id header return nil (impl.go:119-121), and tagDeviceUI caches the key before the database write (impl.go:83-87), so a repeat request soon after a refusal skips the check and gets in.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1455453
+}

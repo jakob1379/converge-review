@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/ee/workflows/api/scheduleEmailReminders.ts:10 adds `import { Prisma, WorkflowReminder } from \"@calcom/prisma/client\"` without `type`, and both names are used only in a type annotation at line 54; packages/config/eslint-preset.js:35-44 sets @typescript-eslint/consistent-type-imports to \"error\" with prefer \"type-imports\" for all *.ts files, and the root .eslintrc.js applies that preset.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2490543
+}

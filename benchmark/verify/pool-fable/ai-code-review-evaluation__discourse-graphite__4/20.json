@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:13 does `contents << \"\\n<hr>...\"` on the `contents` parameter of `TopicEmbed.import`, and `String#<<` appends in place, so the caller's string object is modified (and a frozen string would raise). It is latent today: both callers pass fresh temporaries (app/jobs/scheduled/poll_feed.rb:35-36 `CGI.unescapeHTML(...)`, app/models/topic_embed.rb:52 `doc.content`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3398331
+}

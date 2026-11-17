@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/controllers/groups_controller.rb:22-26, `limit` and `offset` come straight from `params` via `.to_i` and go into `.limit(limit).offset(offset)` without being clamped. Negative values reach Postgres, which rejects them ('LIMIT/OFFSET must not be negative') and the request returns a 500. There is also no upper cap, so a request with a huge `limit` returns all members.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16696030000000003
+}

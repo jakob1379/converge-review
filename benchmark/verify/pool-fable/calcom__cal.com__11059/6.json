@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In sync mode `refreshOAuthTokens` returns the raw fetch `Response` (packages/app-store/_utils/oauth/refreshOAuthTokens.ts:8-15), which has no `.data` or `expiresIn`. Google then throws on `token.access_token` (googlecalendar/lib/CalendarService.ts:94-95), HubSpot computes a NaN expiry and stores the Response as the key (hubspot/lib/CalendarService.ts:192-202), and Zoho CRM and Zoho Bigin throw on `.data.error` (zohocrm/lib/CalendarService.ts:217, zoho-bigin/lib/CalendarService.ts:96, the latter uncaught).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5538341
+}

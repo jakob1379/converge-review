@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At pkg/apiserver/rest/dualwriter_mode3.go:96-97, Delete builds `log` with name, kind and method but then calls `klog.NewContext(ctx, d.Log)`, so downstream Storage/Legacy calls get the base logger without those fields. Every other method in the file passes `log` (lines 39, 66, 82, 123, 150), and the same pattern exists in the untouched dualwriter_mode1.go:146.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0748935
+}

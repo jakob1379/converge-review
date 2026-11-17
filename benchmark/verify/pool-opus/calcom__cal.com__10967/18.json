@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In handleCancelBooking.ts:445-465 the recurring-series block runs once for every calendar reference in the loop over `bookingCalendarReference` that starts at line 420, but it never uses that reference or `calendarCredential`. Each pass loops over the organizer's `user.credentials` and deletes only the first `_calendar` reference of each booking (`updBooking.references.find(...)` at line 454), so the same deletes repeat N times and the other hosts' references are never deleted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2323826
+}

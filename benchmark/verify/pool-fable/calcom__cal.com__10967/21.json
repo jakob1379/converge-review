@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new loop in packages/core/EventManager.ts:339-370 calls createEvent once per destination calendar with the same event object. In packages/app-store/googlecalendar/lib/CalendarService.ts:116-125 and 139-140, every insert marks the first (main host) destination calendar as `organizer: true` and reuses the same `conferenceData`, whose requestId is the deterministic `uuidv5(location)` from EventManager.ts:32-37; only `calendarId` varies per credential (CalendarService.ts:147-154).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5944835
+}

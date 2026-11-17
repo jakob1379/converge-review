@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/auth/login.tsx:179-182 renders ExternalTotpFooter (cancel button only, lines 135-143) whenever totpEmail is set, and the only call to setTwoFactorLostAccess(true) is the \"Lost access\" button inside TwoFactorFooter (lines 120-131), so the BackupCode input at line 221 is unreachable for the external-IdP totp flow (packages/features/auth/lib/next-auth-options.ts:36-37).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23569279999999998
+}

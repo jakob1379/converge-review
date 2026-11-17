@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's new `TopicsController#unsubscribe` (patch line 201, app/controllers/topics_controller.rb ~line 102) does `redirect_to @topic_view.topic.unsubscribe_url, status: 301` when the slug doesn't match. The GET action then changes state by lowering the TopicUser notification level and calling `tu.save!`. The practical harm is small: the cached 301 points to the canonical unsubscribe URL, which still runs the action, and this copies the 301 that the existing `show` action already uses.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0588606
+}

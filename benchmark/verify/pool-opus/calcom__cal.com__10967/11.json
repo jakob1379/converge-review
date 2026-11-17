@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/larkcalendar/lib/CalendarService.ts at lines 128 and 164, createEvent and createAttendees always use `const [mainHostDestinationCalendar] = event.destinationCalendar ?? []`. They ignore the credentialId that CalendarManager.ts now passes, unlike the Google service, which matches the calendar by credentialId. As a result, EventManager's per-destination loop writes every Lark host's event to the first host's calendar ID. updateEvent and deleteEvent (lines 192 and 237) use externalCalendarId first and fall back to [0] only when it is missing.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13157259999999998
+}

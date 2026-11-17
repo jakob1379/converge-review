@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/topics_controller.rb, the new unsubscribe action calls `TopicUser.find_by(user_id: current_user.id, topic_id: params[:topic_id])` (patch line 204) and then calls `tu.notification_level` (line 206) without a nil check. TopicView.new does not create a topic_users row (lib/topic_view.rb never references TopicUser), so a logged-in user with no row for that topic, such as one following an email link for a topic they never opened, gets a NoMethodError and a 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0737269
+}

@@ -1,0 +1,956 @@
+{
+ "pr_url": "https://github.com/calcom/cal.com/pull/11059",
+ "cost_usd": 0.1241837,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "getClient bypasses refreshOAuthTokens so it never calls the sync endpoint"
+  },
+  {
+   "id": "c2",
+   "source": "golden",
+   "text": "The `refreshOAuthTokens` function is passed `credentialId` instead of `userId`, which breaks the credential sync functionality by causing incorrect user lookups. This issue can lead to failures in syncing user credentials, impacting user experience."
+  },
+  {
+   "id": "c3",
+   "source": "golden",
+   "text": "The Zod schema in parseRefreshTokenResponse uses computed property keys [z.string().toString()] and [z.string().optional().toString()] in minimumTokenResponseSchema, which is invalid Zod syntax and will throw a runtime error."
+  },
+  {
+   "id": "c4",
+   "source": "coderabbit",
+   "text": "Missing prisma import in salesforce/lib/CalendarService.ts for credential update"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review-replay",
+   "text": "getClient writes the new token to the database but builds the jsforce Connection from the stale credentialKey.access_token"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "parseRefreshTokenResponse throws a generic error with no zod detail on failed parse, and the diagnostic console.error was deleted - behaviour change from previous implementation"
+  },
+  {
+   "id": "c7",
+   "source": "coderabbit",
+   "text": "zohocrm/lib/CalendarService.ts caller expects AxiosResponse with .data property but refreshOAuthTokens can return fetch Response, causing runtime error"
+  },
+  {
+   "id": "c8",
+   "source": "claude-code",
+   "text": "In salesforce/lib/CalendarService.ts, the getClient method refreshes the OAuth token and saves it to the database, but then creates the jsforce.Connection using the stale credentialKey.access_token and credentialKey.instance_url from the original credential instead of the freshly obtained accessTokenParsed.data values"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review-replay",
+   "text": "The webhook secret is compared with !== which is not constant-time, potential timing attack vulnerability"
+  },
+  {
+   "id": "c10",
+   "source": "coderabbit",
+   "text": "parseRefreshTokenResponse overwrites missing refresh tokens with placeholder 'refresh_token' string, which will clobber valid refresh tokens downstream and break future refreshes"
+  },
+  {
+   "id": "c11",
+   "source": "coderabbit",
+   "text": "googlecalendar/lib/CalendarService.ts stores entire parseRefreshTokenResponse wrapper object as credential key instead of extracting .data property"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "prisma used without import; resolves only via globalThis.prisma which is only assigned when NODE_ENV !== 'production', causing ReferenceError in production and failing all Salesforce operations"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review",
+   "text": "Webhook secret compared with !== instead of constant-time comparison (crypto.timingSafeEqual)"
+  },
+  {
+   "id": "c14",
+   "source": "qodo-extended-v2",
+   "text": "SalesforceCalendarService refreshes the OAuth token and updates the DB, but it creates the jsforce.Connection using the old credentialKey.access_token instead of the refreshed token, so API calls can still fail with an expired token"
+  },
+  {
+   "id": "c15",
+   "source": "claude-code",
+   "text": "In zoho-bigin/lib/CalendarService.ts, refreshOAuthTokens on line 93 is passed credentialId (credential.id, the database row ID) instead of credential.userId, causing incorrect user lookup when credential sync is enabled"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review-replay",
+   "text": "The appSlug sent to the sync endpoint is 'zoomvideo' but the app's actual slug is 'zoom', causing mismatch with webhook/App table lookups"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Zoom expiry_date becomes NaN due to dropped fields, causing permanent zoomTokenSchema.parse failure"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "getClient in sync mode parses response with the stripping minimum schema, which drops instance_url and other fields"
+  },
+  {
+   "id": "c19",
+   "source": "coderabbit",
+   "text": "appCredentialWebhookRequestBodySchema.parse can throw on invalid payload, turning bad input into 500s instead of 400s"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "invalid flag never reset on credential update"
+  },
+  {
+   "id": "c21",
+   "source": "coderabbit",
+   "text": "refreshOAuthTokens returns a Response object when credential sharing is enabled but returns refreshFunction() result otherwise - callers expect .data property which doesn't exist on Response objects"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "APP_CREDENTIAL_SHARING_ENABLED && CALCOM_CREDENTIAL_SYNC_ENDPOINT condition is duplicated in refreshOAuthTokens.ts and parseRefreshTokenResponse.ts"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "Redundant await/return wrapper at :13-19 and async () => await at call sites"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "getClient performs unconditional token refresh on every construction (every booking) but builds jsforce.Connection with the stale credentialKey.access_token"
+  },
+  {
+   "id": "c25",
+   "source": "augment",
+   "text": "refreshOAuthTokens returns a fetch Response when syncing is enabled but returns whatever refreshFunction() returns otherwise (axios/hubspot/google responses), so downstream code can break depending on env"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review-replay",
+   "text": "getClient sends an unconditional refresh-token request every time the service is constructed, regardless of token expiry"
+  },
+  {
+   "id": "c27",
+   "source": "coderabbit",
+   "text": "Header lookup is case-sensitive - if CALCOM_WEBHOOK_HEADER_NAME is set in mixed case, lookup will fail because Node.js normalizes incoming headers to lowercase"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "In sync mode refreshOAuthTokens returns a raw fetch Response, but Google, HubSpot, Zoho CRM and Zoho Bigin expect axios/gaxios/SDK shapes with .data property; sync refresh crashes or destroys credentials for these four integrations"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "getClient has a dead !success branch"
+  },
+  {
+   "id": "c30",
+   "source": "converge-review-replay",
+   "text": "prisma is used but never imported - the global var is only assigned when NODE_ENV !== 'production', causing ReferenceError in production and breaking all Salesforce operations"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "findFirst on userId+appId updates an arbitrary credential when a user has several for the same app"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "Import '../oauth/decodeOAuthState' from inside oauth/ should be './decodeOAuthState'"
+  },
+  {
+   "id": "c33",
+   "source": "augment",
+   "text": "APP_CREDENTIAL_SHARING_ENABLED resolves to a string/undefined (due to &&), not a boolean; any code that expects a strict boolean may behave unexpectedly"
+  },
+  {
+   "id": "c34",
+   "source": "augment",
+   "text": "parseRefreshTokenResponse switches to minimumTokenResponseSchema whenever credential sharing + sync endpoint are configured, even when the refresh call is still hitting the third-party provider (e.g., team credentials), so valid provider responses can be parsed against the wrong schema"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review-replay",
+   "text": "APP_CREDENTIAL_SHARING_ENABLED evaluates to string | undefined instead of boolean despite its name implying boolean"
+  },
+  {
+   "id": "c36",
+   "source": "claude-code",
+   "text": "Lines 25-27 inject the literal string 'refresh_token' as a dummy value when no refresh_token is present, which for Office365 overwrites the valid existing refresh_token via the spread on line 264 of CalendarService.ts, breaking subsequent token refreshes"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review",
+   "text": "Empty /** */ doc comment"
+  },
+  {
+   "id": "c38",
+   "source": "augment",
+   "text": "refreshOAuthTokens's third argument is userId, but this call passes credentialId; if syncing is enabled it will POST the wrong calcomUserId and likely refresh the wrong account"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "Webhook looks up appStoreMetadata[app.slug], but appStoreMetadata is keyed by directory name not slug; google-calendar, office365-calendar, msteams, zoom, lark-calendar return 404 'App not found'"
+  },
+  {
+   "id": "c40",
+   "source": "coderabbit",
+   "text": "No error handling for the fetch call in refreshOAuthTokens - network failures throw unhandled exceptions"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review-replay",
+   "text": "credentialId (credential.id) is passed as the userId argument of refreshOAuthTokens instead of credential.userId, causing sync endpoint to receive wrong user ID"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review",
+   "text": "Team credentials ignored in findFirst lookup"
+  },
+  {
+   "id": "c43",
+   "source": "coderabbit",
+   "text": "The () => any type signature in refreshOAuthTokens provides no type safety"
+  },
+  {
+   "id": "c44",
+   "source": "golden",
+   "text": "When APP_CREDENTIAL_SHARING_ENABLED and CALCOM_CREDENTIAL_SYNC_ENDPOINT are set, the refreshFunction helper returns the fetch Response, but several callers (for example GoogleCalendarService.refreshAccessToken expecting res.data, and HubspotCalendarService.refreshAccessToken expecting a HubspotToken) assume it returns the integration-specific token object. That mismatch will cause runtime errors in the sync-enabled path unless the return type or those call sites are adjusted."
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "getClient bypasses refreshOAuthTokens so sync mode never applies"
+  },
+  {
+   "id": "c46",
+   "source": "converge-review",
+   "text": "Missing refresh_token is replaced with the literal string 'refresh_token'; Office365 calendar and Zoom persist it over the real refresh token, causing permanent invalid_grant"
+  },
+  {
+   "id": "c47",
+   "source": "converge-review",
+   "text": "response.ok is never checked on fetch Response in sync mode"
+  },
+  {
+   "id": "c48",
+   "source": "coderabbit",
+   "text": "Handler accepts any HTTP method but should enforce POST with a 405 response like other webhook handlers"
+  },
+  {
+   "id": "c49",
+   "source": "qodo-extended-v2",
+   "text": "GoogleCalendarService writes the Zod safeParse result object ({success,data,...}) into Credential.key instead of the credential payload, so the next googleCredentialSchema.parse(credential.key) will throw and break the integration after the first refresh"
+  },
+  {
+   "id": "c50",
+   "source": "coderabbit",
+   "text": "JSON.parse(symmetricDecrypt(...)) can throw on decrypt/JSON errors, turning bad input into 500s instead of 400s"
+  },
+  {
+   "id": "c51",
+   "source": "augment",
+   "text": "After refreshing and storing the new Salesforce access token, the jsforce.Connection is still initialized from the pre-refresh credentialKey values, so immediate API calls may use an expired token"
+  },
+  {
+   "id": "c52",
+   "source": "converge-review",
+   "text": "APP_CREDENTIAL_SHARING_ENABLED evaluates to string | undefined rather than boolean"
+  },
+  {
+   "id": "c53",
+   "source": "golden",
+   "text": "The Salesforce integration checks `response.statusText` instead of `response.ok` when handling OAuth token refresh responses. This can lead to unreliable behavior, as a successful response may not be correctly identified, resulting in the use of stale credentials and potential authentication failures."
+  },
+  {
+   "id": "c54",
+   "source": "golden",
+   "text": "The `appCredentialWebhookRequestBodySchema.parse` function can throw on invalid payloads, resulting in 500 Internal Server Errors instead of the expected 400 Bad Request responses. This can lead to confusion for clients and hinder proper error handling."
+  },
+  {
+   "id": "c55",
+   "source": "converge-review",
+   "text": "JSON.parse(symmetricDecrypt(...)) is unguarded: bad ciphertext or wrong key yields 500 instead of 400"
+  },
+  {
+   "id": "c56",
+   "source": "converge-review",
+   "text": "office365's console.error of the failing MS response was removed and the thrown error has no zod detail"
+  },
+  {
+   "id": "c57",
+   "source": "converge-review",
+   "text": "No tests for the new credential-writing webhook or for the shared refresh/parse helpers"
+  },
+  {
+   "id": "c58",
+   "source": "augment",
+   "text": "parseRefreshTokenResponse returns a Zod safeParse result object, so data: { key } would persist { success, data, ... } instead of the credential JSON payload"
+  },
+  {
+   "id": "c59",
+   "source": "qodo-extended-v2",
+   "text": "The webhook updates credentials via findFirst({ where: { userId, appId } }) even though Credential has no uniqueness constraint on (userId, appId), so users with multiple credentials for the same app can have the wrong record updated"
+  },
+  {
+   "id": "c60",
+   "source": "augment",
+   "text": "When syncing is enabled, refreshOAuthTokens returns a Response, but this code treats it as a HubspotToken and immediately reads expiresIn/accessToken, which will throw at runtime"
+  },
+  {
+   "id": "c61",
+   "source": "augment",
+   "text": "res?.data assumes a Gaxios-style response, but when refreshOAuthTokens uses fetch it returns a Response without .data, so token.access_token/token.expiry_date will be undefined and refresh will fail"
+  },
+  {
+   "id": "c62",
+   "source": "augment",
+   "text": "Setting a missing refresh_token to the literal string \"refresh_token\" can overwrite a previously valid refresh token when callers merge/store .data, which would break subsequent refreshes"
+  },
+  {
+   "id": "c63",
+   "source": "converge-review-replay",
+   "text": "In HubSpot CalendarService, the raw fetch Response is treated as HubspotToken, expiryDate becomes NaN, and the Response object is persisted as the key"
+  },
+  {
+   "id": "c64",
+   "source": "converge-review",
+   "text": "Outbound POST to CALCOM_CREDENTIAL_SYNC_ENDPOINT carries no secret/signature; the parent app cannot authenticate Cal.com before returning live access tokens"
+  },
+  {
+   "id": "c65",
+   "source": "golden",
+   "text": "The `jsforce.Connection` is created using stale `credentialKey.access_token` and `credentialKey.instance_url` after a token refresh, which can lead to authentication failures and incorrect data access. Ensure that the connection is established using the refreshed token values instead."
+  },
+  {
+   "id": "c66",
+   "source": "coderabbit",
+   "text": "salesforce/lib/CalendarService.ts uses stale credentialKey values when creating jsforce connection instead of refreshed token values"
+  },
+  {
+   "id": "c67",
+   "source": "augment",
+   "text": "appCredentialWebhookRequestBodySchema.parse (and the subsequent JSON.parse) can throw and return a 500 for malformed requests; without a method guard this endpoint is also callable via non-POST methods"
+  },
+  {
+   "id": "c68",
+   "source": "coderabbit",
+   "text": "minimumTokenResponseSchema uses [z.string().toString()] which yields a literal key and makes it required, so real token payloads will fail validation"
+  },
+  {
+   "id": "c69",
+   "source": "converge-review-replay",
+   "text": "The credential-write endpoint does not restrict the HTTP method"
+  },
+  {
+   "id": "c70",
+   "source": "converge-review",
+   "text": "schema.parse(req.body) is unguarded: malformed body yields 500 instead of 400"
+  },
+  {
+   "id": "c71",
+   "source": "converge-review",
+   "text": "getClient hard-codes login.salesforce.com causing sandbox orgs to fail"
+  },
+  {
+   "id": "c72",
+   "source": "coderabbit",
+   "text": "Header lookup doesn't handle arrays - if the header is sent multiple times, req.headers[...] will be an array and comparison against a string will incorrectly allow the request through"
+  },
+  {
+   "id": "c73",
+   "source": "converge-review",
+   "text": "Office365 loses expiry fields causing refresh on every call"
+  },
+  {
+   "id": "c74",
+   "source": "qodo-extended-v2",
+   "text": "In sync mode, refreshOAuthTokens returns a Fetch Response, but several callers treat the return value as an SDK/axios object (accessing .data, .expiresIn, etc.), causing runtime exceptions during token refresh"
+  },
+  {
+   "id": "c75",
+   "source": "converge-review-replay",
+   "text": "In zohocrm and zoho-bigin, accessing .data.error on the raw fetch Response throws a TypeError"
+  },
+  {
+   "id": "c76",
+   "source": "converge-review",
+   "text": "refreshFunction: () => any and response: any discard return type and hide the fetch-vs-axios mismatch"
+  },
+  {
+   "id": "c77",
+   "source": "converge-review",
+   "text": "parseRefreshTokenResponse throws on failure yet returns a safeParse wrapper, making .success checks dead code"
+  },
+  {
+   "id": "c78",
+   "source": "converge-review-replay",
+   "text": "A malformed body, bad ciphertext, wrong key, or invalid JSON throws an unhandled error returning 500 instead of 4xx"
+  },
+  {
+   "id": "c79",
+   "source": "qodo-extended-v2",
+   "text": "The webhook handler does not restrict HTTP method and uses zod .parse(), symmetricDecrypt(), and JSON.parse() without error handling; invalid payloads or a misconfigured header name casing will return 500s instead of clean 4xx responses"
+  },
+  {
+   "id": "c80",
+   "source": "coderabbit",
+   "text": "office365calendar/lib/CalendarService.ts silently persists stale credentials if token parsing fails instead of throwing error"
+  },
+  {
+   "id": "c81",
+   "source": "converge-review",
+   "text": "minimumTokenResponseSchema computed keys [z.string().toString()] and [z.string().optional().toString()] both evaluate to '[object Object]' and collide; z.object strips unknown keys, so sync mode keeps only access_token and drops all expiry fields"
+  },
+  {
+   "id": "c82",
+   "source": "converge-review-replay",
+   "text": "The outbound POST to CALCOM_CREDENTIAL_SYNC_ENDPOINT has no authentication (no shared secret header or signature), allowing any caller to request user OAuth tokens"
+  },
+  {
+   "id": "c83",
+   "source": "golden",
+   "text": "parseRefreshTokenResponse returns a Zod safeParse result ({ success, data, error }), not the credential key object. Persisting that as key stores the wrapper instead of the token payload; we should store the parsed data or use schema parse."
+  },
+  {
+   "id": "c84",
+   "source": "augment",
+   "text": "minimumTokenResponseSchema uses computed keys ([z.string().toString()]), which will literally create keys like \"[object Object]\" and won't validate arbitrary numeric expiry fields as intended; safeParse will likely fail for real token responses"
+  },
+  {
+   "id": "c85",
+   "source": "coderabbit",
+   "text": "Read-then-write pattern for credential upsert can create duplicates under concurrent requests without unique constraint"
+  },
+  {
+   "id": "c86",
+   "source": "qodo-extended-v2",
+   "text": "parseRefreshTokenResponse() throws an Error on parse failure, so it never returns a result with success: false. The .success checks in Salesforce and Zoom are unreachable dead code that misleads maintainers about the function's error-handling contract"
+  },
+  {
+   "id": "c87",
+   "source": "converge-review",
+   "text": "Slug sent to sync endpoint is 'zoomvideo' but the app slug is 'zoom'; the webhook resolves apps by prisma.app.slug, so outbound and inbound halves name Zoom differently"
+  },
+  {
+   "id": "c88",
+   "source": "converge-review-replay",
+   "text": "parseRefreshTokenResponse returns the whole safeParse result ({success:true,data:{...}}) instead of just the data, causing googleCredentialSchema.parse to throw when GoogleCalendarService constructor runs after a token refresh"
+  },
+  {
+   "id": "c89",
+   "source": "cubic-v2",
+   "text": "Don't replace a missing refresh token with the literal string `\"refresh_token\"`; this overwrites the real stored token and breaks the next refresh attempt"
+  },
+  {
+   "id": "c90",
+   "source": "cubic-v2",
+   "text": "Normalize the `refreshOAuthTokens` result before reading `.data`; the credential-sync path returns a Fetch `Response`, not an Axios response"
+  },
+  {
+   "id": "c91",
+   "source": "converge-review",
+   "text": "credentialId passed as the userId argument of refreshOAuthTokens instead of credential.userId; sync endpoint receives wrong calcomUserId and may return another user's tokens; userId guard bypassed for team credentials"
+  },
+  {
+   "id": "c92",
+   "source": "converge-review",
+   "text": "appConfig.slug replaced with literal 'zoho-bigin' while appConfig.slug is still used on line 12, creating drift risk"
+  },
+  {
+   "id": "c93",
+   "source": "converge-review",
+   "text": "getClient uses fragile response.statusText !== 'OK' instead of response.ok"
+  },
+  {
+   "id": "c94",
+   "source": "converge-review-replay",
+   "text": "In sync mode the helper returns a raw fetch Response but callers expect axios/gaxios/SDK shape - res?.data is undefined in Google CalendarService causing TypeError"
+  },
+  {
+   "id": "c95",
+   "source": "converge-review-replay",
+   "text": "getClient has dead code in the !accessTokenParsed.success branch"
+  },
+  {
+   "id": "c96",
+   "source": "golden",
+   "text": "The parseRefreshTokenResponse function incorrectly sets refresh_token to the hardcoded string 'refresh_token' when it's missing from the OAuth refresh token response. This invalidates the token, breaking subsequent token refreshes and causing authentication failures."
+  },
+  {
+   "id": "c97",
+   "source": "converge-review",
+   "text": "Google token refresh persists the whole safeParse wrapper {success,data} as credential.key instead of just data; next constructor googleCredentialSchema.parse(credential.key) throws ZodError, breaking Google Calendar after first refresh"
+  },
+  {
+   "id": "c98",
+   "source": "claude-code",
+   "text": "minimumTokenResponseSchema uses [z.string().toString()] as computed property keys which evaluate to '[object Object]' instead of dynamic key matchers, causing the schema to strip all properties except access_token from parsed token data when APP_CREDENTIAL_SHARING_ENABLED is true"
+  },
+  {
+   "id": "c99",
+   "source": "converge-review",
+   "text": "Decrypted keys are not shape-validated before being written to credential.key"
+  },
+  {
+   "id": "c100",
+   "source": "coderabbit",
+   "text": "No response validation in refreshOAuthTokens - the fetch response status and content aren't checked"
+  },
+  {
+   "id": "c101",
+   "source": "coderabbit",
+   "text": "zoho-bigin/lib/CalendarService.ts passes credentialId instead of credential.userId to refreshOAuthTokens, causing sync to target wrong subject"
+  },
+  {
+   "id": "c102",
+   "source": "coderabbit",
+   "text": "No timeout on the external fetch in refreshOAuthTokens, risking indefinite hangs"
+  },
+  {
+   "id": "c103",
+   "source": "converge-review-replay",
+   "text": "minimumTokenResponseSchema computed keys [z.string().toString()] and [z.string().optional().toString()] both evaluate to '[object Object]' and collide, causing z.object to strip all fields except access_token, breaking expiry handling for zoom and office365"
+  },
+  {
+   "id": "c104",
+   "source": "golden",
+   "text": "When the sync endpoint path is used, res is a fetch Response and has no .data; res?.data will be undefined and token.access_token will throw at runtime. This relies on a consistent return shape from refreshOAuthTokens, which isn\u2019t guaranteed currently."
+  },
+  {
+   "id": "c105",
+   "source": "qodo-extended-v2",
+   "text": "minimumTokenResponseSchema uses computed keys from z.string().toString(), producing a literal property name (e.g., 'ZodString') instead of validating arbitrary expiry fields; in sync mode this makes parsing fail and token refresh throw"
+  },
+  {
+   "id": "c106",
+   "source": "converge-review",
+   "text": "Salesforce loses instance_url due to dropped fields"
+  },
+  {
+   "id": "c107",
+   "source": "qodo-extended-v2",
+   "text": "In zoho-bigin's CalendarService, refreshOAuthTokens() is called with credentialId (the credential row's database primary key) as the third argument, but the function parameter expects userId, causing the sync to target the wrong user or fail"
+  },
+  {
+   "id": "c108",
+   "source": "converge-review-replay",
+   "text": "When a response has no refresh_token, the helper inserts the literal string 'refresh_token', overwriting the real refresh token in office365calendar and Zoom sync mode, causing later refreshes to fail with invalid_grant"
+  },
+  {
+   "id": "c109",
+   "source": "converge-review",
+   "text": "No req.method restriction on credential-write endpoint"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In salesforce/lib/CalendarService.ts, getClient bypasses refreshOAuthTokens, so the credential sync endpoint is never called in sync mode.",
+   "path": "salesforce/lib/CalendarService.ts",
+   "members": [
+    "c1",
+    "c45"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "In zoho-bigin/lib/CalendarService.ts, refreshOAuthTokens is passed credentialId (credential.id) as its third argument, which is userId. The sync endpoint therefore receives the wrong calcomUserId.",
+   "path": "zoho-bigin/lib/CalendarService.ts",
+   "members": [
+    "c2",
+    "c15",
+    "c38",
+    "c41",
+    "c91",
+    "c101",
+    "c107"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "minimumTokenResponseSchema in parseRefreshTokenResponse uses computed keys [z.string().toString()] and [z.string().optional().toString()]. These evaluate to literal, colliding property names instead of dynamic key matchers, so real token payloads fail validation or have every field except access_token stripped.",
+   "path": null,
+   "members": [
+    "c3",
+    "c68",
+    "c81",
+    "c84",
+    "c98",
+    "c103",
+    "c105"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "salesforce/lib/CalendarService.ts uses prisma without importing it. It resolves only through globalThis.prisma, which is assigned only when NODE_ENV !== 'production'.",
+   "path": "salesforce/lib/CalendarService.ts",
+   "members": [
+    "c4",
+    "c12",
+    "c30"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "In salesforce/lib/CalendarService.ts, getClient refreshes the OAuth token and saves it to the database. It then builds the jsforce.Connection from the stale credentialKey.access_token and instance_url instead of the refreshed values.",
+   "path": "salesforce/lib/CalendarService.ts",
+   "members": [
+    "c5",
+    "c8",
+    "c14",
+    "c24",
+    "c51",
+    "c65",
+    "c66"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "parseRefreshTokenResponse throws a generic error with no zod detail when parsing fails. The previous console.error of the failing response (e.g. in office365) was removed.",
+   "path": null,
+   "members": [
+    "c6",
+    "c56"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "In sync mode, refreshOAuthTokens returns a raw fetch Response; otherwise it returns refreshFunction()'s result. Callers in Google, HubSpot, Zoho CRM and Zoho Bigin expect an axios/gaxios/SDK shape (e.g. .data, expiresIn), so these reads are undefined or throw.",
+   "path": null,
+   "members": [
+    "c7",
+    "c21",
+    "c25",
+    "c28",
+    "c44",
+    "c60",
+    "c61",
+    "c63",
+    "c74",
+    "c75",
+    "c90",
+    "c94",
+    "c104"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The webhook secret is compared with !== instead of a constant-time comparison.",
+   "path": null,
+   "members": [
+    "c9",
+    "c13"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "parseRefreshTokenResponse sets a missing refresh_token to the literal string 'refresh_token'. Callers such as office365calendar and Zoom then persist it over the real stored refresh token.",
+   "path": null,
+   "members": [
+    "c10",
+    "c36",
+    "c46",
+    "c62",
+    "c89",
+    "c96",
+    "c108"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "googlecalendar/lib/CalendarService.ts stores the entire parseRefreshTokenResponse safeParse wrapper ({success, data, ...}) as Credential.key instead of its .data. The next googleCredentialSchema.parse(credential.key) then throws.",
+   "path": "googlecalendar/lib/CalendarService.ts",
+   "members": [
+    "c11",
+    "c49",
+    "c58",
+    "c83",
+    "c88",
+    "c97"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The appSlug sent to the sync endpoint for Zoom is 'zoomvideo', but the app's slug is 'zoom', which the webhook uses to look up apps.",
+   "path": null,
+   "members": [
+    "c16",
+    "c87"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "In sync mode, Zoom's expiry_date becomes NaN because fields are dropped, so zoomTokenSchema.parse fails.",
+   "path": null,
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "In sync mode, Salesforce getClient parses the response with the stripping minimum schema, which drops instance_url and other fields.",
+   "path": null,
+   "members": [
+    "c18",
+    "c106"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "In the credential webhook handler, appCredentialWebhookRequestBodySchema.parse(req.body), symmetricDecrypt and JSON.parse run without error handling. Malformed bodies, bad ciphertext, a wrong key or invalid JSON therefore return 500 instead of 4xx.",
+   "path": null,
+   "members": [
+    "c19",
+    "c50",
+    "c54",
+    "c55",
+    "c67",
+    "c70",
+    "c78",
+    "c79"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The credential's invalid flag is never reset when the credential is updated.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The condition APP_CREDENTIAL_SHARING_ENABLED && CALCOM_CREDENTIAL_SYNC_ENDPOINT is duplicated in refreshOAuthTokens.ts and parseRefreshTokenResponse.ts.",
+   "path": null,
+   "members": [
+    "c22"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "There is a redundant await/return wrapper at lines 13-19, and call sites use redundant async () => await wrappers.",
+   "path": null,
+   "members": [
+    "c23"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "getClient sends a refresh-token request every time the service is constructed, regardless of token expiry.",
+   "path": null,
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "The webhook header lookup uses CALCOM_WEBHOOK_HEADER_NAME as given. Node.js lowercases incoming header names, so a mixed-case configured name fails the lookup.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "parseRefreshTokenResponse throws on parse failure and never returns success: false. The !success branches in Salesforce getClient and Zoom are therefore dead code.",
+   "path": null,
+   "members": [
+    "c29",
+    "c77",
+    "c86",
+    "c95"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The webhook looks up the credential with findFirst on userId+appId, but (userId, appId) has no uniqueness constraint. When a user has several credentials for the same app, an arbitrary one is updated.",
+   "path": null,
+   "members": [
+    "c31",
+    "c59"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The import '../oauth/decodeOAuthState' from inside the oauth/ directory should be './decodeOAuthState'.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "APP_CREDENTIAL_SHARING_ENABLED is defined with && and so evaluates to string | undefined rather than a boolean.",
+   "path": null,
+   "members": [
+    "c33",
+    "c35",
+    "c52"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "parseRefreshTokenResponse switches to minimumTokenResponseSchema whenever credential sharing and the sync endpoint are configured, even when the refresh call still goes to the third-party provider (e.g. team credentials).",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "There is an empty /** */ doc comment.",
+   "path": null,
+   "members": [
+    "c37"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The webhook looks up appStoreMetadata[app.slug], but appStoreMetadata is keyed by directory name rather than slug. Apps such as google-calendar, office365-calendar, msteams, zoom and lark-calendar therefore return 404 'App not found'.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "The fetch call in refreshOAuthTokens has no error handling, so network failures throw unhandled exceptions.",
+   "path": null,
+   "members": [
+    "c40"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The webhook's findFirst credential lookup ignores team credentials.",
+   "path": null,
+   "members": [
+    "c42"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "refreshOAuthTokens types refreshFunction as () => any and its response as any, which discards the return type and hides the fetch-vs-axios mismatch.",
+   "path": null,
+   "members": [
+    "c43",
+    "c76"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "In sync mode, refreshOAuthTokens never checks response.ok or the response content of the fetch Response.",
+   "path": null,
+   "members": [
+    "c47",
+    "c100"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "The credential-write webhook handler accepts any HTTP method instead of restricting to POST and returning 405.",
+   "path": null,
+   "members": [
+    "c48",
+    "c69",
+    "c109"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "Salesforce getClient checks response.statusText !== 'OK' instead of response.ok when handling the OAuth token refresh response.",
+   "path": "salesforce/lib/CalendarService.ts",
+   "members": [
+    "c53",
+    "c93"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "There are no tests for the new credential-writing webhook or for the shared refresh/parse helpers.",
+   "path": null,
+   "members": [
+    "c57"
+   ]
+  },
+  {
+   "id": "i34",
+   "claim": "The outbound POST to CALCOM_CREDENTIAL_SYNC_ENDPOINT carries no secret or signature, so the receiver cannot authenticate the request before returning access tokens.",
+   "path": null,
+   "members": [
+    "c64",
+    "c82"
+   ]
+  },
+  {
+   "id": "i35",
+   "claim": "getClient hard-codes login.salesforce.com, which fails for Salesforce sandbox orgs.",
+   "path": null,
+   "members": [
+    "c71"
+   ]
+  },
+  {
+   "id": "i36",
+   "claim": "The webhook header lookup does not handle array values. A header sent multiple times yields an array, and the string comparison against it lets the request through.",
+   "path": null,
+   "members": [
+    "c72"
+   ]
+  },
+  {
+   "id": "i37",
+   "claim": "Office365 loses its expiry fields in sync mode, so a token refresh happens on every call.",
+   "path": null,
+   "members": [
+    "c73"
+   ]
+  },
+  {
+   "id": "i38",
+   "claim": "office365calendar/lib/CalendarService.ts persists stale credentials when token parsing fails instead of throwing an error.",
+   "path": "office365calendar/lib/CalendarService.ts",
+   "members": [
+    "c80"
+   ]
+  },
+  {
+   "id": "i39",
+   "claim": "The webhook's read-then-write credential upsert can create duplicate credentials under concurrent requests because there is no unique constraint.",
+   "path": null,
+   "members": [
+    "c85"
+   ]
+  },
+  {
+   "id": "i40",
+   "claim": "In zoho-bigin/lib/CalendarService.ts, appConfig.slug was replaced with the literal 'zoho-bigin', while appConfig.slug is still used on line 12.",
+   "path": "zoho-bigin/lib/CalendarService.ts",
+   "members": [
+    "c92"
+   ]
+  },
+  {
+   "id": "i41",
+   "claim": "The decrypted keys are written to credential.key without shape validation.",
+   "path": null,
+   "members": [
+    "c99"
+   ]
+  },
+  {
+   "id": "i42",
+   "claim": "The external fetch in refreshOAuthTokens has no timeout.",
+   "path": null,
+   "members": [
+    "c102"
+   ]
+  }
+ ]
+}

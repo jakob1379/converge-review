@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `ProcessResultThreadQueueParallelKafkaTest.test_thread_queue_parallel_kafka_offset_commit`, the test reassigns `factory.create_with_partitions` (tests/sentry/uptime/consumers/test_results_consumer.py:2081) and calls arroyo's private `processor._run_once()` and `processor._shutdown()` on a `StreamProcessor` (lines 2103, 2106).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1318094
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new test file tests/sentry/api/helpers/test_error_upsampling.py (patch line 362) creates the organization with `Organization.objects.create(name=\"test-org\")`. CLAUDE.md:627 says \"Use `self.create_*` helpers, not direct model creation\", and line 322 says to use factories for test data.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06087070000000001
+}

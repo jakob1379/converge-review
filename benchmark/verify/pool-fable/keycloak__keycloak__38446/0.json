@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testsuite/.../federation/BackwardsCompatibilityUserStorage.java:326-340 the recovery-codes branch of isValid() returns `generatedKeys.stream().anyMatch(key -> key.equals(input.getChallengeResponse()))` and never mutates `myUser.recoveryCodes`, so any stored code validates in any order and repeatedly. getCredentials() (lines 231-246) rebuilds the model from the full list each call, so `allCodesUsed()` at RecoveryAuthnCodesFormAuthenticator.java:85 is never true for this provider.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.634219
+}

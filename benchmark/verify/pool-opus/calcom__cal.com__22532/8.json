@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `updatedAt` and `googleChannelId` to the selectedCalendars select in `findUnlockedUserForSession` (packages/lib/server/repository/user.ts:899-900) and widens the `UserWithCalendars` Pick type to match (getConnectedDestinationCalendars.ts:21-28). Nothing in the patch reads either field: the new cache UI uses `cacheUpdatedAt` from `CalendarCache.updatedAt` via `getCacheStatusByCredentialIds`, and CalendarService only writes `SelectedCalendar.updatedAt`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1590919
+}

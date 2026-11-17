@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new authz/client/.../util/crypto/ASN1Decoder.java has a general high-tag-number loop (lines 93-125) and an indefinite-length branch returning -1 (lines 133-135), yet its only caller is asn1derToConcatenatedRS in AuthzClientCryptoProvider.java:128-134, which reads one SEQUENCE of two INTEGERs. The indefinite-length part is only recognised, not actually decoded: no caller handles the -1, so the claim overstates that half, but the unneeded generality is real.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.33863889999999996
+}

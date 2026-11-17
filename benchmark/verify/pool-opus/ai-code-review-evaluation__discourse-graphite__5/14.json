@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The header-extra-info component (components/header-extra-info.js.es6:1) sets no tagName, so Ember wraps it in its own div. That div is the direct child of the `.contents` flex container (header.hbs:2, 94), and `.extra-info-wrapper` (header-extra-info.hbs:1) sits inside it, so the patch's `@include order(2)` (topic.scss:30) does nothing. The layout still looks right because `.panel` gets order(3) and the wrapper div keeps the default order 0, after the logo in DOM order.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08478630000000001
+}

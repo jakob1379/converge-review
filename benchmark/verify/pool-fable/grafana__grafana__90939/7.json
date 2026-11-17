@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The repository defines no docstring-coverage requirement or 80% threshold: no config contains one, and .golangci.toml:8-11 only sets generic revive options. The patch (pkg/api/webassets/webassets.go:35-49) adds a mutex around an existing cache and introduces no new functions or types that would need doc comments; the missing comment on GetWebAssets predates the patch.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.17811710000000003
+}

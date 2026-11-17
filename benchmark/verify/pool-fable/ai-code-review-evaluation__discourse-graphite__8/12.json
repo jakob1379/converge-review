@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/groups_controller.rb:90 removes the member with `group.users.delete(user_id)`, which never reaches the only code that nulls `primary_group_id` (`destroy_deletions`, app/models/group.rb:287-292, fed only by `usernames=`, which the patch stops calling), so app/serializers/post_serializer.rb:96-103 still returns the group name as flair. One detail of the claim is wrong: `Group#remove` (group.rb:276-278) would not clear it either.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.524728
+}

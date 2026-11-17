@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`to_dict()` does leave `queued` as a datetime (assignment_source.py:89-90), but these task kwargs are never turned into JSON. Celery is set to use pickle here (src/sentry/conf/server.py:739-741: `CELERY_TASK_SERIALIZER = \"pickle\"`, accept only pickle), pickle handles datetimes fine, and the `sync_assignee_outbound` task (sync_assignee_outbound.py:15-21) does not switch to another serializer.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1452602
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At apps/web/pages/api/auth/two-factor/totp/disable.ts:48 the only check on req.body.backupCode is that it is truthy, and line 61 then calls req.body.backupCode.replaceAll(\"-\", \"\"). A JSON number, array or object has no replaceAll method, so the call throws a TypeError that nothing catches and the request returns a 500 instead of a 400. This happens only after the password check passes and only if the user has stored backup codes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1621686
+}

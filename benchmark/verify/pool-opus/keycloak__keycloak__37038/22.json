@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In GroupPermissionsV2.hasPermission (patch lines 668-679), the all-groups type resource is used only when no per-group resource is found by name, so evaluation runs against just one of the two. The per-group resource is created without a type (AdminPermissionsSchema.java:118-128), so DefaultPolicyEvaluator.java:73-80 never pulls in the all-groups policies, which means all-groups grants no longer apply to that group.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.14663669999999998
+}

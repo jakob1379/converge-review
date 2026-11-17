@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/apps/components/CredentialActionsDropdown.tsx:84-97 wraps the static \"Cache Status / Last updated\" text in a DropdownMenuItem with no onSelect/onClick and no `disabled`; DropdownMenuItem is a plain Radix `DropdownMenuPrimitive.Item` (packages/ui/components/dropdown/Dropdown.tsx:63-71), so it is a focusable, hover-highlighted menuitem whose only effect on selection is closing the menu.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2441627
+}

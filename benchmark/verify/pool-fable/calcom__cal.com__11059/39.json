@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "packages/app-store/zoho-bigin/lib/CalendarService.ts never imports or uses appConfig (line 12 is a type import of NewCalendarEventType), and the patch only adds a new \"zoho-bigin\" literal argument at line 92 rather than replacing anything. The described inconsistency actually exists in a different file, packages/app-store/zoho-bigin/api/add.ts (appConfig.slug at line 12, literal at line 17).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1824284
+}

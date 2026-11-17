@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/slots.ts:138-151 returns false as soon as any working-hours entry for the slot's weekday does not contain the slot, rather than requiring some entry to contain it. getWorkingHours (packages/lib/availability.ts:92-121) emits several entries per weekday for split hours and for ranges that cross UTC midnight, so every slot on such days is rejected.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.32507980000000003
+}

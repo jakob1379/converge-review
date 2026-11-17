@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Posts and topics are soft-deleted and hidden by a default scope (lib/trashable.rb:5), and nothing removes or checks the TopicEmbed row. So in app/models/topic_embed.rb:352-356, `embed.post` returns nil for a trashed post, and when the feed content changes `PostRevisor.new(nil).revise!` crashes on `@post.raw` (lib/post_revisor.rb:27). Separately, `topic_id_for_embed` (topic_embed.rb:399) still returns a trashed topic's id; for non-staff users `TopicView#find_topic` then returns nil and raises NotFound (lib/topic_view.rb:261-262, 300), and the retriever never re-imports because the embed row still exists (lib/topic_retriever.rb:727).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2299632
+}

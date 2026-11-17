@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/expr/query.go:30-31 still says 'SQL query via DuckDB' for QueryTypeSQL = \"sql\", pkg/expr/query.types.json:542-550 still defines the sql type, and pkg/services/featuremgmt/registry.go:1084 still says 'Enables using SQL and DuckDB functions as Expressions.' Yet after the patch, enableSqlExpressions always returns false (pkg/expr/reader.go), so ReadQuery always fails, and the new stub pkg/expr/sql/db.go returns \"not implemented\" for every call.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1558358
+}

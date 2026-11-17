@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/calendars/_router.tsx:29 defines the input inline as `z.object({ credentialId: z.number() })`, while the sibling procedures import schemas from `connectedCalendars.schema.ts` and `setDestinationCalendar.schema.ts` (lines 5-6); no `deleteCache.schema.ts` exists in that directory.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1162403
+}

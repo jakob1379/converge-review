@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Eight tests in tests/sentry/uptime/consumers/test_results_consumer.py (e.g. 1697/1731, 1839/1872, 1889/1924, 1941/1985) and tests/sentry/remote_subscriptions/consumers/test_queue_consumer.py:415-421 create the strategy via create_with_partitions and only call factory.shutdown(), which (result_consumer.py:180-185) shuts the queue pool but never sets shutdown_event, so the daemon commit thread started at queue_consumer.py:270-276 keeps looping every second. Commit assertions depend on that 1s tick: line 1922 asserts no commit about 0.2s after processing, before the tick could fire, and lines 1861-1870 poll with sleeps for a commit.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5856222
+}

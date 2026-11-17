@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "useAbilities.ts:380 adds `export const skipToken = Symbol('ability-skip-token')`, and its only use is `rule === skipToken ? undefined : rule` (useAbilities.ts:387, 401). It reuses the name of RTK Query's skipToken, which hooks/useCombinedRule.ts:1 and hooks/useFolder.ts:1 in the same folder already import from '@reduxjs/toolkit/query'. It is a camelCase module constant, not ALL-CAPS.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0616056
+}

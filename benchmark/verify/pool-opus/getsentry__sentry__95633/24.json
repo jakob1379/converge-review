@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In queue_consumer.py, each per-group queue is created as `queue.Queue()` with no maxsize (line 185). Neither `FixedQueuePool.submit` (lines 204-212) nor `SimpleQueueProcessingStrategy.submit` (lines 293-325) raises MessageRejected or checks queue depth, so Arroyo keeps feeding messages without limit and the 'Natural backpressure when queues fill up' docstring (line 253) is false.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2181759
+}

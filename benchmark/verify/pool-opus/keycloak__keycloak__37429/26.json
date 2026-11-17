@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Only part of the claim holds. `santizeAnchors(String key, ...)` never uses `key` (VerifyMessageProperties.java:150-162), and the comment at L94 does misspell 'numberic'. But `getEnglishValue` does use `key` in `bundleEnglish.getString(key)` (VerifyMessageProperties.java:164-167), so the claim that both take an unused key is wrong.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2218274
+}

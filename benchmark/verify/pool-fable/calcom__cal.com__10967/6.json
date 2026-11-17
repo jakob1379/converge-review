@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/googlecalendar/lib/CalendarService.ts:147-154 picks the calendar only via `cal.credentialId === credentialId` and falls back to \"primary\"; for destinations with a null credentialId (nullable in schema.prisma:159), packages/core/EventManager.ts:375-381 still calls createEvent with each same-type credential, so the match fails and the selected externalId is ignored, whereas the pre-patch code used destinationCalendar.externalId directly.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.48945610000000006
+}

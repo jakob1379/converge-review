@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20131217174004_create_topic_embeds.rb:3 (patch line 585) calls `create_table :topic_embeds, force: true`, and in Rails this drops any existing table with that name before creating it. The risk is small: the patch creates topic_embeds for the first time, and 10 other migrations in db/migrate already use `force: true`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0511823
+}

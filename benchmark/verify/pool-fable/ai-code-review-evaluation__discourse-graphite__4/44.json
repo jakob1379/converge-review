@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/post_creator.rb:216 assigns `@opts[:cook_method]` straight onto the post with no check against `Post.cook_methods` (app/models/post.rb:63-65), and no model validator references the column. However, app/controllers/posts_controller.rb:227-237 does not permit `cook_method`, so the only caller that sets it is the internal app/models/topic_embed.rb:22 with a valid enum value.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.44829069999999993
+}

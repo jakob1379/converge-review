@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/auth/lib/next-auth-options.ts:113-119 the guards bypass only on `!credentials.totpCode`. A non-CAL identity provider user who sends only a backupCode is rejected at line 113 (ThirdPartyIdentityProviderEnabled), or at line 117 (IncorrectEmailPassword) if that check is reached, before the backup-code branch at line 131 can run. The login page shows ExternalTotpFooter to SSO users (apps/web/pages/auth/login.tsx:180-182), which has no 'lost access' button, so these users have no working backup-code recovery.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1879424
+}

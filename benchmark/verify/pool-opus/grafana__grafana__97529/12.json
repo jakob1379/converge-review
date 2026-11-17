@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "server.go:258-262 returns (nil, err) when Init fails, without calling s.cancel() or s.lifecycle.Stop(), and the caller gets nil so it can't clean up either. Now that search.init runs before initWatcher (server.go:304-311), a successful search.init has already started the event goroutine and the sql poller (search.go:202-213, sql/backend.go:558-566). Only backend.Stop's b.cancel() (sql/backend.go:119-121) stops that poller, so a later initWatcher failure leaves both running.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13395310000000002
+}

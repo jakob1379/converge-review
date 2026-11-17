@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In static/app/views/dashboards/widgets/tableWidget/tableWidgetVisualization.tsx, the props fit, frameless and scrollable (lines 31-63) and FRAMELESS_STYLES (line 66) are only used inside the component itself. No caller sets them: not chart.tsx:165, the stories file or the spec file. The required `tableData: TabularData` (line 21) is still read as `tableData?.meta.fields` and `tableData?.data` (lines 94-103).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.32675160000000003
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/calendar-cache/calendar-cache.repository.ts:173-188 passes credentialIds straight into prisma.calendarCache.groupBy({ where: { credentialId: { in: credentialIds } } }) with no empty-list early return or dedup, and the caller at packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts:27-29 does not guard either. The effect is only a wasted query, since Prisma returns [] for an empty `in` and duplicates in `in` are harmless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.12747000000000003
+}

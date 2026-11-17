@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20150818190757_create_embeddable_hosts.rb:9-11 indexes `execute(...)[0]['id']` with no row-count guard, and `PG::Result#[]` raises IndexError on an empty result, so the fallback at line 14 is never reached. The join returns no rows whenever `embed_category` is unset or names no category (fresh installs, test DB); line 19 guards the same pattern with `cmd_tuples > 0`, but this lookup does not. Not executed here; read from source.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1053276
+}

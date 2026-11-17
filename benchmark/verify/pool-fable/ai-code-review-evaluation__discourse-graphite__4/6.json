@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/embed_controller.rb:28 sets response.headers['X-Frame-Options'] = \"ALLOWALL\" (asserted in spec/controllers/embed_controller_spec.rb:37); ALLOWALL is not a defined value (only DENY, SAMEORIGIN and the obsolete ALLOW-FROM are), so framing is permitted only because browsers ignore the unrecognised value. It is a common Rails idiom and behaves as intended in practice.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08185880000000001
+}

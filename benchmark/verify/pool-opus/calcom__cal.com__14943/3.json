@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts:56-60 the code builds `{...select, retryCount: true}` and casts the result to `(PartialWorkflowReminder & { retryCount: number })[]`. getWorkflowReminders.ts is not in the patch and does not mention retryCount anywhere.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0413824
+}

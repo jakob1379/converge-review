@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In TopicsController#unsubscribe (app/controllers/topics_controller.rb, patch lines 206-212), the level depends on the current value: anything above regular is set to regular, otherwise it is set to muted, and the result is saved on every GET. Opening the link once takes watching/tracking to regular, and any later GET (a reload, prefetch or link scanner) takes it to muted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06207710000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py, max_processes is normalised at line 51 (`max_processes or len(buffer.assigned_shards)`) and clamped again at line 60 (`min(self.max_processes, len(...))`). Apart from that constructor line, `self.max_processes` is read only by test_consumer.py:116, and `_create_processes` (lines 81-84) is a 2-line loop whose only caller is line 79.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1052251
+}

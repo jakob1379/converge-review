@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In AuthzClientCryptoProvider.java:114-115, each call builds a new ASN1Encoder and the result is never used. write() only fills that encoder's own private ByteArrayOutputStream (ASN1Encoder per the patch, lines 293-306), so nothing else changes. The returned value is rebuilt from scratch at lines 117-121.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.056390800000000005
+}

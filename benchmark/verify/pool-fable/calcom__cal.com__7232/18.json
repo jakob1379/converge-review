@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds no test files, and no test or e2e file in the repo references `deleteScheduledEmailReminder`, `deleteScheduledSMSReminder`, `workflowReminder`, the `cancelled` flag or the `scheduleEmailReminders` cron (packages/features/ee/workflows/api/scheduleEmailReminders.ts:43-77). apps/web/playwright/reschedule.e2e.ts:21-212 does drive the reschedule flows, but never creates workflow reminders, so the new cancellation loops in handleNewBooking.ts:964-975 and bookings.tsx:488-494 run over empty arrays.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.43277829999999995
+}

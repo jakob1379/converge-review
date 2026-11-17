@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "After the patch, nothing calls Date.parse on a feed item timestamp. poll_feed (app/jobs/scheduled/poll_feed.rb, patch lines 277-283) and TopicEmbed.import never read the item date at all, and the only Date.parse (the Disqus created_at in lib/tasks/disqus.thor, patch line 678) is deleted by this patch.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.089587
+}

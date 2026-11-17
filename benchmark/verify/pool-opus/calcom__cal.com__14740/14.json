@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new packages/ui/form/MultiEmail.tsx:630-712 copies the `multiemail` factory at packages/features/form-builder/Components.tsx:234-313 almost line for line: same class string, same EmailField/Tooltip/Button layout and same add/remove logic. It differs only in copying the array before updating it, plus the test IDs and the label's htmlFor/class. The original still carries the comment `//TODO: Make it a ui component` and was not changed to use the new component.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1637747
+}

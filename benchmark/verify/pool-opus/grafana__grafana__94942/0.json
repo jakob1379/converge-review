@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/expr/reader.go:194-200, enableSqlExpressions works out `enabled := !IsEnabledGlobally(FlagSqlExpressions)` but returns false on both branches, so ReadQuery (reader.go:129-131) always fails with \"sqlExpressions is not implemented\" whether or not the flag is set. The same patch also strips SQL dependencies from go.mod and adds pkg/expr/sql/db.go, so turning the feature off may be deliberate, but the flag check is still dead, misleading code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0581455
+}

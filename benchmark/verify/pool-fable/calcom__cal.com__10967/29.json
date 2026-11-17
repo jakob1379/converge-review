@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Dynamic group bookings use `getDefaultEvent()` (packages/features/bookings/lib/handleNewBooking.ts:648-651), whose event has `schedulingType: SchedulingType.COLLECTIVE` (packages/lib/defaultEvents.ts:79). So `isTeamEventType` is true and the COLLECTIVE branches at handleNewBooking.ts:992 and :1077 also collect each dynamic user's `destinationCalendar`, which the dynamic-user query selects (packages/prisma/selects/user.ts:27).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6395784000000001
+}

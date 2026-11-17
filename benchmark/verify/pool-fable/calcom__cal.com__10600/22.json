@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/components/settings/EnableTwoFactorModal.tsx:174-176 passes type=\"password\" to PasswordField, and packages/ui/components/form/inputs/Input.tsx:36-39 sets type={isPasswordVisible ? \"text\" : \"password\"} before {...props}, so the caller's type always overrides the toggled one and the eye button never reveals the password.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3036355
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/vital/lib/reschedule.ts:125-134 passes an async callback to `forEach` and never awaits the returned promises, so the try/catch at 124-139 cannot catch rejections from `await getCalendar` (line 128), `deleteEvent` (129) or `deleteMeeting` (131). The `deleteEvent`/`deleteMeeting` promises were already un-awaited before the patch; what the patch adds is that `getCalendar` and `CalendarService` constructor failures, previously synchronous and caught, now escape as well.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14495450000000001
+}

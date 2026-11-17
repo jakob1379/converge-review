@@ -1,0 +1,671 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In EventManager (around line 118-119), mainHostDestinationCalendar is destructured from `evt.destinationCalendar ?? []`, then `.integration` is read without a guard. When evt.destinationCalendar is null or empty this throws a TypeError, which breaks the Google Meet to Daily fallback.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/core/EventManager.ts:118-119 destructures `mainHostDestinationCalendar` from `evt.destinationCalendar ?? []` and reads `.integration` with no optional chaining, so it throws a TypeError when the location is Google Meet and the array is null or empty. That state is reachable: packages/features/bookings/lib/handleNewBooking.ts:1063-1067 sets `destinationCalendar` to null when neither the event type nor the organizer has one, which is exactly the case the Daily fallback exists for.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.2322603
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "GoogleCalendarService",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In GoogleCalendarService createEvent() and updateEvent(), mainHostDestinationCalendar is destructured from evt.destinationCalendar. It is undefined when evt.destinationCalendar is null or empty, which causes a null reference.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`mainHostDestinationCalendar` can be undefined, but the destructuring falls back to `[]` when `destinationCalendar` is null or empty (packages/app-store/googlecalendar/lib/CalendarService.ts:100-103, 198-199). Its only uses are guarded by optional chaining with a fallback to the organizer email (lines 122-124, 228-230), so no null reference occurs.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1221236
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Several places destructure the first element of an array (`[first] = array`) and access its properties without guarding against undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "One unguarded access exists, not several: packages/core/EventManager.ts:118-119 destructures `[mainHostDestinationCalendar] = evt.destinationCalendar ?? []` and reads `mainHostDestinationCalendar.integration` without `?.`, which throws a TypeError when a Google Meet booking has no destination calendar (handleNewBooking sets it to null in that case). Every other destructuring site (larkcalendar, office365calendar, googlecalendar, packages/lib/CalendarService.ts, BrokenIntegrationEmail.tsx) guards with `?.` or a truthiness check.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.5105691
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The optional chaining on `mainHostDestinationCalendar?.integration` is redundant because mainHostDestinationCalendar is already checked in the ternary condition.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/emails/src/templates/BrokenIntegrationEmail.tsx:89-90 tests `mainHostDestinationCalendar` as the ternary condition and then uses `mainHostDestinationCalendar?.integration.split(\"_\")` in the truthy branch, where the value cannot be nullish, so the `?.` is redundant. The pre-patch code had the same redundancy on `calEvent.destinationCalendar?.integration`, but the patch rewrote these lines and kept it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.16725089999999998
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "GoogleCalendarService",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In GoogleCalendarService updateEvent (line ~256) and deleteEvent (line ~317), the fallback `destinationCalendar.find(cal => cal.externalId === externalCalendarId)` runs only when externalCalendarId is falsy, so it never matches. As a result, updateEvent sends an undefined calendarId, and deleteEvent falls back to 'primary' instead of the booking's destination calendar.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts:254-256 and :315-317 the fallback `find((cal) => cal.externalId === externalCalendarId)` only runs when externalCalendarId is falsy, and DestinationCalendar.externalId is a required string, so it always yields undefined. updateEvent then passes calendarId undefined at :261 and deleteEvent uses 'primary' at :322; callers can pass null (packages/core/EventManager.ts:586, :563), whereas the old code fell back to event.destinationCalendar?.externalId.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.19045259999999997
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In Google createEvent, selectedCalendar can be undefined when no destination calendar matches credentialId, but later code passes it directly as calendarId (e.g., calendar.events.patch).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts:147-149 `selectedCalendar` is the result of `destinationCalendar?.find(...)?.externalId` with no default, and while `events.insert` falls back with `selectedCalendar || \"primary\"` (line 154), `calendar.events.patch` at line 168 passes `selectedCalendar` unguarded. The patch removed the previous `: \"primary\"` default that covered both calls.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1589005
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Google createEvent picks the target calendar only by credentialId match, so destination calendars with a null credentialId go to 'primary' instead of the selected calendar.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/app-store/googlecalendar/lib/CalendarService.ts:147-154 picks the calendar only via `cal.credentialId === credentialId` and falls back to \"primary\"; for destinations with a null credentialId (nullable in schema.prisma:159), packages/core/EventManager.ts:375-381 still calls createEvent with each same-type credential, so the match fails and the selected externalId is ignored, whereas the pre-patch code used destinationCalendar.externalId directly.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.48945610000000006
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "handleNewBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In handleNewBooking (lines ~1063-1079), evt.destinationCalendar is set to null when neither the event type nor the organizer has a destination calendar. Because of this, `evt.destinationCalendar?.push(...teamDestinationCalendars)` is a no-op and all team members' destination calendars are dropped for collective events.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/bookings/lib/handleNewBooking.ts:1063-1067 sets evt.destinationCalendar to null when neither eventType nor organizerUser has a destination calendar, and nothing reassigns it before line 1078, where `evt.destinationCalendar?.push(...teamDestinationCalendars)` short-circuits on null, so the team calendars collected at lines 992-993 are discarded for collective events.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.16760039999999998
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "organizations/create.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The organization slug condition in organizations/create.handler.ts (line ~151) is inverted from `!IS_TEAM_BILLING_ENABLED && { slug }` to `IS_TEAM_BILLING_ENABLED ? { slug } : {}`. With billing on, the org gets a slug before payment; with billing off, neither slug nor requestedSlug is set, causing NoOrganizationSlugError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/organizations/create.handler.ts:151 now reads `...(IS_TEAM_BILLING_ENABLED ? { slug } : {})` (the patch replaced `!IS_TEAM_BILLING_ENABLED && { slug }`), so with billing on both slug and requestedSlug are set, and with billing off neither is. createTeams.handler.ts:67-68 throws NoOrganizationSlugError when both are missing.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.18056509999999998
+   }
+  },
+  {
+   "issue": "i10",
+   "path": "handleNewBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The loadUsers rewrite in handleNewBooking.ts changes behavior:\n- An empty dynamicUserList throws a plain Error (500) instead of reaching the 404 path.\n- Prisma errors are re-thrown as 400 with the raw message.\n- Other errors are swallowed.\n- The organization slug select is dropped while IsFixedAwareUser still declares it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Three of the four points hold in packages/features/bookings/lib/handleNewBooking.ts: Prisma known errors are re-thrown as 400 with the raw message (758-759), every other error is replaced by a generic unlogged 500 (761), and the dynamic-user select no longer includes organization.slug (735-739) although IsFixedAwareUser still declares it (355) and the users are cast to it (870). The empty-dynamicUserList point is only half right: it now gives a 500 (727-728, 761), but the old code never reached a 404 there either, since `!users` is false for `[]` (798) and it would have crashed on the undefined organizer (145/921).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5474213
+   }
+  },
+  {
+   "issue": "i11",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "EventManager.createAllCalendarEvents (lines ~338-380) loops over each destinationCalendar entry but passes the full event with all destination calendars to each integration, and does not forward externalId to the provider. Providers that read destinationCalendar[0] (Office365, Lark, CalDAV) therefore create every host's event on the first host's calendar.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/core/EventManager.ts:339-370 loops over destinations but passes the whole `event` to `createEvent`, and packages/core/CalendarManager.ts:236 forwards only `credential.id` to the provider (`externalId` is only echoed in the result at :267). Office365 (office365calendar/lib/CalendarService.ts:73-77), Lark (larkcalendar/lib/CalendarService.ts:128-129) and CalDAV (packages/lib/CalendarService.ts:156-165) ignore that argument and take `destinationCalendar[0]`, so every host's credential targets the first host's calendar id \u2014 in practice a failed or mis-targeted create rather than necessarily a successful write to host 1's calendar.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3754179
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "LarkCalendarService",
+   "line": null,
+   "severity": "Minor",
+   "claim": "LarkCalendarService (lines 128, 164, 192, 237) uses event.destinationCalendar[0], which targets the first calendar even in collective flows with multiple destination calendars and credentials.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/app-store/larkcalendar/lib/CalendarService.ts:128 and :164 always take the first entry of event.destinationCalendar and createEvent ignores the credentialId argument, while packages/core/EventManager.ts:339-370 now calls createEvent once per destination/credential, so every host's Lark credential targets the first host's calendar. In updateEvent/deleteEvent (:192, :237) the first entry is only a fallback when externalCalendarId is absent.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2134866
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Calendar interface now requires createEvent(event, credentialId), but some implementations (Lark, Office365, packages/lib CalendarService) still declare createEvent(event) without credentialId. packages/lib CalendarService also selects only the first destination calendar at line 156.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`packages/types/Calendar.d.ts:221` now declares `createEvent(event, credentialId)`, but `packages/app-store/larkcalendar/lib/CalendarService.ts:125`, `packages/app-store/office365calendar/lib/CalendarService.ts:72` and `packages/lib/CalendarService.ts:125` still take only `event` and use the first destination calendar (`packages/lib/CalendarService.ts:156`). Since `packages/core/EventManager.ts:370` now calls `createEvent` once per destination calendar, every non-Google host's credential targets the first host's calendar; this compiles, so it is a behavioural gap, not a type error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3256488
+   }
+  },
+  {
+   "issue": "i14",
+   "path": "Office365CalendarService",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Office365CalendarService updateEvent lacks the externalCalendarId parameter and deleteEvent lacks the event and externalCalendarId parameters required by the Calendar interface, so update and delete always use the default calendar path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/app-store/office365calendar/lib/CalendarService.ts:94 declares `updateEvent(uid, event)` and :111 declares `deleteEvent(uid)`, and both always call `/me/calendar/events/${uid}` (:96, :113), while the interface at packages/types/Calendar.d.ts:223-229 passes `externalCalendarId`. It is not a type error since TypeScript allows fewer parameters, and whether Graph actually fails for events in a non-default calendar cannot be settled from source.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2061374
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In EventManager updateAllCalendarEvents (lines ~511-542), credential can remain undefined when reference.credentialId points to a missing credential and the DB fallback finds nothing. updateEvent(credential, ...) is then called and throws, which turns the update into a failure result for every calendar in the booking.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/core/EventManager.ts:511-542 `credential` stays undefined when neither `this.calendarCredentials` nor the DB lookup (which also requires `app?.slug`, line 529) yields one, yet line 542 calls `updateEvent(credential, ...)` unguarded, which rejects with a TypeError at `credential.appName` (packages/core/CalendarManager.ts:314). One detail differs from the claim: because `return Promise.all(result)` (line 590) is not awaited, the catch at 591 never runs, so the whole call rejects to the caller instead of returning failure results \u2014 the update still fails for every calendar.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.679042
+   }
+  },
+  {
+   "issue": "i16",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The credential-from-DB fallback code is copy-pasted in three places (EventManager.ts:342-365, :515-538, handleCancelBooking.ts:431-441), and the copies have diverged. The handleCancelBooking copy lacks the app include and appName.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The same DB-fallback block (`findUnique` with `include: { app: { select: { slug } } }`, then building a credential with `appName`) appears verbatim at packages/core/EventManager.ts:342-367 and :515-540, while packages/features/bookings/lib/handleCancelBooking.ts:431-441 does a plain `findUnique` with no app include or `appName`. The divergence is harmless, since that copy feeds `getCalendar`, which takes a `CredentialPayload` without `appName` (packages/app-store/_utils/getCalendar.ts:26).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.5361448000000001
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Video references (Zoom, Daily, etc.) no longer store credentialId because the expression changed to `isCalendarType ? result.credentialId : undefined`. As a result, video meetings are not deleted when a booking is cancelled.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/core/EventManager.ts:170 now sets `credentialId: isCalendarType ? result.credentialId : undefined`, so video references created by `create()` are stored without the credentialId that `createMeeting` returns (packages/core/videoClient.ts:78). Cancellation only calls `deleteMeeting` when `bookingVideoReference.credentialId` is set (packages/features/bookings/lib/handleCancelBooking.ts:491-500) and has no fallback, so the video meeting is left undeleted.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.78543
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Team members are given hardcoded `firstName: ''` and `lastName: ''` (lines ~998-999), which the TeamMember type does not declare. This changes the team-member shape sent to emails and webhooks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `firstName: \"\"` and `lastName: \"\"` to each team-member object at packages/features/bookings/lib/handleNewBooking.ts:998-999, while `TeamMember` in packages/types/Calendar.d.ts:41-46 declares only name, email, timeZone and language. These objects become `evt.team.members` (handleNewBooking.ts:1784-1785), and `evt` is spread into the webhook payload (2296-2297) and passed to the email senders (2236-2237), so the serialized shape gains two always-empty fields.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2554727
+   }
+  },
+  {
+   "issue": "i19",
+   "path": "handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When cancelling a recurring booking, the series-delete block sits inside the per-reference loop but does not depend on the reference. It deletes the series N times using only the first calendar reference, so other hosts' copies are never deleted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/bookings/lib/handleCancelBooking.ts the recurring branch at lines 444-468 sits inside `for (const reference of bookingCalendarReference)` (line 423) but ignores `reference`: it iterates only `bookingToDelete.user.credentials` (the organizer's) and picks each booking's first calendar ref with `updBooking.references.find(...)` (line 454). The same series delete therefore repeats once per reference, and other hosts' references and credentials are never used.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5124449
+   }
+  },
+  {
+   "issue": "i20",
+   "path": "handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In handleCancelBooking lines 449-458, the code ignores the current reference and uses updBooking.references.find(). Each updated booking therefore contributes at most one _calendar reference, so only the first host's event is deleted. The branch also uses bookingToDelete.user.credentials, dropping a DB-fetched team credential.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the recurring branch at packages/features/bookings/lib/handleCancelBooking.ts:449-458, the new per-reference loop (line 423) never uses the current `reference` or the `calendarCredential` resolved or DB-fetched at lines 428-441. It iterates `bookingToDelete.user.credentials` and takes only the first `_calendar` reference per updated booking via `.find()` (line 454), so other hosts' events are not deleted and the first one is re-deleted on each loop pass.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15880710000000003
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The reschedule merge deletes only one old calendar event via .find, so other hosts' old copies remain.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/core/EventManager.ts:554-563 still picks a single old reference with `booking.references.find(... \"_calendar\")` and deletes only that event, while this patch makes collective bookings create one calendar reference per host (EventManager.ts:337-357) and loops over all references for updates (EventManager.ts:504). When a reschedule is merged into another booking (`newBookingId` set, e.g. handleNewBooking.ts:1483), the other hosts' old events are never deleted.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5641305
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Each team member's Google event is inserted with the main host as organizer and the same conferenceData requestId.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new loop in packages/core/EventManager.ts:339-370 calls createEvent once per destination calendar with the same event object. In packages/app-store/googlecalendar/lib/CalendarService.ts:116-125 and 139-140, every insert marks the first (main host) destination calendar as `organizer: true` and reuses the same `conferenceData`, whose requestId is the deterministic `uuidv5(location)` from EventManager.ts:32-37; only `calendarId` varies per credential (CalendarService.ts:147-154).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5944835
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "teamDestinationCalendars is populated through a side effect inside an async .map callback, which works only because the push runs before the first await.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/bookings/lib/handleNewBooking.ts:990-994 pushes into teamDestinationCalendars as a side effect inside the async .map callback, before the only await at line 1002. The fragility is overstated, though: Promise.all at line 1008 is awaited before the array is read at line 1078, so it would still be fully populated if the push came after the await; only its order depends on the push being synchronous.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1437478
+   }
+  },
+  {
+   "issue": "i24",
+   "path": "requestReschedule.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In requestReschedule.handler.ts lines 240-242, the second optional chain in `bookingToReschedule?.destinationCalendar` is redundant inside the branch where bookingToReschedule is already checked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/bookings/requestReschedule.handler.ts:240-242 tests `bookingToReschedule?.destinationCalendar` for truthiness and then re-applies `?.` in the true branch, where `bookingToReschedule` must be non-null; it is also non-nullable throughout, coming from `findFirstOrThrow` (line 43) and dereferenced without chaining at lines 76-235, so the second `?.` is redundant but harmless.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1499594
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers the fan-out over multiple destination calendars, the reference credentialId/externalId mapping, or multi-reference update/cancel/reschedule.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's only test change is a fixture tweak at apps/web/playwright/webhook.e2e.ts:249 (`destinationCalendar: null` -> `[]`). No test file in the repository references EventManager, createAllCalendarEvents, updateAllCalendarEvents, handleNewBooking, handleCancelBooking or externalCalendarId, and packages/core/CalendarManager.test.ts:5-7 only covers getCalendarCredentials, so the new fan-out loop, the result.externalId/credentialId reference mapping and the multi-reference update/cancel paths in packages/core/EventManager.ts are untested.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.322495
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "schedulingType is added to CalendarEvent but nothing reads it; it only appears in webhook payloads.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `schedulingType` to `CalendarEvent` (packages/types/Calendar.d.ts:182) and sets it once (packages/features/bookings/lib/handleNewBooking.ts:1074); a repo-wide search finds no read of it on a CalendarEvent, since every other `.schedulingType` access is on an eventType object (e.g. handleNewBooking.ts:992, 1077). It only travels onward through `...evt` spreads, including the webhook payloads at handleNewBooking.ts:1755 and 2297.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.6551186
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A destination with no credentialId fans out to every organizer credential of that integration, duplicating events, and the resulting references lack externalCalendarId.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/core/EventManager.ts:375-381 sends a destination with no credentialId to every credential whose type matches the integration, calling createEvent(c, event) without an externalId, so CalendarManager.ts:267 returns externalId undefined and EventManager.ts:169 stores externalCalendarId undefined (before the patch it was evt.destinationCalendar?.externalId). The fan-out itself predates the patch, but Google's createEvent now matches on cal.credentialId === credentialId (googlecalendar/lib/CalendarService.ts, patch lines 80-88), finds nothing and writes to each account's \"primary\" calendar.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5761287
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The updateAllCalendarEvents catch block no longer calls console.error(message), so failures are swallowed without logging and `message` is unused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch deletes `console.error(message);` from the catch block in packages/core/EventManager.ts (change.patch:501); at head, `message` is built at EventManager.ts:592-595 but never read, and the catch only returns `success: false` placeholder results (597-608) with no logging.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1913876
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Two parameters redundantly carry the target calendar: EventManager passes externalId to CalendarManager.createEvent, which only echoes it back, and passes credentialId, which Google uses to search again.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "EventManager passes `destination.externalId` to `createEvent` (packages/core/EventManager.ts:370), but CalendarManager only copies it into the result (packages/core/CalendarManager.ts:267) and forwards `credential.id` instead (CalendarManager.ts:236). Google then re-derives the calendar with `destinationCalendar.find(cal => cal.credentialId === credentialId)` (packages/app-store/googlecalendar/lib/CalendarService.ts:147-149), so the recorded externalId and the calendar actually written to are resolved independently.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5454053
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Dynamic group bookings are not handled; the TODO was removed but the code only handles eventType.schedulingType === 'COLLECTIVE'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Dynamic group bookings use `getDefaultEvent()` (packages/features/bookings/lib/handleNewBooking.ts:648-651), whose event has `schedulingType: SchedulingType.COLLECTIVE` (packages/lib/defaultEvents.ts:79). So `isTeamEventType` is true and the COLLECTIVE branches at handleNewBooking.ts:992 and :1077 also collect each dynamic user's `destinationCalendar`, which the dynamic-user query selects (packages/prisma/selects/user.ts:27).",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.6395784000000001
+   }
+  },
+  {
+   "issue": "i31",
+   "path": "CalendarManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The user-visible calendar-note text at CalendarManager.ts:230 changed from 'organiser' to 'organizer'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch hunk at change.patch:211-212 replaces \"Notes have been hidden by the organiser\" with \"Notes have been hidden by the organizer\", and packages/core/CalendarManager.ts:230 at head carries the 'organizer' spelling in calEvent.additionalNotes.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08605080000000001
+   }
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "updateLocation saves calendar references with undefined externalCalendarId and credentialId because CalendarManager.updateEvent sets neither field.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`updateLocation` now builds references from `result.externalId` and `result.credentialId` (packages/core/EventManager.ts:208-209), but `CalendarManager.updateEvent` returns neither field (packages/core/CalendarManager.ts:313-322), so calendar references persisted by editLocation.handler.ts:113-122 have both undefined. The patch removed the previous fallback to `evt.destinationCalendar?.externalId` / `.credentialId`.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5964439
+   }
+  },
+  {
+   "issue": "i33",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The PR contains no-op edits such as `result.credentialId ?? undefined`, redundant length checks, and typed comparisons replaced with string literals.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "All three patterns are present in the patched code: `credentialId: result.credentialId ?? undefined` at packages/core/EventManager.ts:209 is a no-op because `EventResult.credentialId` is `number | undefined` (packages/types/EventManager.d.ts:25); `if (bookingCalendarReference.length > 0)` wraps a plain for-of at packages/features/bookings/lib/handleCancelBooking.ts:422 (similar guards before destructuring at packages/app-store/googlecalendar/lib/CalendarService.ts:101,199); and `SchedulingType.COLLECTIVE/ROUND_ROBIN` comparisons became `[\"COLLECTIVE\", \"ROUND_ROBIN\"].includes(...)` at packages/features/bookings/lib/handleNewBooking.ts:689.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.48588869999999995
+   }
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The logic 'booking calendar else user calendar wrapped in array' is written two different ways across about 10 sites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The same fallback is written as a temp variable plus wrap (`selectedDestinationCalendar ? [selectedDestinationCalendar] : []`) at apps/web/pages/api/cron/bookingReminder.ts:107,130 and packages/features/ee/payments/api/webhook.ts:101,119 and 207,229, but as a nested ternary at packages/features/bookings/lib/handleCancelBooking.ts:251-255 and 528-532, packages/features/ee/payments/api/paypal-webhook.ts:152-156, confirm.handler.ts:175-179, editLocation.handler.ts:85-89, deleteCredential.handler.ts:290-294 and handleNewBooking.ts:1063-1067 \u2014 ten sites, two forms, no shared helper.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.46779619999999994
+   }
+  },
+  {
+   "issue": "i35",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The public webhook payload's destinationCalendar changes from an object to an array, and is inconsistent: BOOKING_CREATED can send null while other triggers send [].",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`packages/features/bookings/lib/handleNewBooking.ts:1063-1067` now builds `destinationCalendar` as a one-element array or `null`, and that `evt` is spread into `webhookData` at 2296-2297 for BOOKING_CREATED, whereas `packages/trpc/server/routers/viewer/bookings/confirm.handler.ts:175-179` falls back to `[]` and spreads it into the BOOKING_REJECTED payload at 356-357; the e2e expectations in `apps/web/playwright/webhook.e2e.ts:119` (`null`) and `:249` (`[]`) show the same split.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.41336969999999995
+   }
+  },
+  {
+   "issue": "i36",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The organizer email on every host's Google event is destinationCalendar[0].externalId (the main host's calendar), even for other hosts' calendars.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/app-store/googlecalendar/lib/CalendarService.ts:100-124 always sets the organizer attendee's email to the first destinationCalendar entry's externalId, while the insert targets the calendar matching the current credentialId (lines 147-154). packages/core/EventManager.ts createAllCalendarEvents now calls createEvent once per destination calendar, and handleNewBooking.ts:1078 pushes the other collective hosts' calendars into that array, so every host's event carries the main host's calendar id as organizer email.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2712035
+   }
+  },
+  {
+   "issue": "i37",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In createAllCalendarEvents, the else branch (line ~380) calls createEvent(c, event) without passing destination.externalId, so externalCalendarId is undefined on that path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/core/EventManager.ts:380 calls `createEvent(c, event)` with no third argument, so `externalId` is undefined in the result (packages/core/CalendarManager.ts:267) and `externalCalendarId: isCalendarType ? result.externalId : undefined` at EventManager.ts:169 stores undefined. Before the patch this came from `evt.destinationCalendar?.externalId`, which was populated on this no-credentialId path.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5159421
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

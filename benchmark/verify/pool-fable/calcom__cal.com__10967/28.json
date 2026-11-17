@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "EventManager passes `destination.externalId` to `createEvent` (packages/core/EventManager.ts:370), but CalendarManager only copies it into the result (packages/core/CalendarManager.ts:267) and forwards `credential.id` instead (CalendarManager.ts:236). Google then re-derives the calendar with `destinationCalendar.find(cal => cal.credentialId === credentialId)` (packages/app-store/googlecalendar/lib/CalendarService.ts:147-149), so the recorded externalId and the calendar actually written to are resolved independently.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5454053
+}

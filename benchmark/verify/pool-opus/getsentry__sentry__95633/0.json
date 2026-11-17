@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`SimpleQueueProcessingStrategy` starts a daemon thread running `_commit_loop` (queue_consumer.py:298-299), and that thread calls `self.commit_function(committable)` (queue_consumer.py:315). That function is `commit_offsets`, which calls arroyo's `commit` directly (result_consumer.py:469-472), so the commit runs off the StreamProcessor thread. I couldn't check arroyo's own source because it isn't vendored here, but its `StreamProcessor` commit stages offsets on the `KafkaConsumer` without any locking, so that state can be touched alongside the main poll loop and rebalance callbacks.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.25851820000000003
+}

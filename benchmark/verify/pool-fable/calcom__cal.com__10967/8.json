@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/organizations/create.handler.ts:151 now reads `...(IS_TEAM_BILLING_ENABLED ? { slug } : {})` (the patch replaced `!IS_TEAM_BILLING_ENABLED && { slug }`), so with billing on both slug and requestedSlug are set, and with billing off neither is. createTeams.handler.ts:67-68 throws NoOrganizationSlugError when both are missing.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.18056509999999998
+}

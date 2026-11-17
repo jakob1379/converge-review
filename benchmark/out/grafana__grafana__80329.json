@@ -1,0 +1,175 @@
+{
+  "findings": [
+    {
+      "path": "pkg/services/annotations/annotationsimpl/xorm_store.go",
+      "line": 534,
+      "severity": "Important",
+      "claim": "Debug logging left in at Error level in the cleanup closures (lines 534/537/554/557/576/579): every batch, including successful and empty ones, emits two r.log.Error lines, the first dumping the full ids slice (up to cleanupjob_batchsize entries) plus cond, and 'err' is always nil on the first line.",
+      "evidence": "grep -n 'r.log.Error' xorm_store.go shows 6 new call sites; untilDoneOrCancelled needs a 0-row batch to stop so an idle run still logs ~14 Error lines. Breaches contribute/backend/instrumentation.md: Error level is for unhandled failures; messages must start with a capital letter and use key 'error' not 'err' (537/557/579 lowercase). Reasoned; no test run.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Unanimous across seats; production log noise and error-alert false positives, plus documented-standard breach. Remove or demote to Debug with count only."
+    },
+    {
+      "path": "pkg/services/cleanup/cleanup.go",
+      "line": 77,
+      "severity": "Important",
+      "claim": "Global cleanup ticker changed from time.Minute*10 to time.Minute*1, running all cleanup jobs (tmp files, snapshots, dashboard versions, images, annotations, invites, short URLs, query history) 10x as often; unrelated to the annotation fix and looks like a debugging leftover.",
+      "evidence": "Diff hunk at cleanup.go:77; per-run timeout at cleanup.go:89 is still 9*time.Minute, sized for a 10-minute cadence, so slow runs go back-to-back. No commit message justifies it. Increases DB load/lock contention on a PR meant to reduce it. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Unanimous; out-of-scope behaviour change affecting every install. Revert to time.Minute*10."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/xorm_store.go",
+      "line": 611,
+      "severity": "Minor",
+      "claim": "SQLite inline-ID path builds the IN list with values = fmt.Sprintf(\"%s, %d\", values, v) in a loop, which is quadratic in batch size.",
+      "evidence": "At batch size 32767 (used by the new test) the final string is ~200-230KB and total copying is several GB per batch. Reasoned, not measured. Only on SQLite with batch size > 999.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap fix (strconv.AppendInt into one buffer, as xorm_store.go:387-395 already does); resolved by the single-path rewrite below."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/xorm_store.go",
+      "line": 608,
+      "severity": "Minor",
+      "claim": "Non-SQLite path binds one placeholder per ID with no cap; MySQL and Postgres reject statements with more than 65535 bind parameters, so cleanupjob_batchsize > 65535 makes every DELETE fail, a regression from the old parameterless subquery.",
+      "evidence": "deleteByIDs else-branch uses asAny(ids) as args; default batch size is 100 (pkg/setting/setting.go:710), so only extreme configs hit it. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Eliminated by inlining int64 IDs on all dialects (single-path rewrite); otherwise would be defer as non-default config. Inlined path still bounded by SQLITE_MAX_SQL_LENGTH (~140k ids) - acceptable."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/xorm_store.go",
+      "line": 605,
+      "severity": "Minor",
+      "claim": "Comment states 'SQLite has a parameter limit of 999', which is only true before SQLite 3.32 (32766 after); the new test name references the 3.32 limit, so the comment is misleading. Branch also gates on configured batch size rather than len(ids).",
+      "evidence": "xorm_store.go:605-608 vs test case name in cleanup_test.go. No behavioural bug.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Goes away with the single-path rewrite; otherwise a one-line comment correction."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/xorm_store.go",
+      "line": 608,
+      "severity": "Minor",
+      "claim": "Two SQL paths in deleteByIDs (inlined for SQLite>999, placeholders elsewhere) where one suffices: IDs are int64 read back from the DB, so inlining them is injection-safe, and the same file already inlines integer IDs on every dialect. Collapsing removes the GetDBType branch, sqliteParameterLimit, args, asAny and the migrator import (~20 lines).",
+      "evidence": "Existing precedent at xorm_store.go:387-395 (dashboard_id IN built with strconv.AppendInt); asAny at :632. Advisory over-engineering finding; all seats agree inlining int64s is not an injection risk.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Advisory but accepted: one change resolves the quadratic build, the 65535-placeholder cap and the stale comment, with net code deletion."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/xorm_store.go",
+      "line": 528,
+      "severity": "Minor",
+      "claim": "The fetch->log->delete->log closure is copied three times (by time, by count, tags) with opaque x, y temporaries; copies have already drifted in log wording.",
+      "evidence": "xorm_store.go:528-539, 548-559, 570-581. Advisory.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: once the Error logs are removed each closure collapses to ~2 lines (return r.deleteByIDs(...)); a cleanBatch helper is not needed now."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/xorm_store.go",
+      "line": 586,
+      "severity": "Minor",
+      "claim": "fetchIDs guards condition == \"\" although all callers pass a non-empty condition, so the guard is dead code.",
+      "evidence": "xorm_store.go:586-588; three callers build conditions via fmt.Sprintf always containing a predicate. Advisory.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "The guard prevents 'SELECT id FROM table WHERE ' degenerating into a full-table selection feeding a DELETE; data-loss-preventing validation is kept even if currently unreachable. 3 lines."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/xorm_store.go",
+      "line": 562,
+      "severity": "Minor",
+      "claim": "MaxCount return was rewritten from 'return totalAffected, err' to an if-err-return plus shared return; behaviour identical, pure diff churn.",
+      "evidence": "xorm_store.go:562-565. Advisory.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "No behavioural or readability defect; reverting would itself be churn with zero benefit."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/cleanup_test.go",
+      "line": 276,
+      "severity": "Minor",
+      "claim": "createTestAnnotations duplicates the 500-row InsertMulti chunk loop for annotations and annotation tags, and calls require.NoError inside the DB callback then returns nil.",
+      "evidence": "cleanup_test.go:273-291. Advisory, test-only.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: test-helper duplication of ~8 lines; not worth churn in this PR."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/cleanup_test.go",
+      "line": 120,
+      "severity": "Minor",
+      "claim": "Subtest registers t.Cleanup only after createTestAnnotations and count assertions; if seeding fails via require (FailNow) the partially inserted rows are never cleaned and leak into later subtests sharing fakeSQL, masking the real failure.",
+      "evidence": "cleanup_test.go:116 seeds, :120 registers t.Cleanup. contribute/backend/style-guide.md 'Cleanup' recommends t.Cleanup. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two-line move (register cleanup before seeding) makes failures diagnosable."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/cleanup_test.go",
+      "line": 83,
+      "severity": "Minor",
+      "claim": "Case 'running the max count delete again should not remove any annotations' no longer runs cleanup a second time over prior state because each case now seeds fresh data; idempotency of a repeated run is no longer tested and the name is misleading.",
+      "evidence": "cleanup_test.go:83 plus per-subtest createTestAnnotations at :116 and t.Cleanup at :120. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Rename the case to describe what it asserts (or run cleanup twice within it)."
+    },
+    {
+      "path": "pkg/services/annotations/annotationsimpl/cleanup_test.go",
+      "line": 241,
+      "severity": "Minor",
+      "claim": "Test seeding sets explicit IDs (ID: int64(i+1)); on Postgres explicit IDs do not advance annotation_id_seq, so a later test inserting via the sequence without clearing could hit duplicate keys.",
+      "evidence": "xorm only skips autoincrement when value is zero (pkg/util/xorm/session_insert.go:153,:204). Every subtest currently empties the table, so harmless today. Reasoned, low risk.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: latent only; no current test triggers it and the table is emptied after each subtest."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode): no build, tests, linters or type checker executed, so the review is unanchored and every finding is reasoned, none reproduced. open-code-review:delegate-review skipped pkg/services/annotations/annotationsimpl/cleanup_test.go (OCR default_path rule excludes *_test.go; read for context only); the other three seats reviewed all 3 files. Spec axis did not run (no spec). No seat verified on real MySQL/Postgres/SQLite that SELECT-then-DELETE removes the MySQL deadlock or the dialect parameter limits. No cross-family reviewer was available; all four seats share a model family. Untracked harness dotfiles in the worktree were excluded from the pinned patch. Rounds 2+ and fixes not run (benchmark mode)."
+}

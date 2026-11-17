@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In static/app/views/dashboards/widgetCard/chart.tsx (patch lines 2035-2045), when the flag is on, TableWidgetVisualization gets hardcoded `columns={[]}` and `tableData={{data: [], meta: {fields: {}, units: {}}}}`. `result.data`, `result.meta` and `loading` are never passed, and the component renders GridEditable from exactly those props (patch lines 2600-2612), so the table is always empty.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0772042
+}

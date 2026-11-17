@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `assignment_source` to the abstract `sync_status_outbound` (mixins/issues.py:411-418), but the only caller, tasks/sync_status_outbound.py:43-46, calls `should_sync(\"outbound_status\")` and `sync_status_outbound` without a source. `ExampleIntegration.sync_status_outbound` (example/integration.py:161) has no **kwargs, and the abstract `sync_assignee_outbound` (mixins/issues.py:397-403), which is the method that actually receives `assignment_source`, does not declare it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1542292
+}

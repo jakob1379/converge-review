@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The module docstring in src/sentry/spans/buffer.py:39-44 and :58 still calls span-buf:s:* \"the actual set keys\" and \"the set\". The patch switches these keys to sorted sets (zadd at buffer.py:197-198; zunionstore/zcard/zpopmin in add-buffer.lua) but leaves the docstring unchanged.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.058183700000000005
+}

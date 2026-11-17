@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In DefaultTokenContextEncoderProviderTest.java, testIncorrectGrantType (patch lines 1025-1033) catches a generic `RuntimeException` instead of `IllegalArgumentException`. With \"ac\" missing from the test map, getGrantTypeByShortcut (patch lines 486-492) calls `sessionFactory.getProviderFactoriesStream`, but `postInit` never ran, so `sessionFactory` is null and the test actually passes on a NullPointerException; the IllegalArgumentException path at patch line 328 is never reached.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.241221
+}

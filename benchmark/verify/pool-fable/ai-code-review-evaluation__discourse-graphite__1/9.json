@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new call at app/controllers/uploads_controller.rb:67 cannot produce a downsized animated GIF on either path: multipart tempfiles have no `.gif` extension under the pinned rack 1.5.5, so the check at app/models/optimized_image.rb:155 never selects the animated branch and `convert from[0]` keeps only the first frame; URL downloads keep the extension (lib/file_helper.rb:13-14) but then run `gifsicle --resize-fit 80%` (optimized_image.rb:120,137-138), which gifsicle rejects because it wants WxH. The rack and gifsicle behaviour is from my knowledge of those tools, not from code in this repo.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4354544
+}

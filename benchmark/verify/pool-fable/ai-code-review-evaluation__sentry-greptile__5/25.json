@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/replays/tasks/test_delete_replays_bulk.py:82 patches `sentry.replays.tasks.delete_matched_rows`, so the row with `max_segment_id: None` at line 97 (changed from 0 by the patch) never reaches the guard at src/sentry/replays/usecases/delete.py:89-90. No test references `_make_recording_filenames` or `delete_replay_recordings`, and the only unmocked test (line 158) stores real segments with segment_id=0, so the None branch is never run.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6972287999999999
+}

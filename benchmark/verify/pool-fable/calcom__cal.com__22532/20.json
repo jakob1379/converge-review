@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/apps/components/CredentialActionsDropdown.tsx:68-73 sets `canDisconnect` false for delegation credentials, so the component returns null unless `hasCache` is truthy, in which case only the cache items render (lines 82-111). Before the patch, SelectedCalendarsSettingsWebWrapper.tsx rendered no actions at all for delegation credentials; it now always renders the wrapper div and this component (lines 70-79, 123-132).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4331244
+}

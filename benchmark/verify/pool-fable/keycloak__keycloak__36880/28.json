@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `createClientPolicy(ManagedRealm, ManagedClient, String, String)` at tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/AbstractPermissionTest.java:136, and a repo-wide search finds no call to it. The only other `createClientPolicy` calls (UMAPolicyProviderFactory.java:105, 265) target an unrelated private method defined at UMAPolicyProviderFactory.java:406.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0960007
+}

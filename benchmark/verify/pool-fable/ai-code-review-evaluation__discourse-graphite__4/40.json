@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Nothing ever removes TopicEmbed rows, so after a soft-delete `embed.post` is nil under Trashable's default scope and `PostRevisor.new(nil).revise!` hits `nil.raw` (app/models/topic_embed.rb:32-36, lib/post_revisor.rb:27) whenever the content hash changed. `topic_id_for_embed` still plucks the trashed topic's id (app/models/topic_embed.rb:79), so `TopicView.new` raises Discourse::NotFound for non-staff (lib/topic_view.rb:260-264,300), and lib/topic_retriever.rb:37 plus the unique embed_url index prevent re-import.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5745718999999999
+}

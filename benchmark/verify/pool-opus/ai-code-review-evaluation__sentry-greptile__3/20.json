@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`use_rpc` is true only when `dataset` is `spans_rpc` or `ourlogs` (organization_events_stats.py:204). The same outer `dataset` goes to `is_errors_query_for_error_upsampled_projects` (line 220), and `_should_apply_sample_weight_transform` returns False for those datasets (error_upsampling.py, final `return False`), so the upsampled columns can never reach `run_timeseries_query` (lines 276-279) or `run_top_events_timeseries_query` (lines 232-236). One caveat: the top-events transform at line 232 sits before the `use_rpc` check, so it is still reachable on the non-RPC `top_events_timeseries` path for errors/discover; only its RPC use is dead.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.19100630000000002
+}

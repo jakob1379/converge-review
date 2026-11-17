@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts:70-77 lowercases only the blacklist entries and then checks the raw guest with `blacklistedGuestEmails.includes(guest)`, without lowercasing or `extractBaseEmail`. So `Foo@x.com` or `foo+a@x.com` gets past a blacklisted `foo@x.com`, while handleNewBooking.ts:742-743 and checkIfBookerEmailIsBlocked.ts:17-18 normalise both sides.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.18643490000000001
+}

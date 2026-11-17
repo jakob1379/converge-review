@@ -1,0 +1,239 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "userPermDenialCacheKey joins its components (action, name, parent) with '_' without escaping. UIDs can contain '_', so different (name, parent) pairs produce the same cache key, and a cached denial for one resource wrongly denies another.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/authz/rbac/cache.go:31 builds the denial key as namespace + \".perm_\" + userUID + \"_\" + action + \"_\" + name + \"_\" + parent with no escaping, and service.go:116-120 passes the raw request Name and Folder (service.go:226-227) and denies on any hit; Grafana UIDs allow '_' (pkg/util/shortid_generator.go:33), so (name=\"a_b\", parent=\"c\") and (name=\"a\", parent=\"b_c\") share one key and a cached denial for one denies the other until the short TTL expires.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.21093800000000001
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test 'Should deny on explicit cache deny entry' seeds permCache with false for dashboards:uid:dash1, although its comment says the entry allows access. The fallback fakeStore is empty, so the test passes even if the permDenialCache lookup is removed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/authz/rbac/service_test.go:981-982 comments \"Allow access ... to prove this is not checked\" but seeds permCache with {\"dashboards:uid:dash1\": false}. With the denial lookup at service.go:117-121 removed, the cached check fails and the fallback hits the empty fakeStore from setupService (service_test.go:1328), which returns no permissions without error, so Check still returns Allowed=false and the test passes (traced by reading, not run).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5021665
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Check trusts cached permission grants and returns them immediately, but ignores cached denials from the same permission cache and re-queries the DB. As a result, stale cached grants can give access to revoked resources.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/authz/rbac/service.go:123-136, Check returns immediately when the cached permCache map allows, but when that same cached map does not allow it falls through to getIdentityPermissions at :139, which always queries the DB (:380-406). A revoked grant therefore stays honoured until the permCache entry expires (shortCacheTTL, 30s, :32); the patch adds this asymmetry, though the 30s stale-grant window already existed because the old getUserPermissions returned any cache hit.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3804712
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Check returns a denial immediately from permDenialCache but ignores denials in the permission cache so that new grants are picked up. Once a denial is stored in permDenialCache, any permission granted afterward is blocked for up to the cache TTL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/authz/rbac/service.go:116-121 returns Allowed=false straight from permDenialCache before any permCache or DB lookup, while a permCache denial falls through to the DB (service.go:123-139). The denial entry is written at service.go:153-155 with shortCacheTTL (30s, service.go:32,85) and is never deleted or invalidated anywhere, so a grant made after a cached denial stays blocked for up to 30s.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3307389
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TestService_getUserPermissions no longer has a cacheHit:true case, so the cacheHit field and both 'if tc.cacheHit' branches are dead. No test asserts the always-go-to-store behavior or the removed anonymous cache read.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "After the patch removed the only cacheHit:true case, TestService_getUserPermissions has only cacheHit:false cases (pkg/services/authz/rbac/service_test.go:341-356), so the field at :337 and the branches at :367 and :388 are dead; no test covers the anonymous cache path either. The coverage half is overstated for users: \"Fallback to the database on outdated cache\" in TestService_CacheCheck (added by the patch) does indirectly assert that the store is consulted despite a populated cache.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.38243989999999994
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The denial cache key uses the raw checkReq.UserUID instead of the resolved userIdentifiers.UID used by getCachedIdentityPermissions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/authz/rbac/service.go:116 builds the denial key from the raw `checkReq.UserUID` (the parsed subject, which may be a numeric ID or a UID), whereas `getCachedIdentityPermissions` at service.go:356-360 keys on the resolved `userIdentifiers.UID`. The only effect is that the same user addressed by ID and by UID gets separate denial entries, since `GetUserIdentifiers` (service.go:452-478) resolves both forms to the same user.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.33804039999999996
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Denial cache keys share the '.perm_<uid>_' prefix with userPermCacheKey in the same cache, so the two key types can collide.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both key builders emit `namespace + \".perm_\" + userUID + \"_\" + action\u2026` (pkg/services/authz/rbac/cache.go:27 and :31), both wrappers share one cache, and Name/ParentFolder are unvalidated (service.go:226-227), so the key spaces are not disjoint. A collision needs contrived input (a user UID like `u1_dashboards:read_dash1` plus a parent folder equal to an action string), and the bool-vs-map JSON mismatch makes a collided read fail to unmarshal and count as a miss (cache.go:70-74), not a wrong decision.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.7704970999999999
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getCachedIdentityPermissions returns an error that is used only as a hit/miss flag and duplicates the identity-type switch of getIdentityPermissions. Callers treat any error, including store errors and unsupported types, as a cache miss rather than only cache.ErrNotFound.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/services/authz/rbac/service.go:342-368 repeats the identity-type switch of getIdentityPermissions (330-339) and returns cache.ErrNotFound, GetUserIdentifiers store errors and the unsupported-type error alike; both callers (service.go:123-124 and 180-183) only test `err == nil`, so any error is treated as a miss and falls through to getIdentityPermissions. The fallback re-runs the same lookup and surfaces the real error, so the effect is a redundant call and a miscounted cache-miss metric, not wrong authorization.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3138982
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Removing the permCache read from getUserPermissions/getAnonymousPermissions, adding a per-(user, action, name, parent) denial cache, and using NoopCache for the in-process client make DB and permission-decode load scale with the number of distinct denied resources rather than with users x actions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/authz/rbac/service.go:123-139, any check the cached scope map does not allow falls through to getIdentityPermissions, and getUserPermissions/getAnonymousPermissions (service.go:379-380, 423-425) no longer read permCache, so each distinct denied (user, action, name, parent) costs a DB permission query plus a JSON decode/re-encode of the scope map per TTL (denial cached only at service.go:153-155), where before it was one fetch per user+action; the in-process client's NoopCache (pkg/services/authz/rbac.go:101-105) means no client-side cache absorbs these checks (authlib client internals not readable here, but the server-side path alone establishes the scaling).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5421701
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The denial cache key omits the identity type. Anonymous and render-service identities both have UID '0', so a cached anonymous denial also denies the render service on the same resource for the cache TTL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`userPermDenialCacheKey` at pkg/services/authz/rbac/cache.go:30 builds the key from namespace, userUID, action, name and parent only, and `Check` at pkg/services/authz/rbac/service.go:116-120 returns a deny on a hit before looking at `IdentityType`. Anonymous and render identities both carry ID \"0\" (pkg/services/user/identity.go:296-298; subjects `anonymous:0` / `render:0`), so a denial cached for anonymous at service.go:154 also denies the renderer, which would otherwise get `*` for `dashboards:read` (service.go:446).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5279129
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A new exported NoopCache type in the public authz package has only one in-package call site and may duplicate functionality from authlib.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds exported `NoopCache` at pkg/services/authz/rbac.go:239-251, and its only reference in the repository is the in-package call at pkg/services/authz/rbac.go:103, so it could be unexported. The hedged \"may duplicate authlib\" part could not be checked because the authlib source is not in the repository.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.17949110000000001
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The NoopCache methods use the receiver name 'lc' (a LocalCache abbreviation), which does not reflect the type.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `NoopCache` with all three methods using the receiver `lc` (pkg/services/authz/rbac.go:241, 245, 249), which does not match the type name; that it derives from LocalCache is a plausible inference I did not check.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0637752
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The newly added log message 'could not check permission' starts with a lowercase letter, which violates the convention that messages start with a capital letter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `ctxLogger.Error(\"could not check permission\", \"error\", err)` at pkg/services/authz/rbac/service.go:127, which starts lowercase; contribute/backend/instrumentation.md:33 says to start log messages with a capital letter. The same file's existing messages are all lowercase too (e.g. service.go:141, 148), so the new line matches local style.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1217714
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

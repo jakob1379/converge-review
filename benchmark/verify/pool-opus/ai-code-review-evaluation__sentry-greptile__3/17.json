@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new SnQLFunction \"upsampled_count\" at src/sentry/search/events/datasets/discover.py:1041-1052 has no private=True, unlike its neighbours (e.g. column_hash at :1039). The builder only blocks private functions via is_accessible (builder/base.py:737), so any Discover user can put upsampled_count() in a query directly, skipping the allowlist and event.type:error checks in error_upsampling.py, and it sums sample_weight unconditionally.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14524810000000002
+}

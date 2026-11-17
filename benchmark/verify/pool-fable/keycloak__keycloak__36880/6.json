@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:226-232 loops over the evaluated permissions and checks only permission.getScopes(), with no resource-id comparison, whereas UserPermissionsV2.java:135 guards the same loop with permission.getResourceId().equals(resource.getId()). Only a single ResourcePermission for that resource is passed to root.evaluatePermission (ClientPermissionsV2.java:224), so the missing filter looks like a defensive inconsistency; I did not trace the evaluator to confirm it can never return other resources.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2651908
+}

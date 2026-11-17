@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "handleNewBooking.ts:964-975 calls the async deleteScheduledEmailReminder/deleteScheduledSMSReminder inside forEach without awaiting them, so a failure inside them cannot reach the surrounding catch. Both helpers also catch their own errors (emailReminderManager.ts:197-236, smsReminderManager.ts:177-190), and workflowReminders is always loaded (line 772), so the log.error at handleNewBooking.ts:973 is effectively dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1101785
+}

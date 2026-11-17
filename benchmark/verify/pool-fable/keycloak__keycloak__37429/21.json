@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The pipeline at misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:92-112 compares the full sanitizer output with the input, so it also flags unbalanced or malformed markup (the patch's own fixes: missing `</p>` in email messages_da, stray `</strong>` in login messages_sk, `</p<p>` in email messages_nl). OWASP's HtmlChangeListener only reports discarded tags and attributes \u2014 stated from knowledge of the library API, whose source is not in this repo \u2014 so it is a narrower check, not a duplicate.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 1.0200624999999999
+}

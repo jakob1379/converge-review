@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new format is applied unconditionally in `get_comment_body` (src/sentry/integrations/github/integration.py:404-413, src/sentry/integrations/gitlab/integration.py:252-258) with no feature check. No test references `_truncate_title` or `get_environment_info` (src/sentry/integrations/source_code_management/commit_context.py:577-597); the PR-comment tests only use short titles like \"issue 1\" and never mock `get_recommended_event` to raise (tests/sentry/integrations/github/tasks/test_pr_comment.py:340-380).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.7318736
+}

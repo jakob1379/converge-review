@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In GroupAdapter.java, lines 256, 262 and 268 still call modelSupplier.get().getSubGroupsStream(...) without checking for null. The patch null-guards only getSubGroupsCount (lines 274-275). Because LazyModel(this::getGroupModel) (line 54, 298-299) returns null once the database row is gone, these overloads can throw an NPE when a group is deleted at the same time, and GET .../groups/{id}/children reaches them through GroupResource.java:180.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1061782
+}

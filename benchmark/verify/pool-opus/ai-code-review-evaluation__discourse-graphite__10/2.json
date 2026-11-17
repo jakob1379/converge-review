@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In store.js.es6:196-201, the new `_ids` branch maps each ID through `_lookupSubType`, which looks only at `root[pluralize(subType)]` (store.js.es6:168). If that key is missing, as with featured_user_badges whose root is :user_badges (user_serializer.rb:73), every lookup returns undefined, yet the code still writes the array of undefined and runs `delete obj[k]` unconditionally. The singular `_id` branch (lines 203-207) keeps the ID when nothing is found.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.24220809999999998
+}

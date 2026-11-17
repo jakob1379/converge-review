@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AdminPermissionsSchema.java:107 now runs `switch (resourceType)` on a String, and Java throws a NullPointerException when that value is null. The old if-chain called `USERS.getType().equals(resourceType)`, which handles null safely, so name stayed null and line 115 threw IllegalStateException. Callers pass user-supplied `representation.getResourceType()` and `policy.getResourceType()` (AuthorizationProvider.java:304, RepresentationToModel.java:1423), and these can be null.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0776718
+}

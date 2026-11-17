@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new useIsGrafanaPromRuleEditable (patch lines 528-557 in hooks/useAbilities.ts) calls useFolder(folderUid), then getRulesPermissions('grafana'), then ctx.hasPermissionInMetadata(update/delete, folder). That is the same flow as the Grafana-rule branch of useIsRuleEditable (hooks/useIsRuleEditable.ts:27-30, 50-75), including the identical 'Loading or invalid folder UID' fallback. The patch even marks the call site with a '// duplicate' comment.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1001735
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:62-92 does a `findFirst` on (userId, appId) followed by a separate `create` with no transaction or lock, and the `Credential` model in packages/prisma/schema.prisma:127-146 has only non-unique `@@index([userId])` and `@@index([appId])`, so two concurrent requests can both miss the lookup and each insert a row.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.44283039999999996
+}

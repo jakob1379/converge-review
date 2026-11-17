@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "For an already-saved group, `Group#add` (app/models/group.rb:272-274) calls `users.push` on the `has_many :through` association (group.rb:8), and `remove_member` calls `group.users.delete(user_id)`. Both write the join rows to the database straight away. The later `group.save` in `add_members`/`remove_member` (app/controllers/admin/groups_controller.rb:616-656) therefore saves no membership changes, and `render_json_error` can only fire on the group's own validations (group.rb:12-13, 37).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1728387
+}

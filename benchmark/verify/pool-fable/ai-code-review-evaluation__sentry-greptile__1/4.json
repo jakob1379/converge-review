@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The quoted comments are all present in the patched code: src/sentry/api/paginator.py:876 says the Django ORM \"properly handles negative slicing automatically\", which is false since Django QuerySets raise on negative indices (Django is not vendored here, so that rests on its documented behaviour); paginator.py:830 has \"sophisticated pagination patterns\" and paginator.py:879 has \"safe because permissions are checked at the queryset level\", both unsupported by the code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1399937
+}

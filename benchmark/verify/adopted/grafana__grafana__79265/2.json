@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "client.go:44 now calls TagDevice inline with the request ctx, even when device_limit = 0. This replaces the old goroutine that had context.WithTimeout(Background, 2m) and recover(). So on a cache miss, the request waits on CreateOrUpdateDevice, plus CountDevices when deviceLimit > 0 (database.go). tagDeviceUI marks the device in the cache before the write (impl.go:87-93), so a cancelled request drops the write and it is not retried while the cache entry lasts.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1299891
+}

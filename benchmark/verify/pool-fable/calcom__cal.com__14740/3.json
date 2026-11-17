@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The server schema is just `z.array(z.string().email())` with no uniqueness refine or max length (packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts:5); the handler's `uniqueGuests` only filters existing attendees and the blacklist (addGuests.handler.ts:74-78) and feeds `createMany` (addGuests.handler.ts:92-106), while `Attendee` has only non-unique indexes on email and bookingId (packages/prisma/schema.prisma:537-538). Repeated emails in a direct call therefore create duplicate attendee rows, and `sendAddGuestsEmails` sends one email per attendee row (packages/emails/email-manager.ts:232-240); the uniqueness check exists only client-side in AddGuestsDialog.tsx.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3229976
+}

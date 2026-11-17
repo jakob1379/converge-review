@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`rejectedEmails` is declared once on the controller prototype (app/assets/javascripts/discourse/controllers/create_account_controller.js:17), only ever appended to (:275) and never cleared or reset anywhere in the repo. Any address in it fails `emailValidation` (:69-74), which keeps `submitDisabled` true (:22), so that address cannot be resubmitted until the page reloads, even if the server would now accept it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2714895
+}

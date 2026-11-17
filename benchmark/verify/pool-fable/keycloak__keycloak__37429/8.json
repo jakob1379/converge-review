@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "misc/theme-verifier/pom.xml:78 hard-codes owasp-java-html-sanitizer 20240325.1 (and commons-text 1.13.0 at :83), duplicating the root property at pom.xml:119, so the two can drift. However, the module declares no <parent> (misc/theme-verifier/pom.xml:23-25), so it cannot inherit the root property as written, and every existing dependency there is already hard-coded the same way (e.g. :61, :66, :72).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1987195
+}

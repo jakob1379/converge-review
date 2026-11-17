@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `invalidate_upsampling_cache` at src/sentry/api/helpers/error_upsampling.py:67-74, and a search of the repo finds only that definition, so nothing calls it. It also could not work as an allowlist hook, because the cache keys (line 27) hash whatever project set each query used, and an allowlist change gives no way to list those sets.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.054023299999999996
+}

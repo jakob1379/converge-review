@@ -1,0 +1,172 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/90939",
+ "cost_usd": 0.0405401,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "The bug fix adds no regression test to guard the race fix, violating the repo's documented standard (contribute/create-pull-request.md:28) that requires bug-fix PRs to include tests that replicate the fixed bug"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "The dead CDN branch (unreachable due to cdn := \"\") would hold the exclusive lock across an HTTP call if it were reachable."
+  },
+  {
+   "id": "c3",
+   "source": "claude-code",
+   "text": "Double-checked locking pattern is missing the second check after upgrading from RLock to Lock - after releasing RLock and acquiring Lock, another goroutine may have already populated the cache, but the code proceeds to reload assets from disk without checking. Add `if cfg.Env != setting.Dev && entryPointAssetsCache != nil { return entryPointAssetsCache, nil }` after acquiring the write lock to avoid redundant file reads on concurrent cold-start requests."
+  },
+  {
+   "id": "c4",
+   "source": "qodo-extended-v2",
+   "text": "Double-checked locking pattern is incomplete - after acquiring the write lock at line 48, the code does not re-check whether entryPointAssetsCache was already populated by another goroutine, causing redundant file I/O and cache overwrites when multiple goroutines queue on the write lock during cold start"
+  },
+  {
+   "id": "c5",
+   "source": "augment",
+   "text": "After acquiring the write lock, the code should re-check entryPointAssetsCache (and cfg.Env) before recomputing, since another goroutine may have populated the cache while this one waited; without that check, a later compute (or error) can overwrite a good cached value"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "The package-global cache leaks between tests because nothing resets entryPointAssetsCache, so any concurrent test must reset it"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review-replay",
+   "text": "In setting.Dev mode, every call skips the cache and holds the exclusive lock during file I/O, causing Index, frontend-settings and recovery-page requests to be served one at a time instead of in parallel"
+  },
+  {
+   "id": "c8",
+   "source": "golden",
+   "text": "The GetWebAssets function implements an incomplete double-checked locking pattern for caching web assets. The function first checks if the cache is populated using a read lock (RLock), and if the cache is empty, it acquires a write lock to populate it. However, it fails to re-check whether the cache was populated by another goroutine while waiting to acquire the write lock."
+  },
+  {
+   "id": "c9",
+   "source": "coderabbit",
+   "text": "Docstring coverage is 0.00% which is insufficient - the required threshold is 80.00%, need to write docstrings for functions missing them"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "The fix extends package-level global state (adds a global mutex beside the global cache) against the documented guidance to avoid globals; the cache also leaks between tests in the package."
+  },
+  {
+   "id": "c11",
+   "source": "golden",
+   "text": "In addition to the missing double-check, the function has a critical flaw in its error handling: it unconditionally assigns the fetch result to the cache (line 69: entryPointAssetsCache = result) regardless of whether the fetch succeeded or failed. When an error occurs during asset fetching, result is nil, and this nil value overwrites any previously valid cache entry."
+  },
+  {
+   "id": "c12",
+   "source": "cubic-v2",
+   "text": "Incomplete double-checked locking: after acquiring the write lock, the code should re-check entryPointAssetsCache before proceeding to fetch. Between RUnlock() and Lock(), another goroutine could have already populated the cache, causing redundant (and potentially expensive) asset fetches."
+  },
+  {
+   "id": "c13",
+   "source": "cubic-v2",
+   "text": "A failed fetch unconditionally overwrites the cache with nil (entryPointAssetsCache = result on line 73). If the asset read fails, result is nil and this stomps a previously valid cache entry. Guard the assignment so that a nil result does not overwrite an existing good value."
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "No re-check of entryPointAssetsCache after acquiring the write lock, so concurrent cold-cache misses serialize and each re-reads and re-parses assets-manifest.json (duplicate file reads on cold start or after failed load)."
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "In Dev mode every call serializes on manifest file I/O since line 45 bypasses the cache; in production a missing/broken manifest causes every request to retry the failed read serially under the exclusive lock."
+  },
+  {
+   "id": "c16",
+   "source": "coderabbit",
+   "text": "Add a second cache check under the write lock to avoid redundant rebuilds - a concurrent caller could fill the cache between the initial RUnlock and Lock, re-checking avoids extra IO"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review-replay",
+   "text": "The code does not re-check the cache after taking the write lock, causing concurrent callers that saw nil cache to wait in queue and re-read/re-parse assets-manifest.json one by one, potentially making duplicate network fetches when CDN is enabled. Fix: after Lock(), add `if cfg.Env != setting.Dev && entryPointAssetsCache != nil { return entryPointAssetsCache, nil }`"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "The data-race fix ships without a regression test; no test calls GetWebAssets concurrently under the race detector. Bug-fix PRs require tests that replicate the fixed bug."
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In GetWebAssets, after acquiring the write lock the code does not re-check whether entryPointAssetsCache was already populated by another goroutine. Concurrent cold-cache callers therefore each re-read and re-parse assets-manifest.json redundantly and overwrite the cache.",
+   "path": null,
+   "members": [
+    "c3",
+    "c4",
+    "c5",
+    "c8",
+    "c12",
+    "c14",
+    "c16",
+    "c17"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The fetch result is unconditionally assigned to entryPointAssetsCache, so a failed fetch stores nil and overwrites a previously valid cache entry.",
+   "path": null,
+   "members": [
+    "c11",
+    "c13"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The data-race fix includes no regression test that calls GetWebAssets concurrently under the race detector. The repo's contribution guidelines (contribute/create-pull-request.md) require bug-fix PRs to include such tests.",
+   "path": "contribute/create-pull-request.md",
+   "members": [
+    "c1",
+    "c18"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "In setting.Dev mode every call bypasses the cache and holds the exclusive lock during manifest file I/O, so requests are serialized. In production, a missing or broken manifest causes every request to retry the failed read serially under the lock.",
+   "path": null,
+   "members": [
+    "c7",
+    "c15"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The CDN branch is unreachable because cdn is set to \"\", and if it were reachable it would hold the exclusive lock across an HTTP call.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "Nothing resets the package-global entryPointAssetsCache, so its state leaks between tests.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The fix adds a package-level global mutex beside the global cache, extending global state against the documented guidance to avoid globals.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "Docstring coverage is 0.00%, below the required 80.00% threshold.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "One unguarded access exists, not several: packages/core/EventManager.ts:118-119 destructures `[mainHostDestinationCalendar] = evt.destinationCalendar ?? []` and reads `mainHostDestinationCalendar.integration` without `?.`, which throws a TypeError when a Google Meet booking has no destination calendar (handleNewBooking sets it to null in that case). Every other destructuring site (larkcalendar, office365calendar, googlecalendar, packages/lib/CalendarService.ts, BrokenIntegrationEmail.tsx) guards with `?.` or a truthiness check.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5105691
+}

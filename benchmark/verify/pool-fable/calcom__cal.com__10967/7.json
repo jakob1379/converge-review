@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/bookings/lib/handleNewBooking.ts:1063-1067 sets evt.destinationCalendar to null when neither eventType nor organizerUser has a destination calendar, and nothing reassigns it before line 1078, where `evt.destinationCalendar?.push(...teamDestinationCalendars)` short-circuits on null, so the team calendars collected at lines 992-993 are discarded for collective events.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16760039999999998
+}

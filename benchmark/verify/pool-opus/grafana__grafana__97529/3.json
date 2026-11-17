@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/storage/unified/search/bleve.go:96-98 calls bleve.New(dir) on the fixed path Root/<namespace>/<resource>.<group> whenever size > FileThreshold. Nothing in the backend removes or reopens an existing index there, and bleve.New returns ErrorIndexPathExists if that path already exists. That error passes through searchSupport.init (resource/search.go:190-198) into s.Init, which the patch now calls inside NewResourceServer (server.go hunk at line 255), so building the server fails on every restart. The bleve.New behaviour is from bleve v2 itself; I couldn't read the module cache to double-check it here.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.19749339999999999
+}

@@ -1,0 +1,49 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "desktop/topic-post.scss",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In desktop/topic-post.scss, `.topic-meta-data h5 a` has its dark-light-choose arguments swapped. The original light-theme `scale-color($primary, $lightness: 30%)` became `dark-light-choose(70%, 30%)` instead of `(30%, 70%)`, so the light-theme link becomes much lighter and lower-contrast.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "desktop/user.scss",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In desktop/user.scss and mobile/user.scss, `.group-member-info .name` was converted to `dark-light-choose(50%, 50%)` instead of `(30%, 70%)`. This changes the light-theme lightness from 30% to 50%, the same as `.title`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "mobile/topic-post.scss",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In mobile/topic-post.scss, `.topic-map h3` was converted to `dark-light-choose(50%, 50%)` instead of `(20%, 80%)`. This changes the light-theme lightness from 20% to 50% and diverges from desktop/topic-post.scss, which keeps 20/80.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": "common/base/discourse.scss",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The comment at common/base/discourse.scss:73 still describes the old default `scale-color($primary, $lightness: 50%)`, which is stale after the conversion.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

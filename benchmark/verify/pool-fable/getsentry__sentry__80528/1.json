@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The re-fetch at src/sentry/monitors/logic/incidents.py:93 is needed: `previous_checkins` only holds id/date_added/status (incidents.py:44), while `create_incident_occurrence` reads each check-in's `trace_id` (src/sentry/monitors/logic/incident_occurrence.py:83-84). The patch also only moves this code verbatim from mark_failed.py.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.29789859999999996
+}

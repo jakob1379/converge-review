@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`_create_process_for_shard` is defined at src/sentry/spans/consumers/process/flusher.py:127-132 and a repo-wide search finds no other reference to it; the only callers nearby (flusher.py:84, 259) call `_create_process_for_shards` directly. The patch adds this method (change.patch:190) as a thin lookup-and-delegate wrapper.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0980578
+}

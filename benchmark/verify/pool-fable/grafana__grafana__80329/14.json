@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/cleanup_test.go:273-281 and 283-291 are two near-identical WithDbSession blocks, each with batchsize := 500 and an InsertMulti chunk loop (annotations, then annotation tags); both call require.NoError inside the callback (lines 277, 287) and then return nil (lines 279, 289). It is test-helper duplication only, and the same require-in-callback pattern already exists at lines 211-216.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2346431
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/topics_controller.rb:107-111, unsubscribe lowers the level by one step: a level above regular becomes regular, and anything else becomes muted. Because this runs on every GET (routes.rb adds `get t/:slug/:topic_id/unsubscribe`), a second visit, such as a reload, takes a watching or tracking topic from regular to muted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12325239999999998
+}

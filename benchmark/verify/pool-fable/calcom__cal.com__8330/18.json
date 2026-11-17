@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `checkIfIsAvailable`, `dayjs(date.start).add(utcOffset, \"minutes\")` is rebuilt four times (packages/trpc/server/routers/viewer/slots.ts:110, 114, 118, 119) and the `date.end` equivalent twice (lines 114, 123) inside one `dateOverrides.find` callback, with no shifted start/end stored once per override.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.13921139999999999
+}

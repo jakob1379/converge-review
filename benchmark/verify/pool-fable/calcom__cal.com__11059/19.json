@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`parseRefreshTokenResponse` throws when `safeParse` fails (packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:21-23) and otherwise returns the successful result, so the `!success` checks at packages/app-store/salesforce/lib/CalendarService.ts:92-94 and packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:108-110 can never be true. Both callers are async and the error message is identical, so behaviour is unchanged.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1630365
+}

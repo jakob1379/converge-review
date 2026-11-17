@@ -1,0 +1,38 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The align-items mixin emits `-ms-align-items`, which is not a real CSS property in any IE/Edge version. IE10/11 use `-ms-flex-align`, which the mixin already emits on line 120, so the `-ms-align-items` line is dead output.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The order mixin passes `$val` directly to `-webkit-box-ordinal-group` and `-moz-box-ordinal-group`. Those legacy properties are 1-based, while `order` is 0-based, so ordering in older WebKit/Firefox is off by one, and a value of 0 is invalid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`.small-action` is now a flex container, yet its children (`.topic-avatar`, `.avatar`, `button`) still use `float: left`/`float: right`. Floats are ignored on flex items, so these declarations, such as float:left on `.topic-avatar`, are dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

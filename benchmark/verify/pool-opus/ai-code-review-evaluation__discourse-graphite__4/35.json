@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the `--category` option and its `category_id` lookup, and swaps `PostCreator.new(..., created_at:, category:)` for `TopicEmbed.import_remote(user, t[:link], title:)` (lib/tasks/disqus.thor:148). That call does an unrescued `open(url).read` per thread, passes no created_at or category, and its file never requires 'open-uri' (app/models/topic_embed.rb:364-373); open-uri may still load through other files, so that point is the weakest. On a re-run, `import` returns the existing `embed.post` (topic_embed.rb:351-361), so every Disqus comment is created again in the same topic (disqus.thor:150-176).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2055222
+}

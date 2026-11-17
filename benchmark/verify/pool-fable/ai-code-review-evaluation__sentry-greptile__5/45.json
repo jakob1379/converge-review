@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes `staleTime: 0`/`retry: false` and now returns `isLoading: isFetching` and wraps failures in a plain `Error` (static/app/views/explore/hooks/useTraceItemAttributeKeys.tsx:50-61, useGetTraceItemAttributeKeys.tsx:85); the app default config sets no `retry`, so retries are now on. `projectIds` is a fresh `.map()` array whenever `projects` is passed (useTraceItemAttributeKeys.tsx:26-37, though stable when it falls back to `selection.projects`), options are built at both useTraceItemAttributeKeys.tsx:31 and useGetTraceItemAttributeKeys.tsx:66, and the only call is `getTraceItemAttributeKeys()` with no search argument (useTraceItemAttributeKeys.tsx:53).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.1050381999999999
+}

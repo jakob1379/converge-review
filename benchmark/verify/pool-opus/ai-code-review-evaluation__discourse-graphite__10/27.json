@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the migration added by change.patch (patch lines 554-556), `val.present?` means val has at least one non-whitespace character, so `val.split(\"\\n\")` always returns a non-empty array and `records.present?` is always true. Even if records were empty, `records.each` would simply do nothing, so the inner check adds nothing.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.03279
+}

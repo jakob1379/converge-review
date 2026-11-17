@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new `packages/ui/form/MultiEmail.tsx:12-94` (patch) reproduces the `multiemail` factory at `packages/features/form-builder/Components.tsx:234-313` almost line for line: same `inputClassName` string, same `EmailField`/`Tooltip`/`Icon`/`Button` structure, differing only in immutable array updates, `htmlFor`/test-id names and label margin classes. The factory, which carries a `//TODO: Make it a ui component` at line 233, was left in place rather than switched to the new component.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3308301
+}

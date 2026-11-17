@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "BookingListItem.tsx has the seat context (`booking.seatsReferences`, used at lines 134-138), but the patch passes only `bookingId={booking.id}` to AddGuestsDialog. The new addGuests.handler.ts then runs `prisma.booking.update({ where: { id: bookingId }, data: { attendees: { createMany } } })` with no BookingSeat link or seat check, so on seated events the guests become seatless attendees of the shared booking.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1740936
+}

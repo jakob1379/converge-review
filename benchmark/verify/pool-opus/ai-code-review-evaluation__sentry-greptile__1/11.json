@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/endpoints/organization_auditlogs.py:76-91 the if and else branches make the same self.paginate(request, queryset, order_by=\"-datetime\", on_results=...) call. The only differences are paginator_cls (OptimizedCursorPaginator vs DateTimePaginator, lines 79 and 88) and the extra enable_advanced_features=True kwarg at line 82.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0573944
+}

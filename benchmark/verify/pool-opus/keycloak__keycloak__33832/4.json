@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AuthzClient.create now calls CryptoIntegration.init(AuthzClient.class.getClassLoader()) (AuthzClient.java:95). That method only sets the static volatile cryptoProvider when it is still null (CryptoIntegration.java:29-38), so the first caller wins for the whole JVM; later init calls with another classloader can only replace it via setProvider. If that classloader sees only the new AuthzClientCryptoProvider (order 100), the stub gets pinned, and almost all of its methods throw UnsupportedOperationException (getCertificateUtils, getPemUtils, getKeyFactory, getSignature, getX509CertFactory, etc.; patch lines 439-589).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.18281179999999997
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "mobile/topic-post.scss:520-522 still sets `.custom-message { margin-left: -40px }`. In the old layout this offset sat inside the 4em left padding next to a floated icon. The patch makes `.small-action` a flex row (common/base/topic-post.scss:264-265) and cuts `.small-action-desc` padding to `0 1.5%` (line 280), so the description now starts just right of the 45px `.topic-avatar` column (lines 267-277). The -40px margin therefore pulls the custom message back over the icon, which sits on top on mobile because of `z-index:999` (mobile/topic-post.scss:474-478). It overlaps the icon but does not go past the left edge.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13749309999999998
+}

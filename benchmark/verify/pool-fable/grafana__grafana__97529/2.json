@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch drops the function-wide lock in BuildIndex and only guards the final `b.cache[key] = idx` (pkg/storage/unified/search/bleve.go:88-139), while getOrCreateIndex still does an unsynchronised GetIndex-then-build (pkg/storage/unified/resource/search.go:292-298), so Search (search.go:148) and handleEvent (search.go:237) can build the same key at once and the last write replaces the other index. The file-backed part is narrower: getOrCreateIndex passes size 10 and the default threshold is 10 (pkg/setting/setting_unified_storage.go:44), so same-directory `bleve.New` at bleve.go:98 only races when the threshold is configured below 10.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3196053
+}

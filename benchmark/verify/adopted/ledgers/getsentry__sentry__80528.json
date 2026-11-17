@@ -1,0 +1,141 @@
+{
+ "findings": [
+  {
+   "path": "src/sentry/monitors/logic/incidents.py",
+   "line": 11,
+   "severity": "Minor",
+   "claim": "The new module declares `import logging` / `logger = logging.getLogger(__name__)` but never uses `logger`.",
+   "evidence": "No `logger.` call in incidents.py (ponytail, superpowers, open-code-review grep). Seats cite line 11 (ponytail, superpowers) and line 12 (open-code-review); deduplicated as the same claim.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers",
+    "mattpocock"
+   ],
+   "verdict": "fix",
+   "reason": "Dead code introduced into a new file. Deleting the two lines changes no behaviour, so this is the smallest possible change. mattpocock listed it as carried over and did not count it as a finding; the other three seats reported it as Minor.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incidents.py is a new file in this patch. It imports logging at line 3 and sets `logger = logging.getLogger(__name__)` at line 11, and nothing else in the file uses `logger` or `logging`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.037027899999999996
+   }
+  },
+  {
+   "path": "src/sentry/monitors/logic/incident_occurrence.py",
+   "line": 25,
+   "severity": "Minor",
+   "claim": "The new module declares `import logging` / `logger = logging.getLogger(__name__)` but never uses `logger`.",
+   "evidence": "No `logger.` call in incident_occurrence.py (ponytail, superpowers, open-code-review grep). Seats cite line 25 (ponytail, superpowers) and line 31 (open-code-review, which also calls it patch line 31); deduplicated as the same claim.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers",
+    "mattpocock"
+   ],
+   "verdict": "fix",
+   "reason": "Dead code introduced into a new file. Deleting the two lines changes no behaviour. mattpocock listed it as carried over and did not count it as a finding; the other three seats reported it as Minor.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/monitors/logic/incident_occurrence.py:25 defines `logger = logging.getLogger(__name__)`, but the file has no other `logger` reference, and nothing else in the repo imports or patches `incident_occurrence.logger`. The patch adds this file as new.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0443875
+   }
+  },
+  {
+   "path": "src/sentry/monitors/logic/incident_occurrence.py",
+   "line": 157,
+   "severity": "Minor",
+   "claim": "`get_monitor_environment_context` copies `monitor.config` and replaces `schedule_type` with its display name, then returns the raw `monitor_environment.monitor.config`. The readable schedule type never reaches the event context.",
+   "evidence": "Code reading by each seat; ranges cited are 157-170 (superpowers), 166-174 (open-code-review) and the start of the function (ponytail). All seats confirm the body is identical in base 0cfc28e76dd, so the bug predates the patch. Reasoned only; no failing test was written.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers",
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Pre-existing bug, not a regression. Fixing it (`\"config\": config`) changes event payload behaviour and belongs in a separate commit, not this pure move (ponytail). Defer with a `ponytail:` comment. mattpocock listed it as carried over and did not count it as a finding.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At src/sentry/monitors/logic/incident_occurrence.py:160-162 the function builds a copied `config` with `schedule_type` set to its display name, but line 168 returns `monitor_environment.monitor.config`, so the readable schedule type is thrown away. The patch moved this body unchanged from mark_failed.py (patch lines 563-572 removed, 165-174 added), so the bug was already there.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0410161
+   }
+  },
+  {
+   "path": "src/sentry/monitors/logic/mark_failed.py",
+   "line": 11,
+   "severity": "Minor",
+   "claim": "The `logger` that remains in mark_failed.py is also unused.",
+   "evidence": "`grep -n logger` finds only the definition at mark_failed.py:11 (ponytail); open-code-review finds no `logger.` call in the file. This predates the patch.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Raised by two seats, so it goes on the appendix and is not fixed. Pre-existing dead code in a line the patch did not change.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/monitors/logic/mark_failed.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch removes public names from `sentry.monitors.logic.mark_failed` (`mark_failed_threshold`, `create_issue_platform_occurrence`, `SimpleCheckIn`, `get_failure_reason`, `get_monitor_environment_context`). Downstream code such as getsentry that imports them or `mock.patch`es them would break.",
+   "evidence": "Reasoned only. All seats grepped src/ and tests/ and found no remaining in-repo references. Downstream repositories are not visible to any seat.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (two seats). Unverified: settling it requires grepping getsentry and other closed-source consumers for the old names and `mock.patch` targets.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/monitors/logic/test_mark_failed.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch adds no tests for the new modules (`try_incident_threshold`, `create_incident_occurrence`).",
+   "evidence": "superpowers notes that the existing test_mark_failed.py exercises the moved logic through `mark_failed` and still patches `sentry.issues.producer.produce_occurrence_to_kafka`.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "reject",
+   "reason": "The seat reports disprove the need. All four seats confirm the moved bodies are identical to base apart from renames, and the existing tests still drive and mock the moved code. The raising seat itself says nothing requires new tests.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/monitors/logic/incidents.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`MonitorIncident.objects.get_or_create(..., resolving_checkin=None)` has no unique constraint behind it, so concurrent failures rely on the filtering done earlier in `mark_failed`.",
+   "evidence": "Reasoned by open-code-review. The code is unchanged from base and the seat states it is not a finding against this patch.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (one seat). Pre-existing concurrency behaviour that the move did not alter; logged in the ledger as non-blocking. Unverified: settling it requires a concurrent-failure test against a real database.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/monitors/logic/incident_occurrence.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "A docstring in the moved code contains the typo \"humam readible\".",
+   "evidence": "mattpocock reports it as carried over from base.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (one seat). Pre-existing cosmetic typo in moved code; not fixed in this loop.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats reviewed all 4 files (incident_occurrence.py, incidents.py, mark_failed.py, types.py). Axes that did not run: (1) The gate did not run (benchmark mode) and no project checks were executed by the orchestrator, so the review is unanchored and nothing has ground truth. The only seat-side check was superpowers' `ruff check --select F` (pass); no seat ran tests or mypy. (2) No spec was given; seats used the commit message as intent. (3) The repo has no documented coding standards (no CLAUDE.md, AGENTS.md or CODING_STANDARDS; CONTRIBUTING.md links externally), and no monitors.logic module is on the mypy strict list, so the standards axis had nothing to check against. (4) No red tests or repro commands were produced; every claim is reasoned. (5) Downstream consumers such as getsentry were not visible to any seat. (6) No verifier dispatch or cross-family correctness seat was available in this replay. No Critical or Important findings were raised."
+}

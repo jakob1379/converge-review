@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Three of the four points hold in packages/features/bookings/lib/handleNewBooking.ts: Prisma known errors are re-thrown as 400 with the raw message (758-759), every other error is replaced by a generic unlogged 500 (761), and the dynamic-user select no longer includes organization.slug (735-739) although IsFixedAwareUser still declares it (355) and the users are cast to it (870). The empty-dynamicUserList point is only half right: it now gives a 500 (727-728, 761), but the old code never reached a 404 there either, since `!users` is false for `[]` (798) and it would have crashed on the undefined organizer (145/921).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5474213
+}

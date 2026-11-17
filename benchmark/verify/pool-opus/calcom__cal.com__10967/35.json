@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts:100-124 (createEvent) and 198-230 (updateEvent), the organizer email is always taken from destinationCalendar[0].externalId. createEvent runs once per host's calendar (EventManager createAllCalendarEvents loop), and only the target calendarId changes per credentialId, so every host's Google event gets the main host's calendar as organizer email.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22787430000000003
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `enable_advanced = request.user.is_superuser or organization_context.member.has_global_access` at organization_auditlogs.py:71. That reads the raw user flag, while the endpoint's own OrganizationAuditPermission (api/bases/organization.py:124) checks is_active_superuser(request), so a superuser without an active superuser session gets OptimizedCursorPaginator with enable_advanced_features=True.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1412507
+}

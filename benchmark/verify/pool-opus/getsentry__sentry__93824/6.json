@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In test_consumer.py (patch lines 444-451), test_flusher_processes_limit only checks `len(flusher.processes)`, `max_processes`, `num_processes` and the total shard count in `process_to_shards_map`. It never sends spans or checks that segments from every shard get flushed. A grep of tests/sentry/spans for `_ensure_processes_alive`, `process_restarts`, `kill`, `is_alive`, `flusher_unhealthy` and `MAX_PROCESS_RESTARTS` finds nothing, so the per-process restart path in flusher.py (patch lines 251-308) has no test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10127570000000001
+}

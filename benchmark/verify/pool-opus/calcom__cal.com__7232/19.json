@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The \"Send code\" button that calls sendVerificationCodeMutation.mutate (WorkflowStepContainer.tsx:409-419) is disabled only by `numberVerified`, never by `sendVerificationCodeMutation.isLoading`, so repeated clicks can send several SMS messages. The claim calls it the \"verify\" button, but the actual \"Verify\" button sends no SMS and is already disabled while verifyPhoneNumberMutation is loading.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0729337
+}

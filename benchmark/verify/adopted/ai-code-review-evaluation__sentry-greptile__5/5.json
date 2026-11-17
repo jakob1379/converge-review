@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds get_environment_info (commit_context.py:584-597). It calls issue.get_recommended_event(), which runs a Snuba get_events_snql query (group.py:305), falls back to get_latest_event (group.py:887-891) and then does a get_environment lookup. The GitHub (integration.py:409) and GitLab comment builders call it once per issue inside a list comprehension, so this is a real N+1, though the list is capped at 5 issues (commit_context.py:572) and runs in a background task.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.28044
+}

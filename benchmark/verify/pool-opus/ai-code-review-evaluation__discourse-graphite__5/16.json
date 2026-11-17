@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes `float: right` from `.panel` and now right-aligns it only with `margin-left: auto` (header.scss:35-39), inside a `.contents` container that falls back to `display: -webkit-box` (mixins.scss:120-121). No other `.panel` or float rule exists in any header.scss, and the 2009 box model treats auto margins as zero, so the panel won't be pushed right in browsers that only support that model. That browser behaviour comes from the old spec and WebKit, not from this repository.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.061748300000000006
+}

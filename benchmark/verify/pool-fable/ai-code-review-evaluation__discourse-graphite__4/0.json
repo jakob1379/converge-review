@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:13 interpolates `url` unescaped into `<a href='#{url}'>#{url}</a>`, guarded only by `=~ /^https?:\\/\\//` (line 11), and the post is created with `cook_method: raw_html` (line 22), which makes `Post#cook` return `raw` unsanitised (app/models/post.rb:133). `embed_url` comes straight from `params` (app/controllers/embed_controller.rb:9,15) and `URI()` accepts single quotes, so a URL like `http://host/?a='onmouseover='alert(1)` injects an event-handler attribute; `<`/`>` are rejected by `URI()`, so it is attribute injection rather than tag injection, and not executed here.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5091438
+}

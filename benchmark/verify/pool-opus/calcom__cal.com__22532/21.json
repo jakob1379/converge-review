@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new getCacheStatusByCredentialIds in packages/features/calendar-cache/calendar-cache.repository.ts (patch lines 243-258) groups rows only by `credentialId: { in: credentialIds }` and has no expiresAt filter. The repository's read paths (lines 112 and 127) do filter on `expiresAt: { gte: now }`, so connectedCalendars.handler.ts can return a cacheUpdatedAt for a cache that has fully expired until the cleanup cron (apps/web/app/api/cron/calendar-cache-cleanup/route.ts) deletes those rows.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1082005
+}

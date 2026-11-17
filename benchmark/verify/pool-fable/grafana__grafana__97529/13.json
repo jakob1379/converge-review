@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Mostly correct: the new eager-init error return at pkg/storage/unified/resource/server.go:258-262 has no failing-path test, since every test caller asserts require.NoError (server_test.go:52, apistore/watcher_test.go:125,156, sql/test/integration_test.go:59), and watcher_test.go:148 still calls the backend's Init before construction, which is redundant but harmless (sync.Once at sql/backend.go:86-91). The \"handlers working without lazy Init\" part is wrong: server_test.go:88-109 calls List/Create/Read straight after construction.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.38014669999999995
+}

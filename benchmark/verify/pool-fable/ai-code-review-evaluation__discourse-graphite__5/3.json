@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/common/foundation/mixins.scss:125-131 passes `$val` unchanged to `-webkit-box-ordinal-group` and `-moz-box-ordinal-group` (initial value 1, positive integers only) alongside `order` (initial value 0), so the mapping is off by one and `order(0)` would emit an invalid legacy value. The only callers, topic.scss:30 (`order(2)`) and header.scss:39 (`order(3)`), still sort after unordered siblings in both models, so the defect is latent and nothing renders wrongly today.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1340692
+}

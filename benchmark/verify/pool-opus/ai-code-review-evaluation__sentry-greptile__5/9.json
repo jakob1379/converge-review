@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/integrations/source_code_management/commit_context.py (patch lines 265-269), `_truncate_title` returns `title[:max_length].rstrip() + \"...\"`. So a title longer than 50 characters can come back as up to 53 characters, 3 more than ISSUE_TITLE_MAX_LENGTH.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.033211
+}

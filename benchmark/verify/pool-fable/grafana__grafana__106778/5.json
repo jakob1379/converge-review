@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In public/app/features/alerting/unified/components/rule-viewer/AlertRuleMenu.tsx, canPause and canDelete are ORed from ruler and Grafana Prom abilities (lines 83, 87), but Pause still requires `rulerRuleType.grafana.rule(rulerRule)` (line 123) and Delete still requires `rulerRule` (line 165). The list view passes only promRule (rule-list/GrafanaRuleListItem.tsx:47 \u2192 RuleActionsButtons.V2.tsx:95 `rulerRule={rule}` is undefined), so neither item can render for Grafana rules there.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.7367699999999999
+}

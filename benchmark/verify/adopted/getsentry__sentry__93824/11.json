@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The test does `import time` and then calls `time.sleep(0.1)` (test_consumer.py:62). That call looks up the attribute on the `time` module, which line 15 replaced with `lambda _: None` through `monkeypatch.setattr(\"time.sleep\", ...)`, so the sleep added by the patch does nothing and the comment 'Give flusher threads time to process' is wrong.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0639814
+}

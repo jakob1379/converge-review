@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/serializers/embeddable_host_serializer.rb:2-14 declares `attributes :id, :host, :category_id` and then defines `id`, `host` and `category_id` methods that each only return `object.<attr>`. `EmbeddableHost` is an ActiveRecord model (app/models/embeddable_host.rb:1), and other serializers such as app/serializers/upload_serializer.rb:3 rely on the `attributes` declaration alone, so the explicit methods are redundant.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.14283819999999997
+}

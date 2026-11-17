@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/workflow_engine/processors/test_detector.py:28 defines `counter_names = [\"test1\", \"test2\"]` as a bare list class attribute with no annotation at all, so no `ClassVar`; the base declares it as an abstract property at src/sentry/workflow_engine/processors/detector.py:144. The patch only moves this pre-existing `MockDetectorStateHandler` class higher in the same test file, and the line is unchanged, so this is a style nit in a test mock with no behavioural effect.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1116543
+}

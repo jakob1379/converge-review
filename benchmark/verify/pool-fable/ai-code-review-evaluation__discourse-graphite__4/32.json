@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/embed_controller.rb:15 enqueues retrieve_topic for any unknown embed_url with no login or rate limit, gated only by a spoofable Referer check (line 26). lib/topic_retriever.rb:26 keys the 60s throttle on the exact URL, so each distinct URL on the embeddable host (e.g. a varied query string) runs a synchronous Jobs::PollFeed.new.execute (line 41) plus an outbound fetch and topic creation via TopicEmbed.import_remote (line 52).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.40175710000000003
+}

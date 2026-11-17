@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/monitors/logic/incidents.py:50-51 reads \"If we have any successful check-ins within the threshold of commits we have NOT reached an incident state\", while the code at line 52 checks the last `failure_issue_threshold` check-ins, so \"commits\" is a typo for \"check-ins\". The wording was copied verbatim from the removed `mark_failed_threshold` in mark_failed.py, but the patch adds it as a new line in a new file.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2211786
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/embed_controller.rb:28 sets X-Frame-Options to \"ALLOWALL\", gated only by the Referer-host comparison at line 26 (`URI(request.referer || '').host != SiteSetting.embeddable_host`), which a non-browser client can forge. The empty-string fallback is real but harmless: `URI('').host` is nil, so a missing referer is rejected, and the header is limited to the read-only embed endpoint.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4067068
+}

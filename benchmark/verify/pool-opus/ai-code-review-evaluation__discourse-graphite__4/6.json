@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's ensure_embeddable sets response.headers['X-Frame-Options'] = \"ALLOWALL\" (change.patch line 204, spec at line 841), but X-Frame-Options only allows DENY, SAMEORIGIN or ALLOW-FROM (RFC 7034). Framing works only because browsers ignore the unknown value, which effectively drops Rails' default SAMEORIGIN; removing the header would be the cleaner fix.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0317824
+}

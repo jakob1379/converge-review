@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`OptimizedCursorPaginator.value_from_cursor` returns `cursor.value` unconverted (src/sentry/api/paginator.py:842-843), unlike `DateTimePaginator` (paginator.py:238-241), and the audit-log endpoint uses it with `order_by=\"-datetime\"` (src/sentry/api/endpoints/organization_auditlogs.py:76-83). Any request with a non-zero cursor value therefore has `build_queryset` emit `datetime <= <int>` (paginator.py:112-126).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.22464879999999998
+}

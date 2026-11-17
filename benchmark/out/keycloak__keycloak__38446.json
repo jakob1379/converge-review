@@ -1,0 +1,197 @@
+{
+  "findings": [
+    {
+      "path": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java",
+      "line": 125,
+      "severity": "Important",
+      "claim": "When user storage accepts regenerated recovery codes, createRecoveryCodesCredential returns without deleting the existing local recovery-authn-codes credential, so previously issued (possibly leaked) local codes remain valid for login.",
+      "evidence": "Only the local branch goes through RecoveryAuthnCodesCredentialProvider.createCredential (RecoveryAuthnCodesCredentialProvider.java:36-42), the sole place that deletes the previous credential. UserCredentialManager.isValid (UserCredentialManager.java:59-80) falls through from the federated validator to the local RecoveryAuthnCodesCredentialProvider.isValid, which validates against the old stored credential. Upgrade path: all pre-patch federated users have local codes. Proposed red test (not run): seed local codes via createStoredCredential, run setupRecoveryKeysForUserWithRequiredAction, log in with oldCodes.get(0) -> succeeds.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two correctness seats independently traced the same path with source citations; security-relevant (regeneration after leak does not revoke). Red test is constructible in BackwardsCompatibilityUserStorageTest."
+    },
+    {
+      "path": "services/src/main/java/org/keycloak/forms/login/freemarker/model/RecoveryAuthnCodeInputLoginBean.java",
+      "line": 17,
+      "severity": "Important",
+      "claim": "RecoveryAuthnCodeInputLoginBean calls .get() on RecoveryAuthnCodesUtils.getCredential(user); for a storage provider that supports/updates recovery-authn-codes but does not override CredentialInputUpdater.getCredentials (default Stream.empty()) and has no local credential, the login page throws NoSuchElementException (500); a provider returning a non-internal format makes createFromCredentialModel throw.",
+      "evidence": "CredentialInputUpdater.getCredentials default returns Stream.empty() (server-spi CredentialInputUpdater.java:50); isConfiguredFor reports configured via storage, so the form renders; the authenticator handles the empty Optional (RecoveryAuthnCodesFormAuthenticator.java:90-92) but the bean does not. Reasoned, not run.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Source-cited crash path on a public SPI surface; red test possible with a test provider that supports the type without overriding getCredentials."
+    },
+    {
+      "path": "server-spi/src/main/java/org/keycloak/models/utils/RecoveryAuthnCodesUtils.java",
+      "line": 56,
+      "severity": "Important",
+      "claim": "RecoveryAuthnCodesUtils.getCredential queries getFederatedCredentialsStream for every federated user (including LDAP, which never supports this type), adding an LDAP round trip per challenge render and submit; LDAPStorageProvider.getCredentials throws IllegalStateException when the LDAP entry is missing, breaking recovery-code login for imported users that previously used local codes.",
+      "evidence": "getFederatedCredentialsStream -> CredentialInputUpdater.getCredentials (UserCredentialManager.java:130-145); LDAPStorageProvider.getCredentials (LDAPStorageProvider.java:1211-1215) performs an LDAP search and throws if the entry is gone. Pre-patch, recovery-code login read only local storage. Suggested guard: check provider supportsCredentialType(TYPE) first. Reasoned, not run.",
+      "seats": [
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Single correctness seat with source citations to a concrete behaviour change (new remote call + exception path); no counter-evidence. Red test: imported LDAP user with local codes whose LDAP entry is removed."
+    },
+    {
+      "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+      "line": 231,
+      "severity": "Important",
+      "claim": "The new getCredentials override in BackwardsCompatibilityUserStorage also returns the OTP credential (with a newly generated id), which reroutes the Issue 19575 regression test testOTPSetupAndRemoveThroughAccountMgmtAndLogin from the 'otp-id' placeholder / CredentialDeleteHelper '-id' backwards-compat branch to the federated-id branch, leaving that legacy path untested and contradicting the class Javadoc that this 4.8.3-era provider should need no code changes.",
+      "evidence": "Pre-patch the default empty getCredentials made AccountCredentialResource (lines 211-219) build 'otp-id' and CredentialDeleteHelper (lines 71-80) delete via endsWith(\"-id\"); post-patch the OTP model with setId (line 179) is returned and the federated branch (lines 63-70) is taken. Grep found no other test of 'otp-id' or another testsuite provider overriding getCredentials. Class Javadoc lines 58-62. superpowers seat checked the OTP test still passes (reasoned) but did not dispute the coverage shift.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Coverage loss is source-cited by two seats (one correctness); superpowers seat's 'no regression' concerns pass/fail, not which branch is covered. Fix: drop OTP branch and setId, or move recovery-code support to a separate test provider."
+    },
+    {
+      "path": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java",
+      "line": 123,
+      "severity": "Important",
+      "claim": "The User Storage SPI contract for recovery codes is undocumented and asymmetric: updateCredential receives plaintext codes as a JSON list in challengeResponse, getCredentials must return Keycloak's internal hashed RecoveryAuthnCodesCredentialModel format, and single-use enforcement is delegated entirely to the provider; no docs, release notes or upgrade-guide entry accompany the change.",
+      "evidence": "CredentialHelper.java:117-123 builds UserCredentialModel with plaintext codes; createFromCredentialModel requires RecoveryAuthnCodesCredentialData/SecretData. CONTRIBUTING.md:29,:79 and PR-CHECKLIST.md:9 require docs/release notes; patch touches no docs/ files.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented-standard breach (CONTRIBUTING.md) plus provider-visible handling of plaintext secrets; correctness seats rated the contract gap Minor, standards seat rated the missing docs Important\u2014kept Important as a documented-rule breach, advisory so non-blocking."
+    },
+    {
+      "path": null,
+      "line": null,
+      "severity": "Important",
+      "claim": "Commit message lacks the required issue link ('Closes #NNNN').",
+      "evidence": "CONTRIBUTING.md:26, :96-97, :115-125; PR-CHECKLIST.md:6. `git log -1 --format=%B HEAD` contains only subject and Signed-off-by.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Process/metadata, not code; advisory seat; fixed at merge time by amending the message, outside the code fix loop."
+    },
+    {
+      "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java",
+      "line": 85,
+      "severity": "Minor",
+      "claim": "RecoveryAuthnCodesFormAuthenticator takes the allCodesUsed decision from the federated model and calls removeStoredCredentialById with the federated credential's id (null in the fixture), which cannot remove the provider's copy; exhaustion of a coexisting local credential is never observed.",
+      "evidence": "RecoveryAuthnCodesFormAuthenticator.java:80-88; removeStoredCredentialById targets local/fed storage only; fixture createFromValues leaves id null.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Mostly a consequence of the stale-local-credential finding (CredentialHelper.java:125); revisit after that fix lands. ponytail: re-check once local cleanup exists."
+    },
+    {
+      "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+      "line": 340,
+      "severity": "Minor",
+      "claim": "Fixture isValid accepts any of the stored codes in any order and never consumes them; the new test performs a single login, so single-use and 'next code #N' behaviour on the federated path are untested, and core never enforces single use for federated codes.",
+      "evidence": "generatedKeys.stream().anyMatch(key -> key.equals(input.getChallengeResponse())) with no state change (BackwardsCompatibilityUserStorage.java:325-341); BackwardsCompatibilityUserStorageTest.java:241-262 logs in once.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Test-coverage gap in a fixture; ponytail: add a second-login/reuse assertion when the contract (single-use owner) is documented."
+    },
+    {
+      "path": "testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java",
+      "line": 235,
+      "severity": "Minor",
+      "claim": "Fixture getCredentials dereferences getMyUser(user) without a null check, returns a recovery-codes model with a null id (createFromValues drops the id), and disableCredentialType/getDisableableCredentialTypesStream ignore recovery codes, so removing them via the account console fails (NotFoundException in CredentialDeleteHelper) or silently does nothing.",
+      "evidence": "BackwardsCompatibilityUserStorage.java:217-224, 231-248, 255-263; getDisableableCredentialTypesStream in the same file null-checks; CredentialDeleteHelper matches credentialId.equals(c.getId()).",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Test-fixture-only defect, no production impact; ponytail: fold into the fixture rework from the getCredentials coverage finding."
+    },
+    {
+      "path": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java",
+      "line": 123,
+      "severity": "Minor",
+      "claim": "The storage path forwards only the codes; userLabel and generatedAt from the credential model are dropped, so storage-backed credentials lose metadata the local path keeps.",
+      "evidence": "CredentialHelper.java:117-130 builds UserCredentialModel from the codes list only.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Metadata loss, no functional break; ponytail: address alongside SPI contract documentation."
+    },
+    {
+      "path": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java",
+      "line": 76,
+      "severity": "Minor",
+      "claim": "Unrelated whitespace/formatting changes (CredentialHelper.getConfigurableAuthenticatorFactory re-indent, Javadoc <p> and spacing in BackwardsCompatibilityUserStorage, test re-indents, extra blank import line in RecoveryAuthnCodesAction) inflate the diff.",
+      "evidence": "CONTRIBUTING.md:27, :66-68 ('Do not format or refactor code that is not directly related'); whitespace-only hunks at CredentialHelper.java:76-85, BackwardsCompatibilityUserStorage.java:61,:95, BackwardsCompatibilityUserStorageTest.java:328,:466-468, RecoveryAuthnCodesAction.java:5.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented standard, trivial to revert; advisory, non-blocking."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+      "line": 123,
+      "severity": "Minor",
+      "claim": "configureBrowserFlowWithRecoveryAuthnCodes is copied from RecoveryAuthnCodesAuthenticatorTest with unused machinery: delay parameter (only caller passes 0), the delayed-authenticator execution, the 'delayed-suthenticator-config' typo, and a testingClient parameter that is already a field.",
+      "evidence": "BackwardsCompatibilityUserStorageTest.java:123-143 vs RecoveryAuthnCodesAuthenticatorTest.java:123-143; single caller at :243 passes 0.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Advisory simplification, cheap, removes an unrelated authenticator dependency from the test."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+      "line": 410,
+      "severity": "Minor",
+      "claim": "Test helpers take parameters that never vary: setupRecoveryKeysForUserWithRequiredAction(logoutOtherSessions) and assertUserHasRecoveryKeysCredentialInUserStorage(boolean) are each called once with true, leaving a dead uncheckLogoutSessions branch.",
+      "evidence": "BackwardsCompatibilityUserStorageTest.java:410, :423-425, :456; single call sites at :249, :253.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Advisory, dead branch removal is trivial."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+      "line": 476,
+      "severity": "Minor",
+      "claim": "enterRecoveryCodes duplicates a private helper from RecoveryAuthnCodesAuthenticatorTest and takes driver/page parameters that are already fields.",
+      "evidence": "BackwardsCompatibilityUserStorageTest.java:476-483 vs RecoveryAuthnCodesAuthenticatorTest.java:299.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Raising seat itself judged it acceptable: the original is a private method in another test package and cannot be reused as is; duplicating a small test helper is conventional in this testsuite."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java",
+      "line": 481,
+      "severity": "Minor",
+      "claim": "New test helper uses org.junit.Assert.assertEquals (fully qualified) where docs/tests-development.md prefers hamcrest assertThat.",
+      "evidence": "docs/tests-development.md guidance ('use org.hamcrest.MatcherAssert.assertThat where possible'); BackwardsCompatibilityUserStorageTest.java:462 already uses org.keycloak.testsuite.Assert (extends org.junit.Assert).",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "reject",
+      "reason": "Guidance is soft ('where possible') and the file's existing convention already uses JUnit-style asserts; the raising seat itself called it a judgement call."
+    }
+  ],
+  "coverage": "Files skipped: none \u2014 all four seats reviewed all 8 files in the patch (OCR's tool excluded BackwardsCompatibilityUserStorageTest.java from its reviewable list; the seat reviewed it manually). Untracked environment dotfiles in the worktree root (.bashrc, .claude/, etc.) were excluded from the pinned patch as non-PR artifacts. Axes not run: gate not run (benchmark mode) \u2014 no build, tests, linters or type checks, so every finding is reasoned, none executed; no spec \u2014 spec axis judged only against the commit subject; upstream GitHub issue not consulted (network blocked); no cross-family reviewer \u2014 all four seats ran on the same model family, so seat agreement is correlated evidence; rounds 2+, red tests and fixes not run (benchmark mode); not checked by any seat: LDAP mappers that may add recovery-authn-codes to supported credential types, runtime behaviour with LDAP unreachable, git history (partial clone)."
+}

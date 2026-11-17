@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/api/webassets/webassets.go:54-57 hardcodes `cdn := \"\"` so `readWebAssetsFromCDN` is never called, and that branch sits under the `Lock()`/`defer Unlock()` at lines 48-49, so if enabled it would run `http.DefaultClient.Do` (line 90) while holding the write lock. The dead branch predates the patch (the patch only added the lock), and the lock concern is purely hypothetical today.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.11710109999999999
+}

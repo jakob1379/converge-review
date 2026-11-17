@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/auth/two-factor/totp/disable.ts:48, the handler takes the backup-code path whenever `req.body.backupCode` is truthy, and the patch adds `req.body.backupCode.replaceAll(\"-\", \"\")` (patch line 372) with no type check. A truthy non-string value, such as a number or an object, throws an uncaught TypeError, so the request fails with a 500 instead of a 400.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0652562
+}

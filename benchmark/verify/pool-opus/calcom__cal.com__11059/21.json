@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `import { decodeOAuthState } from \"../oauth/decodeOAuthState\"` at packages/app-store/_utils/oauth/createOAuthAppCredential.ts:6, inside the oauth/ directory. It steps out of oauth/ and straight back in, so `./decodeOAuthState` is the direct path. The current path still resolves to the same file, so nothing breaks; this is only a style issue.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0531738
+}

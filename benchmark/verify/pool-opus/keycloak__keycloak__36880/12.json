@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In ClientPermissionsV2.java (new file, patch lines 493-572), hasGrantedPermission(Resource,String) is a line-for-line copy of the private ClientPermissions.hasPermission(Resource,String) at ClientPermissions.java:689-701. Both hasPermission(ClientModel,String) and hasPermission(String) repeat the same evaluatePermission call and nested scope-matching loop, with only the resource lookup differing.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22556039999999997
+}

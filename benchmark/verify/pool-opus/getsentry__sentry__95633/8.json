@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The docstring at change.patch:1156 says errors don't block offset commits for other messages. The assertion at change.patch:1202 checks the opposite: no commit has happened for the partition yet. That passes only because the commit loop waits 1s per cycle (change.patch:304) and the test usually finishes first, so it never checks that offsets are committed after an error (the worker's finally block marks them complete at change.patch:177).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.087863
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new loop at uploads_controller.rb:62-46 (patch lines 41-46) calls OptimizedImage.downsize(..., \"80%\", allow_animation: ...). For a path ending in .GIF, optimized_image.rb:155 sends it to downsize_instructions_animated, which builds `gifsicle --resize-fit 80%` (optimized_image.rb:115-123,137-139). --resize-fit takes a WxH geometry, so gifsicle errors, convert_with returns false (161-162), the size never shrinks, and all 5 attempts run before the upload is rejected. I did not run gifsicle; this relies on its documented syntax. The .gif path is certain for API URL uploads, because FileHelper.download keeps the extension (file_helper.rb:13-14).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11201030000000001
+}

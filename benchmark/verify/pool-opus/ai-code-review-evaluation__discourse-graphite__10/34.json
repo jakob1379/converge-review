@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:36-43 now passes `category: EmbeddableHost.record_for_host(url).try(:category_id)` where it used to pass SiteSetting.embed_category. PollFeed (app/jobs/scheduled/poll_feed.rb:39) calls this path, so feed items from a host with no EmbeddableHost row get a nil category, and config/site_settings.yml plus the migration delete embed_category. One caveat: admins can still choose a category per host in the new Embedding admin screen, so only the separate feed-wide setting is gone.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2063219
+}

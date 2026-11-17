@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/desktop/user.scss:522 and app/assets/stylesheets/mobile/user.scss:497 change `.group-member-info .name` from `scale-color($primary, $lightness: 30%)` to `dark-light-choose(scale-color($primary, $lightness: 50%), scale-color($secondary, $lightness: 50%))`, identical to `.title` (desktop:527, mobile:503). Every other 30% conversion in the patch uses the (30%, 70%) pair, so the light-theme colour does shift from 30% to 50%.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.129698
+}

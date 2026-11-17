@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/core/EventManager.ts:380, the no-credentialId branch calls `createEvent(c, event)` without `destination.externalId`, unlike line 370. CalendarManager.ts `createEvent` then returns `externalId: undefined`, and line 169 now builds `externalCalendarId` from `result.externalId` instead of `evt.destinationCalendar?.externalId` as it did before, so this path stores no external calendar id.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2556409
+}

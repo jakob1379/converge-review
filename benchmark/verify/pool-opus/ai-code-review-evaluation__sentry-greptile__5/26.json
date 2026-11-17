@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch replaces `dedupeArray(visualize.yAxes)` with `const dedupedYAxes = [visualize.yAxis]` (or `[yAxis]` / `[chart.yAxis]`) at several sites and still maps over the one-element array (change.patch:2662, 3298, 3307, 3360, 3806, 4202, 4433). In the Visualize class, `stack?: string` is still optional, yet the constructor now always sets `this.stack = 'all'` (change.patch:3153, 3166).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0452978
+}

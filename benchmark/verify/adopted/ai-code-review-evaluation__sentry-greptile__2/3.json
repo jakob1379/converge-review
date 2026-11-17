@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "organization_auditlogs.py:71 reads organization_context.member.has_global_access on every request, before checking the flag. member is None when request.user has no membership row (convert_args passes user_id=request.user.id at api/bases/organization.py:286-290; model.py:346 types member as Optional). Legacy ApiKey auth (AnonymousUser, access via from_auth at auth/access.py:1047) and sentry-app proxy users (access.py:1012) can pass OrganizationAuditPermission with org:write while is_superuser is False, so they now hit AttributeError, a 500. Active superusers are unaffected because is_superuser short-circuits.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2372462
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/integrations/github/test_integration.py:392 sends state \"ddd023d87a913d5226e2a882c4c4cc05\", while the pipeline signature (a deterministic md5 of the view class names, src/sentry/pipeline/base.py:132-133) is asserted to be \"9cae5e88803f35ed7970fc131e6e65d3\" at test_integration.py:233-236. OAuthLoginView's check `request.GET.get(\"state\") != pipeline.signature` in src/sentry/integrations/github/integration.py therefore returns the generic \"Invalid installation request.\" error, so build_integration's 404 branch (integration.py:351-356, \"The GitHub installation could not be found.\") is never reached and the weakened assertion passes for the wrong reason.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5190062
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the already-shipped migration db/migrate/20131223171005_create_top_topics.rb:3 from `create_table :top_topics do` to `create_table :top_topics, force: true do`. Databases that already ran it never run it again, and on a re-run `force: true` drops any existing top_topics table without warning (a truly fresh database has no table to drop). The edit is unrelated churn next to the new topic_embeds migration.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0448966
+}

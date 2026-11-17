@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch switches `span-buf:s:{...}` keys from SADD/SCARD/SUNIONSTORE/SSCAN to ZADD/ZCARD/ZUNIONSTORE/ZSCAN under the identical key format (src/sentry/spans/buffer.py:196-199, 434; src/sentry/scripts/spans/add-buffer.lua:24, 45-63), with no prefix change, type check, fallback read or WRONGTYPE handling anywhere in src/sentry/spans. ZADD/ZCARD/ZSCAN against a pre-existing SET key return WRONGTYPE in Redis, so old-format segments left over at deploy time (up to the 3600s TTL, buffer.py:151) cannot be written or flushed by new code; this follows from the code and Redis semantics, not from an observed run.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.40718119999999997
+}

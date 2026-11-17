@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch touches only three source files (organization_auditlogs.py, paginator.py, cursors.py) and adds no tests; `OptimizedCursorPaginator`, `optimized_pagination` and `enable_advanced_features` appear nowhere under tests/, and tests/sentry/api/endpoints/test_organization_auditlogs.py has no cursor or pagination cases. The only negative-offset test (tests/sentry/api/test_paginator.py:143-153) targets `OffsetPaginator`, so the new offset handling at src/sentry/api/paginator.py:179-184 is run by existing paginator tests only incidentally, with no test of the changed behaviour.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1825379
+}

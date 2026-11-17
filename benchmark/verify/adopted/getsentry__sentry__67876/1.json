@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The state sent at integration.py:402 and checked at :412 is `pipeline.signature`. pipeline/base.py:132-133 computes it as md5 of the view class names, so it is the same for every user and session and never secret, which means it gives no CSRF protection: an attacker can send a victim who is partway through the install a link with the attacker's own `code`, the known state and their own `installation_id` (bound at :397-399). That binds the attacker's login and installation into the victim's pipeline, and the sender check at :487-495 then passes because the attacker made that installation.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15036200000000002
+}

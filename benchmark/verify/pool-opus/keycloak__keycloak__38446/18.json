@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new RecoveryAuthnCodesUtils.getCredential (RecoveryAuthnCodesUtils.java:101-107) returns the first recovery-codes credential from getFederatedCredentialsStream(), which comes from the user-storage provider. RecoveryAuthnCodesFormAuthenticator.java:83-84 and RecoveryAuthnCodeInputLoginBean then pass it to createFromCredentialModel, which JSON-parses credentialData/secretData and turns an IOException into a RuntimeException (RecoveryAuthnCodesCredentialModel.java:92-104).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2198557
+}

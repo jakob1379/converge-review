@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/embed/best.html.erb:6 has `<%- end if %>`. Under Rails 3.2.12 with Erubis 2.7.0 (Gemfile.lock:148,308), a statement tag alone on its line keeps its trailing newline and gets no `;`, so the next text append becomes the `if` condition. That is reasoned from Erubis 2.7.0's known code generation (the gem's source is not in this repo). The `safe_concat` append returns the truthy buffer, so the if/else still runs and only the order of a little whitespace changes.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0812513
+}

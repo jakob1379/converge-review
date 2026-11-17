@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The loop condition and the `Upload.create_for` argument both read `tempfile.size` on the open Tempfile (app/controllers/uploads_controller.rb:66,72), while each pass ends in `ImageOptim.new.optimize_image!(to)` (app/models/optimized_image.rb:164), which replaces the path by rename, so the handle keeps reporting the old size; the loop can burn all 5 attempts, the stale filesize is then checked by lib/validators/upload_validator.rb:84, and `FastImage.new(file)` (app/models/upload.rb:71) reads stale dimensions. The rename is image_optim 0.20.2 gem behaviour recalled from memory, not read here, and the sha1 part is overstated: `Digest::SHA1.file(file)` (upload.rb:106) reopens by path, so it matches the stored file.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5710514
+}

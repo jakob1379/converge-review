@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "useProjectFromId (static/app/utils/useProjectFromId.tsx:7-13) just searches `useProjects().projects` and ignores the `fetching`/`initiallyLoaded` loading flags that useProjects provides (useProjects.tsx:301-313). So while the store is still loading it returns undefined, and the check this patch adds at static/app/views/replays/detail/ai/index.tsx:90-96 shows the 'Project not found' error before it ever reaches the isPending loading branch at line 98.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1051218
+}

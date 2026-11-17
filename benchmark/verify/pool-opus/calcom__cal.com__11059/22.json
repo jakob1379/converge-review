@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/constants.ts (patch lines 1043-1044) defines `APP_CREDENTIAL_SHARING_ENABLED = process.env.CALCOM_WEBHOOK_SECRET && process.env.CALCOM_APP_CREDENTIAL_ENCRYPTION_KEY`, so its type is `string | undefined`, not `boolean`. Every place that uses it only checks whether it is truthy (`!APP_CREDENTIAL_SHARING_ENABLED` and `APP_CREDENTIAL_SHARING_ENABLED && ...` in the new sync endpoint handler and in refreshOAuthTokens.ts / parseRefreshTokenResponse), so it behaves correctly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0375772
+}

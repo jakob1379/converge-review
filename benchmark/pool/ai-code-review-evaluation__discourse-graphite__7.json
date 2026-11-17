@@ -1,0 +1,301 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/7",
+ "cost_usd": 0.06935129999999999,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review",
+   "text": "Same issue in desktop/user.scss:522: .group-member-info .name original 30% became dark-light-choose(50%, 50%) instead of (30%, 70%)"
+  },
+  {
+   "id": "c2",
+   "source": "coderabbit",
+   "text": ".wmd-input text color uses darken($primary, 40%) which was not updated - darkening an already dark primary color could cause readability issues in some theme configurations"
+  },
+  {
+   "id": "c3",
+   "source": "golden",
+   "text": "In .topic-meta-data h5 a, the original code had color: scale-color($primary, $lightness: 30%) but was changed to dark-light-choose(scale-color($primary, $lightness: 70%), scale-color($secondary, $lightness: 30%)). The lightness for the light theme changed from 30% to 70%, which is a dramatic inversion"
+  },
+  {
+   "id": "c4",
+   "source": "augment",
+   "text": "dark-light-choose appears to swap the light-theme value from scale-color($primary, $lightness: 70%) to scale-color($primary, $lightness: 30%) and vice-versa for dark in mobile/modal.scss"
+  },
+  {
+   "id": "c5",
+   "source": "claude-code",
+   "text": "desktop/topic-post.scss: .topic-meta-data h5 a light-theme value changed from $primary 30% to 70% lightness, causing visual regression on light themes"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "Several converted one-line rules gain a stray space before closing brace (')); }' instead of '));}'), e.g. in desktop/topic-list.scss, desktop/queued-posts.scss:14, and desktop/topic-post.scss"
+  },
+  {
+   "id": "c7",
+   "source": "claude-code",
+   "text": "mobile/modal.scss: .custom-message-length light-theme value changed from $primary 70% to 30% lightness, inconsistent with desktop equivalent which correctly keeps 70%"
+  },
+  {
+   "id": "c8",
+   "source": "golden",
+   "text": "In topic-post.css the original code used $lightness: 70% but the replacement uses $lightness: 30% for the light theme. This makes the text significantly darker than intended."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review-replay",
+   "text": "In `.custom-message-length` the light and dark values are swapped - the new code is (light 30%, dark 70%) but should be (70%, 30%), causing mobile and desktop stylesheets to disagree since desktop/modal.scss:94 was converted correctly"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "The dark-light-choose(scale-color($primary, X%), scale-color($secondary, 100-X%)) expression is hand-copied 115 times across 32 files; a one-argument helper would encode the 100-X rule once and prevent the 5 swap mismatches"
+  },
+  {
+   "id": "c11",
+   "source": "qodo-extended-v2",
+   "text": "In desktop/user.scss and mobile/user.scss, .group-member-info .name was changed to 50/50 mapping (same as .title) instead of 30/70, removing the intended visual hierarchy between names and titles"
+  },
+  {
+   "id": "c12",
+   "source": "qodo-extended-v2",
+   "text": "In mobile/topic-post.scss, .topic-map h3 was changed to 50/50 mapping but desktop uses 20/80, causing mobile heading to become much lighter in light theme and inconsistent with desktop"
+  },
+  {
+   "id": "c13",
+   "source": "cubic-v2",
+   "text": "In desktop/topic-post.scss line 291: The dark-light-choose conversion swaps the light and dark lightness values, regressing the existing light-theme color instead of preserving it"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review-replay",
+   "text": "In mobile `.group-member-info .name` rule the same defect as desktop/user.scss:522 - the new code is (50%, 50%) but should be (30%, 70%), causing the name to lose contrast against its title on light theme"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "Light-theme value changed for .group-member-info .name: original 30% became dark-light-choose(50%, 50%) instead of (30%, 70%); name becomes as faint as .title, losing visual hierarchy in light theme"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "Light-theme value changed for topic-map h3: original 20% became dark-light-choose(50%, 50%) instead of (20%, 80%); mobile heading fails AA contrast (~3.2:1) and diverges from desktop/topic-post.scss:321"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Light/dark arguments swapped for .custom-message-length: original 70% became dark-light-choose(30%, 70%) instead of (70%, 30%); hint text turns dark in light theme and near-white in dark theme, diverging from desktop/modal.scss:94"
+  },
+  {
+   "id": "c18",
+   "source": "augment",
+   "text": "dark-light-choose returns its first argument for light themes, so the change alters light-theme color from scale-color($primary, $lightness: 30%) to scale-color($primary, $lightness: 70%), which is a big possibly unintended contrast shift"
+  },
+  {
+   "id": "c19",
+   "source": "qodo-extended-v2",
+   "text": "In desktop/topic-post.scss, .topic-meta-data h5 a uses inverted dark-light-choose values (70% for light theme instead of 30%), making the light theme link color much lighter than before and inconsistent with base topic-post link styling"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "Light/dark arguments swapped for .topic-meta-data h5 a: original $lightness 30% became dark-light-choose(70%, 30%) instead of (30%, 70%); light theme poster-name link contrast drops below WCAG AA (from ~5.9 to ~1.9) and dark theme gets the dim value"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "In `.topic-meta-data h5 a` the light and dark values are swapped - the new code is `dark-light-choose(scale-color($primary, $lightness: 70%), scale-color($secondary, $lightness: 30%))` but should be (30%, 70%), causing light-theme regression with contrast dropping from 5.92:1 to 1.88:1 which fails WCAG AA"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review-replay",
+   "text": "In `h3` (topic-map links section) the light-theme value changed incorrectly - the new code is (50%, 50%) but should be (20%, 80%) to match the original 20% and the correctly converted desktop twin at desktop/topic-post.scss:321, causing contrast to drop from 8.32:1 to 3.19:1 which fails AA for normal text"
+  },
+  {
+   "id": "c23",
+   "source": "augment",
+   "text": "dark-light-choose changes the light-theme h3 color from scale-color($primary, $lightness: 20%) to scale-color($primary, $lightness: 50%) which may be unintentional"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review-replay",
+   "text": "In `.group-member-info .name` the light-theme value changed incorrectly - the new code is (50%, 50%) but should be (30%, 70%), causing the name to fade from #646464 to #909090 and lose hierarchy distinction from the `.title` beneath it (appears to be copy-paste error from .title line)"
+  },
+  {
+   "id": "c25",
+   "source": "cubic-v2",
+   "text": "In mobile/modal.scss line 102: The light/dark scale-color percentages are reversed - should keep 70% for light-theme and 30% for dark-theme to match desktop .custom-message-length styling"
+  },
+  {
+   "id": "c26",
+   "source": "qodo-extended-v2",
+   "text": "In mobile/modal.scss, .custom-message-length uses inverted lightness values (30%/70%) compared to desktop (70%/30%), making hint text darker in light theme and brighter in dark theme than intended"
+  },
+  {
+   "id": "c27",
+   "source": "golden",
+   "text": "In mobile/user.scss line 497, the lightness value for dark themes should be inverted to 70% instead of being changed to 50%. This change may lead to unintended visual regressions in light themes."
+  },
+  {
+   "id": "c28",
+   "source": "golden",
+   "text": "The light theme color for `.topic-meta-data h5 a` was changed from `scale-color($primary, $lightness: 30%)` to `scale-color($primary, $lightness: 70%)`, which may unintentionally reduce contrast and affect readability. This change should be reviewed to ensure it aligns with design intentions."
+  },
+  {
+   "id": "c29",
+   "source": "golden",
+   "text": "This change for desktop/user.css changes $primary from 30% to 50% for the light theme; most other changes preserve the original $primary value and move the complement to $secondary for dark. Consider reviewing this (also applies to a similar .name change in the mobile variant)."
+  },
+  {
+   "id": "c30",
+   "source": "converge-review",
+   "text": "Conversion incomplete: .topic-list.categories .category .badge-notification still uses bare scale-color($primary, $lightness: 50%) without dark-light-choose, so dark themes are lightened from light text colour"
+  },
+  {
+   "id": "c31",
+   "source": "claude-code",
+   "text": "desktop/user.scss and mobile/user.scss: .group-member-info .name changed from $primary 30% to 50% lightness, altering light-theme appearance"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "Comment at common/base/discourse.scss:73 still describes old default 'scale-color($primary, $lightness: 50%)' which is now stale after conversion"
+  },
+  {
+   "id": "c33",
+   "source": "cubic-v2",
+   "text": "In mobile/topic-post.scss line 49: The light-theme $lightness for .topic-map h3 was changed from 20% to 50%, altering light-theme appearance - should preserve original 20% for light variant and use complementary 80% for dark variant to match desktop stylesheet"
+  },
+  {
+   "id": "c34",
+   "source": "claude-code",
+   "text": "mobile/topic-post.scss: h3 light-theme value changed from $primary 20% to 50% lightness, while desktop keeps 20%"
+  },
+  {
+   "id": "c35",
+   "source": "augment",
+   "text": "dark-light-choose changes .group-member-info .name in light mode from scale-color($primary, $lightness: 30%) to scale-color($primary, $lightness: 50%), which is inconsistent with the keep light theme, adjust dark theme pattern elsewhere"
+  },
+  {
+   "id": "c36",
+   "source": "coderabbit",
+   "text": "Inconsistent theme handling: #file-uploading uses scale-color($secondary, $lightness: 50%) while sibling #draft-status was updated to use dark-light-choose, which may cause visibility issues for #file-uploading text in dark themes"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In desktop/topic-post.scss, `.topic-meta-data h5 a` has its dark-light-choose arguments swapped. The original light-theme `scale-color($primary, $lightness: 30%)` became `dark-light-choose(70%, 30%)` instead of `(30%, 70%)`, so the light-theme link becomes much lighter and lower-contrast.",
+   "path": "desktop/topic-post.scss",
+   "members": [
+    "c3",
+    "c5",
+    "c13",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c28"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "In mobile/modal.scss, `.custom-message-length` has its light/dark values swapped. The original 70% became `dark-light-choose(30%, 70%)` instead of `(70%, 30%)`, which disagrees with desktop/modal.scss.",
+   "path": "mobile/modal.scss",
+   "members": [
+    "c4",
+    "c7",
+    "c9",
+    "c17",
+    "c25",
+    "c26"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "In desktop/user.scss and mobile/user.scss, `.group-member-info .name` was converted to `dark-light-choose(50%, 50%)` instead of `(30%, 70%)`. This changes the light-theme lightness from 30% to 50%, the same as `.title`.",
+   "path": "desktop/user.scss",
+   "members": [
+    "c1",
+    "c11",
+    "c14",
+    "c15",
+    "c24",
+    "c27",
+    "c29",
+    "c31",
+    "c35"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "In mobile/topic-post.scss, `.topic-map h3` was converted to `dark-light-choose(50%, 50%)` instead of `(20%, 80%)`. This changes the light-theme lightness from 20% to 50% and diverges from desktop/topic-post.scss, which keeps 20/80.",
+   "path": "mobile/topic-post.scss",
+   "members": [
+    "c12",
+    "c16",
+    "c22",
+    "c23",
+    "c33",
+    "c34"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "In topic-post, a rule whose original light-theme value was `$lightness: 70%` now uses `$lightness: 30%` for the light theme, making the text darker.",
+   "path": "topic-post.css",
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The `.wmd-input` text color still uses `darken($primary, 40%)` and was not converted for themes.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "Several converted one-line rules have a stray space before the closing brace (`)); }` instead of `));}`), for example in desktop/topic-list.scss, desktop/queued-posts.scss:14 and desktop/topic-post.scss.",
+   "path": "desktop/queued-posts.scss",
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The expression `dark-light-choose(scale-color($primary, X%), scale-color($secondary, 100-X%))` is hand-copied 115 times across 32 files instead of being encoded once in a one-argument helper.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "`.topic-list.categories .category .badge-notification` still uses bare `scale-color($primary, $lightness: 50%)` without dark-light-choose, so the conversion is incomplete.",
+   "path": null,
+   "members": [
+    "c30"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The comment at common/base/discourse.scss:73 still describes the old default `scale-color($primary, $lightness: 50%)`, which is stale after the conversion.",
+   "path": "common/base/discourse.scss",
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "`#file-uploading` still uses `scale-color($secondary, $lightness: 50%)`, while its sibling `#draft-status` was converted to dark-light-choose.",
+   "path": null,
+   "members": [
+    "c36"
+   ]
+  }
+ ]
+}

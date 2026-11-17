@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In sync mode, refreshOAuthTokens.ts:8-15 returns the raw fetch Response. That breaks Google, where `res?.data` is undefined, so `token.access_token` at CalendarService.ts:94-95 throws a TypeError that the catch at :108 swallows, keeping the stale token. It breaks HubSpot, where `expiresIn` is undefined, `expiryDate` becomes NaN and the Response itself is persisted as the key (CalendarService.ts:192-198), and zohocrm (:217) and zoho-bigin (:96), where `.data.error` throws a TypeError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.102549
+}

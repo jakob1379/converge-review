@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:76 filters with strict `guest === attendee.email`, and addGuests.schema.ts:5 (`z.array(z.string().email())`) never lowercases the input; the Attendee model (packages/prisma/schema.prisma:526-539) has no unique or case-insensitive constraint on email, so `A@x.com` is inserted alongside an existing `a@x.com`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3328711
+}

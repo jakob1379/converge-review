@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The same fallback is written as a temp variable plus wrap (`selectedDestinationCalendar ? [selectedDestinationCalendar] : []`) at apps/web/pages/api/cron/bookingReminder.ts:107,130 and packages/features/ee/payments/api/webhook.ts:101,119 and 207,229, but as a nested ternary at packages/features/bookings/lib/handleCancelBooking.ts:251-255 and 528-532, packages/features/ee/payments/api/paypal-webhook.ts:152-156, confirm.handler.ts:175-179, editLocation.handler.ts:85-89, deleteCredential.handler.ts:290-294 and handleNewBooking.ts:1063-1067 \u2014 ten sites, two forms, no shared helper.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.46779619999999994
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "testsuite/.../federation/BackwardsCompatibilityUserStorage.java:232-235 assigns `getMyUser(user)` (a plain `users.get(...)` at :227, null for an unknown username) and dereferences `myUser.recoveryCodes` with no null check, unlike the guarded callers at :259 and :271. It is test-fixture code, and the only caller (UserCredentialManager.java:141) passes users already linked to this provider, so the NPE needs a removed or stale user.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4400581
+}

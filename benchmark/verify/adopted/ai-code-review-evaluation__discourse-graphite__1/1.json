@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes utilities.js:182 so the browser size check uses a hardcoded 10*1024 KB for every upload type instead of `max_<type>_size_kb`. The server still checks `max_#{type}_size_kb` (lib/validators/upload_validator.rb:81-85) and only images get downsized by the new uploads_controller loop, so attachments above the admin's limit now pass in the browser and are rejected by the server, and limits above 10 MB are capped in the browser.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06047079999999999
+}

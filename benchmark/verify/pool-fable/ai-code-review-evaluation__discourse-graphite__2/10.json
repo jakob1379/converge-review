@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds an explicit `render :show` in the html branch of `perform_show_response` (app/controllers/topics_controller.rb:500), so the template and layout render before `show` reaches `canonical_url ...` at topics_controller.rb:87. With `@canonical_url` still nil at render time, `canonical_link_tag` returns '' (lib/canonical_url.rb:15, used in app/views/layouts/_head.html.erb:9); before the patch the implicit render ran after line 87.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3724507
+}

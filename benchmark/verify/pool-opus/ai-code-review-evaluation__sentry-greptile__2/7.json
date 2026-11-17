@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/paginator.py:179-184 says negative offsets are allowed and the queryset will handle the boundaries, but line 182 only clamps them when not is_prev. With is_prev and a negative offset (Cursor.offset is a bare int(), cursors.py:28), `queryset[start_offset:stop]` is still sliced with a negative start. Django querysets raise 'Negative indexing is not supported' on that, so nothing handles the boundary.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1411796
+}

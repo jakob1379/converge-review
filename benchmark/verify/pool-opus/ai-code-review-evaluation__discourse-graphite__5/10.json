@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the only rule that set `padding-top: 4px` on `.small-action-desc > p` (common/base/topic-post.scss, around line 300). No other stylesheet adds top padding to these `p` elements, and browsers give `p` no padding by default, so `.small-action .small-action-desc p { padding-top: 0 }` in mobile/topic-post.scss:516-519 no longer does anything.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1030742
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.java:141-152 picks one resource (the per-group one if it exists, else the \"Groups\" type resource) and evaluates only that. Nothing downstream adds the all-groups policies back: per-group resources are created without a type (AdminPermissionsSchema.java:121), so DefaultPolicyEvaluator.java:71-87 only finds policies bound to that resource, while all-groups permissions are bound to the \"Groups\" resource (AuthorizationProvider.java:323-326).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.8307928
+}

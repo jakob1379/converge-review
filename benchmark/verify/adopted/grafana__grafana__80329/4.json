@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At xorm_store.go:605-607 the comment says only \"SQLite has a parameter limit of 999\" and sets the constant to 999. The new test name in cleanup_test.go (patch line 105) refers to SQLITE_MAX_VARIABLE_NUMBER for SQLite >= 3.32.0, where the default is 32766 (a fact about SQLite, not this repository), and the comment never mentions the version or says 999 is a deliberately safe choice.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1055207
+}

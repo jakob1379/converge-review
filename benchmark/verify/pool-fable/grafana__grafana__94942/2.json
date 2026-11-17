@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only gate is in ReadQuery (pkg/expr/reader.go:128-132), reached solely under FlagExpressionParser (pkg/expr/nodes.go:123, experimental/off by default); the legacy switch at pkg/expr/nodes.go:159-160 calls UnmarshalSQLCommand ungated. That path still fails, but only incidentally via the stub DB's \"not implemented\" in sql.TablesList, surfacing as a different BadRequest \"sql-invalid-sql\" error (pkg/expr/sql_command.go:30-35) instead of \"sqlExpressions is not implemented\".",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.48009549999999995
+}

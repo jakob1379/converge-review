@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/AuthzClientCryptoProvider.java:61-67 returns `KeyStore.getInstance(KeyStore.getDefaultType()).getProvider()`, a JDK provider rather than BouncyCastle, so `BouncyIntegration.PROVIDER` (common/src/main/java/org/keycloak/common/util/BouncyIntegration.java:34-39) takes that provider's name whenever this provider is selected. The effect is harmless: with this provider active, the only reader of `PROVIDER` is a debug log at common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:34, and the BC-backed providers (order 200) outrank it (order 100) when present.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4840953
+}

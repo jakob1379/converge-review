@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes the team-member builder in handleNewBooking return hardcoded `firstName: \"\"` and `lastName: \"\"` (change.patch lines 843-844). `TeamMember` in packages/types/Calendar.d.ts:41-46 only declares name, email, timeZone and language, and the patch does not change that type, so these undeclared empty fields now go out with the team-member objects in the event.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0569821
+}

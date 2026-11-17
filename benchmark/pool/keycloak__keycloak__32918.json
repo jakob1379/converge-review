@@ -1,0 +1,250 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/32918",
+ "cost_usd": 0.0670171,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "The isEnabled() re-filter at OrganizationAwareIdentityProviderBean.java lines 75,80 is an unrelated code change beyond the commit scope"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "getForLogin (213-255) duplicates getByOrganization (167-211) nearly line for line; the copies have already drifted (getByOrganization bypasses on isInvalid(orgId), getForLogin does not)."
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "testCacheIDPForLogin repeats the FetchMode assertNull/assertNotNull loop five times and the REALM_ONLY/ORG_ONLY/ALL size triple three times; two static helpers would roughly halve the test code."
+  },
+  {
+   "id": "c4",
+   "source": "converge-review-replay",
+   "text": "When Organization feature is off, org-linked non-public IDPs are now hidden because they aren't wrapped (Infinispan provider line 433), potentially causing a regression"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "update() evaluates the login predicate on the org-aware wrapped 'original' from getById(), whose isEnabled() is false while the linked organization is disabled; if the update also makes the IdP fail the predicate (hideOnLogin, linkOnly, BROKER_PUBLIC removed), registerIDPLoginInvalidationOnUpdate returns early and the ORG_ONLY/ALL login caches are not invalidated. After the org is re-enabled, the stale cached id list surfaces a hidden/link-only/non-public IdP on the login page."
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "create(idpRep).close() never checks the response status, so duplicate-alias conflicts would go unnoticed"
+  },
+  {
+   "id": "c7",
+   "source": "claude-code",
+   "text": "Test cleanup in testCacheIDPForLogin uses hardcoded 'alias' instead of the actual IDP alias (e.g. 'idp-alias-' + i) on lines 381 and 425, so cleanup silently fails to remove any of the created test IDPs, leaving stale IDPs in the realm"
+  },
+  {
+   "id": "c8",
+   "source": "claude-code",
+   "text": "registerIDPLoginInvalidationOnUpdate compares a wrapped (org-aware) original model from getById() with the raw unwrapped updated model parameter, creating asymmetry in isEnabled() evaluation that can cause under-invalidation - when an org-linked IDP is cached for login, then the org is disabled, then a login-relevant field like hideOnLogin is changed, both models fail the login predicate for different reasons, triggering early return that skips cache invalidation, causing stale cache entries after org re-enablement"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "Cleanup registers testRealm().identityProviders().get(\"alias\")::remove with the literal alias \"alias\" instead of the created idp-alias-N, so the 21 IdPs created by testCacheIDPForLogin are never cleaned up; create(idpRep).close() also ignores the response status."
+  },
+  {
+   "id": "c10",
+   "source": "golden",
+   "text": "Cleanup reference uses incorrect alias - should be 'idp-alias-' + i instead of 'alias'."
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "registerIDPLoginInvalidationOnUpdate spends ~28 lines (12 of Javadoc restating code) on one boolean condition, repeats the FetchMode invalidation loop from registerIDPLoginInvalidation, and evaluates the predicate up to four times per update."
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "Javadoc is stale: getForLogin (151-152), getFederatedIdentityProviders (202-203) and the LoginFilter enum doc (216) still describe only enabled/linkOnly/hideOnLogin, while getLoginPredicate() now also hard-codes the org/BROKER_PUBLIC condition, so getLoginSearchOptions() and getLoginPredicate() no longer encode the same criteria."
+  },
+  {
+   "id": "c13",
+   "source": "converge-review",
+   "text": "ORG_ONLY/ALL login results for all organizations live in one IdentityProviderListQuery per realm+mode; each new org miss invalidates the shared entry (revision bump) and copies the entire previous map (putAll), so the entry grows unbounded, concurrent misses for different orgs defeat addRevisioned, and any login-IdP change drops results for every org."
+  },
+  {
+   "id": "c14",
+   "source": "cubic-v2",
+   "text": "The cleanup hook removes `\"alias\"` instead of the IDP aliases created in this test, so the new providers are leaked into later tests"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review-replay",
+   "text": "Undocumented behavior change in LoginFilter.getLoginPredicate(): adding 'organizationId == null || BROKER_PUBLIC' causes IDPs linked to organizations (non-BROKER_PUBLIC) to be hidden in IdentityProviderBean when they were previously shown, affecting the public SPI predicate"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "testCacheIDPForLogin asserts only cache-entry presence and id counts; it does not cover disabled or removed organizations, the isEnabled() re-check added in OrganizationAwareIdentityProviderBean:75,80, or what the login page actually renders - missing coverage for the invalidation bug."
+  },
+  {
+   "id": "c17",
+   "source": "coderabbit",
+   "text": "Cleanup uses the literal string 'alias' instead of the generated alias variable, which won't remove created IDPs and can leak IDPs across tests"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "getLoginPredicate() is a public SPI predicate; the added 'organizationId == null || BROKER_PUBLIC' clause changes behaviour beyond the cache, notably IdentityProviderBean.federatedProviderPredicate() (used when organizations are off) now hides a user's already-linked org-bound non-public IdP - unannounced scope beyond the commit title."
+  },
+  {
+   "id": "c19",
+   "source": "golden",
+   "text": "InfinispanIdentityProviderStorageProvider.getForLogin() recursively calls session.identityProviders().getById() instead of idpDelegate.getById(), causing the cache lookup to re-enter the same caching layer."
+  },
+  {
+   "id": "c20",
+   "source": "coderabbit",
+   "text": "Guard against null storedIdp before invalidation - if the alias doesn't exist, storedIdp can be null, and invalidation calls will throw NPE. The remove method should return false without NPEs when storedIdp is null"
+  },
+  {
+   "id": "c21",
+   "source": "claude-code",
+   "text": "Pre-existing bug in testCacheIDPByOrg method at line 303 has the same hardcoded 'alias' cleanup issue instead of using the actual alias variable"
+  },
+  {
+   "id": "c22",
+   "source": "qodo-extended-v2",
+   "text": "Test cleanup uses wrong alias - cleanup registrations at lines 381 and 425 use the literal string \"alias\" instead of the actual IDP alias (e.g., \"idp-alias-\" + i), so none of the 21 created identity providers will be cleaned up after the test, causing test pollution"
+  },
+  {
+   "id": "c23",
+   "source": "augment",
+   "text": "Cleanup is bound to the literal alias \"alias\", so the identity providers created in this test likely aren't removed and can leak state into later tests, potentially causing flakiness due to unexpected extra IDPs in the realm"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review-replay",
+   "text": "Cleanup calls at lines 381 and 425 use literal alias 'alias' instead of the actual created IDP aliases (idp-alias-0..idp-alias-20), so cleanups target non-existent IDPs and fail to remove the created ones"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In testCacheIDPForLogin, the cleanup registrations (lines 381 and 425) remove the literal alias \"alias\" instead of the created aliases ('idp-alias-' + i). As a result, the 21 created identity providers are never removed and stay in the realm for later tests.",
+   "path": null,
+   "members": [
+    "c7",
+    "c9",
+    "c10",
+    "c14",
+    "c17",
+    "c22",
+    "c23",
+    "c24"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "testCacheIDPByOrg (line 303) also registers cleanup with the hardcoded alias \"alias\" instead of the actual alias variable.",
+   "path": null,
+   "members": [
+    "c21"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "In the test, the response status of create(idpRep).close() is never checked, so failures such as duplicate-alias conflicts go unnoticed.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "registerIDPLoginInvalidationOnUpdate evaluates the login predicate on the org-aware wrapped original from getById() but on the raw unwrapped updated model. While the linked organization is disabled, both can fail the predicate and the method returns early, so the ORG_ONLY/ALL login caches are not invalidated. After the organization is re-enabled, stale entries surface hidden, link-only or non-public IdPs.",
+   "path": null,
+   "members": [
+    "c5",
+    "c8"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "LoginFilter.getLoginPredicate(), a public SPI predicate, now includes 'organizationId == null || BROKER_PUBLIC'. Because of this, organization-linked non-public IdPs are hidden outside the cache, e.g. in IdentityProviderBean.federatedProviderPredicate() when the Organization feature is off, where they were previously shown.",
+   "path": null,
+   "members": [
+    "c4",
+    "c15",
+    "c18"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The isEnabled() re-filter added in OrganizationAwareIdentityProviderBean.java at lines 75 and 80 is a change outside the commit's scope.",
+   "path": "OrganizationAwareIdentityProviderBean.java",
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "testCacheIDPForLogin only asserts cache-entry presence and id counts. It does not cover disabled or removed organizations, the isEnabled() re-check in OrganizationAwareIdentityProviderBean (lines 75 and 80), or what the login page renders.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "getForLogin (lines 213-255) duplicates getByOrganization (lines 167-211) nearly line for line, and the copies have drifted: getByOrganization bypasses on isInvalid(orgId) and getForLogin does not.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "testCacheIDPForLogin repeats the FetchMode assertNull/assertNotNull loop five times and the REALM_ONLY/ORG_ONLY/ALL size checks three times.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "registerIDPLoginInvalidationOnUpdate uses about 28 lines, 12 of them Javadoc, for one boolean condition. It repeats the FetchMode invalidation loop from registerIDPLoginInvalidation and evaluates the predicate up to four times per update.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The Javadoc for getForLogin (lines 151-152), getFederatedIdentityProviders (lines 202-203) and the LoginFilter enum (line 216) describes only enabled/linkOnly/hideOnLogin. getLoginPredicate() now also hard-codes the org/BROKER_PUBLIC condition, so getLoginSearchOptions() and getLoginPredicate() no longer encode the same criteria.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "ORG_ONLY/ALL login results for all organizations are stored in one IdentityProviderListQuery per realm and mode. Each new org miss bumps the revision and copies the whole previous map, so the entry grows unbounded. Concurrent misses for different orgs defeat addRevisioned, and any login-IdP change drops the results for every org.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "InfinispanIdentityProviderStorageProvider.getForLogin() calls session.identityProviders().getById() instead of idpDelegate.getById(), so the lookup re-enters the same caching layer.",
+   "path": "InfinispanIdentityProviderStorageProvider",
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "In remove, storedIdp is not null-checked before invalidation. If the alias does not exist, the invalidation calls throw an NPE instead of the method returning false.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  }
+ ]
+}

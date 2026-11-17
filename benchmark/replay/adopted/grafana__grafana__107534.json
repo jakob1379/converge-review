@@ -1,0 +1,118 @@
+{
+ "findings": [
+  {
+   "path": "public/app/plugins/datasource/loki/querySplitting.ts",
+   "line": 296,
+   "severity": "Important",
+   "claim": "Ad hoc filters and template variables are now applied more than once per query. The time-split path applies them twice (runSplitQuery, then DataSourceWithBackend.query). The shard path applies them three times (runShardSplitQuery at shardQuerySplitting.ts:49-52, runSplitQuery per sub-request via shardQuerySplitting.ts:163, then super.query). Filters on parsed labels are appended again on each pass, e.g. `{a=\"b\"} | logfmt | level=`error` | level=`error` | level=`error``.",
+   "evidence": "Reasoned by all four seats; none ran it. Sub-requests built as `{ ...request, targets }` keep `filters`. DataSourceWithBackend.ts:185 re-applies applyTemplateVariables. addLabelToQuery only dedupes stream-selector matchers (labelExists, modifyQuery.ts:494). addFilterAsLabelFilter (modifyQuery.ts:510-541) always appends, as the existing case in modifyQuery.test.ts:46 shows. The patch's own test expects applyTemplateVariables to be called 5 times (shardQuerySplitting.test.ts:112). Results stay correct because repeated ANDed filters are idempotent. The cost is bloated LogQL in the inspector and logs, and split and non-split paths sending different query text. Proposed red tests: mattpocock suggests a real createLokiDatasource with filters level=error, asserting exactly one `level=`error`` in the backend target. superpowers suggests asserting that re-applying applyTemplateVariables to the runQuery target leaves expr unchanged. Seats disagree on the pre-patch count for the shard path: open-code-review says twice, the other three say once.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list (4 seats). Severity normalised to Important. Two seats rated it Important (mattpocock, superpowers) and two Minor (open-code-review, ponytail), with one correctness seat on each side. Nothing in the reports supports downgrading it. Before fixing, it must be made red with one of the proposed tests; the gate was not run in benchmark mode, so this is not yet verified. Suggested smallest fix: interpolate once, either without filters for classification and step grouping or only at the entry point, so runSplitQuery does not re-interpolate on the shard path.",
+   "list": "main"
+  },
+  {
+   "path": "public/app/plugins/datasource/loki/querySplitting.ts",
+   "line": 299,
+   "severity": "Minor",
+   "claim": "Running templateSrv.replace again over already-interpolated text is not idempotent. A variable value containing a literal `$name` of another defined variable gets expanded again on each extra pass. The split path now does 2 passes and the shard path 3; the shard-path code is at shardQuerySplitting.ts:52.",
+   "evidence": "Reasoned by all three raising seats. ponytail also checked this and called it a real but marginal edge case, not worth a fix on its own.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list (3 seats). Same root cause as the duplicate-interpolation finding at querySplitting.ts:296; the single-interpolation fix resolves it with no separate change. Still needs its own red test once the fix is attempted (a variable value containing `$other`). Unverified.",
+   "list": "main"
+  },
+  {
+   "path": "public/app/plugins/datasource/loki/shardQuerySplitting.test.ts",
+   "line": 112,
+   "severity": "Minor",
+   "claim": "`expect(datasource.applyTemplateVariables).toHaveBeenCalledTimes(5)` pins an internal call count (1 shard entry + 4 runSplitQuery sub-requests) instead of the query actually sent. It locks in the redundant re-interpolation and will break when that is removed, even though behaviour stays the same.",
+   "evidence": "The assertion is at shardQuerySplitting.test.ts:112. The `toHaveBeenCalledWith` / runQuery payload assertion that follows already covers the real contract (ponytail, superpowers). This goes against the project testing guidance to test contracts, not implementation (open-code-review). mattpocock cites the same line only as evidence for the duplicate-interpolation finding.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list (3 seats). Drop the call-count assertion and keep the payload assertion. The fix for the duplicate-interpolation finding will break this line anyway.",
+   "list": "main"
+  },
+  {
+   "path": "public/app/plugins/datasource/loki/shardQuerySplitting.ts",
+   "line": 49,
+   "severity": "Important",
+   "claim": "Commit 76ffba5f6d filters out empty targets before interpolating instead of after. A target whose expr resolves to '' after interpolation (e.g. `$empty`) is no longer dropped. open-code-review traces the consequence: groupTargetsByQueryType puts it in otherQueries, then runSplitQuery drops it so requests is []. Math.max(...[]) then gives -Infinity and `[0].partition` throws in runSplitGroupedQueries (querySplitting.ts:95-96), inside the .then() at shardQuerySplitting.ts:213. The result is an unhandled rejection, the Observable never emits, the panel spins forever, and co-requested shardable queries never run. mattpocock reads the consequence as the empty query being sent.",
+   "evidence": "Reasoned, not run. open-code-review gives a test that should time out on HEAD: targets A (shardable) and B `$empty`, replace maps `$empty` to '', fetchLabelValues resolves ['1','2'], and the test asserts runQuery is called. The quoted line numbers come from that seat's reading. The two seats disagree on the downstream effect.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats), so it is not reported or fixed under the merge rule. Severity normalised to Important, following the correctness seat's detailed trace (mattpocock rated it Minor). Unverified: settle it by running open-code-review's proposed test against the pinned code. Flagged as the highest-risk appendix item.",
+   "list": "appendix"
+  },
+  {
+   "path": "public/app/plugins/datasource/loki/querySplitting.test.ts",
+   "line": 75,
+   "severity": "Minor",
+   "claim": "The new 'Interpolates queries before execution' tests (querySplitting.test.ts:75-88, shardQuerySplitting.test.ts:84-101) mock replace to turn `$__auto` into `5m` on every call. The real applyTemplateVariables strips `__auto` from scopedVars, so the asserted `[5m]` never happens in production. Only the `step` assertion reflects real behaviour.",
+   "evidence": "Both seats cite datasource.ts:1113, which removes __auto from scopedVars. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats).",
+   "list": "appendix"
+  },
+  {
+   "path": "public/app/plugins/datasource/loki/querySplitting.test.ts",
+   "line": 75,
+   "severity": "Minor",
+   "claim": "No test covers ad hoc filters, the more-than-once interpolation, or the `$__range` no-split guard on the new interpolation path. Both new tests pass no `filters` and mock replace as plain string replacement. Also affects shardQuerySplitting.test.ts:84-101.",
+   "evidence": "Reasoned from reading the two new tests.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat).",
+   "list": "appendix"
+  },
+  {
+   "path": "public/app/plugins/datasource/loki/shardQuerySplitting.ts",
+   "line": 49,
+   "severity": "Minor",
+   "claim": "The shard path now resolves `$__auto`, `$__interval` and `$__range` differently. Before, interpolateVariablesInQueries resolved them on the client. Now applyTemplateVariables leaves them for the backend, which picks values per time-split chunk; `[$__range]` now blocks time splitting. getSelectorForShardValues also now includes ad hoc stream matchers. This is a user-visible change the PR does not mention.",
+   "evidence": "superpowers itself says this matches the non-shard path and does not count it as a bug. open-code-review independently calls the `$__range` part an improvement.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). The reports confirm the behaviour change is real and arguably correct, so it is not rejected. Treat it as a documentation and changelog note.",
+   "list": "appendix"
+  },
+  {
+   "path": "public/app/plugins/datasource/loki/shardQuerySplitting.test.ts",
+   "line": 110,
+   "severity": "Minor",
+   "claim": "Duplicated test code: the same 'Interpolates queries before execution' test is in both test files. shardQuerySplitting.test.ts also has a near-duplicate pair: 'Interpolates queries before execution' at line 84 and 'Interpolates queries before running' at line 110.",
+   "evidence": "mattpocock rates it a baseline smell. ponytail disagrees for the cross-file pair, saying they cover two separate public entry points, but does not address the within-file pair at lines 84/110.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat, advisory). It is only partly contested by ponytail (cross-file copies justified), so it is not rejected.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats reviewed all 4 files in the patch: querySplitting.ts, querySplitting.test.ts, shardQuerySplitting.ts and shardQuerySplitting.test.ts. open-code-review's tooling excluded the two test files by default path rule, and the seat reviewed them manually from the patch. Axes that did not run: (1) Gate not run (benchmark mode), so the review is unanchored. No findings have ground truth, and no seat executed any test, so every finding is reasoned only. (2) No spec, so spec compliance was not checked; intent was inferred from commit titles. (3) Standards: mattpocock checked CONTRIBUTING.md, contribute/style-guides/frontend.md and contribute/style-guides/testing.md, and found no applicable breaches. (4) No reviewer from another model family took a correctness seat. Gaps the seats themselves noted: Loki and Grafana query-cache effects of duplicated filter text (mattpocock); Scenes sceneGraph.interpolate handling of `$__range` (superpowers, node_modules absent); pre-patch git history (open-code-review, partial clone, no network). Verifier dispatch was unavailable in this replay, so any reason marked 'unverified' still needs its red test or repro."
+}

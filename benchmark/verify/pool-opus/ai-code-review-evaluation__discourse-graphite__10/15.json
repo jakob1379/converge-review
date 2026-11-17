@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch reduces Topic#expandable_first_post? to `SiteSetting.embed_truncate? && has_topic_embed?`, with no host check left (app/models/topic.rb:869, patch line 389). The spec 'is false if embeddable_host is blank' (spec/models/topic_spec.rb, patch lines 868-871) creates no EmbeddableHost, but it passes only because the unsaved topic has no topic embed, so it no longer tests anything about hosts.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0802276
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/features/ee/workflows/api/scheduleEmailReminders.ts:53-77, a single try/catch wraps the whole `for` loop of awaited `client.request` cancel calls (lines 56-73) and the `Promise.all(workflowRemindersToDelete)` at line 74. If one cancel throws, the remaining reminders are skipped, and because Prisma delete queries do not run until awaited, the deletes already queued never run either.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0750286
+}

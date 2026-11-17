@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:102-109 bounds `start` and `end` only by each string's length, never by `length - start`, so line 111 can call `sanitized.substring(start, sanitized.length() - end)` with begin > end. For example, value `<b>x</b></b>` against sanitized `<b>x</b>` gives start=8, end=4 and `substring(8, 4)` (assuming the sanitizer drops the stray closing tag; not executed). `verify()` (lines 46-56) catches only IOException, so the exception escapes through ThemeVerifierMojo.java:51.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4500502
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/apiserver/rest/dualwriter_mode3_test.go:119 declares `p := prometheus.NewRegistry()` inside TestMode3_Get, shadowing the package-level `var p` at dualwriter_mode1_test.go:27 \u2014 the same line the patch deletes from TestMode1_Get. The only other prometheus reference in the mode3 test file is the import at line 8.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.41498500000000005
+}

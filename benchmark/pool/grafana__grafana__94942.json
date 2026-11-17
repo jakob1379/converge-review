@@ -1,0 +1,293 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/94942",
+ "cost_usd": 0.0754922,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "Feature disable is implemented two different ways with different error messages depending on code path, lacking a single explicit check"
+  },
+  {
+   "id": "c2",
+   "source": "augment",
+   "text": "TablesList uses NewInMemoryDB() whose RunCommands is unimplemented, causing all calls to error and report 'invalid SQL' user errors even for valid queries - should return a clear 'disabled/not implemented' signal instead of parse/validation failure"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review-replay",
+   "text": "enableSqlExpressions function (reader.go:194-200) returns false on both branches, making the sqlExpressions toggle have no effect despite being registered and documented"
+  },
+  {
+   "id": "c4",
+   "source": "qodo-extended-v2",
+   "text": "The enableSqlExpressions function always returns false regardless of the feature flag state - both the if enabled branch and the fall-through return false, making the feature flag check dead code. The inverted logic (!IsEnabledGlobally) combined with the misleading variable name 'enabled' creates a trap where a future developer 'fixing' this could accidentally re-enable the RCE vulnerability"
+  },
+  {
+   "id": "c5",
+   "source": "coderabbit",
+   "text": "Docstring coverage is 25.00% which is insufficient - the required threshold is 80.00%. Functions are missing docstrings."
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "Dead code: DB.TablesList has no callers (parser.go uses package-level TablesList), and SQLCommand.Execute's db.QueryFramesInto is unreachable because NewSQLCommand always fails first"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "The new gate only covers the ReadQuery path (behind FlagExpressionParser), while the legacy path through nodes.go gives users a BadRequest 'error reading SQL command' rather than a proper disabled/not-implemented error, and parser.go logs raw user SQL at Error level"
+  },
+  {
+   "id": "c8",
+   "source": "golden",
+   "text": "The enableSqlExpressions function has flawed logic that always returns false, effectively disabling SQL expressions unconditionally:"
+  },
+  {
+   "id": "c9",
+   "source": "qodo-extended-v2",
+   "text": "The new in-memory SQL DB stub returns generic 'not implemented' errors, which upstream code treats/logs as 'invalid sql query'; when legacy parsing paths are used, users can get misleading validation errors even though the feature is intentionally disabled"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "No test covers the new rejection of SQL expressions on either the ReadQuery path or legacy path - all existing SQL tests are t.Skip()'d so CI exercises none of the changed behaviour"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "The exported stub type DB and its methods in db.go have no doc comments, violating Go Code Review Comments rule adopted by the backend style guide"
+  },
+  {
+   "id": "c12",
+   "source": "coderabbit",
+   "text": "The enableSqlExpressions function logic is unnecessarily confusing - both branches return false, making the feature flag check dead code. The implementation should be simplified since it always returns false regardless of the feature flag state."
+  },
+  {
+   "id": "c13",
+   "source": "converge-review-replay",
+   "text": "Each legacy path request logs sensitive user SQL via logger.Error('error serializing sql') and Warn('invalid sql query')"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review-replay",
+   "text": "Legacy parse path (FlagExpressionParser off, which is default) never reaches the new reader gate and fails with misleading 'sql-invalid-sql' error instead of indicating feature is disabled"
+  },
+  {
+   "id": "c15",
+   "source": "cubic-v2",
+   "text": "Switching `TablesList` to the stub DB makes every SQL expression fail as `sql-invalid-sql` instead of returning an explicit 'SQL expressions are disabled' error."
+  },
+  {
+   "id": "c16",
+   "source": "claude-code",
+   "text": "The enableSqlExpressions security check only guards the ReadQuery code path used when FlagExpressionParser is enabled, but in default configuration buildCMDNode calls UnmarshalSQLCommand directly for TypeSQL, completely bypassing this check - the security gate should be added to the TypeSQL case in buildCMDNode or within UnmarshalSQLCommand"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "enableSqlExpressions reads FlagSqlExpressions and returns false on both branches, so the sqlExpressions toggle does nothing - the local variable 'enabled' holds the inverse of the flag, making the feature toggle ineffective"
+  },
+  {
+   "id": "c18",
+   "source": "golden",
+   "text": "The DB methods NewInMemoryDB().RunCommands, DB.QueryFramesInto, and DB.TablesList in pkg/expr/sql/db.go return hardcoded 'not implemented' errors after removing the go-duck dependency."
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "Stub sql.DB exported names (labelled InMemoryDB) have no doc comments, violating style guide"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "The rejection uses plain fmt.Errorf('sqlExpressions is not implemented') instead of an errutil error with a messageID, losing status code and public message - should use errutil.NotImplemented with a <service>.<id> messageID"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "Local variable 'enabled := !IsEnabledGlobally(...)' holds the opposite value of what its name suggests"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review-replay",
+   "text": "SQLCommand.Execute and db.QueryFramesInto (sql_command.go:96-104) are unreachable dead code because NewSQLCommand always fails first"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "Schema and docs still advertise SQL expression functionality ('SQL query via DuckDB', 'requires the sqlExpression feature flag', sql type in query.types.json, toggle description) but the feature always fails"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review-replay",
+   "text": "db.TablesList (db.go:12-14) is dead code with no callers since parser.go:22 calls package-level sql.TablesList instead"
+  },
+  {
+   "id": "c25",
+   "source": "augment",
+   "text": "enableSqlExpressions returns false regardless of FlagSqlExpressions value, and enabled is computed as the negation of the toggle, making the gating logic dead and easy to misread as a bug - should be simplified if permanent disable is intended"
+  },
+  {
+   "id": "c26",
+   "source": "claude-code",
+   "text": "The enableSqlExpressions function always returns false in both branches, making the feature flag check and negation dead code - the function body should be simplified to just return false to avoid confusing future maintainers who might misinterpret the inverted flag logic"
+  },
+  {
+   "id": "c27",
+   "source": "cubic-v2",
+   "text": "`enableSqlExpressions` always returns `false` regardless of the feature flag state. Both the `if enabled` branch and the fallthrough return `false`. Additionally, the `!` negation means `enabled` is `true` when the flag is *disabled*, which is semantically inverted. If the intent is to allow SQL expressions when the flag is on, this should be `enabled := h.features.IsEnabledGlobally(...)` with `if enabled { return true }`."
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "Inconsistent naming: variable is named 'duckDB' in parser.go but holds the stub DB, while sql_command.go:96 uses 'db' for the same thing - implies DuckDB is still in use"
+  },
+  {
+   "id": "c29",
+   "source": "cubic-v2",
+   "text": "Returning a generic 'not implemented' error here makes valid SQL expressions look like malformed input instead of a disabled feature."
+  },
+  {
+   "id": "c30",
+   "source": "converge-review-replay",
+   "text": "Frontend still offers SQL expression type when flag is on (types.ts:73) but backend rejects all requests, creating a broken UI option"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "enableSqlExpressions in reader.go (lines 194-200) returns false on both branches, so the sqlExpressions feature flag check is dead code and the toggle has no effect.",
+   "path": "pkg/expr/reader.go",
+   "members": [
+    "c3",
+    "c4",
+    "c8",
+    "c12",
+    "c17",
+    "c25",
+    "c26",
+    "c27"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "In enableSqlExpressions, the local variable 'enabled' is assigned !IsEnabledGlobally(...), so it holds the opposite of what its name says.",
+   "path": "pkg/expr/reader.go",
+   "members": [
+    "c21"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The SQL-expression rejection gate exists only on the ReadQuery path, which is used when FlagExpressionParser is on. In the default legacy path, buildCMDNode in nodes.go calls UnmarshalSQLCommand directly for TypeSQL, so the gate is bypassed and the disable is enforced in two ways with different errors.",
+   "path": "pkg/expr/nodes.go",
+   "members": [
+    "c1",
+    "c7",
+    "c14",
+    "c16"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "TablesList now uses the stub NewInMemoryDB(), whose RunCommands returns a generic 'not implemented' error. Upstream code reports this as 'invalid SQL' / sql-invalid-sql, so valid SQL expressions fail with a validation error instead of an explicit 'disabled' error.",
+   "path": "pkg/expr/sql/db.go",
+   "members": [
+    "c2",
+    "c9",
+    "c15",
+    "c29"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The DB methods NewInMemoryDB().RunCommands, DB.QueryFramesInto and DB.TablesList in db.go return hardcoded 'not implemented' errors after the go-duck dependency was removed.",
+   "path": "pkg/expr/sql/db.go",
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "On the legacy path, parser.go logs raw user SQL with logger.Error('error serializing sql') and Warn('invalid sql query') on every request.",
+   "path": "pkg/expr/sql/parser.go",
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "DB.TablesList in db.go (lines 12-14) has no callers, because parser.go calls the package-level sql.TablesList instead.",
+   "path": "pkg/expr/sql/db.go",
+   "members": [
+    "c6",
+    "c24"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "SQLCommand.Execute and its db.QueryFramesInto call (sql_command.go:96-104) are unreachable, because NewSQLCommand always fails first.",
+   "path": "pkg/expr/sql_command.go",
+   "members": [
+    "c22"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The exported stub type DB and its methods in db.go have no doc comments.",
+   "path": "pkg/expr/sql/db.go",
+   "members": [
+    "c11",
+    "c19"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "Docstring coverage is 25.00%, below the required 80.00% threshold.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "No test covers the new rejection of SQL expressions on either the ReadQuery path or the legacy path, and all existing SQL tests are skipped with t.Skip().",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The rejection uses a plain fmt.Errorf('sqlExpressions is not implemented') instead of an errutil error with a messageID, so it carries no status code or public message.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The schema and docs still advertise SQL expressions, including 'SQL query via DuckDB', the sql type in query.types.json and the toggle description, although the feature always fails.",
+   "path": null,
+   "members": [
+    "c23"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "In parser.go the variable holding the stub DB is named 'duckDB', while sql_command.go:96 uses 'db' for the same thing.",
+   "path": "pkg/expr/sql/parser.go",
+   "members": [
+    "c28"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The frontend still offers the SQL expression type when the flag is on (types.ts:73), but the backend rejects all such requests.",
+   "path": "types.ts",
+   "members": [
+    "c30"
+   ]
+  }
+ ]
+}

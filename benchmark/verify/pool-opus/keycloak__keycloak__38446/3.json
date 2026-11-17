@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "CredentialHelper.createRecoveryCodesCredential (patch lines 54-60) turns the raw generatedCodes into a JSON string with JsonSerialization.writeValueAsString and passes it as the challengeResponse of the UserCredentialModel given to updateCredential. The local path instead uses credentialModel, which RecoveryAuthnCodesCredentialModel.createFromValues builds from hashed codes via RecoveryAuthnCodesUtils.hashRawCode (RecoveryAuthnCodesCredentialModel.java:67).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19412169999999995
+}

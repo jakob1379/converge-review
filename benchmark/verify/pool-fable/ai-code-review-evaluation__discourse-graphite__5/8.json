@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `.d-header .contents` a flex container (app/assets/stylesheets/common/base/header.scss:14-19) and drops `float: left` from `.title` and `float: right` from `.panel` (header.scss:35-40), so floats on direct children of `.contents` no longer apply. The effect on third-party themes is a hypothetical compatibility risk only: nothing in this repository (including `plugins/`) styles or adds floated children to the header.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2513865
+}

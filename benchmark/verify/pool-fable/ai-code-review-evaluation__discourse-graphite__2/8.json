@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/email/message_builder.rb:107 still sets `List-Unsubscribe` to `template_args[:user_preferences_url]`; the new `unsubscribe_url` passed from app/mailers/user_notifications.rb:295 is only used in the body text via config/locales/server.en.yml:1855.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.29182800000000003
+}

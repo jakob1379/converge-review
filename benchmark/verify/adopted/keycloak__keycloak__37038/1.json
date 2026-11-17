@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.java:121-123 only finds the 'Groups' type resource: per-group resources are created untyped (AdminPermissionsSchema.java:121), and only init() sets a type (lines 271-274). hasPermission(groupResource.getId()) misses findByName and falls back to the type resource, so the method adds that resource's UUID, not a group ID. With all-groups VIEW_MEMBERS, UserModel.GROUPS gets a group ID that doesn't exist (UsersResource.java:445-448, JpaUserProvider.java:762-765), so search and count both come back empty. With only per-group VIEW_MEMBERS the set is empty, so getUsersCount returns 0 (JpaUserProvider.java:599-602), while search returns all users paged first and only then filtered by canView (UsersResource.java:460), so pages come back short.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.39820399999999995
+}

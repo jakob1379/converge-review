@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "integration.py:503 reads integration.metadata[\"sender\"][\"login\"] with no guard. build_integration only adds 'sender' when state has it (integration.py:376-377), and ensure_integration overwrites metadata on existing rows (pipeline.py:41-42), so an Integration left without an OrganizationIntegration can lack 'sender' and raise KeyError (a 500) instead of showing error(). installation.py:44 guards the same key.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.148311
+}

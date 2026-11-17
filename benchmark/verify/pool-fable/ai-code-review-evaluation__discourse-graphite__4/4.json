@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/embed.js:17 validates the sender with `discourseUrl.indexOf(e.origin) === -1`, a substring test, so any origin that is a substring of discourseUrl (e.g. `http://discourse.example.co` against `http://discourse.example.com/`) passes. The only effect of a forged message is setting the iframe height at embed.js:20-21.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0894026
+}

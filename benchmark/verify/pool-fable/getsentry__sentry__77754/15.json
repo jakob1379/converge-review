@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`source_name` is declared and populated in src/sentry/integrations/services/assignment_source.py:16,23 and serialised via `to_dict()` into the task kwargs at src/sentry/integrations/utils/sync.py (`assignment_source_dict`), but a grep of `src/` finds no other read of it; `should_sync` in src/sentry/integrations/mixins/issues.py compares only `sync_source.integration_id`. The payload carries it only when an assignment source is set (otherwise `None`), so this is an unused field, not a behavioural bug.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1861067
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The default mismatch is real: the CLI option defaults to 1 (src/sentry/consumers/__init__.py:432-437) while the factory and SpanFlusher default to None, meaning one process per shard (factory.py:41, flusher.py:47-51). It is a documented, overridable default that keeps the pre-patch single-flusher behaviour, and the tests part is overstated: test_flusher_processes_limit runs 2 processes over 4 shards (tests/sentry/spans/consumers/process/test_consumer.py:100-117).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.35820490000000005
+}

@@ -1,0 +1,401 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "packages/app-store/wipemycalother/lib/reschedule.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/app-store/wipemycalother/lib/reschedule.ts, the booking-ref loop was changed to `forEach(async ...)` with `await getCalendar` inside. The promises are not awaited, so getCalendar, deletion and import failures escape the surrounding try/catch as unhandled rejections. The function and the reschedule email can also proceed before the deletions complete.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At packages/app-store/wipemycalother/lib/reschedule.ts:125-134 the patch changed the loop to `bookingRefsFiltered.forEach(async ...)` with `await getCalendar(...)` at line 128. forEach throws away the promises, so the try/catch at 124/135 cannot catch getCalendar, deleteEvent or deleteMeeting rejections, and the function moves on to sendRequestRescheduleEmail (line 143) before the deletions finish. The un-awaited deleteEvent/deleteMeeting promises were already there before the patch; the patch adds the un-awaited async getCalendar step.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.069742
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "packages/app-store/vital/lib/reschedule.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/app-store/vital/lib/reschedule.ts, `bookingRefsFiltered.forEach` was changed to `forEach(async ...)` with `await getCalendar` inside. The callback promises are not awaited, so getCalendar, deleteEvent and deleteMeeting failures bypass the surrounding try/catch and become unhandled rejections or are silently lost.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/vital/lib/reschedule.ts:125-134, the callback is now `forEach(async ...)` with `await getCalendar(...)` at line 128. `forEach` ignores the promises the callbacks return, so a rejection from getCalendar (now async, packages/app-store/_utils/getCalendar.ts:9-22), deleteEvent or deleteMeeting never reaches the try/catch at lines 124/135 and goes unhandled. Before the patch, deleteEvent and deleteMeeting rejections were already lost because `forEach` dropped their promises, but this patch makes getCalendar async and so lets its errors escape as well.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0888141
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "packages/trpc/server/routers/viewer/bookings.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the requestReschedule mutation in packages/trpc/server/routers/viewer/bookings.tsx, `bookingRefsFiltered.forEach(async ...)` around `await getCalendar` is not awaited. Calendar/video deletions run detached, their errors become unhandled rejections, and the mutation continues to send reschedule emails and update the DB before or despite deletion failures.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At packages/trpc/server/routers/viewer/bookings.tsx:553-567, `bookingRefsFiltered.forEach(async ...)` around `await getCalendar(...)` is never awaited, so `sendRequestRescheduleEmail` (line 570) and the webhooks run without waiting for the deletions, and any rejection goes unhandled. The DB update at line 475 already runs before this loop, and the `deleteEvent`/`deleteMeeting` promises were dropped before the patch too. What the patch adds is that `getCalendar` is now async, so its failures are also detached.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.07700270000000001
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/features/bookings/lib/handleCancelBooking.ts, `await getCalendar(...)` sits inside an un-awaited `forEach(async ...)`. As a result, `Promise.all(prismaPromises.concat(apiDeletes))` can run before the calendar/recurring-series deletes have been enqueued, and errors do not surface before the handler continues.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At handleCancelBooking.ts:458-470 the recurring-series branch runs `.forEach(async (credential) => { const calendar = await getCalendar(credential); ... apiDeletes.push(await calendar?.deleteEvent(...)) })`. Nothing awaits these callbacks, so `await Promise.all(prismaPromises.concat(apiDeletes))` at line 652 can run before anything is pushed, and errors become unhandled rejections. The forEach(async)/push-after-await pattern was already there before this patch; the patch's added `await getCalendar` at line 461 only delays the deletes further.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1340802
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/features/bookings/lib/handleCancelBooking.ts, `apiDeletes.push(deletedEvent)` pushes the resolved value rather than a promise. The later `Promise.all(prismaPromises.concat(apiDeletes))` therefore does not wait for those deletions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At handleCancelBooking.ts:460-467, `deletedEvent` is awaited before `apiDeletes.push(deletedEvent)`, so a resolved value is pushed, not a promise. That happens inside a fire-and-forget `forEach(async ...)`, so `Promise.all(prismaPromises.concat(apiDeletes))` at line 652 never waits for those recurring-event calendar deletions.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0851311
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Across the changed locations, forEach callbacks were made async to accommodate the now-async getCalendar. Array.prototype.forEach does not await them, so the promises are discarded: errors escape surrounding try/catch as unhandled rejections, and subsequent code such as sending reschedule emails runs before deletions complete.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch makes three forEach callbacks async so they can await getCalendar: vital/lib/reschedule.ts:125, wipemycalother/lib/reschedule.ts and bookings.tsx:~553. forEach drops the returned promises, so the try/catch at vital/lib/reschedule.ts:124-139 no longer catches getCalendar or CalendarService constructor errors, and sendRequestRescheduleEmail (line 143) runs before the deletions start or finish. The deleteEvent promises were already discarded before the patch, so only part of the ordering problem is new.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1071438
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "updateMeeting, deleteMeeting and getBusyVideoTimes await getVideoAdapters without error handling, unlike createMeeting, so a rejection in getVideoAdapters from a single broken provider fails all these paths.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The claim says createMeeting is different, but it is not: it also awaits getVideoAdapters outside its try block (packages/core/videoClient.ts:52; the try only starts at line 70). updateMeeting (line 111), deleteMeeting (line 144) and getBusyVideoTimes handle a rejection the same way.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.1220361
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/features/bookings/lib/handleCancelBooking.ts around line 589, the awaited appStore lookup and PaymentService instantiation happen outside the try/catch. A failure there bypasses handleRefundError and throws out of the cancellation/refund flow.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In handleCancelBooking.ts:589-596, `await appStore[...]` and `new PaymentService(paymentAppCredential)` both sit before the `try` at line 597, which only wraps `paymentInstance.refund()`, so a rejected import or a throwing constructor skips handleRefundError (lines 600-604) and propagates out of the handler. The patch only adds the `await`; the instantiation was already outside the try, and before the patch a failed static import would also have escaped the handler.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.128338
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "packages/app-store/index.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/app-store/index.ts, appStore values are `import(\"./x\")` expressions evaluated when the object literal is built. Importing appStore therefore loads all app packages immediately rather than lazily on key access.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/index.ts:3-30, every value is a bare `import(\"./x\")` call inside the object literal, so all 28 dynamic imports start as soon as the module is evaluated. Nothing defers them to key access (no getter or `() => import(...)` thunk), so the change only makes loading async, not lazy.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1131286
+   }
+  },
+  {
+   "issue": "i10",
+   "path": "packages/app-store/index.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Developer docs still instruct adding a static import to packages/app-store/index.ts, while the convention is now `appname: import(\"./appname\")`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "apps/docs/pages/developer/app-store.mdx:43 and :56 still tell developers to import the app into packages/app-store/index.ts and then add it to the appStore object. The patch removed every top-level import there and replaced them with `appname: import(\"./appname\")` entries (change.patch lines 26-114), but it did not update the docs. A static import would still work, because awaiting a value that is not a promise just returns it, so the stale docs are only a nit.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0804412
+   }
+  },
+  {
+   "issue": "i11",
+   "path": "packages/core/CalendarManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "getCalendarCredentials in packages/core/CalendarManager.ts calls the now-async getCalendar without await. The returned `calendar` field is therefore a `Promise<Calendar | null>`, which is always truthy and so passes `if (!calendar)` checks, and discarded promises that reject are unhandled.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "getCalendarCredentials does store an unawaited Promise in `calendar` (packages/core/CalendarManager.ts:28), but the patch deliberately changes its only consumer to do `const calendar = await item.calendar;` before the `if (!calendar)` check (CalendarManager.ts:48-51), so the always-truthy-Promise bug does not happen. The callers at viewer.tsx:340/415 and api/availability/calendar.ts:83 only pass the result to getConnectedCalendars, and its awaits sit inside try/catch, so those rejections are handled.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.13485909999999998
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A leftover comment `// example: import(\"./example\")` references ./example while the folder is named _example.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch does change the comment from `// import * as example from \"./_example\"` to `// example: import(\"./example\")` (packages/app-store/index.ts:1). But the claim's premise is wrong: no `_example` folder or any other example folder exists under packages/app-store in this checkout, so the comment does not mismatch a real folder.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0705825
+   }
+  },
+  {
+   "issue": "i13",
+   "path": "packages/lib/payment/deletePayment.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/lib/payment/deletePayment.ts:16, the awaited appStore lookup has no error handling, so a failed dynamic import throws out of deletePayment.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/lib/payment/deletePayment.ts:16 awaits the appStore promise with no try/catch, so a rejected import() from packages/app-store/index.ts propagates out of deletePayment as a rejection. Little changes in practice: these are eager imports of local modules, which would have failed at module load under the old static imports, and the later await at line 23 has no handling either.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1157217
+   }
+  },
+  {
+   "issue": "i14",
+   "path": "packages/app-store/_utils/getCalendar.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/app-store/_utils/getCalendar.ts:15, the awaited appStore import has no error handling, so a failed dynamic import surfaces as an unhandled rejection.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "getCalendar is async (packages/app-store/_utils/getCalendar.ts:9), so a rejected import awaited at line 15 rejects the promise getCalendar returns, and callers that await it receive the error (e.g. CalendarManager.ts createEvent/deleteEvent, handleCancelBooking). Passing the error up instead of catching it locally is normal, and it is not an unhandled rejection at this line. Any unhandled rejection would come from callers such as the `forEach(async ...)` in reschedule.ts, or from the eager `import()` calls in app-store/index.ts, not from getCalendar.ts:15.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1218267
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An await of an import has no try/catch around it to handle import failures.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds bare awaits on dynamic import() promises with no try/catch, for example packages/app-store/_utils/getCalendar.ts:15 (`await appStore[...]`), getVideoAdapters in packages/core/videoClient.ts, and the payment lookups in packages/lib/payment/handlePayment.ts and deletePayment.ts. This is a minor issue because a missing module would also have crashed the old static imports at load time, and index.ts starts every import() immediately.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1194406
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The for loop in getVideoAdapters loads adapters serially rather than in parallel.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The loop in packages/core/videoClient.ts:24-26 does await each `appStore[...]` entry one after another, but each entry is a promise created when the module loads (packages/app-store/index.ts:3-11 calls `import(\"./...\")` eagerly). So every module is already loading at the same time, and awaiting them in order takes about as long as Promise.all would; the loading is not serial.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0729886
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests were added or updated for the changed async contract of getCalendar, getVideoAdapters and appStore lookups.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes only source files: packages/app-store/_utils/getCalendar.ts, packages/app-store/index.ts, packages/core/{CalendarManager,EventManager,videoClient}.ts, the booking, payment and trpc handlers, and two reschedule.ts files. It adds or changes no *.test or *.spec file, and no existing test mentions getCalendar, getVideoAdapters or appStore[...] lookups.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0362764
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The production build and yarn lint required by CONTRIBUTING were not verified, so TS narrowing on awaited module unions is unchecked. The eslint preset lacks no-floating-promises/no-misused-promises, so lint would not catch forEach(async).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The ESLint preset at packages/config/eslint-preset.js:4,36 extends only next, prettier, turbo, @typescript-eslint/recommended and @calcom/eslint/recommended, and neither no-floating-promises nor no-misused-promises appears in it or in packages/eslint-plugin. So the patch's new forEach(async ...) callbacks (vital/lib/reschedule.ts:127, wipemycalother/lib/reschedule.ts:144, bookings.tsx:444) would pass lint; whether the build and lint were actually run can't be checked from the source.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1438352
+   }
+  },
+  {
+   "issue": "i19",
+   "path": "packages/core/CalendarManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/core/CalendarManager.ts:233, the awaited getCalendar call in createEvent has no error handling, so a rejected import bubbles out without recovery or logging.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/core/CalendarManager.ts:233 does `await getCalendar(credential)` with no try/catch. The `.catch` at line 244 only wraps `calendar.createEvent`, so if the import awaited at packages/app-store/_utils/getCalendar.ts:15 fails, the error propagates out of createEvent and nothing logs it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.14007360000000002
+   }
+  },
+  {
+   "issue": "i20",
+   "path": "packages/lib/payment/handlePayment.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/lib/payment/handlePayment.ts:26, the awaited appStore import has no error handling, so a failed import throws past the function without context.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At packages/lib/payment/handlePayment.ts:26 the patch adds `await appStore[...]` with no try/catch, so a rejected dynamic import (index.ts:87-114 now uses `import()`) propagates to the caller without added context. That is ordinary async error propagation, the same as the unguarded `paymentInstance.create` call at line 33, and the loader error already names the module.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1167118
+   }
+  },
+  {
+   "issue": "i21",
+   "path": "packages/trpc/server/routers/viewer/bookings.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/trpc/server/routers/viewer/bookings.tsx:967, the awaited appStore import has no error handling, so a rejected dynamic import interrupts the refund flow.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "There is no try/catch around the `await appStore[...]` at packages/trpc/server/routers/viewer/bookings.tsx:967, but that is not a defect: the same refund block already stops on failure by throwing at lines 938, 963 and 977, so a rejected import fails the request the same way and the booking is not marked REJECTED without a refund. Before the patch, these app modules were statically imported in packages/app-store/index.ts, so a module that failed to load broke the whole import at load time; the patch adds no new silent failure.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1278197
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A failing app-module import now rejects at module evaluation with no handler attached until a request awaits that key. It therefore surfaces as an unhandledRejection instead of a catchable import error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes packages/app-store/index.ts:87-114 so every app is loaded with an eager `import(\"./x\")` when the module is evaluated, and nothing attaches a handler to those promises until a consumer awaits that key (e.g. getCalendar.ts:17, videoClient.ts:247). A failing import therefore rejects with no handler and raises unhandledRejection, where the old static `import * as` made the importing module fail to load with an ordinary import error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1278896
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

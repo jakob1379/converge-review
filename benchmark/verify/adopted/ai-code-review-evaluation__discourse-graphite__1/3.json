@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes app/controllers/uploads_controller.rb:55 from `SiteSetting.max_image_size_kb.kilobytes` to a hardcoded `10.megabytes`, and lib/file_helper.rb:18 stops reading once the file passes that size without raising an error. On a site with a limit above 10 MB, a larger file is cut to about 10.5 MB, which is under the limit, so the UploadValidator check (lib/validators/upload_validator.rb:81) accepts it and the cut-off file gets stored.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1229672
+}

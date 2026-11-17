@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/api/paginator.py:842-843, OptimizedCursorPaginator.value_from_cursor returns cursor.value unchanged. DateTimePaginator (lines 238-241) instead converts the millisecond value back to a UTC datetime, so build_queryset (line 79) filters the endpoint's `-datetime` key against an integer. Separately, get_item_key (lines 838-840) calls math.floor/ceil on a datetime, which raises TypeError as soon as the first page returns rows.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0754592
+}

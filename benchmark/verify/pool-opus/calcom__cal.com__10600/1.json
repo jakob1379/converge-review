@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In next-auth-options.ts (patch lines 643-662), authorize() reads user.backupCodes from an earlier findUnique, decrypts it, runs indexOf, sets the matching slot to null, then calls prisma.user.update with only `where: { id }`. There is no transaction, lock or compare on the old value, so two concurrent logins can both accept the same code, and a stale write can put back a code that was already used.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0557276
+}

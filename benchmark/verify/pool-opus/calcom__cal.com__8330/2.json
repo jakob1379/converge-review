@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/slots.ts:137-149 rejects the slot as soon as any workingHours entry for its UTC weekday has it outside that entry's range (start < startTime || end > endTime), so it does not check that the slot falls inside some range. The per-user workingHours reach this check through the ...schedule spread at line 490, so split ranges on one day, or UTC-midnight split entries with overlapping days, wrongly remove valid slots.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1049771
+}

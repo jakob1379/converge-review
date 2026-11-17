@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The org-scope assertion at packages/lib/server/service/__tests__/insightsBooking.integration-test.ts:332-343 compares ANY(...) arrays in a fixed order, while the ids come from findMany calls with no orderBy (packages/lib/server/repository/team.ts:192-197, packages/lib/server/repository/membership.ts:409-419) and are used unsorted at packages/lib/server/service/insightsBooking.ts:154-168. The pre-patch assertion had the same order dependence through `in: [...]` arrays, and Postgres will usually return insertion order here, so this is a latent flake rather than an observed failure.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3804402
+}

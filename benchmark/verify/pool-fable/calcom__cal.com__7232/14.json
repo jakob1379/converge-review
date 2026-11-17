@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/lib/reminders/smsReminderManager.ts:178-189, `twilio.cancelSMS` (line 180) and `prisma.workflowReminder.delete` (lines 182-186) sit in one try block, so a throw from cancelSMS (Twilio error or `assertTwilio` failing, twilioProvider.ts:48-51) skips the delete and is only logged. The patch removes the unconditional `workflowReminder.deleteMany` calls the old callers ran independently of the un-awaited Twilio call (e.g. handleCancelBooking.ts, bookings.tsx, workflows.tsx).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3047912
+}

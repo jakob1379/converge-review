@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The server-side blocked-email check uses the new key: `record.errors.add(attribute, I18n.t(:'user.email.blocked'))` (lib/validators/email_validator.rb:13 in the patch). The client's rejected-email check uses `user.email.invalid` (create_account_controller.js, around line 72), but that check catches any server email error, not just blocked ones, and `user.email.blocked` exists only in server.en.yml, not in client.en.yml (where `user.email.invalid` is at line 216).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0769803
+}

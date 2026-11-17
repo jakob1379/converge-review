@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The comparison at src/sentry/integrations/github/integration.py:501-505 has no explicit None check, but it fails closed: a None from fetch_state (src/sentry/pipeline/base.py:255-259) is unequal to the string login the signed webhook stores (src/sentry/integrations/github/webhook.py:204-206), so the error page is returned. The OAuth step also cannot be skipped, since GitHubInstallation is only reached via pipeline.next_step() right after bind_state at integration.py:438-439.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3273266
+}

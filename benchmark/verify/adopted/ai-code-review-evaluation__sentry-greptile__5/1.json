@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "project_replay_summarize_breadcrumbs.py:118 pairs `error_ids` with `events.values()` using zip. nodestore/base.py:184 removes duplicate IDs, and on a partial cache hit base.py:199-205 puts the fetched items first and the cached ones after them (`items.update(cache_items)`), so the values can come back in a different order from `error_ids` and an ErrorEvent can get another event's ID.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0625058
+}

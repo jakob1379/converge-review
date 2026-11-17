@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/authz/rbac/cache.go:31 builds the key as plain concatenation `action + \"_\" + name + \"_\" + parent`, so (name 'x_y', parent '') and (name 'x', parent 'y_') both give '..._x_y_'. UIDs may contain '_' (pkg/util/shortid_generator.go:33), and service.go Check reads the denial cache and returns Allowed=false before it looks at the cached permissions, so a cached denial for one resource refuses a different one for shortCacheTTL.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1269292
+}

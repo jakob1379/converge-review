@@ -1,0 +1,319 @@
+{
+ "pr_url": "https://github.com/getsentry/sentry/pull/77754",
+ "cost_usd": 0.0613222,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "The abstract contract is inconsistent: sync_assignee_outbound declares the source parameter but sync_status_outbound does not match this pattern despite having a similar purpose."
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "queued is not type-checked on deserialisation, so it would come back as a str under a JSON serializer"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "No test drives sync_group_assignee_inbound end to end to show the source integration is skipped while a second integration still syncs"
+  },
+  {
+   "id": "c4",
+   "source": "coderabbit",
+   "text": "timezone.now() is evaluated at class definition time for the queued field default, causing all instances to share the same timestamp instead of capturing current time per instance"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "Test name typo: `test_from_dict_inalid_data` should be `test_from_dict_invalid_data`"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "ExampleIntegration.sync_status_outbound (example/integration.py:161) has no **kwargs, so it would raise TypeError if a caller passed the assignment_source argument."
+  },
+  {
+   "id": "c7",
+   "source": "augment",
+   "text": "queued field is initialized with timezone.now() at import time, so every AssignmentSource created without an explicit value will share the same timestamp, defeating the intent of recording when the source was queued"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review-replay",
+   "text": "The abstract sync_status_outbound method has an `assignment_source` parameter that no caller passes and no implementation reads, making the signature inconsistent with actual usage."
+  },
+  {
+   "id": "c9",
+   "source": "qodo-extended-v2",
+   "text": "AssignmentSource.queued is initialized with timezone.now() at class definition time, so every AssignmentSource created without an explicit queued value will share the same timestamp (typically worker import time) instead of the event time. Should use field(default_factory=timezone.now) instead."
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "The new task kwarg `assignment_source_dict` will cause TypeError on old workers during a rolling deploy, losing assignee sync"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "No test covers deassign with a matching source integration"
+  },
+  {
+   "id": "c12",
+   "source": "coderabbit",
+   "text": "Test method name 'test_from_dict_empty_array' is a typo - should be 'test_from_dict_empty_dict' since the test uses an empty dict"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review",
+   "text": "from_dict swallows TypeError/ValueError and returns None, so a malformed payload silently turns off loop protection (fails open into the cycle) with no log or metric"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "Status-sync cycles are not addressed; only assignee sync is protected despite the intent to break issue sync cycles"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "`test_from_dict_empty_array` passes an empty dict, not an array, so the name misdescribes the case"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "A database-backed sentry TestCase is used to test a plain dataclass when no DB access is needed"
+  },
+  {
+   "id": "c17",
+   "source": "golden",
+   "text": "Method name says 'empty_array' but tests empty dict - consider renaming to 'test_from_dict_empty_dict' for clarity."
+  },
+  {
+   "id": "c18",
+   "source": "claude-code",
+   "text": "`queued: datetime = timezone.now()` on line 18 evaluates `timezone.now()` once at module import time, not per-instance creation. Every `AssignmentSource` created via `from_integration()` will share the same stale timestamp. Fix: use `queued: datetime = field(default_factory=timezone.now)` instead"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "The dataclass default `queued: datetime = timezone.now()` is evaluated once at class definition time, not at instance creation. Every AssignmentSource gets the module-import timestamp instead of its own creation time. Fix: use field(default_factory=timezone.now) or remove the unused field."
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "tasks/sync_status_outbound.py:43 calls should_sync(\"outbound_status\") with no source argument, so status-sync loops get no protection despite the signature implying they should."
+  },
+  {
+   "id": "c21",
+   "source": "coderabbit",
+   "text": "Ruff flags both parameters (attribute, sync_source) as unused in the default should_sync implementation, which may cause CI lint failures"
+  },
+  {
+   "id": "c22",
+   "source": "coderabbit",
+   "text": "Test method name 'test_from_dict_inalid_data' is a typo - should be 'test_from_dict_invalid_data'"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "`queued: datetime = timezone.now()` is a dataclass default evaluated once at class definition, so every AssignmentSource carries the module import time instead of its creation time; the stale value is serialised into every sync_assignee_outbound task"
+  },
+  {
+   "id": "c24",
+   "source": "cubic-v2",
+   "text": "`asdict()` keeps `queued` as a `datetime` object. If this dict is serialized to JSON (e.g., as Celery task kwargs), it will raise `TypeError`. Convert `queued` to an ISO string in `to_dict` and parse it back in `from_dict`."
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "`source_name` is serialised into every task payload but never read; should_sync compares only integration_id"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "The loop guard compares integration IDs, not external issues, so a group linked to two external issues on the same integration no longer propagates an inbound reassignment between them"
+  },
+  {
+   "id": "c27",
+   "source": "golden",
+   "text": "The AssignmentSource dataclass uses queued: datetime = timezone.now() as a default field value, which evaluates timezone.now() once at class definition time and shares that single datetime instance across all objects."
+  },
+  {
+   "id": "c28",
+   "source": "golden",
+   "text": "to_dict() returns a datetime for queued; if this dict is passed in task kwargs (e.g., via apply_async), JSON serialization may fail depending on the serializer, which can cause enqueue errors."
+  },
+  {
+   "id": "c29",
+   "source": "coderabbit",
+   "text": "ExampleIntegration.sync_status_outbound method lacks **kwargs and will raise TypeError when called with the new assignment_source parameter"
+  },
+  {
+   "id": "c30",
+   "source": "golden",
+   "text": "The method name has a typo: test_from_dict_inalid_data should be test_from_dict_invalid_data."
+  },
+  {
+   "id": "c31",
+   "source": "cubic-v2",
+   "text": "`timezone.now()` is evaluated once at class definition time, so every instance that relies on the default will share the same stale timestamp. Use `field(default_factory=timezone.now)` to get a fresh value per instance."
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "The abstract sync_status_outbound gains an `assignment_source` parameter that no caller passes and no implementation reads, so the contract advertises status-sync loop protection that does not exist"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "AssignmentSource.queued defaults to timezone.now(), which is evaluated once at class definition/import time. Every instance created without an explicit value therefore shares the same stale timestamp instead of getting its own creation time.",
+   "path": null,
+   "members": [
+    "c4",
+    "c7",
+    "c9",
+    "c18",
+    "c19",
+    "c23",
+    "c27",
+    "c31"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "to_dict() uses asdict(), which leaves queued as a datetime object. Serializing the dict to JSON as task kwargs can raise TypeError.",
+   "path": null,
+   "members": [
+    "c24",
+    "c28"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "from_dict does not type-check or convert queued on deserialisation, so under a JSON serializer it comes back as a str.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The test method name test_from_dict_inalid_data contains a typo; it should be test_from_dict_invalid_data.",
+   "path": null,
+   "members": [
+    "c5",
+    "c22",
+    "c30"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The test test_from_dict_empty_array passes an empty dict, not an array, so its name misdescribes the case.",
+   "path": null,
+   "members": [
+    "c12",
+    "c15",
+    "c17"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The abstract sync_status_outbound has an assignment_source parameter that no caller passes and no implementation reads.",
+   "path": null,
+   "members": [
+    "c8",
+    "c32"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The abstract contract is inconsistent: sync_assignee_outbound declares the source parameter, but sync_status_outbound does not follow the same pattern.",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "Status-sync cycles are not protected. tasks/sync_status_outbound.py calls should_sync(\"outbound_status\") without a source argument, so only assignee sync gets loop protection.",
+   "path": "tasks/sync_status_outbound.py",
+   "members": [
+    "c14",
+    "c20"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "ExampleIntegration.sync_status_outbound has no **kwargs, so it raises TypeError when called with the new assignment_source argument.",
+   "path": "example/integration.py",
+   "members": [
+    "c6",
+    "c29"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "No test drives sync_group_assignee_inbound end to end to show that the source integration is skipped while a second integration still syncs.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "No test covers deassign with a matching source integration.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The new task kwarg assignment_source_dict causes TypeError on old workers during a rolling deploy, so assignee sync is lost.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "from_dict catches TypeError/ValueError and returns None without logging or emitting a metric, so a malformed payload silently disables loop protection.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "A database-backed sentry TestCase is used to test a plain dataclass that needs no DB access.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "Both parameters (attribute, sync_source) of the default should_sync implementation are unused and flagged by Ruff.",
+   "path": null,
+   "members": [
+    "c21"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "source_name is serialised into every task payload but never read; should_sync compares only integration_id.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The loop guard compares integration IDs rather than external issues, so an inbound reassignment no longer propagates between two external issues linked to the same group on the same integration.",
+   "path": null,
+   "members": [
+    "c26"
+   ]
+  }
+ ]
+}

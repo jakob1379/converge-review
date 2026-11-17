@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`app/controllers/admin/groups_controller.rb:90` calls `group.users.delete(user_id)` on a `has_many :through` (`app/models/group.rb:8`), which in Rails 4.1.8 removes the join rows with `delete_all`, so the `counter_cache: \"user_count\"` on `app/models/group_user.rb:2` never decrements (Rails behaviour from memory, gem source not readable here). `add_members` goes through `group.add` (`group.rb:272`), which saves a GroupUser and increments the counter, so `user_count` from `app/serializers/basic_group_serializer.rb:2` drifts upward after removals.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6471453999999999
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In VerifyMessageProperties.java, the new getEnglishValue (patch lines 206-214) calls bundleEnglish.getString(key) and catches MissingResourceException to fall back to \"\", where it could check bundleEnglish.containsKey(key) first. This is a style point: the code still behaves correctly, and the cost only matters for keys that have no English entry in this build-time verifier.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0595421
+}

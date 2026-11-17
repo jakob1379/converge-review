@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:507-514 (patch lines 507-514) builds each new guest as {name: \"\", email, timeZone: organizer.timeZone, locale: organizer.locale} and saves it with createMany. Those blank names then reach the emails, e.g. the attendee `to:` field in attendee-add-guests-email.ts, and the calendar update through updateCalendarAttendees. Guests added at booking time also get an empty name, so this follows existing practice, but the claim is accurate.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1419153
+}

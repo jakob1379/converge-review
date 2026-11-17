@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:217-219 passes the result of getResourceTypeResource() straight to findByResource(), yet AdminPermissionsSchema.java:117-119 returns null whenever realm admin permissions are disabled (toggleable after the fact via updateRealm, DefaultExportImportManager.java:783) while V2 is chosen by feature flag alone (AdminPermissions.java:40) and the admin-permissions client's resource server still exists; StoreFactoryCacheSession.java:938 then dereferences resource.getId() and throws NPE (ClientPermissionsV2.java:224 resource.getScopes() would too). The 500 status is inferred from the uncaught NPE, not executed.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.7006778
+}

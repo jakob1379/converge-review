@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The truthiness checks exist at src/sentry/issues/endpoints/browser_reporting_collector.py:52 and :58, but age=0 with a non-zero timestamp is still rejected: DRF runs validate_age for the present age field, and line 58 sees the truthy timestamp and raises. Only the degenerate case where both age and timestamp are 0 slips through.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1625797
+}

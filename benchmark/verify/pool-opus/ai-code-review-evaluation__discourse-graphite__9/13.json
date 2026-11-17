@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/initializers/i18n.rb:77-89 (added by the patch) defines `FallbackLocaleList < Hash`, overrides only `[]` and `ensure_loaded!`, and never stores anything, so `keys`, `each` and `to_h` return empty results and `fetch(locale)` raises KeyError. No code in the repo calls those methods; the only callers are I18n's own `fallbacks[locale]` lookup and application_controller.rb:159, so nothing currently breaks.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.059914300000000004
+}

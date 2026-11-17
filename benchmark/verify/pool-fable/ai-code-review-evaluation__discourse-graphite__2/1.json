@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The new GET `unsubscribe` action does mutate state (app/controllers/topics_controller.rb:98-116, config/routes.rb `get \"t/:slug/:topic_id/unsubscribe\"`), but it is behind `ensure_logged_in` (topics_controller.rb:8-28; application_controller.rb:408-410, 97-103) and the emailed URL carries no token (app/models/topic.rb:719), so a mail client or scanner prefetching without the user's session cookie is redirected to \"/\" and changes nothing. The state-changing GET is still triggerable by any request carrying the session cookie (e.g. a cross-site embed), but that is not the prefetcher scenario claimed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3906189
+}

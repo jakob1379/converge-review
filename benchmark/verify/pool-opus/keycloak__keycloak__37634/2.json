@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AssertEvents.java:483 uses `items[0].substring(3, 5)`, but the production decoder in the patch splits the 6-char prefix as session (0,2), token (2,4) and grant `substring(4, 6)`. The matcher therefore reads the wrong characters, and because the check is also inverted (`equals(...) return false`), it does not actually verify the grant type.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0751633
+}

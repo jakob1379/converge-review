@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/assets/stylesheets/desktop/topic-post.scss:291 (patch lines 619-620), `.topic-meta-data h5 a` changed from `scale-color($primary, $lightness: 30%)` to `dark-light-choose(scale-color($primary, $lightness: 70%), scale-color($secondary, $lightness: 30%))`. Every other conversion in the patch keeps the original value as the first (light-theme) argument, for example the `.arrow` rule at line 294 (60%\u219260%/40%), so in the light theme this link goes from 30% to 70% lightness and loses contrast.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0997606
+}

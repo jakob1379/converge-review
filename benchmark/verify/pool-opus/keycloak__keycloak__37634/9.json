@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "TokenManager.initToken (TokenManager.java:1048-1054) now always calls DefaultTokenContextEncoderProvider.getTokenContextFromClientSessionContext. That calls AbstractOIDCProtocolMapper.getShouldUseLightweightToken (DefaultTokenContextEncoderProvider.java:54), which runs session.getContext().getClient().getAttribute(...) with no null check (AbstractOIDCProtocolMapper.java:86); DefaultKeycloakContext.getClient() can return null, so a missing client now throws a NullPointerException before any mapper runs. Before the patch this call only happened inside mapper transformAccessToken, so a token with no OIDC mappers could be built without a client.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.436427
+}

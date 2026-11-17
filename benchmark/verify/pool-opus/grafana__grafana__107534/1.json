@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch now calls datasource.applyTemplateVariables in runSplitQuery and runShardSplitQuery (querySplitting.ts:296-299, shardQuerySplitting.ts:49-52). runQuery then calls super.query (datasource.ts:350-352), which runs applyTemplateVariables again (DataSourceWithBackend.ts:185). Every new and existing test mocks runQuery with jest.spyOn(...).mockReturnValue (e.g. querySplitting.test.ts:63,83, and the new shard test). Their applyTemplateVariables and templateSrv.replace mocks are string replaces that give the same result when run twice, so a second interpolation would go unnoticed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14350390000000002
+}

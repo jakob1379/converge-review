@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "When advanced features are on and the offset is negative, paginator.py:877-882 slices the queryset with that negative value (`queryset[start_offset:stop]`). Django's QuerySet slicing rejects negative indexes with a ValueError, so the comment at paginator.py:876 is wrong. The cursor parser at cursors.py:59 accepts a negative offset, and base.py:540 only catches BadPaginationError, so the ValueError surfaces as a 500 for superusers or members with global access who send optimized_pagination=true.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1026635
+}

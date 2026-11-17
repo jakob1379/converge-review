@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts, twilio.scheduleSMS (lines 159-166) and the prisma update that sets scheduled/referenceId (lines 169-177) sit in the same try block. If that update throws after Twilio has accepted the message, the catch (lines 189-199) only increments retryCount and leaves scheduled=false, so the next run sends the SMS to Twilio again. This try/catch structure was already there before the patch; the patch only adds retry counting, which limits how many duplicates can happen.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06654800000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/refreshOAuthTokens.ts:8-14, the `fetch` to CALCOM_CREDENTIAL_SYNC_ENDPOINT passes only `method` and `body`, with no `signal`, AbortController or timeout wrapper. If the sync endpoint is slow or hangs, the request can stall for as long as the runtime's default allows.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.04433770000000001
+}

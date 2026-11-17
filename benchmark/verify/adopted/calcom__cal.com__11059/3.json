@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In parseRefreshTokenResponse.ts:8 and :10, the computed keys `[z.string().toString()]` and `[z.string().optional().toString()]` both call Zod's inherited Object.prototype.toString, so both become '[object Object]'; the later key wins and z.object strips every field except access_token. Zoom then computes `newTokens.expires_in * 1000` as NaN (VideoApiAdapter.ts:122), and office365 merges no new expires_in (CalendarService.ts:264), so isExpired stays true and it refreshes on every call.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.09747139999999999
+}

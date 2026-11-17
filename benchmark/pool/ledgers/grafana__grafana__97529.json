@@ -1,0 +1,192 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch skips the only postgres integration test of storage-server startup and /metrics instead of fixing it. This removes coverage for a supported backend and hides the startup failure that eager Init exposes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test hardcodes db_host 'localhost' for postgres, but Drone runs postgres at host 'postgres'. Startup therefore fails when eager init opens the DB in NewResourceServer.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The function-wide cacheMu lock was removed from BuildIndex, so concurrent callers (e.g. a Search request and handleEvent via getOrCreateIndex) can build the same key at once. The last writer wins, one built index goes untracked or its documents are lost, and file-backed indexes can be created concurrently in the same directory.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "File-based indexes above index_file_threshold are created with bleve.New(dir) under a deterministic path. bleve v2 returns ErrorIndexPathExists when that directory already exists and nothing removes or reopens it, so NewResourceServer fails on every restart after the first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Eager Init runs inside the wire graph for every Grafana process on context.Background() with no deadline. A DB or search failure or hang now blocks Grafana startup.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "With the per-request s.Init(ctx) check removed, handlers (Create, Update, Delete, Read, List, Watch, Search, History, Origin, PutBlob, GetBlob) no longer reject requests after Stop is called. Writes can then reach the still-open DB with the poller cancelled, so Watch returns io.EOF and no events are published.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "IsHealthy reports healthy while the server is stopping or stopped.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "With the per-request Init calls removed, initErr has no reader after construction, so the writes to initErr in Stop are dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The sync.Once and initErr gating in Init are dead scaffolding. Init's only caller is the constructor, *server is unexported, and Init is not on the ResourceServer interface, so the once guard can never be hit twice.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is an untracked TODO about the RV short-circuit optimization.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Docstring coverage is 0.00%, below the required 80.00% threshold.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The init error is logged twice with the identical message 'error initializing resource server', once inside Init and once in NewResourceServer, and is also returned to the caller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When Init fails, NewResourceServer returns (nil, err) without calling cancel() or lifecycle.Stop. This leaks the context, and if search.init succeeded before initWatcher failed, it also leaks the search watch goroutine and its sql poller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": "apistore/watcher_test.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers NewResourceServer returning lifecycle/search/watcher init errors or handlers working without lazy Init. apistore/watcher_test.go still calls Init manually before construction, which is now redundant.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In searchSupport.init with initWorkers > 1, totalBatchesIndexed++ is a non-atomic increment from multiple concurrent goroutines, which is a data race.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In searchSupport.init with initWorkers > 1, errgroup goroutines write the shared outer err variable without synchronization (assigned with = rather than :=), so one worker's error can be overwritten by another's nil and lost. The narrowed lock makes these builds truly parallel.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": "resource/bleve_index_metrics.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "bleveBackend.TotalDocs iterates b.cache without holding cacheMu, while BuildIndex writes the map concurrently. Callers include the new startup log in searchSupport.init (after the watch goroutine starts) and BleveIndexMetrics.Collect on every scrape, so concurrent map iteration and write can cause a fatal runtime panic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

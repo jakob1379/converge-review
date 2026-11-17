@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The Verify button's onClick at packages/features/ee/workflows/components/WorkflowStepContainer.tsx:450-454 calls verifyPhoneNumberMutation.mutate with `sendTo || \"\"` and the raw `verificationCode` state (initially \"\", line 66) with no emptiness guard or disabled check beyond isLoading (line 449); the `required` attributes do not block an onClick, and the server schema is plain `z.string()` (packages/trpc/server/routers/viewer/workflows.tsx:1082-1087). The pre-patch code had the identical handler; the patch only un-nested and re-indented this block.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5395495
+}

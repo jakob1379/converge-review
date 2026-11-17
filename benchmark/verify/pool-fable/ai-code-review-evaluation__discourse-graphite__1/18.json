@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/uploads_controller.rb:64 the `tempfile.size > 0` check is subsumed by the loop condition at :66 (`tempfile.size > SiteSetting.max_image_size_kb.kilobytes`, with the setting already required to be > 0). The `tempfile &&` check changes nothing observable because a nil tempfile raises NoMethodError at :72 (`tempfile.size`) anyway \u2014 though that is a crash, not real nil handling; only the `ensure` at :85 tolerates nil.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1811244
+}

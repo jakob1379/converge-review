@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds packages/prisma/migrations/20230804153419_add_backup_codes/migration.sql (change.patch:679-686), and the repo already has the later 20230828094603_add_include_calendar_event, so the new migration sorts before one that already exists. The migration only adds an independent nullable column (`users.backupCodes`), so the order is wrong but it is unlikely to cause real schema drift.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.049625100000000005
+}

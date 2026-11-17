@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the flat type `InsightsBookingServicePublicOptions` at packages/lib/server/service/insightsBooking.ts:29-34 (`scope: \"user\"|\"org\"|\"team\"`, `teamId?: number`) and uses it for the constructor (line 58), replacing the strict discriminated-union type. A team-scope call without teamId therefore compiles, fails `safeParse` (line 62-63), sets options to null and gets `1=0`, so it returns empty results with no error. InsightsRoutingService still uses the strict union type (insightsRouting.ts:29,52).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12280529999999999
+}

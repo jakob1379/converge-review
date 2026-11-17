@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/services/resources/admin/permissions/MgmtPermissionsV2.java:29 declares `private ClientPermissionsV2 clientPermissions`, which hides `protected ClientPermissions clientPermissions` at MgmtPermissions.java:76. The parent only uses its field inside `clients()` (MgmtPermissions.java:222-224), which V2 overrides at MgmtPermissionsV2.java:64-68, so the hiding causes no wrong behaviour.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08755170000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In CredentialActionsDropdown.tsx:118-123, `canDisconnect` is false whenever `delegationCredentialId` is set, so the component returns null unless `hasCache` (Google Calendar with a `cacheUpdatedAt`) is truthy. In that case it shows only the cache items (lines 132-161), where before the wrapper rendered nothing for delegation credentials. In practice delegation credentials use id -1 (packages/lib/delegationCredential/server.ts:86), so a cache row for them is unlikely and the visible change is small.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1527268
+}

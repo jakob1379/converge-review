@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/components/auth/BackupCode.tsx:7 declares `export default function TwoFactor`, the same name as apps/web/components/auth/TwoFactor.tsx:8, so both show as `TwoFactor` in DevTools and stack traces. Imports are unaffected, since it is a default export that callers import as `BackupCode`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.10310149999999998
+}

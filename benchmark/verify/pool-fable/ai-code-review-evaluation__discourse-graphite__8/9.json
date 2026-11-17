@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/admin/controllers/admin-group.js.es6:13 computes totalPages as Math.floor(user_count / limit) + 1, so 100 users at limit 50 gives 3 pages instead of 2. On page 2 showingLast (line 17) is false, so next (lines 30-33) sets offset to 100 and the server (app/controllers/groups_controller.rb:26) returns an empty member list shown as page 3/3.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.17229909999999998
+}

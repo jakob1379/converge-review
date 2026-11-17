@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts, the start check (patch lines 116-117) rejects a slot when slotEndTime.isBefore(start) || isSame(start), but the end check (line 121) uses only slotStartTime.isAfter(end). A slot starting exactly at the override end is not rejected, and because dateOverrideExist is already true, the function returns true (available) at line 131-132.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0658416
+}

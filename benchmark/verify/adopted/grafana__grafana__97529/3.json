@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In server.go:258-262 (added by the patch), NewResourceServer calls s.Init(ctx) and logs s.log.Error(\"error initializing resource server\", \"error\", err) on failure. Init has already logged the same message, key and error with the same logger at server.go:313-315, so every init failure is logged twice.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08988560000000001
+}

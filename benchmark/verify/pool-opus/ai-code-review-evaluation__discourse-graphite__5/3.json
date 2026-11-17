@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `@mixin order($val)` at app/assets/stylesheets/common/foundation/mixins.scss:125-131. It passes `$val` unchanged to `-webkit-box-ordinal-group` and `-moz-box-ordinal-group`. Those legacy properties count from 1 and default to 1, while `order` defaults to 0, so `order(0)` would give an invalid value. The only current callers are `order(3)` in header.scss:39 and `order(2)` in topic.scss:30. Both are positive, so their order relative to default items stays correct.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.051321799999999994
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:138-140 calls findByType(server, \"Clients\") and adds resource.getName(); the JPA query matches `r.type = :type` exactly (ResourceEntity.java:64), and only the all-clients resource is typed (AdminPermissionsSchema.java:250) while per-client resources are created with no setType (AdminPermissionsSchema.java:104). So it can only yield the name \"Clients\", which AvailableRoleMappingResource.java:230 passes to realm.getClientById(cid).getRolesStream() (null dereference); that caller path is gated on the V1 ADMIN_FINE_GRAINED_AUTHZ flag (line 217), so it is largely latent under V2-only.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.9541518999999999
+}

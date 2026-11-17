@@ -1,0 +1,82 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The script uses the BSD/macOS-only `sed -i '' -E` syntax, which fails on GNU sed (Linux). When it fails, the .env update does not happen but the script still prints that GOOGLE_WEBHOOK_URL was updated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "After the deleteCache mutation in CredentialActionsDropdown succeeds, it only calls onSuccess and does not invalidate viewer.calendars.connectedCalendars. Callers that pass no onSuccess, such as EventAdvancedTab, then show a stale cacheUpdatedAt / 'Last updated'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {}) is called with empty data. With updateMany in Prisma 5.4.2 this does not bump @updatedAt, nothing reads SelectedCalendar.updatedAt, and the call adds an extra UPDATE on every fetchAvailabilityAndSetCache run.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cache 'Last updated' timestamp is formatted with a hard-coded `new Intl.DateTimeFormat(\"en-US\", ...)`, which ignores the user's locale (i18n.language from useLocale) and profile timezone.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "dev:cron switches from ts-node to `npx tsx`, but tsx is not declared as a dependency and is not in yarn.lock. npx therefore downloads it from the registry at run time.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "prisma.credential.findFirst has no select, so it loads the full Credential row, including the key (OAuth tokens), only to check existence and ownership.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The mock getCacheStatusByCredentialIds does not accept the credentialIds parameter, so it does not match the interface signature.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

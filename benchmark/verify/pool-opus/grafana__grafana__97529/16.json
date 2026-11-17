@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`TotalDocs` (pkg/storage/unified/search/bleve.go:144-153) loops over `b.cache` without taking `cacheMu`, while `BuildIndex` writes the map at bleve.go:137-139 and can run in the watch goroutine started at search.go:207-213 via `handleEvent`, `getOrCreateIndex` and `build`. Both the new startup log at search.go:216 and `Collect` at bleve_index_metrics.go:96 can therefore read the map while it is being written, which can make the Go runtime abort with \"concurrent map iteration and map write\".",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1568019
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only feature-disabled test is `testFeatureNotEnabled` at quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java:46-50, which launches the `metadata` subcommand; every `check` invocation (lines 65, 81, 96, 105) passes `--features=rolling-updates`. So the gate at UpdateCompatibilityCheck.java:46-50 is never hit by a test, and no test asserts exit code `FEATURE_DISABLED` (4) for either command.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3955417
+}

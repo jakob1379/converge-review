@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only way to build a SQLCommand is `NewSQLCommand` (sql_command.go:43; the reader.go:137, nodes.go:160 and test callers all go through it). It calls `sql.TablesList` (sql_command.go:30), which calls `DB.RunCommands`; the patch's stub always returns an error there (pkg/expr/sql/db.go:16-17, parser.go:26-29), so `NewSQLCommand` always fails and `Execute` / `db.QueryFramesInto` at sql_command.go:96-104 can never run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1828598
+}

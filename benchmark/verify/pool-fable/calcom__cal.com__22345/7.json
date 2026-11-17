@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The org/team builders return a bare `(A) OR (B)` (packages/lib/server/service/insightsBooking.ts:171-174, 204-207), and getBaseConditions() returns it unwrapped when there are no filters (insightsBooking.ts:74-75), so appending `AND ...` to it would bind only to the second OR branch. The risk is latent: with filters present line 73 parenthesises correctly, and the only current caller (the integration test, line 480) uses `WHERE ${baseConditions}` alone.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.34080050000000006
+}

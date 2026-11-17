@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/protocol/oidc/mappers/AbstractOIDCProtocolMapper.java:84-86 takes only the KeycloakSession and reads `session.getContext().getClient()`, not the client of the ClientSessionContext or the `client` passed to `TokenManager.initToken`. The body is pre-existing, but the patch makes it public static and calls it from DefaultTokenContextEncoderProvider.java:54 to set the token-ID type; the mappers use the same check, so the ID still matches how the token was built.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.9687774
+}

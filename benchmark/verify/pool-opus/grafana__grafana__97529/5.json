@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Stop sets s.initErr to \"service is stopping\"/\"service is stopped\" (pkg/storage/unified/resource/server.go:321,339). The per-request s.Init(ctx) checks were the only thing returning that error to callers, and the patch removes them from all the handlers (patch lines 106-216). After Stop, backend.Stop only cancels the poller (sql/backend.go:119-121) and leaves the DB open, so writes still succeed. Watch's broadcaster.Subscribe then returns io.EOF once the broadcaster has terminated (broadcaster.go:131-132), so Watch fails with io.EOF and no events are published.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1480749
+}

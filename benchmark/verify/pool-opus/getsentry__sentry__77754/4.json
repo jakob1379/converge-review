@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In change.patch:272-275, test_from_dict_empty_array sets `data: dict[str, Any] = {}`, which is an empty dict, and passes it to AssignmentSource.from_dict. No array is involved, so the name describes the case wrongly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.026447
+}

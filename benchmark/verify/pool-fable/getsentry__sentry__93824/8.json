@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The docstring at src/sentry/spans/consumers/process/flusher.py:32 says 'Creates one process per shard', but the CLI default `--flusher-processes` is 1 (src/sentry/consumers/__init__.py:434) and flusher.py:60 takes `min(max_processes, len(assigned_shards))`, so by default all shards share one process. The comments at flusher.py:178 and flusher.py:235 speak of per-shard health, while the code only writes and checks a single per-process `healthy_since` value.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.29568269999999997
+}

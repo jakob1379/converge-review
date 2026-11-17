@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`BlockedEmail.should_block?` increments `match_count`, sets `last_match_at` and saves on every call (app/models/blocked_email.rb:11-19), and it is called from `EmailValidator#validate_each` (lib/validators/email_validator.rb:13), which runs on User's email validation (app/models/user.rb:47). `users#create` calls `user.valid?` (app/controllers/users_controller.rb:168) and then `user.save` (:172), each re-running validations with errors cleared, so one signup with a blocked email is counted twice and writes twice.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2081402
+}

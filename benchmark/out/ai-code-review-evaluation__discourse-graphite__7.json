@@ -1,0 +1,125 @@
+{
+  "findings": [
+    {
+      "path": "app/assets/stylesheets/desktop/topic-post.scss",
+      "line": 291,
+      "severity": "Important",
+      "claim": "Light/dark arguments swapped for .topic-meta-data h5 a: original $lightness 30% became dark-light-choose(70%, 30%) instead of (30%, 70%); light theme poster-name link fades from #646464 to #bdbdbd (contrast vs white ~5.9 -> ~1.9, below WCAG AA) and the dark theme gets the dim value.",
+      "evidence": "Diff '- scale-color($primary, $lightness: 30%)' -> '+ dark-light-choose(scale-color($primary, $lightness: 70%), scale-color($secondary, $lightness: 30%))'. Orchestrator ran the superpowers seat's pair-check script on the pinned patch: it prints exactly this line among 5 mismatches. No sass compiler; colour effect reasoned from scale-color semantics.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three seats agree, mechanically verified; contradicts the commit's own rule (light value unchanged, dark = 100-X) and regresses the default light theme."
+    },
+    {
+      "path": "app/assets/stylesheets/mobile/modal.scss",
+      "line": 102,
+      "severity": "Important",
+      "claim": "Light/dark arguments swapped for .custom-message-length: original 70% became dark-light-choose(30%, 70%) instead of (70%, 30%); hint text turns dark in light theme and near-white in dark theme, and diverges from desktop/modal.scss:94 which is correct.",
+      "evidence": "Diff '- $lightness: 70%' -> '+ dark-light-choose(scale-color($primary, $lightness: 30%), scale-color($secondary, $lightness: 70%))'; desktop twin is (70%,30%). Orchestrator ran the superpowers seat's pair-check script on the pinned patch: it prints exactly this line among 5 mismatches.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three seats agree, mechanically verified; inverts intended muting in both themes."
+    },
+    {
+      "path": "app/assets/stylesheets/mobile/topic-post.scss",
+      "line": 182,
+      "severity": "Important",
+      "claim": "Light-theme value changed for topic-map h3: original 20% became dark-light-choose(50%, 50%) instead of (20%, 80%); mobile heading lightens from #4e4e4e to #909090 (~3.2:1, fails AA for normal text) and diverges from desktop/topic-post.scss:321.",
+      "evidence": "Diff '- $lightness: 20%' -> '+ dark-light-choose(... 50%), ... 50%))'. Orchestrator ran the superpowers seat's pair-check script on the pinned patch: it prints exactly this line among 5 mismatches.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Severity normalised to Important (superpowers and mattpocock Important, OCR Minor): unrequested light-theme visual change in a commit scoped to dark themes, with an accessibility drop."
+    },
+    {
+      "path": "app/assets/stylesheets/desktop/user.scss",
+      "line": 522,
+      "severity": "Important",
+      "claim": "Light-theme value changed for .group-member-info .name: original 30% became dark-light-choose(50%, 50%) instead of (30%, 70%); the name becomes as faint as the .title under it, losing hierarchy in light theme.",
+      "evidence": "Diff '- $lightness: 30%' -> '+ dark-light-choose(... 50%), ... 50%))'. Orchestrator ran the superpowers seat's pair-check script on the pinned patch: it prints exactly this line among 5 mismatches.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Severity normalised to Important (two of three seats); unrequested light-theme change, likely copy-paste of the .title line."
+    },
+    {
+      "path": "app/assets/stylesheets/mobile/user.scss",
+      "line": 497,
+      "severity": "Important",
+      "claim": "Same as desktop/user.scss:522: .group-member-info .name original 30% became dark-light-choose(50%, 50%) instead of (30%, 70%).",
+      "evidence": "Diff '- $lightness: 30%' -> '+ dark-light-choose(... 50%), ... 50%))'. Orchestrator ran the superpowers seat's pair-check script on the pinned patch: it prints exactly this line among 5 mismatches.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Same defect as desktop twin; unrequested light-theme change."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/_topic-list.scss",
+      "line": 115,
+      "severity": "Minor",
+      "claim": "Conversion incomplete: .topic-list.categories .category .badge-notification still uses bare scale-color($primary, $lightness: 50%), so in dark themes it is lightened from the light text colour, unlike every other muted grey.",
+      "evidence": "Orchestrator grep 'scale-color($primary' over app/assets/stylesheets excluding dark-light-choose returns only this line and a comment at common/base/discourse.scss:73.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Direct gap against the commit's stated intent; one-line change in a file the patch already touches."
+    },
+    {
+      "path": "app/assets/stylesheets/common/foundation/variables.scss",
+      "line": 46,
+      "severity": "Minor",
+      "claim": "The two-part dark-light-choose(scale-color($primary, X%), scale-color($secondary, 100-X%)) expression is hand-copied 115 times across 32 files; a one-argument helper next to dark-light-choose/dark-light-diff would encode the 100-X rule once and would have prevented the 5 mismatches above.",
+      "evidence": "All 115 added lines follow the same shape (ponytail and mattpocock scripts); repo precedent: dark-light-diff at variables.scss:38-39. OCR noted the same but did not file it.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: advisory maintainability refactor touching 115 call sites; not a defect and would balloon the fix surface. Revisit as a follow-up refactor."
+    },
+    {
+      "path": "app/assets/stylesheets/common/base/discourse.scss",
+      "line": 73,
+      "severity": "Minor",
+      "claim": "Comment still describes the old default 'scale-color($primary, $lightness: 50%)', now stale after the conversion.",
+      "evidence": "Orchestrator grep shows the comment line at common/base/discourse.scss:73.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: documentation-only, no runtime effect; outside the changed lines."
+    },
+    {
+      "path": "app/assets/stylesheets/desktop/topic-list.scss",
+      "line": null,
+      "severity": "Minor",
+      "claim": "Several converted one-line rules gain a stray space before the closing brace ('...)); }' where the original was '...);}'), e.g. in desktop/topic-list.scss, desktop/queued-posts.scss:14 and desktop/topic-post.scss.",
+      "evidence": "Patch lines 502->503 and 529->530 change ');}' to '); }'. mattpocock seat said brace spacing was pre-existing; that holds for the opening '{color' but not for the new ' }', which the patch introduces.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: cosmetic whitespace only, no rendering effect; not covered by any lint config in the repo."
+    }
+  ],
+  "coverage": "Files skipped: none - all 32 patched SCSS files covered by every seat (mechanical pairwise scripts plus manual reads at flagged sites). Axes that did not run: gate not run (benchmark mode: no dependency install, no project checks); no Sass compiler available, so no compiled CSS or rendered dark/light verification and all colour/contrast claims are reasoned from scale-color semantics with the default #222/#fff palette; no spec (judged against commit message); no SCSS lint config or style standards doc beyond CONTRIBUTING.md; no red tests or fix rounds (stopped after merge per benchmark override). Untracked harness dotfiles (.bashrc, .claude/, etc.) excluded from the pinned patch as not part of the PR. OCR seat noted base blobs unavailable in the partial clone and took original values from patch '-' lines."
+}

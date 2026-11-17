@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OrderedQueueWorker.run wraps each `self.result_processor(...)` call in `sentry_sdk.start_transaction(op=\"queue_worker.process\")` (queue_consumer.py:164-168). `ResultProcessor.__call__` then opens its own `start_transaction(op=\"result_processor.handle_result\")` (result_consumer.py:48-51), so each result gets two nested transactions.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2312531
+}

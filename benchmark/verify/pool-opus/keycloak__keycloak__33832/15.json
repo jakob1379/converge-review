@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:66-69, the loop adds \", \" after every ignored provider name, including the last one, and nothing removes it before logger.debugf, so the message ends with a trailing \", \".",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0343089
+}

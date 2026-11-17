@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The claim is correct. In app/serializers/embeddable_host_serializer.rb (patch lines 419-433), `attributes :id, :host, :category_id` is followed by `def id`, `def host` and `def category_id`, and each one only returns `object.<attr>`. The `attributes` declaration already reads those values from the object, so the methods repeat it. The same pattern appears for `id` in embedding_serializer.rb (patch lines 442-447).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0403576
+}

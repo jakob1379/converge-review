@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/hooks/useAbilities.ts:227 now calls groupIdentifier.fromCombinedRule(rule) in a render-time useMemo, which for non-Grafana rules calls getDatasourceAPIUid (utils/groupIdentifier.ts:22), and that throws `Datasource \"...\" not found` when the name is not in getAllDataSources() (utils/datasource.ts:303-305); the replaced getRulesSourceName (utils/datasource.ts:238-240) only returns a name and cannot throw. In production combined rules normally carry a registered datasource, so the throw needs a stale or unregistered rules source \u2014 the patch itself had to register a mimir datasource in RuleDetails.test.tsx to keep that test rendering.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6943362
+}

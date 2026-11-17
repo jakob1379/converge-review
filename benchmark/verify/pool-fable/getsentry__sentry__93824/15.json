@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`self.processes` is only written at src/sentry/spans/consumers/process/flusher.py:124, after `process.start()`, with a `SpawnProcess` or `threading.Thread` object (neither defines `__bool__`/`__len__`, so both are always truthy); no code or test ever stores None or another falsy value, so the `if not process: continue` guard at flusher.py:222-223 is dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2137737
+}

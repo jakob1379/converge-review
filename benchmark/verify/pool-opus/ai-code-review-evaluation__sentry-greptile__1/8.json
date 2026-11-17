@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.get_result (src/sentry/api/paginator.py, patch lines 101-167) repeats BasePaginator.get_result (paginator.py:136-215) line for line, with the same build_queryset, count_hits and queryset[start_offset:stop] slice. Its get_item_key/value_from_cursor copy Paginator's (paginator.py:222-227), and the only new branch is the negative-offset slice, so there is no query-level optimization.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0840027
+}

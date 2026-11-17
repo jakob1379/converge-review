@@ -1,0 +1,457 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/33832",
+ "cost_usd": 0.09409120000000001,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review",
+   "text": "Dead code: ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) at AuthzClientCryptoProvider.java:114-115 build encoders and discard them; lines 117-121 redo the encoding"
+  },
+  {
+   "id": "c2",
+   "source": "qodo-extended-v2",
+   "text": "CryptoIntegration.detectProvider() sorts providers by order() but multiple built-in providers return the same order value (200), making provider selection nondeterministic and dependent on ServiceLoader iteration order"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "General-purpose high-tag-number and indefinite-length decoding is unneeded complexity for DER ECDSA signatures which are always 0x30 with two 0x02 INTEGERs"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "int order() is added as an abstract method on the public keycloak-common CryptoProvider SPI, breaking source compatibility and causing AbstractMethodError in detectProvider's comparator for any externally compiled implementation"
+  },
+  {
+   "id": "c5",
+   "source": "cubic-v2",
+   "text": "Initialize crypto with the context class loader here. Passing `AuthzClient.class.getClassLoader()` can hide caller-provided `CryptoProvider` services, so the first `AuthzClient.create(...)` may permanently select the wrong provider for the JVM."
+  },
+  {
+   "id": "c6",
+   "source": "qodo-extended-v2",
+   "text": "Lines 114-115 in concatenatedRSToASN1DER create two ASN1Encoder instances and write BigInteger values to them, but the results are immediately discarded since the actual DER encoding is performed by new encoder instances on lines 117-121, making these statements dead code"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "DER parsing: zero-length INTEGER throws NumberFormatException instead of proper error handling"
+  },
+  {
+   "id": "c8",
+   "source": "golden",
+   "text": "Dead code exists where ASN1Encoder instances are created and written to, but their results are immediately discarded. The actual encoding is performed by new ASN1Encoder instances created in the subsequent return statement, rendering the earlier operations useless."
+  },
+  {
+   "id": "c9",
+   "source": "coderabbit",
+   "text": "Dead code: unused encoder instances - two lines create ASN1Encoder instances and write values to them but the results are never used (ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger))"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "AuthzClient.create now calls CryptoIntegration.init, setting JVM-global first-caller-wins crypto state; if only the stub provider is visible it is pinned for the JVM where most methods throw UnsupportedOperationException"
+  },
+  {
+   "id": "c11",
+   "source": "coderabbit",
+   "text": "Indefinite-length encoding (0x80) is not properly handled by callers - readLength() returns -1 for indefinite-length encoding, but readSequence() would skip the loop entirely and readInteger() would throw NegativeArraySizeException when calling read(-1)"
+  },
+  {
+   "id": "c12",
+   "source": "golden",
+   "text": "Returns wrong provider (default keystore instead of BouncyCastle)"
+  },
+  {
+   "id": "c13",
+   "source": "claude-code",
+   "text": "The new `order()` method on `CryptoProvider` interface is missing the `default` keyword, making it a breaking API change that will cause third-party implementations to fail to compile or throw AbstractMethodError at runtime - should be `default int order() { return 0; }`"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "No upgrade/migration note for the breaking SPI change despite PR-CHECKLIST.md requirements"
+  },
+  {
+   "id": "c15",
+   "source": "cubic-v2",
+   "text": "Using the same `order()` as the existing built-in crypto providers makes provider selection nondeterministic when multiple implementations are on the classpath. Give Elytron a distinct lower priority so `CryptoIntegration` does not pick it based on service loading order."
+  },
+  {
+   "id": "c16",
+   "source": "converge-review-replay",
+   "text": "Test uses single default KeyPairGenerator.getInstance('EC') key (P-256 or P-384) for ES256, ES384 and ES512, never exercising P-521-sized signatures or DER long-form length paths (length > 127)"
+  },
+  {
+   "id": "c17",
+   "source": "golden",
+   "text": "Abstract order() method on CryptoProvider may break backward compatibility with existing implementations"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "Dead code: ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) at lines 114-115 build encoders and discard results, then lines 117-121 repeat the encoding"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "No test covers the new provider selection logic - proposed red test: two order-200 providers on ServiceLoader path, assert init throws"
+  },
+  {
+   "id": "c20",
+   "source": "qodo-extended-v2",
+   "text": "All CryptoProvider implementations are instantiated during detection via ServiceLoader, causing constructor side effects from non-selected providers (e.g., FIPS provider inserting Security providers) to still occur even when that provider isn't selected"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "org.hamcrest:hamcrest dependency added at test scope but never used - ECDSAAlgorithmTest imports only org.junit.Assert and org.junit.Test"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review-replay",
+   "text": "No release note or upgrade-guide entry for the breaking CryptoProvider SPI change"
+  },
+  {
+   "id": "c23",
+   "source": "augment",
+   "text": "Using AuthzClient.class.getClassLoader() may miss CryptoProvider implementations visible via the thread context classloader, which could cause CryptoIntegration to not find the intended provider in modular/container setups"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "Ignored-providers debug line passes a runtime-built string as the debugf format string (a '%' would be misinterpreted) at CryptoIntegration.java:65-69"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "ES256/ES384/ES512 tests all use one default-curve KeyPairGenerator.getInstance('EC') key, so P-384/P-521 widths and the DER long-form length paths (ASN1Encoder.writeLength / ASN1Decoder.readLength > 127) are never exercised"
+  },
+  {
+   "id": "c26",
+   "source": "augment",
+   "text": "concatenatedRSToASN1DER() assumes signature.length == signLength without validation, which can throw ArrayIndexOutOfBoundsException instead of IOException for malformed/untrusted signatures"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "Tests only assert a self round-trip comparing rsConcat to rsConcat2, so a symmetric encoder/decoder bug would pass"
+  },
+  {
+   "id": "c28",
+   "source": "claude-code",
+   "text": "Lines 114-115 in `concatenatedRSToASN1DER` are dead code that create two `ASN1Encoder` instances and write BigIntegers to them but discard the results - the actual DER encoding is performed by fresh encoders in the return statement at lines 117-121"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "DER parsing ignores trailing bytes"
+  },
+  {
+   "id": "c30",
+   "source": "converge-review-replay",
+   "text": "No tests for the new provider selection logic"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review-replay",
+   "text": "Removing fail-fast IllegalStateException for multiple crypto providers and replacing with order() selection creates silent provider selection when providers have equal priority (200). A FIPS deployment with a stray keycloak-crypto-default jar could run on non-FIPS BouncyCastle instead of failing at startup."
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "Lenient/unchecked DER parsing: tag checks mask with 0x1f ignoring class/constructed bits at ASN1Decoder.java:52,68,73,94"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "Commit message issue link 'closes #33831' is lowercase and not on a separate trailing line as CONTRIBUTING.md requires ('Closes #1234')"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "Whitespace-only reformatting of untouched code at CryptoProvider.java:94, DefaultCryptoProvider.java:186, FIPS1402Provider.java:203,208,230,234, contrary to CONTRIBUTING.md guidelines"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "getBouncyCastleProvider() returns the JDK keystore provider (e.g. SUN) when stub provider is used, freezing BouncyIntegration.PROVIDER incorrectly"
+  },
+  {
+   "id": "c36",
+   "source": "cubic-v2",
+   "text": "The two standalone `ASN1Encoder.create().write(...)` calls on the lines before the `return` are dead code\u2014their results are discarded immediately. The actual encoding is performed entirely in the `return` statement. These lines should be removed to avoid confusion."
+  },
+  {
+   "id": "c37",
+   "source": "converge-review-replay",
+   "text": "Test only asserts self round-trip, never checking encoding correctness independently (asn1Des output never checked with Signature.verify) - symmetric encoder/decoder bugs would pass"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "Ignored-providers debug line leaves a trailing ', ' in the output"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "Identical 'return 200' order() override copy-pasted into DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider because order() has no default method"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review-replay",
+   "text": "Adding abstract method int order() to public SPI interface CryptoProvider without a default breaks external implementations - they stop compiling, and already-compiled implementations throw AbstractMethodError at runtime when detectProvider's comparator calls order()"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review",
+   "text": "New org.hamcrest:hamcrest test dependency is unused - grep returns no usages in authz/client/src/test"
+  },
+  {
+   "id": "c42",
+   "source": "claude-code",
+   "text": "Test uses a single P-256 key pair for all three ECDSA algorithm tests (ES256, ES384, ES512), but P-256 keys produce ~32-byte r,s values so ES384 and ES512 tests only exercise zero-padding/unpadding rather than realistic signature sizes - should generate curve-appropriate keys (P-384 for ES384, P-521 for ES512)"
+  },
+  {
+   "id": "c43",
+   "source": "augment",
+   "text": "getBouncyCastleProvider() returns the provider of the default KeyStore type which is typically not a BouncyCastle provider, causing BouncyIntegration.PROVIDER to be derived incorrectly and potentially pinning crypto operations to an unexpected provider with missing algorithms"
+  },
+  {
+   "id": "c44",
+   "source": "coderabbit",
+   "text": "Key pair curve may not match all tested algorithms - EC key pair is generated using default curve but each ECDSA algorithm expects a specific curve: ES256 uses P-256 (secp256r1), ES384 uses P-384 (secp384r1), and ES512 uses P-521 (secp521r1)"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "DER parsing: indefinite-length (0x80) returns -1 leading to NegativeArraySizeException instead of IOException at ASN1Decoder.java:133-134"
+  },
+  {
+   "id": "c46",
+   "source": "cubic-v2",
+   "text": "`getBouncyCastleProvider()` returns the default JDK keystore's provider (SUN for JKS), not a BouncyCastle provider. `KeyStore.getInstance(KeyStore.getDefaultType()).getProvider()` gives back whichever provider backs the default keystore type\u2014typically SUN. Callers that depend on BouncyCastle-specific functionality from this method will silently get the wrong provider."
+  },
+  {
+   "id": "c47",
+   "source": "golden",
+   "text": "When length starts at -1 from indefinite-length encoding, the arithmetic 'length = length - bytes.length' will behave unexpectedly, potentially leading to incorrect processing of encoded data."
+  },
+  {
+   "id": "c48",
+   "source": "converge-review",
+   "text": "detectProvider drops the fail-fast 'Multiple crypto providers loaded' IllegalStateException and picks the highest order(); Default, Elytron and FIPS1402 providers all return 200, so a tie between real providers is silently resolved by ServiceLoader/classpath order. A FIPS deployment with a stray crypto-default jar can now silently run on non-FIPS BC instead of failing at startup"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In concatenatedRSToASN1DER, lines 114-115 call ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) and discard the results. The return statement at lines 117-121 repeats the encoding with new encoders, so lines 114-115 are dead code.",
+   "path": "AuthzClientCryptoProvider.java",
+   "members": [
+    "c1",
+    "c6",
+    "c8",
+    "c9",
+    "c18",
+    "c28",
+    "c36"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "CryptoIntegration.detectProvider() no longer throws the fail-fast 'Multiple crypto providers loaded' IllegalStateException; it picks the highest order() instead. The Default, Elytron and FIPS1402 providers all return 200, so a tie is decided by ServiceLoader/classpath order. For example, a FIPS deployment with a stray crypto-default jar can run on non-FIPS BouncyCastle without failing.",
+   "path": null,
+   "members": [
+    "c2",
+    "c15",
+    "c31",
+    "c48"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "int order() is added to the public CryptoProvider SPI interface as an abstract method with no default. External implementations stop compiling, and already-compiled ones throw AbstractMethodError when the detectProvider comparator calls order().",
+   "path": null,
+   "members": [
+    "c4",
+    "c13",
+    "c17",
+    "c40"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "Crypto is initialized with AuthzClient.class.getClassLoader() instead of the thread context class loader. CryptoProvider implementations visible only through the context class loader can be missed, and the wrong provider may be selected.",
+   "path": null,
+   "members": [
+    "c5",
+    "c23"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "AuthzClient.create now calls CryptoIntegration.init, which sets JVM-global first-caller-wins crypto state. If only the stub provider is visible, it stays pinned for the JVM, and most of its methods throw UnsupportedOperationException.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "getBouncyCastleProvider() returns the provider of the default KeyStore type (e.g. SUN for JKS), not a BouncyCastle provider. As a result, BouncyIntegration.PROVIDER is derived incorrectly.",
+   "path": null,
+   "members": [
+    "c12",
+    "c35",
+    "c43",
+    "c46"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "For indefinite-length encoding (0x80), ASN1Decoder.readLength() returns -1, and callers do not handle it. readSequence skips its loop or computes length arithmetic on -1, and readInteger calls read(-1), which throws NegativeArraySizeException instead of IOException.",
+   "path": "ASN1Decoder.java",
+   "members": [
+    "c11",
+    "c45",
+    "c47"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The DER decoder implements general-purpose high-tag-number and indefinite-length decoding. DER ECDSA signatures only need a 0x30 SEQUENCE containing two 0x02 INTEGERs.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "In DER parsing, a zero-length INTEGER throws NumberFormatException instead of being handled as a parse error.",
+   "path": null,
+   "members": [
+    "c7"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "No upgrade/migration or release note is provided for the breaking CryptoProvider SPI change, although PR-CHECKLIST.md requires one.",
+   "path": null,
+   "members": [
+    "c14",
+    "c22"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The ES256, ES384 and ES512 tests in ECDSAAlgorithmTest all use one key from the default-curve KeyPairGenerator.getInstance(\"EC\"). Curve-appropriate key sizes (P-384, P-521) and the DER long-form length paths (length > 127 in ASN1Encoder.writeLength / ASN1Decoder.readLength) are therefore never exercised.",
+   "path": null,
+   "members": [
+    "c16",
+    "c25",
+    "c42",
+    "c44"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "No test covers the new order()-based provider selection logic in CryptoIntegration.",
+   "path": null,
+   "members": [
+    "c19",
+    "c30"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "detectProvider instantiates every CryptoProvider via ServiceLoader, so constructor side effects of non-selected providers still occur. For example, the FIPS provider inserts Security providers even when it is not selected.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "An org.hamcrest:hamcrest test-scope dependency is added but not used. ECDSAAlgorithmTest imports only org.junit.Assert and org.junit.Test.",
+   "path": null,
+   "members": [
+    "c21",
+    "c41"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The ignored-providers debug line passes a runtime-built string as the debugf format string, so a '%' in it would be misinterpreted.",
+   "path": "CryptoIntegration.java",
+   "members": [
+    "c24"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The ignored-providers debug message leaves a trailing ', ' in its output.",
+   "path": null,
+   "members": [
+    "c38"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "concatenatedRSToASN1DER() assumes signature.length == signLength without validating it. A malformed signature can throw ArrayIndexOutOfBoundsException instead of IOException.",
+   "path": null,
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "The ECDSA tests only check a self round-trip, comparing rsConcat to rsConcat2. The DER output is never verified independently (e.g. with Signature.verify), so a symmetric encoder/decoder bug would pass.",
+   "path": null,
+   "members": [
+    "c27",
+    "c37"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "DER parsing ignores trailing bytes after the parsed structure.",
+   "path": null,
+   "members": [
+    "c29"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "ASN1Decoder tag checks mask the tag with 0x1f, ignoring the class and constructed bits.",
+   "path": "ASN1Decoder.java",
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The commit message's issue link 'closes #33831' is lowercase and not on a separate trailing line, as CONTRIBUTING.md requires ('Closes #1234').",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "Untouched code is reformatted with whitespace-only changes at CryptoProvider.java:94, DefaultCryptoProvider.java:186 and FIPS1402Provider.java:203,208,230,234, contrary to CONTRIBUTING.md.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "An identical 'return 200' order() override is copy-pasted into DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider because order() has no default implementation.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  }
+ ]
+}

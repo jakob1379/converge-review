@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/email/notification.html.erb:10 has `class='.previous-discussion'`, so the element's class is literally `.previous-discussion`. The `.previous-discussion` selector in lib/email/styles.rb:75 looks for the class `previous-discussion` without the dot, so the inline style is never applied. The same typo is on the removed line, so the patch only re-indented existing code.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0468287
+}

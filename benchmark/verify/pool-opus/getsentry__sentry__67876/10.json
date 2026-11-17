@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/integrations/github/integration.py, OAuthLoginView puts redirect_uri in the authorize URL (patch lines 104-108), but the token request data has only code, client_id and client_secret (patch lines 116-120). The generic OAuth2CallbackView.get_token_params does send redirect_uri (src/sentry/identity/oauth2.py:273-280).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1061597
+}

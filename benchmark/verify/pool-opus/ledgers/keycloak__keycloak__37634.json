@@ -1,0 +1,509 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the AccessTokenContext constructor, the requireNonNull call with the message 'Null rawTokenId not allowed' checks grantType a second time instead of rawTokenId. A null rawTokenId is therefore accepted and gets encoded as '<prefix>:null', or causes a later NPE.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At services/src/main/java/org/keycloak/protocol/oidc/encode/AccessTokenContext.java:73, the check with the message \"Null rawTokenId not allowed\" tests `grantType` again, so a null rawTokenId gets through and is stored at line 77. DefaultTokenContextEncoderProvider.java:117 then appends it after ':', which gives '<prefix>:null'.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0891982
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher throws StringIndexOutOfBoundsException for prefixes shorter than 5 characters instead of returning false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patched AssertEvents.java (around line 480), matchesSafely calls items[0].substring(3, 5) without checking the prefix length, so a prefix shorter than 5 characters throws StringIndexOutOfBoundsException instead of returning false.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.06772299999999999
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher extracts the grant shortcut with substring(3, 5). The grant shortcut sits at positions 4-5 of the 2+2+2 prefix, so the correct call is substring(4, 6).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AssertEvents.java:483 uses `items[0].substring(3, 5)`, but the production decoder in the patch splits the 6-char prefix as session (0,2), token (2,4) and grant `substring(4, 6)`. The matcher therefore reads the wrong characters, and because the check is also inverted (`equals(...) return false`), it does not actually verify the grant type.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0751633
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher has inverted logic: it returns false when the extracted value equals the expected grant shortcut, so it rejects correct tokens and accepts wrong grant shortcuts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds isAccessTokenId to AssertEvents.java (patch lines 1118-1134). It returns false when items[0].substring(3, 5) equals expectedGrantShortcut, which is the opposite of what a matcher should do. The offset is also wrong: encodeTokenId (patch 349-352) builds the ID as session (2 chars) + token type (2) + grant (2), so the grant is at index 4-6. For example, \"onrtac\" gives \"ta\", which never matches, so in practice the matcher accepts any grant with a UUID suffix and does not reject correct tokens.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1155969
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "AbstractTokenExchangeProvider.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "V1/legacy, federated and impersonation token-exchange tokens are encoded with grant 'na' because these paths never set Constants.GRANT_TYPE (AbstractTokenExchangeProvider.java:410).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The V1, impersonation and federated paths (V1TokenExchangeProvider.java:154, SubjectImpersonationTokenExchangeProvider.java:151, AbstractTokenExchangeProvider.java:535) all reach the base exchangeClientToOIDCClient, which calls generateAccessToken() at AbstractTokenExchangeProvider.java:409-410 without ever setting Constants.GRANT_TYPE. Only StandardTokenExchangeProvider sets it (line 237), so DefaultTokenContextEncoderProvider falls back to 'na' for those tokens.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.36365899999999995
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Client-credentials access tokens are encoded with grant 'na' instead of 'cc'. ClientCredentialsGrantType builds tokens via tokenManager.responseBuilder(...).generateAccessToken() and never sets Constants.GRANT_TYPE on the client session context.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "ClientCredentialsGrantType.java:140-141 builds the token with tokenManager.responseBuilder(...).generateAccessToken() and never calls createTokenResponse, the path that sets Constants.GRANT_TYPE at OAuth2GrantTypeBase.java:109. Nothing else in the class or in TokenManager sets the attribute for this grant, so DefaultTokenContextEncoderProvider.java:57-59 falls back to 'na' and client-credentials token IDs get 'na' instead of 'cc'.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.29748670000000005
+   }
+  },
+  {
+   "issue": "i7",
+   "path": "AuthorizationTokenService.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "UMA/permission-grant tokens are encoded with grant 'na' instead of 'pg' because AuthorizationTokenService.java:358 never sets Constants.GRANT_TYPE.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At AuthorizationTokenService.java:350-358 the ClientSessionContext is created and passed straight to responseBuilder().generateAccessToken(), and Constants.GRANT_TYPE is never set on it. TokenManager.initToken (TokenManager.java:1052-1054) then calls DefaultTokenContextEncoderProvider, which falls back to UNKNOWN \"na\" when the attribute is null, so the \"pg\" shortcut added in PermissionGrantTypeFactory is never used for UMA tokens.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.21491280000000004
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The factory builds HashMaps for the 3- and 4-value enums SessionType and TokenType, where a static fromShortcut method on the enum would do.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "DefaultTokenContextEncoderProviderFactory.java:51-61 builds HashMaps for SessionType (4 values) and TokenType (3 values) inside init(). These two enums are fixed and defined in AccessTokenContext.java, so a static lookup method on each enum would work just as well.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0801158
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "AbstractOIDCProtocolMapper.getShouldUseLightweightToken reads the requesting client rather than the token's client.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "AbstractOIDCProtocolMapper.java:84-86 reads session.getContext().getClient(), but every token-issuing path sets that to the client the token is for (AbstractTokenExchangeProvider.java:376 sets targetClient, StandardTokenExchangeProvider.java:200, PreAuthorizedCodeGrantType sets the client-session client), so it is not a different requesting client. The mappers use the same check, so the token type the patch writes into the token ID (DefaultTokenContextEncoderProvider.java:54) matches how the mappers built the token; the patch only made the method public static.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.3201765
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "AbstractOIDCProtocolMapper.getShouldUseLightweightToken is now invoked for every access token and dereferences session.getContext().getClient(). A context without a client causes an NPE even when no mappers run.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "TokenManager.initToken (TokenManager.java:1048-1054) now always calls DefaultTokenContextEncoderProvider.getTokenContextFromClientSessionContext. That calls AbstractOIDCProtocolMapper.getShouldUseLightweightToken (DefaultTokenContextEncoderProvider.java:54), which runs session.getContext().getClient().getAttribute(...) with no null check (AbstractOIDCProtocolMapper.java:86); DefaultKeycloakContext.getClient() can return null, so a missing client now throws a NullPointerException before any mapper runs. Before the patch this call only happened inside mapper transformAccessToken, so a token with no OIDC mappers could be built without a client.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.436427
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Dependabot label 'area/dependencies' does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch only changes Java token-ID encoding code and touches no Dependabot config. The label is used in the existing .github/dependabot.yml:12,23 and is also listed in .github/teams.yml:55, which suggests it is a known label; nothing in the change exposes a problem with it.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.24064670000000002
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Dependabot label 'area/ci' does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch never touches .github/dependabot.yml; it only changes Java token and grant-type code. The 'area/ci' label at .github/dependabot.yml:13 is also listed as a known area in .github/teams.yml:7, so nothing in the repository suggests the label is missing.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.2408137
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test catches generic RuntimeException instead of the specific IllegalArgumentException thrown by the parser, so it also passes on unrelated failures such as IndexOutOfBoundsException or NullPointerException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In DefaultTokenContextEncoderProviderTest.java, testIncorrectGrantType (patch lines 1025-1033) catches a generic `RuntimeException` instead of `IllegalArgumentException`. With \"ac\" missing from the test map, getGrantTypeByShortcut (patch lines 486-492) calls `sessionFactory.getProviderFactoriesStream`, but `postInit` never ran, so `sessionFactory` is null and the test actually passes on a NullPointerException; the IllegalArgumentException path at patch line 328 is never reached.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.241221
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "session.getProvider(TokenContextEncoderProvider.class) is used without a null check, so an NPE occurs during token issuance if the provider is not registered.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "TokenManager.initToken calls session.getProvider(TokenContextEncoderProvider.class) without a null check, but the patch always registers a provider. It adds the internal TokenContextEncoderSpi (isInternal()=true) to META-INF/services/org.keycloak.provider.Spi and registers DefaultTokenContextEncoderProviderFactory in META-INF/services/org.keycloak.protocol.oidc.encode.TokenContextEncoderProviderFactory, which is the usual Keycloak pattern for a built-in SPI with a default implementation, so the lookup does not return null in normal deployments.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.1091235
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OAuth2GrantType.Context captures grantType from formParams once at construction. setFormParams() does not refresh it, so getGrantType() can return stale data.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a `grantType` field that is set only in the constructor, from `formParams.getFirst(GRANT_TYPE)` (OAuth2GrantType.java:102). `setFormParams()` replaces `formParams` but leaves `grantType` untouched (OAuth2GrantType.java:105-107), so `getGrantType()` (line 173) can return a stale value. Nothing in the repository calls `setFormParams()`, though, so this only affects outside SPI users.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.076868
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getShortcut() is added to OAuth2GrantTypeFactory as an abstract method with no default. Custom grant factories compiled against the old interface throw AbstractMethodError in DefaultTokenContextEncoderProviderFactory.postInit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `String getShortcut();` to OAuth2GrantTypeFactory as an abstract method with no default (server-spi-private/.../OAuth2GrantTypeFactory.java, patch line 80). DefaultTokenContextEncoderProviderFactory.postInit calls `gtf.getShortcut()` on every OAuth2GrantType factory (patch lines 435-439), so a custom factory compiled against the old interface throws AbstractMethodError at startup.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0666602
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Token ID decoding requires an exact 6-character 2+2+2 prefix. However, the getShortcut() javadoc says shortcuts are usually 3 letters, and nothing validates that shortcuts are 2 characters. Custom grants with 3-letter shortcuts therefore produce IDs that getTokenContextFromTokenId rejects.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "DefaultTokenContextEncoderProvider.getTokenContextFromTokenId throws unless the prefix is exactly 6 characters and splits it 2+2+2 (DefaultTokenContextEncoderProvider.java patch lines 309-316). The new OAuth2GrantTypeFactory.getShortcut javadoc says shortcuts are usually about 3 letters, and nothing checks their length when they are registered (Factory postInit / getShortcutByGrantType). So a 3-letter custom shortcut encodes to a 7-character prefix that decoding then rejects.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.13485
+   }
+  },
+  {
+   "issue": "i18",
+   "path": "docs/tests-development.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new unit test calls org.junit.Assert.assertEquals with the actual and expected arguments swapped, contrary to docs/tests-development.md.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "DefaultTokenContextEncoderProviderTest.java (patch lines 1004-1007, 1016-1019, 1039-1042, 1050-1053) calls Assert.assertEquals(ctx.getX(), EXPECTED), putting the actual value where expected belongs. docs/tests-development.md:26-29 does not mention argument order, but it says to avoid org.junit.Assert and use hamcrest assertThat, so these calls go against it either way.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2488205
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An outdated comment saying 'starts at 4th char' is left over from the earlier 3-letter encoding.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The comment at AssertEvents.java:482 says the grant shortcut 'starts at character 4th char' (and line 483 uses substring(3,5)). But the encoding is 2+2+2 chars (DefaultTokenContextEncoderProvider.java, the substring(4, 6) parse and the 'First 2 chars\u2026' comment), so the grant actually starts at the 5th char (index 4) and the comment is stale. The source can't show whether it came from an earlier 3-letter encoding.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2603524
+   }
+  },
+  {
+   "issue": "i20",
+   "path": "CONTRIBUTING.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit format breaches CONTRIBUTING.md: there are two commits instead of one, ee2491268a uses lowercase 'closes #37118', and daffb05b5a has no issue link.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "change.patch holds only file diffs, starting at line 1 with `diff --git a/server-spi-private/...`, so it has no commit SHAs, messages or count, and reading the git metadata was denied. CONTRIBUTING.md:24, 89 and 122 do require one commit ending in 'Closes #1234', but nothing available here shows how many commits the change has or what their messages say.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.06792790000000001
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "grantsToShortcuts duplicates sessionFactory.getProviderFactory(OAuth2GrantType.class, gt) with a hand-maintained, unsynchronised cache that can go stale on undeploy.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Both maps are created as ConcurrentHashMap in DefaultTokenContextEncoderProviderFactory.postInit (patch lines 432-433), so the cache is not unsynchronised. It also does more than repeat getProviderFactory: it gives the shortcut-to-grant lookup that getProviderFactory cannot do (getGrantTypeByShortcut, lines 486-502). Entries are never removed on undeploy, but a leftover entry only maps a removed grant's id to its fixed shortcut, which is harmless.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0656467
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The lazy/hot-deploy refresh paths in getGrantTypeByShortcut (lines 106-137) add entries without the duplicate-shortcut check that postInit performs, so a custom grant can overwrite an existing shortcut mapping.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In DefaultTokenContextEncoderProviderFactory.java, the lazy refresh in getShortcutByGrantType (~lines 107-119) runs `grantsByShortcuts.put(shortcut, grantType)` without checking first, and getGrantTypeByShortcut (~lines 122-137) also adds entries unchecked. postInit (~lines 79-84) is the only place that checks for duplicate shortcuts, so a grant deployed later with an existing shortcut such as \"ac\" silently replaces the old mapping, and tokens using that shortcut then decode to the wrong grant type.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2488964
+   }
+  },
+  {
+   "issue": "i23",
+   "path": "PR-CHECKLIST.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The access-token jti and event token_id format changes from a bare UUID to '<ss><tt><gg>:<uuid>' with no upgrade/release note, as required by PR-CHECKLIST.md.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes how token IDs are built in services/src/main/java/org/keycloak/protocol/oidc/TokenManager.java:1048-1054 (initToken). DefaultTokenContextEncoderProvider.encodeTokenId now returns '<session><tokentype><grant>:<uuid>' (for example 'onrtac:<uuid>'), and AssertEvents changes the TOKEN_ID check from isUUID() to isAccessTokenId(). The patch touches no docs, and docs/documentation/upgrading/topics/changes/changes-26_2_0.adoc does not mention the new jti format, even though PR-CHECKLIST.md:9 asks for release-note and upgrade-guide updates where applicable.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2815974
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The @Column(name='ID', length = 36) annotation is shorter than the new 43-character access-token IDs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "RevokedTokenEntity.java:34 declares @Column(name=\"ID\", length = 36), and JpaRevokedTokensPersisterProvider.java:46-47 stores the access-token ID there; the patch's encodeTokenId (DefaultTokenContextEncoderProvider) makes that ID 6 + ':' + a 36-char UUID = 43 characters. The real column is VARCHAR(255) (jpa-changelog-26.0.0.xml:60) and Hibernate does not enforce the annotation's length at runtime, so this is a stale-metadata mismatch rather than a truncation or insert failure.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.30889110000000003
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The shortcut maps include UNKNOWN 'un' entries, so decode accepts IDs like 'ununna:x' that encodeTokenId refuses to encode.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "DefaultTokenContextEncoderProviderFactory.init loops over every SessionType and TokenType value, so the UNKNOWN entries with shortcut \"un\" (AccessTokenContext lines 174 and 190 of the patch) end up in the lookup maps, and \"na\" is added to the grant map in postInit. As a result, getTokenContextFromTokenId accepts \"ununna:x\", while encodeTokenId throws for an UNKNOWN session or token type (DefaultTokenContextEncoderProvider.encodeTokenId, patch lines 337-342).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2410221
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The public Context(Context) copy constructor was removed from the grant SPI.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes `public Context(Context context)` from `OAuth2GrantType.Context` in server-spi-private/src/main/java/org/keycloak/protocol/oidc/grants/OAuth2GrantType.java (patch lines 39-52) and puts the new `grantType` assignment in the main constructor instead. Nothing left in the repo calls it: the only remaining `new OAuth2GrantType.Context(...)` is the full constructor at services/.../TokenEndpoint.java:149.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0912261
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A null return from OAuth2GrantTypeFactory.getShortcut() causes an NPE from ConcurrentHashMap.put in postInit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In DefaultTokenContextEncoderProviderFactory.postInit (patch lines 432-441), the value from gtf.getShortcut() goes straight into ConcurrentHashMap.put as both key and value with no null check, so a factory returning null throws an NPE when the server starts. No factory in this repo returns null (all nine return non-null literals), so only a custom OAuth2GrantTypeFactory that breaks the new getShortcut() contract would hit it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2644234
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Constants.GRANT_TYPE is a pure alias of OAuth2Constants.GRANT_TYPE, and the patch uses both inconsistently: OAuth2GrantType.Context reads OAuth2Constants.GRANT_TYPE, while grants and TokenManager write Constants.GRANT_TYPE.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Constants.java:207 (patch line 10) defines GRANT_TYPE = OAuth2Constants.GRANT_TYPE, so it is a pure alias. OAuth2GrantType.Context reads formParams.getFirst(OAuth2Constants.GRANT_TYPE) (patch line 53), while TokenManager and the grant classes write the client-session attribute with Constants.GRANT_TYPE (patch lines 99, 694, 731, 790, 901). Both resolve to \"grant_type\" and are used for different things (a request form parameter versus a session-context attribute key), so this is a style issue with no effect on behaviour.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.071021
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

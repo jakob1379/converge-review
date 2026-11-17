@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/hooks/useAbilities.ts:295-334 (useAllGrafanaPromRuleAbilities) rebuilds the same 10-key AlertRuleAction map as useAllRulerRuleAbilities at :241-278, repeating the immutableRule (provisioned/federated/plugin), duplicateSupported and `isRemovable && isAdmin()` logic. Only the Silence entry, the rule-type predicate and the ruler-availability check differ.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3145259
+}

@@ -1,0 +1,27 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "FilterView.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In FilterView.tsx, inside rules.map(...), the 'grafana' branch renders <GrafanaRuleListItem> without key={key>. The sibling branches (DataSourceRuleLoader, UnknownRuleListItem) and the removed GrafanaRuleLoader pass the key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useIsRuleEditable calls featureDiscoveryApi.endpoints.discoverDsFeatures.useQuery() before checking whether rule is undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

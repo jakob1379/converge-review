@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/bookings/lib/handleCancelBooking.ts:589 awaits the appStore lookup and :596 runs `new PaymentService(...)`, both before the `try` at :597 that alone routes to handleRefundError, so a rejection or constructor throw there escapes the handler. The patch only added the `await` (appStore entries became `import()` promises); the constructor call outside the try is unchanged, and a bundled import rejecting is very unlikely in practice.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.21241709999999997
+}

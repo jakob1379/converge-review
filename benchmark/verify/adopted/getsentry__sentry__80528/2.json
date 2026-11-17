@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/monitors/logic/incident_occurrence.py:160-162 the function builds a copied `config` with `schedule_type` set to its display name, but line 168 returns `monitor_environment.monitor.config`, so the readable schedule type is thrown away. The patch moved this body unchanged from mark_failed.py (patch lines 563-572 removed, 165-174 added), so the bug was already there.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0410161
+}

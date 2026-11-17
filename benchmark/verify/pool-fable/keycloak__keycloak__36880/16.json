@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only Clients-type tests are the five in tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/PermissionClientTest.java, which grant only MANAGE, CONFIGURE, VIEW, MAP_ROLES and MAP_ROLES_COMPOSITE (e.g. line 359), so `canMapClientScopeRoles` and the ClientScopeModel checks (ClientPermissionsV2.java:102, 106-122) are never exercised. No test touches the realm-level client-scopes endpoints or realm-management escalation, and the single V2 client delete (PermissionClientTest.java:274) only asserts the client is gone, not that its permission resources are cleaned up.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.8427914
+}

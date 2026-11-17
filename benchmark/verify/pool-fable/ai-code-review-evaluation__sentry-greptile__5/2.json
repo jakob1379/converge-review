@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only occurrence of 'use-table-widget-visualization' in the repo is the frontend check at static/app/views/dashboards/widgetCard/chart.tsx:164; it is not registered in src/sentry/features/temporary.py or anywhere else under src/. The organization serializer only exposes registered features (src/sentry/api/serializers/models/organization.py:338-343), so the flag can never reach organization.features and the TableWidgetVisualization branch is unreachable outside tests or local overrides.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2904701
+}

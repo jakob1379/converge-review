@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both the fixed-host and round-robin calls spread the per-user schedule, which carries `workingHours` and `dateOverrides` (packages/trpc/server/routers/viewer/slots.ts:400-406, 488-493, 513-518). Before the patch `checkIfIsAvailable` destructured only `time`/`busy`/`eventLength`/`currentSeats`, so those fields were ignored; it now destructures them and returns early on them (slots.ts:79-80, 105-151).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3317603
+}

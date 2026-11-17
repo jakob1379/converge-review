@@ -1,0 +1,204 @@
+{
+ "pr_url": "https://github.com/getsentry/sentry/pull/80528",
+ "cost_usd": 0.0468508,
+ "items": [
+  {
+   "id": "c1",
+   "source": "golden",
+   "text": "The code fetches MonitorCheckIn objects by ID when the required data already exists in previous_checkins. This creates an unnecessary database query."
+  },
+  {
+   "id": "c2",
+   "source": "golden",
+   "text": "The function modifies the config variable to include display values but then returns the original monitor.config instead of the modified version."
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "Docstring typo 'humam readible' in incident_occurrence.py:132 should be 'human readable'"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review-replay",
+   "text": "The module incidents.py declares `import logging` / `logger = logging.getLogger(__name__)` but never uses `logger` - no `logger.` call exists in the file"
+  },
+  {
+   "id": "c5",
+   "source": "cubic-v2",
+   "text": "Require at least `failure_issue_threshold` check-ins before opening the incident."
+  },
+  {
+   "id": "c6",
+   "source": "claude-code",
+   "text": "get_monitor_environment_context() creates a local config copy and modifies schedule_type to a human-readable display value, but line 168 returns monitor_environment.monitor.config (the original) instead of the local config variable, silently discarding the transformation. Line 168 should use 'config' instead of 'monitor_environment.monitor.config'"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "get_monitor_environment_context builds a copy of monitor config with schedule_type replaced by display name, but returns the raw monitor.config instead of the modified copy, so human-readable schedule_type never reaches the event context (incident_occurrence.py:160 creates config copy but line 168 returns original)"
+  },
+  {
+   "id": "c8",
+   "source": "augment",
+   "text": "If `failed_checkins` contains only statuses not in `HUMAN_FAILURE_STATUS_MAP`, `status_counts` will be empty and this can yield a user-visible message like `\" check-ins detected\"` despite the docstring mentioning a generic fallback. Consider explicitly handling the empty-count case to avoid confusing evidence text."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review-replay",
+   "text": "The module incident_occurrence.py declares `import logging` / `logger = logging.getLogger(__name__)` but never uses `logger` - no `logger.` call exists in the file"
+  },
+  {
+   "id": "c10",
+   "source": "cubic-v2",
+   "text": "The `failed_checkin: MonitorCheckIn` parameter forces the caller to re-query `MonitorCheckIn` objects from the database even though `previous_checkins` already contains the relevant check-in data and `monitor_environment` is already known at the call site. Consider passing `monitor_environment` and `trace_id` directly instead of requiring a full model fetch."
+  },
+  {
+   "id": "c11",
+   "source": "converge-review-replay",
+   "text": "In `get_monitor_environment_context`, the function copies `monitor.config` and replaces `schedule_type` with its display name, but then returns the raw `monitor_environment.monitor.config` instead, so the readable schedule type never reaches the event context"
+  },
+  {
+   "id": "c12",
+   "source": "coderabbit",
+   "text": "Typo in comment: 'commits' should be 'check-ins' on line 51"
+  },
+  {
+   "id": "c13",
+   "source": "qodo-extended-v2",
+   "text": "get_monitor_environment_context() copies and mutates config[\"schedule_type\"] to a display value but returns monitor_environment.monitor.config instead of the modified config variable, so the transformation is never applied to the occurrence context payload"
+  },
+  {
+   "id": "c14",
+   "source": "coderabbit",
+   "text": "Typo in docstring: 'humam' should be 'human' on line 132"
+  },
+  {
+   "id": "c15",
+   "source": "augment",
+   "text": "`config` is copied and `schedule_type` is converted to a display value, but the returned payload uses `monitor_environment.monitor.config`, so this transformation is currently ignored. If the intent was to publish a human-readable `schedule_type`, it won't happen as written."
+  },
+  {
+   "id": "c16",
+   "source": "coderabbit",
+   "text": "Non-idiomatic iteration: should use next(iter(status_counts.keys())) instead of list(status_counts.keys())[0] on line 146"
+  },
+  {
+   "id": "c17",
+   "source": "cubic-v2",
+   "text": "Bug: `config` is copied and updated with the human-readable `schedule_type`, but the return dict references `monitor_environment.monitor.config` (the original) instead of the local `config`. The `schedule_type` transformation is lost."
+  },
+  {
+   "id": "c18",
+   "source": "augment",
+   "text": "If there are fewer than `failure_issue_threshold` check-ins available, `previous_checkins[:failure_issue_threshold]` will still return a shorter list and the code proceeds to open an incident. This seems at odds with the \"N consecutive missed or failed check-ins in a row\" threshold semantics (it could create an incident on the first failure for a brand-new monitor)."
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "Unused logger variable defined in both new modules (incidents.py:11, incident_occurrence.py:25) - grep finds no logger. calls in these files or mark_failed.py"
+  },
+  {
+   "id": "c20",
+   "source": "coderabbit",
+   "text": "Bug: Modified config copy is not used in return value - line 168 returns original monitor_environment.monitor.config instead of the modified config copy"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "Patch removes public names from sentry.monitors.logic.mark_failed (mark_failed_threshold, create_issue_platform_occurrence, SimpleCheckIn, get_failure_reason, get_monitor_environment_context) which could break downstream imports or mock.patch strings in external code"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "get_monitor_environment_context() in incident_occurrence.py copies the monitor config and replaces schedule_type with its human-readable display value, but returns monitor_environment.monitor.config (the original, line 168) instead of the modified copy. The schedule_type transformation therefore never reaches the event context.",
+   "path": "incident_occurrence.py",
+   "members": [
+    "c2",
+    "c6",
+    "c7",
+    "c11",
+    "c13",
+    "c15",
+    "c17",
+    "c20"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The code re-fetches MonitorCheckIn objects by ID from the database to pass as the failed_checkin parameter, even though previous_checkins already holds the needed data and monitor_environment is known at the call site. This is an unnecessary database query.",
+   "path": null,
+   "members": [
+    "c1",
+    "c10"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The docstring at incident_occurrence.py line 132 contains the typo 'humam readible' instead of 'human readable'.",
+   "path": "incident_occurrence.py",
+   "members": [
+    "c3",
+    "c14"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "incidents.py defines `logger = logging.getLogger(__name__)` but never uses it.",
+   "path": "incidents.py",
+   "members": [
+    "c4",
+    "c19"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "incident_occurrence.py defines `logger = logging.getLogger(__name__)` but never uses it.",
+   "path": "incident_occurrence.py",
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "When fewer than failure_issue_threshold check-ins exist, previous_checkins[:failure_issue_threshold] returns a shorter list and the code still opens an incident. This contradicts the N-consecutive-failures threshold semantics; for example, a new monitor can get an incident on its first failure.",
+   "path": null,
+   "members": [
+    "c5",
+    "c18"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "If failed_checkins contains only statuses not in HUMAN_FAILURE_STATUS_MAP, status_counts is empty and the evidence message becomes \" check-ins detected\". There is no generic fallback, although the docstring mentions one.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The comment on line 51 says 'commits' where it should say 'check-ins'.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "Line 146 uses list(status_counts.keys())[0] instead of next(iter(status_counts.keys())).",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The patch removes public names from sentry.monitors.logic.mark_failed: mark_failed_threshold, create_issue_platform_occurrence, SimpleCheckIn, get_failure_reason and get_monitor_environment_context. Downstream imports or mock.patch targets that reference them will break.",
+   "path": "sentry/monitors/logic/mark_failed.py",
+   "members": [
+    "c21"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds both `_create_process_for_shards(process_index, shards)` at src/sentry/spans/consumers/process/flusher.py:86 and `_create_process_for_shard(shard)` at flusher.py:127, differing by one trailing letter. The singular one only looks up the owning process and delegates to the plural one, and it has no callers anywhere in the repository, so the near-duplicate name adds confusion for no benefit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.10058989999999998
+}

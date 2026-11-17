@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The login cache key is only realm+mode (InfinispanIdentityProviderStorageProvider.java:215) with the org id as an inner map key (:223); an org miss calls invalidateObject, which removes the entry and bumps the revision (:236, CacheManager.java:124-132), then rebuilds via putAll of the previous map (IdentityProviderListQuery.java:43) with no eviction, so it grows with the number of orgs queried. A concurrent miss for another org either makes addRevisioned skip the put (CacheManager.java:175) or overwrites from a stale `query`, and registerIDPLoginInvalidation invalidates every mode's key, dropping all orgs (InfinispanIdentityProviderStorageProvider.java:382-388).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3971565
+}

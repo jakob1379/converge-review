@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:74 derives the English file with file.getAbsolutePath().replaceAll(\"resources-community\", \"resources\"), and line 132 gates the RTL-style stripping on file.getAbsolutePath().contains(\"email\"). Both match against the whole absolute path, so a parent/checkout directory containing either string either points every file at a wrong English path (RuntimeException) or applies the email-only leniency to every bundle.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.44872
+}

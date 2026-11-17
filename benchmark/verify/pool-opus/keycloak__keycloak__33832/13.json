@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds an org.hamcrest:hamcrest test-scope dependency to authz/client/pom.xml (patch lines 15-19), but ECDSAAlgorithmTest.java, the only test file in the module, imports only org.junit.Assert and org.junit.Test (lines 649-650). It calls only Assert.assertArrayEquals, and nothing else in authz/client refers to hamcrest.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1572689
+}

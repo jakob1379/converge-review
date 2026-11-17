@@ -1,0 +1,549 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3",
+ "cost_usd": 0.1013168,
+ "items": [
+  {
+   "id": "c1",
+   "source": "golden",
+   "text": "The case-sensitive email lookup in `BlockedEmail.should_block?` creates a bypass risk, allowing 'User@Example.com' to bypass a block on 'user@example.com'. This can lead to unauthorized access to blocked users."
+  },
+  {
+   "id": "c2",
+   "source": "augment",
+   "text": "BlockedEmail.should_block? mutates state (match_count/last_match_at) and is called from email validation which can run multiple times per request (e.g., user.valid? then user.save), inflating stats and causing extra writes for a single signup attempt"
+  },
+  {
+   "id": "c3",
+   "source": "cubic-v2",
+   "text": "should_block? is a predicate method but has write side effects (increments match_count, sets last_match_at, saves record), violating command-query separation; callers expect a ? method to be a pure read but every invocation silently mutates the database"
+  },
+  {
+   "id": "c4",
+   "source": "coderabbit",
+   "text": "BlockedEmail.should_block? should use email.downcase when querying to ensure case-insensitive matching"
+  },
+  {
+   "id": "c5",
+   "source": "coderabbit",
+   "text": "Extra blank lines at start/end of describe block in email_validator_spec.rb violate RuboCop Layout/EmptyLinesAroundBlockBody convention"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "Blocking applies to any email change not just signup: change_email never checks blocklist and sends confirmation to blocked address, then EmailToken.confirm hits RecordInvalid, rescues it and returns nil giving user generic token failure with no reason"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review-replay",
+   "text": "User.create_for_email and EmailToken.confirm never record blocked attempts due to transaction rollback behavior"
+  },
+  {
+   "id": "c8",
+   "source": "coderabbit",
+   "text": "Regex pattern should be changed from @(#{domains}) to @(?:#{domains})\\z to anchor domain matching to end of string"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review-replay",
+   "text": "User.new_from_params assigns params[:email] raw with no downcase, strip, or before_validation hook, and Email.downcase exists but is unused"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "Any server-side email error including 'has already been taken' and domain whitelist/blacklist adds the address to rejectedEmails, showing generic user.email.invalid text instead of the server's reason; list persists until page reload preventing retry of unblocked addresses"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review-replay",
+   "text": "Letter case bypasses the email block - BlockedEmail.where(email: email) is case-sensitive, so blocked emails can be bypassed with different casing (e.g., Bad@spammers.org bypasses bad@spammers.org)"
+  },
+  {
+   "id": "c12",
+   "source": "augment",
+   "text": "pushObject(result.values.email) will add null/undefined if the server response omits values.email or returns it blank, leaving a non-string entry in rejectedEmails - should ensure value is present before caching"
+  },
+  {
+   "id": "c13",
+   "source": "coderabbit",
+   "text": "BlockedEmail model needs email normalization via before_validation callback to downcase emails before storage"
+  },
+  {
+   "id": "c14",
+   "source": "claude-code",
+   "text": "No updated specs for the modified User model validations"
+  },
+  {
+   "id": "c15",
+   "source": "cubic-v2",
+   "text": "Normalize the email before querying in BlockedEmail.should_block?; otherwise blocked addresses can be bypassed by changing case"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "BlockedEmail.should_block? writes match_count/last_match_at from inside validation, causing block stats to be wrong: increments are rolled back when validation fails in save/save!, so blocked attempts via User.create_for_email and EmailToken.confirm are never counted; UsersController#create counts only because of separate user.valid? call before user.save; :do_nothing matches are counted twice per signup (valid? + save)"
+  },
+  {
+   "id": "c17",
+   "source": "claude-code",
+   "text": "UsersController#create now returns user.errors.to_hash which could potentially leak internal validation details"
+  },
+  {
+   "id": "c18",
+   "source": "claude-code",
+   "text": "BlockedEmail.should_block? performs a database write (updating match_count and last_match_at) during a validation callback, which is an unusual side-effect pattern that could have subtle implications when validation is called without intending to persist"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "Counter update uses read-modify-write pattern (record.match_count += 1; record.save) causing lost increments under concurrent signups - should use atomic update_all"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "match_count/last_match_at increment for :do_nothing matches while commit says it tracks how many times each address is blocked"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "EmailValidator spec stubs BlockedEmail.should_block? (a class the patch owns) and no integration or controller test covers the blocked-signup path, stats persisting through real User#save, case handling, or new errors/values JSON keys - violates 'never mock things you own' rule"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "'last_match_at is null' example tests an ActiveRecord/migration default not app logic - tests framework code rather than application behavior"
+  },
+  {
+   "id": "c23",
+   "source": "coderabbit",
+   "text": "Regex in email_in_restriction_setting? missing end anchor allows suffix domain bypass - user@example.com.evil.com matches whitelisted example.com domain"
+  },
+  {
+   "id": "c24",
+   "source": "claude-code",
+   "text": "email_validator.rb file is missing a trailing newline"
+  },
+  {
+   "id": "c25",
+   "source": "claude-code",
+   "text": "No updated specs for the changes to UsersController#create"
+  },
+  {
+   "id": "c26",
+   "source": "qodo-extended-v2",
+   "text": "BlockedEmail.should_block? has a write side-effect (incrementing match_count and saving) that executes every time validations run, causing match_count to be incremented by 2 per registration attempt instead of 1 because user.valid? is called explicitly and then user.save triggers validations again"
+  },
+  {
+   "id": "c27",
+   "source": "qodo-extended-v2",
+   "text": "BlockedEmail.should_block? performs a case-sensitive SQL query on PostgreSQL, allowing users to bypass blocked email checks by varying case (e.g., Bad@SpamClub.COM when bad@spamclub.com is blocked)"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "File has no trailing newline while every other file in the repo ends with a newline"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review-replay",
+   "text": "File has no trailing newline"
+  },
+  {
+   "id": "c30",
+   "source": "golden",
+   "text": "The regex pattern @(#{domains}) in email_in_restriction_setting? method only matches domain suffixes, not full domains with proper boundary anchoring. An attacker can register evil.example.com to bypass a whitelist entry for example.com."
+  },
+  {
+   "id": "c31",
+   "source": "coderabbit",
+   "text": "Email.downcase() only lowercases the domain part, not the local part, so using it won't fix the case-sensitivity issue - need to use full downcase instead"
+  },
+  {
+   "id": "c32",
+   "source": "augment",
+   "text": "email_in_restriction_setting? calls value =~ regexp which will raise if value is nil (e.g., missing email param) even though presence validation would already fail - need to guard validate_each / email_in_restriction_setting? against blank/nil values"
+  },
+  {
+   "id": "c33",
+   "source": "cubic-v2",
+   "text": "EmailValidator no longer rejects malformed email addresses, so validates :email, email: true can now accept values like sam@sam or sam"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review-replay",
+   "text": "No controller spec covers the new errors and values keys in users#create failure JSON (lines 198-199)"
+  },
+  {
+   "id": "c35",
+   "source": "coderabbit",
+   "text": "Case-sensitive email lookup in BlockedEmail.should_block? creates bypass risk - User@Example.com can bypass a block on user@example.com"
+  },
+  {
+   "id": "c36",
+   "source": "augment",
+   "text": "The computed property depends on rejectedEmails.@each but @each is mainly for observing per-item properties and can be unreliable for array membership changes with primitive items like strings - may not recompute when pushObject is called depending on Ember version"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review-replay",
+   "text": "Domain whitelist/blacklist uses case-insensitive regex but blocked email check is case-sensitive, creating inconsistent behavior"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "Counter update uses non-atomic read-modify-write pattern (match_count += 1; save), causing concurrent attempts to lose increments; save return value is ignored and save re-runs the uniqueness SELECT"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review-replay",
+   "text": "Any server-side email error adds address to rejectedEmails including 'has already been taken', showing generic 'invalid' message instead of actual error reason"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review-replay",
+   "text": "EmailValidator spec stubs BlockedEmail.should_block? instead of testing real validator-to-model boundary, hiding case-sensitivity and counter defects"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review-replay",
+   "text": "blocked_email_spec.rb only uses lowercase emails, missing test coverage for case variants"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review",
+   "text": "Invite redemption to a blocked email (User.create_for_email with save!) raises an unhandled ActiveRecord::RecordInvalid"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review-replay",
+   "text": "Changing email to a blocked address fails silently - change_email doesn't check blocklist, sends confirmation to blocked address, and EmailToken.confirm rescues RecordInvalid returning nil with generic token failure message"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review-replay",
+   "text": "should_block? increments match_count and last_match_at inside validation, and users#create validates twice (user.valid? then user.save), causing double counting for do_nothing matches"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "Block lookup is case-sensitive with no normalization, so changing letter case bypasses the block (bad@spammers.org blocked but Bad@spammers.org or bad@SPAMMERS.org allowed)"
+  },
+  {
+   "id": "c46",
+   "source": "converge-review-replay",
+   "text": "rejectedEmails list persists until page reload, preventing retry of addresses unblocked in the meantime"
+  },
+  {
+   "id": "c47",
+   "source": "converge-review-replay",
+   "text": "Return value of save is ignored in counter update"
+  },
+  {
+   "id": "c48",
+   "source": "golden",
+   "text": "BlockedEmail.should_block_email? method has side effects during a read operation - it updates statistics even when just checking if an email should be blocked. This could cause race conditions in concurrent environments and makes the method name misleading."
+  },
+  {
+   "id": "c49",
+   "source": "coderabbit",
+   "text": "Potential duplicate entries in rejectedEmails array if user submits same blocked email multiple times"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review-replay",
+   "text": "Blocked-attempt stats are lost on rollback - Rails 3.2.12 save runs validations inside with_transaction_returning_status which rolls back when validation fails, undoing BlockedEmail increments"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": ":do_nothing action type (enum, NOT NULL action_type column, set_defaults callback, fabricator line, two spec contexts) has no producer in the patch - no admin UI, caller or setting"
+  },
+  {
+   "id": "c52",
+   "source": "augment",
+   "text": "Missing regression test covering nil/blank value when whitelist/blacklist settings are present to ensure validation doesn't raise unexpectedly"
+  },
+  {
+   "id": "c53",
+   "source": "coderabbit",
+   "text": "Consider using the new user.email.blocked translation key instead of user.email.invalid for blocked email validation messages"
+  },
+  {
+   "id": "c54",
+   "source": "converge-review",
+   "text": "values: user.attributes.slice('name','username','email') is redundant: client reads only values.email which equals the email it already submitted since new_from_params does not normalize"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "BlockedEmail.should_block? looks up the email case-sensitively (BlockedEmail.where(email: email)) with no normalization, so a blocked address can be bypassed by changing letter case (e.g. Bad@spammers.org vs bad@spammers.org). This is also inconsistent with the case-insensitive domain whitelist/blacklist regex.",
+   "path": null,
+   "members": [
+    "c1",
+    "c4",
+    "c11",
+    "c13",
+    "c15",
+    "c27",
+    "c35",
+    "c37",
+    "c45"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "BlockedEmail.should_block? increments match_count/last_match_at inside email validation, and users#create runs validations twice (user.valid? then user.save), so one signup attempt is counted twice and causes extra writes.",
+   "path": null,
+   "members": [
+    "c2",
+    "c26",
+    "c44"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "should_block? is a predicate/validation-time method with write side effects: it increments match_count, sets last_match_at and saves the record on every call.",
+   "path": null,
+   "members": [
+    "c3",
+    "c18",
+    "c48"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "Blocked-attempt stats written during validation are rolled back when save/save! fails validation inside its transaction, so blocked attempts via User.create_for_email and EmailToken.confirm are never recorded.",
+   "path": null,
+   "members": [
+    "c7",
+    "c16",
+    "c50"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The match_count update uses a non-atomic read-modify-write (match_count += 1; save), so concurrent attempts lose increments.",
+   "path": null,
+   "members": [
+    "c19",
+    "c38"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The return value of save in the counter update is ignored.",
+   "path": null,
+   "members": [
+    "c47"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The regex @(#{domains}) in email_in_restriction_setting? lacks boundary/end anchoring, so addresses with domains that extend a whitelisted domain (e.g. user@example.com.evil.com) match the whitelist.",
+   "path": null,
+   "members": [
+    "c8",
+    "c23",
+    "c30"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "email_validator.rb is missing a trailing newline.",
+   "path": "email_validator.rb",
+   "members": [
+    "c24",
+    "c28",
+    "c29"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "Extra blank lines at the start/end of the describe block in email_validator_spec.rb violate RuboCop Layout/EmptyLinesAroundBlockBody.",
+   "path": "email_validator_spec.rb",
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "change_email does not check the blocklist and sends a confirmation to a blocked address; EmailToken.confirm then rescues RecordInvalid and returns nil, giving a generic token failure with no reason.",
+   "path": null,
+   "members": [
+    "c6",
+    "c43"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "Redeeming an invite to a blocked email via User.create_for_email (save!) raises an unhandled ActiveRecord::RecordInvalid.",
+   "path": null,
+   "members": [
+    "c42"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "User.new_from_params assigns params[:email] raw with no downcase/strip or before_validation hook, and the existing Email.downcase is unused.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "Email.downcase lowercases only the domain part, not the local part, so it does not remove case sensitivity of the blocked-email lookup.",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "On the client, any server-side email error (including 'has already been taken' and domain whitelist/blacklist) adds the address to rejectedEmails, which then shows the generic user.email.invalid text instead of the server's reason.",
+   "path": null,
+   "members": [
+    "c10",
+    "c39"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The rejectedEmails list persists until page reload, so addresses unblocked in the meantime cannot be retried.",
+   "path": null,
+   "members": [
+    "c46"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "pushObject(result.values.email) adds null/undefined to rejectedEmails when the server response omits or blanks values.email.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The computed property depends on rejectedEmails.@each, which may not recompute on pushObject of primitive string items.",
+   "path": null,
+   "members": [
+    "c36"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "Submitting the same blocked email multiple times adds duplicate entries to rejectedEmails.",
+   "path": null,
+   "members": [
+    "c49"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "UsersController#create now returns user.errors.to_hash, exposing internal validation details.",
+   "path": null,
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "match_count/last_match_at are incremented for :do_nothing matches, while the commit says it tracks how many times each address is blocked.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The :do_nothing action type (enum, NOT NULL action_type column, set_defaults callback, fabricator, spec contexts) has no producer in the patch: no admin UI, caller or setting.",
+   "path": null,
+   "members": [
+    "c51"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "email_in_restriction_setting? evaluates value =~ regexp, which raises when value is nil (e.g. missing email param); validate_each does not guard against blank/nil values.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "There is no regression test for a nil/blank value when whitelist/blacklist settings are present.",
+   "path": null,
+   "members": [
+    "c52"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "EmailValidator no longer rejects malformed addresses, so validates :email, email: true accepts values like sam@sam or sam.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "Blocked-email validation uses the user.email.invalid translation key instead of the new user.email.blocked key.",
+   "path": null,
+   "members": [
+    "c53"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "values: user.attributes.slice('name','username','email') in the failure JSON is redundant: the client reads only values.email, which equals the submitted email because new_from_params does not normalize.",
+   "path": null,
+   "members": [
+    "c54"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "The EmailValidator spec stubs BlockedEmail.should_block? (a class the patch owns) instead of exercising the real validator-to-model path, and no integration test covers the blocked-signup path, stats persistence, or case handling.",
+   "path": null,
+   "members": [
+    "c21",
+    "c40"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The 'last_match_at is null' example tests an ActiveRecord/migration default rather than application logic.",
+   "path": null,
+   "members": [
+    "c22"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "blocked_email_spec.rb uses only lowercase emails and has no tests for case variants.",
+   "path": "blocked_email_spec.rb",
+   "members": [
+    "c41"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "The modified User model validations have no updated specs.",
+   "path": null,
+   "members": [
+    "c14"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "There are no updated specs for UsersController#create, including the new errors and values keys in the failure JSON.",
+   "path": null,
+   "members": [
+    "c25",
+    "c34"
+   ]
+  }
+ ]
+}

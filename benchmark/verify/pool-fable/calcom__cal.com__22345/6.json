@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the whole `describe(\"Caching\")` block from packages/lib/server/service/__tests__/insightsBooking.integration-test.ts (old lines ~473-547), leaving only the Authorization Conditions, Filter Conditions and getBaseConditions blocks (lines 202, 349, 437), while the memoisation remains at packages/lib/server/service/insightsBooking.ts:84-94 with no test calling either getter twice. The deleted tests only compared two calls with `toEqual`, so they would have passed without caching anyway.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.21171049999999997
+}

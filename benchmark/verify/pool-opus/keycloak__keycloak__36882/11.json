@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes `RECREATE_UPGRADE_EXIT_CODE` from 4 to 3 in CompatibilityResult (change.patch:215-219) and reuses 4 for the new `FEATURE_DISABLED` code. A script that treated 4 as 'recreate needed' would now misread the result, but the change is deliberate: it follows picocli exit-code conventions, is documented in docs/guides/server/update-compatibility.adoc:128-134, and only affects the `ROLLING_UPDATES` feature, which is still in preview (Profile.java:136).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.062431900000000005
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/jobs/regular/retrieve_topic.rb:1 has `require_dependency 'email/sender'`, but the job (lines 9-18) only uses User and TopicRetriever; nothing in the file or in lib/topic_retriever.rb references Email::Sender.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0800237
+}

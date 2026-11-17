@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The regex at app/models/embeddable_host.rb:2 requires the host to end in `\\.[a-z]{2,5}`, so `localhost`, IP addresses like `10.0.0.1` and TLDs such as `.museum` fail validation. The old `host_list` type had no server-side check (lib/site_setting_extension.rb:22 only lists it as a type), and the migration copies the old values with raw SQL INSERTs (db/migrate/20150818190757_create_embeddable_hosts.rb:558), so validation never runs on them. Later, when an admin edits one of those rows, `save_host` calls `host.save` (admin/embeddable_hosts_controller.rb:276), the validation runs and the save fails.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.116276
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the exported `NoopCache` type in pkg/services/authz/rbac.go:239-251, and it is used only once in the repository, at pkg/services/authz/rbac.go:103 (`authzlib.WithCacheClientOption(&NoopCache{})`). I could not check whether authlib already has an equivalent no-op cache, because the authlib module is not in the repository and I was denied access to the module cache; the claim only says it 'may' duplicate one.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.060700300000000006
+}

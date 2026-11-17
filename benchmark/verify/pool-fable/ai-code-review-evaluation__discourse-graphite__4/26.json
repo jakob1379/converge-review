@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The two halves of the claim are literally true (spec/controllers/embed_controller_spec.rb:43-44 mocks TopicRetriever.new/retrieve; app/controllers/embed_controller.rb:15 calls Jobs.enqueue(:retrieve_topic)), but there is no mismatch: queue_jobs defaults to false in test (config/site_settings.yml:348-351), so Jobs.enqueue runs the job inline (app/jobs/base.rb:168-172) and app/jobs/regular/retrieve_topic.rb:17 calls TopicRetriever.new(...).retrieve, satisfying the expectation. Traced by reading only; the spec was not run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2791936
+}

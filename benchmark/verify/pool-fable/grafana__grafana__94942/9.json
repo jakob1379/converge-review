@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The repository has no docstring-coverage requirement: `.golangci.toml:9-12` configures revive with no exported-comment rule or 80% threshold, and no CI or lint config mentions one. The patch's new Go functions do lack doc comments (`pkg/expr/sql/db.go:9-26`, `pkg/expr/reader.go:194`), but the 25%/80% figures come from an external tool's policy, not from this codebase.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.38247970000000003
+}

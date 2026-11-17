@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `render :show` inside `format.html` in `perform_show_response` (app/controllers/topics_controller.rb ~line 500). With Rails 4.1.10 that renders the page straight away, before `show` sets `canonical_url` at topics_controller.rb:87, so `canonical_link_tag` in app/views/layouts/_head.html.erb:9 finds `@canonical_url` nil and outputs '' (lib/canonical_url.rb:15). Before the patch the page was rendered automatically after the action finished, so the URL was already set.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1619399
+}

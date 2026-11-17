@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds an unconditional refresh POST to the literal `https://login.salesforce.com/services/oauth2/token` in `getClient` (packages/app-store/salesforce/lib/CalendarService.ts:75) and throws on any non-OK response (line 86), ignoring the stored `credentialKey.instance_url`; that sandbox refresh tokens are rejected there is documented Salesforce behaviour (sandboxes use test.salesforce.com), not something run here. Reach is limited because `api/add.ts:18-21` and `api/callback.ts:33-37` already default to the production login host, so sandbox orgs could mainly arrive through the new credential-sync webhook.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5587692
+}

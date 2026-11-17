@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Grafana's MySQL DSN is built with `clientFoundRows=true` (pkg/services/sqlstore/sqlstore.go:287), so `RowsAffected()` at pkg/services/anonymous/anonimpl/anonstore/database.go:90-96 returns matched rows, not changed rows, and an existing device with unchanged values still yields 1. Only the raw `connection_string` override, commented as a special case for integration tests (sqlstore.go:275-277), bypasses this flag.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.44523559999999995
+}

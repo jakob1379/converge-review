@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `unsubscribe_url: \"/t/1234/unsubscribe\"` to the builder at spec/components/email/message_builder_spec.rb:172, but the header test at :174-176 still only asserts `be_present`, and no test asserts the URL appears anywhere. The header itself is built from `user_preferences_url`, not `unsubscribe_url` (lib/email/message_builder.rb:107), so a value assertion on the provided URL would fail as the code stands.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1904711
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/sentry/replays/tasks/test_delete_replays_bulk.py:82-97 the patch changes the fixture's `max_segment_id` from 0 to None, but that test patches `delete_matched_rows`, so the new None check in `_make_recording_filenames` (src/sentry/replays/usecases/delete.py:87-90) never runs; no test calls `_make_recording_filenames` directly. The 0 value was dropped only from that one test; the first-run test at line 50 still uses 0.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2816802
+}

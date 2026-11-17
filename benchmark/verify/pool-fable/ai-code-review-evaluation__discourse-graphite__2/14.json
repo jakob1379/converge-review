@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/topics_controller.rb:101-102 redirects a slug mismatch (or missing slug) on the GET `unsubscribe` action with `status: 301`, and that action changes `notification_level` at lines 105-112. The practical harm is small: the redirect returns before the mutation, so a cached 301 only skips a round trip and the canonical URL still reaches the server, the same pattern `show` uses at line 459.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2763916
+}

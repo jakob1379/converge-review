@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:57-59 assigns `JSON.parse(symmetricDecrypt(...))` to `keys`, which is written straight to `credential.key` at lines 78 and 85 with no zod or per-app schema check; the request schema at lines 9-15 only requires `keys` to be a string. The caller must already hold the webhook secret and the encryption key, so the exposure is limited to a trusted sender storing malformed credentials.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4722618
+}

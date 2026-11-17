@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In VerifyMessageProperties.java:65-79, verifySafeHtml() wraps IOExceptions from reading the file and its derived _en file in `new RuntimeException(...)`. verify() at line 46-53 declares `throws MojoExecutionException` and wraps its own read failures in MojoExecutionException, so the two error paths are handled differently.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22659490000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/dialog/AddGuestsDialog.tsx, isInvalidEmail is set to true in handleAdd (line ~57). The MultiEmail setValue (line ~74) only updates multiEmailValue, so editing the input never clears the banner. The claim overstates how it clears: the only setIsInvalidEmail(false) is in the Cancel handler (line ~92), and handleAdd never resets it, so a later valid add attempt does not clear it either and it can reappear when the dialog is reopened.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1408085
+}

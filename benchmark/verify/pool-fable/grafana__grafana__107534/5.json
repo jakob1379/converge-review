@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`createRequest` in querySplitting.test.ts:49-59 builds the request with only range/targets/intervalMs/requestId, and no test in the file sets `filters` or uses `$__range`, so neither the `request.filters` forwarding at querySplitting.ts:299 nor the `isQueryWithRangeVariable` guard at querySplitting.ts:282-288 (which now runs after interpolation) is exercised. The only new test (querySplitting.test.ts:75-88) covers `$__auto` and `$step` only.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.29543980000000003
+}

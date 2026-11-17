@@ -1,0 +1,599 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "addGuests.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In addGuests.handler.ts, the team permission check uses `isTeamAdmin(...) && isTeamOwner(...)` where `||` is intended. This reduces it to an owner-only check, so team ADMINs who are not the organizer or an attendee get FORBIDDEN even though the variable is named isTeamAdminOrOwner.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts (patch lines 470-472) sets isTeamAdminOrOwner to `isTeamAdmin(...) && isTeamOwner(...)`. isTeamAdmin already matches both ADMIN and OWNER (packages/lib/server/queries/teams/index.ts:270), while isTeamOwner matches only OWNER (:292), so the combined check passes only for owners. A team ADMIN who is neither the organizer nor an attendee hits the FORBIDDEN branch at line 478.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0503681
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "addGuests.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The BLACKLISTED_GUEST_EMAILS check lowercases the blacklist but compares it against the raw guest email, with no toLowerCase or extractBaseEmail normalization. Blacklisted addresses therefore pass when submitted with different casing or a plus-alias.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts:70-72 lowercases the BLACKLISTED_GUEST_EMAILS entries, but line 77 checks them with `blacklistedGuestEmails.includes(guest)` against the raw guest string, with no toLowerCase or extractBaseEmail. A differently cased or plus-aliased address therefore gets past the blacklist, whereas handleNewBooking.ts:742 normalizes with `extractBaseEmail(guest).toLowerCase()`.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1550898
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "De-duplication against existing booking attendees is case-sensitive, so `A@x.com` can be added next to an existing `a@x.com`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts (patch line 500) filters with a strict `guest === attendee.email`, and the input schema (addGuests.schema.ts) is only `z.string().email()`, with no lowercasing. So `A@x.com` passes the filter next to an existing `a@x.com` and gets inserted by `createMany`. The client check (AddGuestsDialog `new Set(emails)`) and the blacklist check, which lowercases only the blacklist entries, are case-sensitive too.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1355627
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The server does not de-duplicate the input guests array (uniqueGuests only filters existing attendees and the blacklist). A direct tRPC call with repeated emails creates duplicate attendee rows and sends duplicate emails, and there is no unique constraint on (bookingId, email) and no server-side cap on list size.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The server schema accepts any array of emails, with no uniqueness check and no `.max()` (addGuests.schema.ts:609). The `uniqueGuests` filter only removes existing attendees and blacklisted addresses (addGuests.handler.ts:498-502), so repeated emails each get their own row through `createMany` (handler:516-530), and `sendAddGuestsEmails` emails every one of those rows. The Attendee model has only `@@index([email])` and `@@index([bookingId])`, with no unique constraint on (bookingId, email) (packages/prisma/schema.prisma:526-539). The duplicate check exists only in the client dialog (AddGuestsDialog.tsx:79-82).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1475398
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The handler passes the raw `guests` input to sendAddGuestsEmails instead of `uniqueGuests`. As a result, existing or filtered attendees are classified as new and receive the wrong email (AttendeeScheduledEmail instead of AttendeeAddGuestsEmail), and notifications go to guests who were not actually added.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts (patch line 592) calls `sendAddGuestsEmails(evt, guests)` with the raw input instead of `uniqueGuests` (line 498). sendAddGuestsEmails (emails/email-manager.ts, patch line 234) uses `newGuests.includes(attendee.email)` to pick the template, so an existing attendee repeated in the input gets AttendeeScheduledEmail instead of AttendeeAddGuestsEmail. One part of the claim is wrong: emails are only sent to `calEvent.attendees`, so blacklisted guests that were never added get no email.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0980804
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "sendAddGuestsEmails does not check the event type's disableStandardEmails settings, and the handler does not pass booking.eventType?.metadata. Emails are therefore sent even when standard host/attendee emails are disabled.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new sendAddGuestsEmails in packages/emails/email-manager.ts (patch lines 218-243) only takes (calEvent, newGuests) and sends organizer, team-member and attendee emails without any check. That differs from sendLocationChangeEmails just above it (email-manager.ts:503,515), which checks eventTypeDisableHostEmail/eventTypeDisableAttendeeEmail. addGuests.handler.ts calls sendAddGuestsEmails(evt, guests) without booking.eventType?.metadata (patch line 592).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1542089
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "sendAddGuestsEmails does not respect the hideCalendarNotes setting, so hidden notes can be sent to attendees.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "sendAddGuestsEmails (packages/emails/email-manager.ts:525-550 after the patch) sends AttendeeScheduledEmail and AttendeeAddGuestsEmail to every attendee without the `hideCalendarNotes && { additionalNotes: undefined }` stripping used at email-manager.ts:119 and 267. The addGuests handler also never reads eventType.hideCalendarNotes and puts booking.description, where the booker's additional notes are stored (createBooking.ts:212), into evt.description, which BaseScheduledEmail.tsx:87 renders, so hidden notes reach both old attendees and new guests.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2120596
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`props` is spread after the fixed template props, so callers can override the email's subject, title and header.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The claim is accurate but harmless. In packages/emails/src/templates/AttendeeAddGuestsEmail.tsx:5-8 and OrganizerAddGuestsEmail.tsx:5-9, title, headerType and subject are set first and `{...props}` comes last, so a caller could override them. The only callers (attendee-add-guests-email.ts:323-326 and organizer-add-guests-email.ts:367-370) pass just calEvent and attendee, and the existing templates (e.g. AttendeeLocationChangeEmail.tsx:5-8) follow the same default-then-override pattern.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.20259560000000001
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "New guests are saved with an empty name and inherit the organizer's timeZone/locale, so emails and calendar entries show blank names.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:507-514 (patch lines 507-514) builds each new guest as {name: \"\", email, timeZone: organizer.timeZone, locale: organizer.locale} and saves it with createMany. Those blank names then reach the emails, e.g. the attendee `to:` field in attendee-add-guests-email.ts, and the calendar update through updateCalendarAttendees. Guests added at booking time also get an empty name, so this follows existing practice, but the claim is accurate.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1419153
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the add-guests dialog, isInvalidEmail is not reset on success or on overlay/Esc close, so the error state can reappear when the dialog is reopened. Closing via onOpenChange also keeps the old emails, removing all fields makes Add a silent no-op, and the client uniqueness check is case-sensitive.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/components/dialog/AddGuestsDialog.tsx, onSuccess (patch L89-94) resets the emails but not isInvalidEmail, and onOpenChange={setIsOpenDialog} (L114) clears neither the emails nor the error; since the dialog stays mounted in BookingListItem, both come back when it is reopened. Also, handleAdd returns silently when the list is empty (L102-104), and the uniqueness check uses a plain `new Set(emails)` (L79-82), so it is case-sensitive.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1387705
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The invalid-email banner stays visible after the user edits the input to valid values. It clears only on Cancel or on another add attempt.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/components/dialog/AddGuestsDialog.tsx, isInvalidEmail is set to true in handleAdd (line ~57). The MultiEmail setValue (line ~74) only updates multiEmailValue, so editing the input never clears the banner. The claim overstates how it clears: the only setIsInvalidEmail(false) is in the Cancel handler (line ~92), and handleAdd never resets it, so a later valid add attempt does not clear it either and it can reappear when the dialog is reopened.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1408085
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "MultiEmail contains an empty fragment `<></>` in a conditional.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/ui/form/MultiEmail.tsx:73-75 uses `) : (<></>)` as the else branch of the `value.length ?` ternary. The patch adds this new file. The fragment works but is redundant; `null` or `&&` would do the same job.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0424017
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests are included for the new addGuests handler/mutation or the new UI components.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes only source files: BookingListItem.tsx, AddGuestsDialog.tsx, the email templates, addGuests.handler.ts, addGuests.schema.ts, MultiEmail.tsx and MultiEmailLazy.tsx. It adds no test or spec files, and no test file in the repo mentions addGuests, AddGuestsDialog or MultiEmail.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.03532299999999999
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The server does not check booking status or time. Guests can be added to CANCELLED, REJECTED or past bookings, which writes attendee rows and sends REQUEST/CONFIRMED ICS invites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts (patch lines 450-592) loads the booking by id and checks only who the user is (admin/owner, organizer or attendee). It never checks booking.status or startTime/endTime. It then adds attendee rows with prisma.booking.update and calls sendAddGuestsEmails, which sends REQUEST/CONFIRMED ICS files (attendee-add-guests-email.ts:304-313). The UI hides the action for non-upcoming bookings (BookingListItem.tsx:544), but anyone allowed to call the endpoint directly can still do this.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1507764
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "packages/features/form-builder/Components.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "MultiEmail is a near-verbatim copy of the multiemail factory in packages/features/form-builder/Components.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new packages/ui/form/MultiEmail.tsx:630-712 copies the `multiemail` factory at packages/features/form-builder/Components.tsx:234-313 almost line for line: same class string, same EmailField/Tooltip/Button layout and same add/remove logic. It differs only in copying the array before updating it, plus the test IDs and the label's htmlFor/class. The original still carries the comment `//TODO: Make it a ui component` and was not changed to use the new component.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1637747
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In onError, the toast message is the template string `${code}: ${t(msg)}`, which is never falsy. The unable_to_add_guests fallback is therefore never used, and users see raw 'CODE: key' strings.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patch's onError (change.patch lines 96-97), `message` is the template literal `${err.data?.code}: ${t(err.message)}`. A template literal always contains at least \": \", so it is never empty and `t(\"unable_to_add_guests\")` can never be used. The server throws the key `you_do_not_have_permission` (patch line 479), but en/common.json has no such key, so the user sees a raw string like 'FORBIDDEN: you_do_not_have_permission'.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0488064
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The email list state starts as an array containing an empty string rather than an empty array.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "apps/web/components/dialog/AddGuestsDialog.tsx:32 initialises the list with `useState<string[]>([\"\"])`, and lines 39 and 90 reset it to `[\"\"]` again. Because of this, the `multiEmailValue.length === 0` guard in handleAdd (line 49) never fires on the initial state, so clicking Add with nothing typed shows the 'emails must be unique and valid' error instead of doing nothing.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1369992
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "evt is built without `team`, so the team-member branch in sendAddGuestsEmails never runs and team hosts are not notified.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The CalendarEvent built in addGuests.handler.ts (patch lines 548-571) has no `team` field, so the `calendarEvent.team?.members` loop in sendAddGuestsEmails (email-manager.ts, patch lines 224-230) never runs. Only the organizer and the attendees get emails; other team hosts on collective bookings get nothing.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1351895
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "showAttendees is not passed to AttendeeScheduledEmail, so seated events with seatsShowAttendees=true hide the attendee list in these emails.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/emails/email-manager.ts (the new sendAddGuestsEmails, patch lines 235/237), both AttendeeScheduledEmail and AttendeeAddGuestsEmail are built as (calendarEvent, attendee) with no third argument. The constructor at attendee-scheduled-email.ts:21 then trims attendees down to the recipient whenever calEvent.seatsPerTimeSlot is set, even though addGuests.handler.ts sets seatsShowAttendees on evt.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.16735730000000001
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no seated-event handling: attendee rows are created without BookingSeat rows, which bypasses seatsPerTimeSlot. The full attendee list is pushed to the calendar event, and any seat-holder can add guests, exposing seat-holders to each other even when seatsShowAttendees is false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts:516-530 uses createMany to add attendees with no bookingSeat. createNewSeat.ts:52 only counts attendees that have a bookingSeat, so these guests sidestep seatsPerTimeSlot. The isAttendee check at handler:476 lets any seat-holder add guests, and the full attendee list goes to updateCalendarAttendees (handler:589). The exposure part is overstated: the emails cut the list down to the recipient (attendee-scheduled-email.ts:21), and Google applies seatsShowAttendees (googlecalendar CalendarService.ts:413), so only other calendar providers could leak the list.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2618602
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new action updates by bookingId only, without seat-level scoping, so on seats events guests are added to the shared booking instead of the current seat.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "BookingListItem.tsx has the seat context (`booking.seatsReferences`, used at lines 134-138), but the patch passes only `bookingId={booking.id}` to AddGuestsDialog. The new addGuests.handler.ts then runs `prisma.booking.update({ where: { id: bookingId }, data: { attendees: { createMany } } })` with no BookingSeat link or seat check, so on seated events the guests become seatless attendees of the shared booking.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1740936
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The booking findFirst include pulls user.credentials (full credential keys), which are never read, and trips @calcom/eslint/no-prisma-include-true.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In addGuests.handler.ts (patch lines 450-466), the booking `findFirst` includes `user: { include: { destinationCalendar: true, credentials: true } }`, but `booking.user.credentials` is never read: EventManager gets its credentials from `getUsersCredentials(ctx.user)` (patch line 582), and `updateCalendarAttendees` only uses `PartialBooking` (id/userId/references). The rule in packages/eslint-plugin/src/rules/no-prisma-include-true.ts:27-44 searches nested `include` blocks and flags `credentials: true`, though recommended.ts:9 sets the rule to only warn.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.21418140000000002
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "addGuests uses plain authedProcedure with a custom check instead of bookingsProcedure. Any logged-in attendee can add guests, while COLLECTIVE co-hosts are refused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The route does use plain authedProcedure (_router.tsx:399) with a custom check that lets any matching attendee through (addGuests.handler.ts:476-478). But COLLECTIVE co-hosts are not refused: createBooking.ts:153-161 saves team members as Attendee rows, so co-hosts pass the isAttendee check.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1872297
+   }
+  },
+  {
+   "issue": "i24",
+   "path": "editLocation.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "About 40 lines of CalendarEvent construction are duplicated from editLocation.handler.ts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new addGuests.handler.ts (patch lines 532-571), the attendee-list mapping, tOrganizer lookup and CalendarEvent object (title, type, description, start/end time, organizer, recurringEvent, destinationCalendar, seatsPerTimeSlot, seatsShowAttendees) are nearly identical to editLocation.handler.ts:55-95, about 40 lines. The only differences are the location and conferenceCredentialId fields; the claim names the wrong file, since the copy is in addGuests.handler.ts.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1695457
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A second prisma.user.findFirstOrThrow refetches the organizer that is already loaded via booking.user.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:35-40, `booking.user` is loaded with all its scalar fields, including name, email, timeZone and locale. Then at :58-68, `prisma.user.findFirstOrThrow({ where: { id: booking.userId || 0 } })` fetches those same four fields again, which costs an extra database query.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.13823459999999999
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The email uniqueness check in ZAddGuestsInputSchema is case-sensitive, so User@x.com and user@x.com pass as unique.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At apps/web/components/dialog/AddGuestsDialog.tsx:26-29, ZAddGuestsInputSchema checks uniqueness with `new Set(emails)` on the raw strings, without lowercasing, so User@x.com and user@x.com count as different. The server schema (addGuests.schema.ts:3-6) has no uniqueness check, and the handler compares guests to existing attendees case-sensitively (addGuests.handler.ts:76-79), so both addresses would be stored.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1398535
+   }
+  },
+  {
+   "issue": "i27",
+   "path": "en/common.json",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The handler throws FORBIDDEN with message key you_do_not_have_permission, which is not defined in en/common.json, so users see the raw key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts:55 (patch line 479) throws FORBIDDEN with message \"you_do_not_have_permission\", and that key appears nowhere in apps/web/public/static/locales/en. AddGuestsDialog.tsx onError passes it through t(err.message), so the toast shows \"FORBIDDEN: you_do_not_have_permission\".",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1496577
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no transaction or compensation: attendees are written before updateCalendarAttendees, which is not wrapped. If it throws, the DB keeps the guests, no emails are sent, and a retry fails with emails_must_be_unique_valid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts writes the new attendees with prisma.booking.update(createMany) (patch lines 516-530) outside any transaction, then calls eventManager.updateCalendarAttendees unwrapped (line 589), before the try/catch around sendAddGuestsEmails (591-595). Calendar API errors are swallowed in CalendarManager.ts:336-348, but updateAllCalendarEvents returns Promise.all(result) without await (EventManager.ts:920), so a rejected updateEvent escapes its catch. That happens if a CalendarService constructor throws in getCalendar, or credential.appId is read on an undefined credential (CalendarManager.ts:371). The guests then stay in the DB, no emails go out, and resubmitting the same guests hits emails_must_be_unique_valid (lines 498-505).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.22994910000000002
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "MultiEmail uses the array index as the React key, which misbehaves when items are removed from the middle of the list.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "MultiEmail does use `key={index}` (packages/ui/form/MultiEmail.tsx, patch line 644), but each row is a controlled EmailField with `value={field}`. InputField only keeps its own state for `type==\"search\"` (packages/ui/components/form/inputs/TextField.tsx:98,142-148), so removing a middle item with splice re-renders the correct values and no row state ends up on the wrong item.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1779836
+   }
+  },
+  {
+   "issue": "i30",
+   "path": "MultiEmail.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "MultiEmail.tsx lives inside packages/ui but imports primitives from @calcom/ui, which also exports MultiEmail, creating a circular import risk.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/ui/form/MultiEmail.tsx:2 imports Button, EmailField, Icon and Tooltip from the \"@calcom/ui\" barrel, and packages/ui/index.tsx:153 re-exports MultiEmail from that same barrel, so the files do form a loop. The risk is small: MultiEmailLazy.tsx loads MultiEmail through next/dynamic, so the loop is not hit when modules first load. Many other packages/ui files already import from \"@calcom/ui\" this way, e.g. Checkbox.tsx:7 and AnimatedPopover.tsx:5.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0804253
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The MultiEmail component reassigns its function parameter `value`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new file packages/ui/form/MultiEmail.tsx takes `value` as a destructured parameter at line 12 and reassigns it at line 14 with `value = value || [];`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0307302
+   }
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The MultiEmail component uses the useLocale() hook but lacks the 'use client' directive.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new packages/ui/form/MultiEmail.tsx calls useLocale() (line 1 import, used inside the component) and has no 'use client' directive, while sibling form components such as packages/ui/form/PhoneInput.tsx have one. Its only consumer is the client-side AddGuestsDialog, which loads it through the next/dynamic wrapper in MultiEmailLazy.tsx, so nothing breaks today.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.05123280000000001
+   }
+  },
+  {
+   "issue": "i33",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "EventManager is built from ctx.user's credentials rather than the organizer's. References without a credentialId are matched against the caller's calendars when an attendee or owner adds guests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "addGuests.handler.ts (patch lines 582-589) builds EventManager from `...user` and `getUsersCredentials(ctx.user)`, not from booking.user. In EventManager.ts:871-878, a calendar reference with no credentialId is matched only by type against `this.calendarCredentials` (the caller's). The other_calendar branch at 898-918 also uses the caller's credentials. So when an attendee or team owner adds guests, the update runs against their calendars instead of the organizer's.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1858284
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

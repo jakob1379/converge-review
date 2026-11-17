@@ -1,0 +1,111 @@
+{
+  "findings": [
+    {
+      "path": "config/initializers/i18n.rb",
+      "line": 17,
+      "severity": "Important",
+      "claim": "Fallback chain now depends on per-site SiteSetting.default_locale, but the process-wide translation LRU cache in I18n.translate (lib/freedom_patches/translate_accelerator.rb:72) is keyed only on key+locale+backend id; in multisite one site's fallback text is served to another site, and after an admin changes default_locale stale fallback strings persist until eviction.",
+      "evidence": "FallbackLocaleList#[] returns [locale, SiteSetting.default_locale.to_sym, :en]; cache key is \"#{key}#{config.locale}#{config.backend.object_id}\" on a singleton @cache; multisite via RailsMultisite (app/jobs/base.rb:150); default_locale is refresh: true (config/site_settings.yml:59-62). Previously fallback went to I18n.default_locale, identical across sites. Reasoned; proposed failing spec: default_locale=de, locale=fr, t(k) missing in fr; then default_locale=es, t(k) returns cached German.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three seats independently, concrete source citations for both halves (key and chain); regression introduced by this patch. Include default_locale in cache key or move resolution so cache cannot cross sites. Unverified until a red multisite spec exists."
+    },
+    {
+      "path": "app/controllers/application_controller.rb",
+      "line": 159,
+      "severity": "Important",
+      "claim": "Fallback locales (site default, :en) are lazily loaded only via I18n.fallbacks.ensure_loaded! in ApplicationController#set_locale; Sidekiq jobs, mailers, I18n.with_locale callers and rake tasks never load them, so fallback silently yields 'translation missing', which the cache then pins.",
+      "evidence": "I18n.translate loads only config.locale (translate_accelerator.rb:68); app/jobs/base.rb:151 sets I18n.locale without ensure_loaded!; app/services/post_alerter.rb:138 and lib/post_destroyer.rb:102 use I18n.with_locale. Partly pre-existing for :en, but the new site-default hop is also unloaded off the request path. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Raised by all four seats (mattpocock as Minor, ponytail out of remit); normalised to Important since emails/notifications are user-facing. Load fallback chain inside I18n.translate/load_locale instead of a controller hook, which also removes the need for the hook."
+    },
+    {
+      "path": "config/initializers/i18n.rb",
+      "line": 12,
+      "severity": "Important",
+      "claim": "Change adds no tests for the new fallback order, FallbackLocaleList, I18n.ensure_loaded!, or fallback/cache interaction, and enables fallbacks in all environments.",
+      "evidence": "CONTRIBUTING.md step 3: 'Include tests, and ensure they pass'; git show --stat ecfa17b5a7 lists no spec/ files; spec/components/freedom_patches has no translate_accelerator spec.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented project standard breach with direct evidence; the missing specs are the red tests the two Important correctness findings need anyway."
+    },
+    {
+      "path": "config/initializers/i18n.rb",
+      "line": 9,
+      "severity": "Minor",
+      "claim": "Fallbacks were previously on only in production/profile/cloud66; the initializer now enables them in development and test, hiding missing translations behind English text and possibly changing specs that expect missing-translation output.",
+      "evidence": "Patch removes config.i18n.fallbacks = true from three env files and unconditionally includes I18n::Backend::Fallbacks in the initializer.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Likely intentional (feature is 'localization fallbacks'); behaviour change is undocumented but not a defect. ponytail: confirm intent with the author; gate on env only if dev visibility of missing keys is wanted."
+    },
+    {
+      "path": "lib/freedom_patches/translate_accelerator.rb",
+      "line": 62,
+      "severity": "Minor",
+      "claim": "New public I18n.ensure_loaded! duplicates load_locale's own already-loaded guard (checked inside the mutex), and its @loaded_locales ||= [] is inconsistent with translate, which dereferences @loaded_locales unguarded.",
+      "evidence": "load_locale (L46-60) returns early when @loaded_locales.include?(locale); reload! sets @loaded_locales = [] at boot (L40); translate (L68) calls @loaded_locales.include? without nil guard.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap deletion: call I18n.load_locale directly from FallbackLocaleList#ensure_loaded!. Advisory; non-blocking. Moot if the fallback-loading fix moves loading into translate."
+    },
+    {
+      "path": "config/initializers/i18n.rb",
+      "line": 1,
+      "severity": "Minor",
+      "claim": "'# order: after 02-freedom_patches.rb' comment implies an ordering directive that nothing reads; ordering is purely alphabetical file-name sort.",
+      "evidence": "No code in the repo parses 'order:'; Rails loads config/initializers in sorted order; no other initializer uses the convention.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "One-line deletion (or numbered filename if ordering matters); prevents a misleading maintenance hazard. Advisory, non-blocking."
+    },
+    {
+      "path": "config/initializers/i18n.rb",
+      "line": 12,
+      "severity": "Minor",
+      "claim": "FallbackLocaleList inherits Hash but only overrides []; fetch/keys/each/to_h return empty or raise, misrepresenting I18n.fallbacks.",
+      "evidence": "i18n 0.7.0 (Gemfile.lock:126) Backend::Fallbacks only calls I18n.fallbacks[locale]; the Hash storage is never populated. Gem source not read; from reviewer knowledge.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory, no current caller uses other Hash methods; ponytail: drop '< Hash' when the class is next touched. Not verified against installed gem source."
+    },
+    {
+      "path": "config/initializers/i18n.rb",
+      "line": 3,
+      "severity": "Minor",
+      "claim": "New comments (including a TODO) breach the 'DO NOT ADD COMMENTS unless asked' standard.",
+      "evidence": "Comments at i18n.rb:3,7,11,15-16 restate code.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "reject",
+      "reason": "The cited rule is the reviewing user's personal ~/.claude/CLAUDE.md style for code they author, not a documented standard of this repository; CONTRIBUTING.md has no such rule (mattpocock seat checked CONTRIBUTING conventions and found no breach). Minor, so no verifier required."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode): no dependency install, tests, linters or Ruby executed by orchestrator or seats; every finding is reasoned, none has an executed red test. Spec axis did not run (no spec). Only documented standards source is CONTRIBUTING.md. Files: all 7 patch files reviewed by superpowers, ponytail, mattpocock; open-code-review tool skipped deleted config/initializers/pluralization.rb (reviewer compared it by hand: content moved unchanged into i18n.rb). No seat read the installed i18n 0.7.0 gem source (filesystem searches timed out); Fallbacks backend behaviour taken from reviewer knowledge. Untracked sandbox dotfiles in the worktree were excluded from the pinned patch as not part of the PR. No cross-family reviewer available; all seats same model family. Rounds 2+ and fixes not run per benchmark override; nothing converged."
+}

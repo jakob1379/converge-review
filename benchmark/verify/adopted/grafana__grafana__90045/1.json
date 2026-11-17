@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:45, the error branch after d.Storage.Create calls d.recordLegacyDuration(true, ..., startStorage). The success path at :48 calls recordStorageDuration, so storage failures are being counted as legacy failures.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0481067
+}

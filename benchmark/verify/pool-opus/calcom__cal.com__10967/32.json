@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:208 adds `credentialId: result.credentialId ?? undefined`, which changes nothing, and the `length > 0` guards before `for` loops (EventManager.ts:337, handleCancelBooking.ts:418) are redundant. handleNewBooking.ts:689 replaces the typed `SchedulingType.COLLECTIVE/ROUND_ROBIN` comparisons with `[\"COLLECTIVE\", \"ROUND_ROBIN\"].includes(...)`, and later checks use `=== \"COLLECTIVE\"`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2068122
+}

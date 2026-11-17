@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "tests/sentry/uptime/consumers/test_results_consumer.py:2017 does add `pytestmark = [requires_kafka]` as a class attribute, but the repository does not use ruff: linting is flake8 (.pre-commit-config.yaml:45, setup.cfg:86, requirements-dev.txt:30) and no ruff/RUF012 config exists, so no RUF012 violation is triggered here.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1501631
+}

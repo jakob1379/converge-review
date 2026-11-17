@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:48 calls `open(url).read` with no check inside `import_remote`; the only scheme check (`url =~ /^https?\\:\\/\\//`) is in `import` at app/models/topic_embed.rb:11, which runs after the fetch. The web path is partly guarded by the host comparison at lib/topic_retriever.rb:15 (host only, not scheme), while lib/tasks/disqus.thor:148 passes `t[:link]` from the import file with no validation at all.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2564001
+}

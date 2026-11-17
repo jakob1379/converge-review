@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/zoho-bigin/lib/CalendarService.ts:53 sets credentialId = credential.id and line 93 passes it as the third argument of refreshOAuthTokens, whose third parameter is userId and is sent as calcomUserId (packages/app-store/_utils/oauth/refreshOAuthTokens.ts:3,11). When credential sharing is enabled, the sync endpoint is therefore given the credential's id instead of the user's id.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1762182
+}

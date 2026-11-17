@@ -1,0 +1,149 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Ad-hoc filters and template variables are applied more than once per query. applyTemplateVariables is called in runSplitQuery and runShardSplitQuery, and again in DataSourceWithBackend.query() via super.query(). That is twice on the time-split path and three times on the shard path. Because addAdHocFilters/addFilterAsLabelFilter appends filter clauses without deduplication, the filters are duplicated in the LogQL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds applyTemplateVariables(query, scopedVars, request.filters) at querySplitting.ts:299 and shardQuerySplitting.ts:52. The shard path then calls runSplitQuery (shardQuerySplitting.ts:163), and every request reaches DataSourceWithBackend.ts:185 through runQuery and super.query, so filters are applied twice on the time-split path and three times on the shard path. addFilterToStreamSelector removes duplicates (modifyQuery.ts:494), but addFilterAsLabelFilter (modifyQuery.ts:511-540), which is used when a parser is present, appends ` | key=\\`value\\`` every time without checking.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.21641109999999997
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The tests do not detect the duplicate interpolation. They mock datasource.runQuery, so super.query() and its applyTemplateVariables call never run, and the mocked applyTemplateVariables is an idempotent string replace.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch now calls datasource.applyTemplateVariables in runSplitQuery and runShardSplitQuery (querySplitting.ts:296-299, shardQuerySplitting.ts:49-52). runQuery then calls super.query (datasource.ts:350-352), which runs applyTemplateVariables again (DataSourceWithBackend.ts:185). Every new and existing test mocks runQuery with jest.spyOn(...).mockReturnValue (e.g. querySplitting.test.ts:63,83, and the new shard test). Their applyTemplateVariables and templateSrv.replace mocks are string replaces that give the same result when run twice, so a second interpolation would go unnoticed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.14350390000000002
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "shardQuerySplitting.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "templateSrv.replace is run again over already-interpolated text, which is not idempotent. A variable value containing a literal `$name` of another defined variable is expanded again on each extra pass: twice on the split path and three times on the shard path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "With this patch, runSplitQuery (querySplitting.ts:299) and runShardSplitQuery (shardQuerySplitting.ts:52) call applyTemplateVariables, which uses templateSrv.replace (datasource.ts:1128,1132). DataSourceWithBackend.query then calls it again (DataSourceWithBackend.ts:185), and the shard path also goes through runSplitQuery (shardQuerySplitting.ts:163), so the split path interpolates twice and the shard path three times (it was once and twice before the patch), and any `$var` text that appears after one pass is expanded on the next.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1507473
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "shardQuerySplitting.test.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test assertion at line 112 expects applyTemplateVariables to be called 5 times. runShardSplitQuery interpolates each initial target only once before splitting, and the test has one target, so the expected count should be 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "runShardSplitQuery makes one applyTemplateVariables call per target (shardQuerySplitting.ts:52). Each of the 4 shard sub-requests then goes through runSplitQuery (shardQuerySplitting.ts:163), and the patch makes runSplitQuery call applyTemplateVariables for every target too (querySplitting.ts patch line 39), so the test at shardQuerySplitting.test.ts:112 correctly expects 1 + 4 = 5 calls.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0986349
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "shardQuerySplitting.test.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test assertion `expect(datasource.applyTemplateVariables).toHaveBeenCalledTimes(5)` pins an internal call count instead of checking the query actually sent. This locks in the redundant re-interpolation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The count of 5 at shardQuerySplitting.test.ts:112 is one applyTemplateVariables call per target in runShardSplitQuery (shardQuerySplitting.ts:52) plus four more in runSplitQuery (querySplitting.ts:296-299), one per shard subrequest delegated at shardQuerySplitting.ts:163. So the test requires that redundant second pass. The 'instead of' part is overstated, though: the same test also checks the queries sent via runQuery toHaveBeenCalledWith (test lines 114-140).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1055721
+   }
+  },
+  {
+   "issue": "i6",
+   "path": "querySplitting.test.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`request.filters` is passed to applyTemplateVariables but is never set in the test setup (createRequest omits `filters`), so ad-hoc filter forwarding on the new interpolation path is untested. The $__range no-split guard is also not covered.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "createRequest in querySplitting.test.ts:49-59 sets only range, targets, intervalMs and requestId, never `filters`, and no test file contains `__range`. So the forwarding of `request.filters` and the $__range no-split guard at querySplitting.ts:285-287,299 are both untested. This gap matters because the patch now runs applyTemplateVariables before querySupportsSplitting, so the guard may see `$__range` already replaced.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1081261
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Targets with an empty expr are filtered out before interpolation. A target whose variables resolve to an empty string (e.g. '$query' with an empty textbox) therefore reaches the shard-splitting path. There, Math.max(...[]) and access to undefined properties throw an unhandled rejection in runSplitQuery, and the Observable never emits or completes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "shardQuerySplitting.ts:49-52 now drops empty exprs before applyTemplateVariables, so a '$query' target that interpolates to '' survives. It falls into the non-sharded 'otherQueries' group (shardQuerySplitting.ts:243-249, because requestSupportsSharding rejects ''), and line 163 passes it to runSplitQuery. There querySplitting.ts:298 filters it out, leaving requests empty, so querySplitting.ts:95-96 gets Math.max() = -Infinity and then reads `[0].partition` of undefined. That TypeError is thrown inside the `.then` at shardQuerySplitting.ts:213, which has no catch, so the Observable never emits or completes.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.35568690000000003
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'Interpolates queries before execution' tests mock templateSrv.replace to expand $__auto to 5m. The production applyTemplateVariables strips __auto from scopedVars, so in real use $__auto reaches the backend unexpanded.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "applyTemplateVariables (datasource.ts:1111-1113) deliberately leaves `__auto` out of scopedVars so the backend can expand it, and the Go backend does replace `$__auto` (pkg/tsdb/loki/parse_query.go:22, tested in parse_query_test.go:176-187). The test's mocked replace only checks that applyTemplateVariables runs before execution, so no real bug follows.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.10512189999999999
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

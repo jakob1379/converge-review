@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/authz/rbac/service.go:123-139, any check the cached scope map does not allow falls through to getIdentityPermissions, and getUserPermissions/getAnonymousPermissions (service.go:379-380, 423-425) no longer read permCache, so each distinct denied (user, action, name, parent) costs a DB permission query plus a JSON decode/re-encode of the scope map per TTL (denial cached only at service.go:153-155), where before it was one fetch per user+action; the in-process client's NoopCache (pkg/services/authz/rbac.go:101-105) means no client-side cache absorbs these checks (authlib client internals not readable here, but the server-side path alone establishes the scaling).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5421701
+}

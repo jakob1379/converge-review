@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.canView() (patch line 372-374) returns canViewClientDefault() || hasPermission(VIEW) and never checks MANAGE, while canView(ClientScopeModel) (line 404-408) accepts VIEW or MANAGE and canManageClientScopes() (line 392-396) accepts MANAGE. GET /client-scopes calls requireListClientScopes() (ClientScopesResource.java:91), which checks canView() || QUERY_CLIENTS (ClientPermissions.java:258-260), so an admin with only all-clients MANAGE gets 403; MgmtPermissions.evaluatePermission does not treat manage as implying view.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2682504
+}

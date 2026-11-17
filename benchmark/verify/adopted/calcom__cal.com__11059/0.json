@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "parseRefreshTokenResponse.ts:29 returns the whole safeParse result ({success, data}), not the parsed data. googlecalendar CalendarService.ts:97-100 stores that wrapper unchanged as credential.key on either sync path, so the next constructor's googleCredentialSchema.parse(credential.key) at line 75 throws because the top-level scope, token_type, expiry_date, access_token and refresh_token fields are missing.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.25732069999999996
+}

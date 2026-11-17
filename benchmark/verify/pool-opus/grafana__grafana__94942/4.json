@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new pkg/expr/sql/db.go:12-22 has TablesList, RunCommands and QueryFramesInto each return errors.New(\"not implemented\"). The patch also switches parser.go:23 and sql_command.go:96-100 from go-duck to these stubs, so SQL expressions always fail; this looks deliberate, since reader.go now rejects QueryTypeSQL up front.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1425763
+}

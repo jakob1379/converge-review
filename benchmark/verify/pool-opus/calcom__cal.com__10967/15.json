@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the same 'fetch credential from DB' fallback at EventManager.ts:343 and :516, both querying with `include: { app: { select: { slug } } }` and setting `appName`. The copy at handleCancelBooking.ts:430-438 has neither and passes the raw Prisma credential straight to getCalendar. That copy still works, because getCalendar (app-store/_utils/getCalendar.ts:26) only takes a CredentialPayload, so the difference is a maintenance problem, not a bug.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2304479
+}

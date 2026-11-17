@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`findMembers` builds its URL from `this.get('name')` (app/assets/javascripts/discourse/models/group.js:25), and that name is two-way bound to the edit field (app/assets/javascripts/admin/templates/group.hbs:8), so paging and the post-add/remove reloads (group.js:47,58; admin-group.js.es6:37,48) request `/groups/<unsaved-name>/members.json` and fail. Two details differ from the claim: the failure is a 403 rather than a 404, since `ensure_can_see!(nil)` raises InvalidAccess (lib/guardian/ensure_magic.rb:18-19), and the add/remove requests themselves go by id and succeed \u2014 only the member-list reload breaks.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4460514
+}

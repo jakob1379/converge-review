@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/groups_controller.rb:28-35 now renders `{members: [...], meta: {total, limit, offset}}`, where the old code called `render_serialized(members.to_a, GroupUserSerializer)` and returned a bare JSON array. The in-repo caller was updated (app/assets/javascripts/discourse/models/group.js:25-36), but external API consumers expecting an array break, and the pending spec at spec/controllers/groups_controller_spec.rb:78-79 still parses the body as an array.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3617525
+}

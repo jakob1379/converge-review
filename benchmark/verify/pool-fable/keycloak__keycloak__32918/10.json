@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the org/BROKER_PUBLIC condition only to getLoginPredicate() (server-spi/src/main/java/org/keycloak/models/IdentityProviderStorageProvider.java:254), while getLoginSearchOptions() (line 248-250) still derives solely from the three enum values. The Javadoc at lines 151-152 and 216 of that file, and at services/src/main/java/org/keycloak/forms/login/freemarker/model/IdentityProviderBean.java:202-203 (which filters through getLoginPredicate() via line 226), still lists only enabled/linkOnly/hideOnLogin.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4154236
+}

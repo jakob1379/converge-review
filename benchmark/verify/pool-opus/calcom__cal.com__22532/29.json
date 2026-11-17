@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "deleteCache.handler.ts:511-516 does filter on `userId: user.id`, but its only caller is the connected-calendars dropdown, and that list comes only from credentials with `userId: user.id` (packages/lib/getConnectedDestinationCalendars.ts:282-291). Team-owned credentials never show up there, so the owner-only check matches the intended scope and is the right access control, not a bug.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11634760000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patch's onError (change.patch lines 96-97), `message` is the template literal `${err.data?.code}: ${t(err.message)}`. A template literal always contains at least \": \", so it is never empty and `t(\"unable_to_add_guests\")` can never be used. The server throws the key `you_do_not_have_permission` (patch line 479), but en/common.json has no such key, so the user sees a raw string like 'FORBIDDEN: you_do_not_have_permission'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0488064
+}

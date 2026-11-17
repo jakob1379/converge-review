@@ -1,0 +1,347 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the mode-3 unit tests, legacyStoreMock and storageMock share one mock.Mock. As a result, 'legacy' expectations are satisfied by storage calls, success-case setupLegacyFn blocks are duplicate or no-op, and nothing verifies that reads skip legacy or that legacy is written. No AssertExpectations or AssertNotCalled calls are made, and no test waits for the goroutine.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Every mode-3 test builds `ls := legacyStoreMock{m, l}` and `us := storageMock{m, s}` from a single `m := &mock.Mock{}` (dualwriter_mode3_test.go, patch lines 414-417 and similar). Both mock types call `m.Called` with the same method names (storage_mocks_test.go:32/96, 57/121), so the Create error case's only expectation, set in `setupLegacyFn` (patch line 404), is met by the storage call, and the Update success `setupLegacyFn` repeats the storage expectation exactly (lines 674/677). The tests never call AssertExpectations or AssertNotCalled and never wait for the legacy goroutines.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.20382549999999997
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "go.mod",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The added github.com/grafana/grafana/pkg/apimachinery go.mod line duplicates the line above it, and the go.work.sum changes are unrelated to this change.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a line to go.work.sum:408 (the claim says go.mod, but the line is in go.work.sum) that exactly repeats the existing `github.com/grafana/grafana/pkg/apimachinery v0.0.0-20240701135906-559738ce6ae1/go.mod h1:DkxMin...` entry at go.work.sum:404, a few lines above. The other go.work.sum additions (azure-sdk, alertmanager, otel, genproto) have nothing to do with the dualwriter code changes, and the patch changes no go.mod file.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.07969430000000001
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In DualWriterMode3.Delete, the success path passes the object name instead of options.Kind as the kind label to recordStorageDuration. This creates a new histogram series per deleted object and differs from the other methods. The same pattern exists in dualwriter_mode1.go.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "On success, Delete in pkg/apiserver/rest/dualwriter_mode3.go:106 passes `name` (the object name) to recordStorageDuration, where every other call passes options.Kind; this value fills the histogram's `kind` label (metrics.go:23,61), so each deleted object adds a new series. dualwriter_mode1.go:155 has the same mistake, but in a recordLegacyDuration call rather than recordStorageDuration.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2362059
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The background legacy write goroutines in Create, Update, Delete and DeleteCollection derive their context from the request ctx via context.WithTimeoutCause. When the handler returns and the request ctx is cancelled, the legacy writes can be cancelled too, and legacy drifts from unified storage. The same pattern exists in dualwriter_mode1.go.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3.go (lines 51, 110, 135, 163), the background goroutines for the legacy Create, Delete, Update and DeleteCollection writes build their context with context.WithTimeoutCause(ctx, ...). Here ctx is the request context, so cancelling the request also cancels the in-flight legacy write. dualwriter_mode1.go (lines 54-225) does the same for its background unified-storage calls.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.19118619999999997
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test uses assert.NoError after meta.Accessor and then calls acc.GetResourceVersion(), which nil-panics if the accessor fails. Error checks should use require.*.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3_test.go:72-74, the error from `meta.Accessor(obj)` is checked with `assert.NoError`, which does not stop the test. The next line calls `acc.GetResourceVersion()`, so if the accessor fails it returns nil and that call panics instead of failing cleanly. `require.NoError` would stop the test first.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0435361
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In Mode3 Create, a failure from unified storage is recorded with recordLegacyDuration (using startStorage) instead of recordStorageDuration. Some comments note this alongside the same mis-attribution in Update and DeleteCollection.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:43-45, Create logs \"unable to create object in storage\" when d.Storage.Create fails, then calls d.recordLegacyDuration(true, ..., startStorage) instead of recordStorageDuration. Update has the same pattern at line 129, and the patch adds these lines (patch lines 104 and 219).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0523645
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In Mode3 Update, when Storage.Update fails, the duration is recorded with recordLegacyDuration instead of recordStorageDuration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At pkg/apiserver/rest/dualwriter_mode3.go:126-129, when d.Storage.Update fails, the patch records the failure with d.recordLegacyDuration(true, mode3Str, ..., startStorage) instead of recordStorageDuration. The success path at line 132 and DeleteCollection at line 156 both correctly use recordStorageDuration.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0490757
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Mode3 DeleteCollection legacy goroutine records the legacy operation's duration with recordStorageDuration instead of recordLegacyDuration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:161-166, the goroutine starts startLegacy, calls d.Legacy.DeleteCollection, and then records the result with d.recordStorageDuration(err != nil, ..., startLegacy) instead of recordLegacyDuration. The legacy delete's timing and errors therefore go into the storage metric.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.046957299999999993
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Mode3 Delete and DeleteCollection tests only mock unified storage calls. On success, the implementation spawns async legacy calls that hit unmocked methods.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Both mocks share one *mock.Mock (dualwriter_mode3_test.go:580-585, 634-639: `ls := legacyStoreMock{m, l}; us := storageMock{m, s}`). testify matches calls by method name, so the async legacy Delete/DeleteCollection (storage_mocks_test.go:66,77) use the same \"Delete\"/\"DeleteCollection\" expectations set up in the test (lines 565, 619) and do not hit unmocked methods.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.20307349999999996
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Delete calls klog.NewContext(ctx, d.Log) instead of passing the enriched log variable, so the name, kind and method fields are not propagated to downstream loggers. The same bug exists in mode 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In Delete, pkg/apiserver/rest/dualwriter_mode3.go:96-97 builds `log` with name, kind and method but then calls `klog.NewContext(ctx, d.Log)`, so code further down the call chain gets the logger without those fields. pkg/apiserver/rest/dualwriter_mode1.go:145-146 has the same bug.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1887043
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Mode3 Update passes the caller's original objInfo to Legacy.Update in a goroutine. UpdatedObject is therefore re-applied against legacy's own old object after the request has ended, which can produce a different object than unified storage stored.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes Update in pkg/apiserver/rest/dualwriter_mode3.go (patch lines 229-244). The background goroutine now calls d.Legacy.Update with the caller's raw objInfo, where it used to wrap the object unified storage returned in an updateWrapper. As a result, legacy re-runs objInfo.UpdatedObject against its own old object after Update has returned, and the result can differ from what unified storage stored. Mode2 still uses the wrapper (dualwriter_mode2.go:298).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.19574289999999997
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Mode3 Create passes the caller's input obj, rather than the created object returned by unified storage, to the async legacy Create. This drops server-assigned fields and shares the non-deep-copied obj with the request path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The async goroutine at pkg/apiserver/rest/dualwriter_mode3.go:55 calls d.Legacy.Create(ctx, obj, ...) with the caller's obj instead of `created` from Storage.Create at line 42. No DeepCopy is made, so the goroutine keeps using obj after the request returns, while Mode1 and Mode2 pass the created object or a copy (dualwriter_mode1.go:62, dualwriter_mode2.go:58).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.20190199999999997
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Mode3 Delete returns early on any Storage.Delete error, including NotFound, and skips the legacy delete that previously still ran. Objects that exist only in legacy are therefore not deleted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new Mode3 Delete, any error from Storage.Delete, NotFound included, causes an immediate `return res, async, err` (change.patch:177-181), so the legacy delete goroutine (change.patch:185-191) never runs. The old code ignored NotFound and still called Legacy.Delete (change.patch:154-162), so objects that exist only in legacy are no longer deleted.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0584621
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The function ends with 'return created, err', but err is always nil at that point because it was already checked and returned earlier.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In DualWriterMode3.Create, the `if err != nil { ...; return created, err }` at pkg/apiserver/rest/dualwriter_mode3.go:46 returns early, so the final `return created, err` at line 59 always returns a nil err. The goroutine uses its own `errObjectSt` and never sets the outer err. The patch replaced the old explicit `return created, nil` with this.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0877293
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In TestMode3_Create, the failing case only stubs Legacy.Create and not Storage.Create. Mode3 calls Storage.Create first, so the intended unified-store-failure path is not exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The failing case does register only one stub, and it is in setupLegacyFn (dualwriter_mode3_test.go:403-405). But legacyStoreMock and storageMock share the same mock.Mock `m`, and both call m.Called under the method name \"Create\" (storage_mocks_test.go:33,97). So Storage.Create, which runs first (dualwriter_mode3.go:101), matches that stub and returns the error, and the unified-store failure path does run.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.19665559999999999
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "doPlaylistTests validates legacy API results immediately after K8s writes. In mode 3, legacy writes are fire-and-forget, so these assertions race with the async writes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Every mode-3 test case enables FlagKubernetesPlaylists (playlist_test.go:733-734, 755-756, 781). With that flag on, pkg/api/playlist.go:30-38 sends the legacy /api/playlists routes through the k8s client, which in mode 3 reads from Storage (dualwriter_mode3.go Get/List). So the legacy-API checks in doPlaylistTests (playlist_test.go:523-535) never read the legacy store that the background goroutines write to, and there is no race.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.24127700000000002
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Legacy write failures in the async goroutines are not logged; only an is_error histogram label is recorded.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The async legacy goroutines in dualwriter_mode3.go (Create, Delete, Update, DeleteCollection) keep the error only as `err != nil`, pass that bool to recordLegacyDuration/recordStorageDuration (metrics.go:54-62, which only set the is_error histogram label), and never log the error. The old code logged legacy failures with log.Error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1882036
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SetDualWritingMode only handles 1<->2 transitions and falls back to Mode1 when Mode3 is requested. As a result, the 'mode 3' playlist integration subtests and production config '=3' actually run mode 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/apiserver/rest/dualwriter.go:188-222: with an empty KV store, SetDualWritingMode sets currentMode to Mode1 and only switches between 1 and 2 (lines 199 and 209, with a TODO for the other cases at line 220), so a desired Mode3 returns Mode1. builder/helper.go:173-184 then calls NewDualWriter(Mode1), which means the new 'mode 3' playlist subtests (playlist_test.go:128-141, 188-205) and a production setting of 3 (config.go:60) actually run mode 1.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2611735
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TestMode3_Get creates a local prometheus registry that shadows the package-level p, which is the same line the patch removes from dualwriter_mode1_test.go. It is the only use of the prometheus import.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In TestMode3_Get, pkg/apiserver/rest/dualwriter_mode3_test.go:119 declares `p := prometheus.NewRegistry()`, which shadows the package-level `var p = prometheus.NewRegistry()` at dualwriter_mode1_test.go:27. This is the same line the patch removes from TestMode1_Get, and it is the only place mode3_test.go uses its prometheus import (line 8).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.18731499999999998
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

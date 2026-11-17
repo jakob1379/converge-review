@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Only `tempfile.size > 0` is redundant: with a size of 0 the loop condition at app/controllers/uploads_controller.rb:66 is false anyway. The `tempfile &&` check is not covered by anything. The loop condition calls `tempfile.size` with no nil check, and nothing later handles a nil tempfile, because line 72 calls `tempfile.size` directly. So the claim's reason is wrong.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.069098
+}

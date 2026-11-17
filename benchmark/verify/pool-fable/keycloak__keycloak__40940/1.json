@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new loop at tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:125-133 wraps the call in try-with-resources, checks the status family and calls fail(), while the imported ApiUtil.getCreatedId (tests/utils/src/main/java/org/keycloak/tests/utils/admin/ApiUtil.java:53-59) already asserts status 201 and closes the response. The only difference is that getCreatedId does not close the response when its assertion fails, so the wrapper is redundant except on that failure path.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2281444
+}

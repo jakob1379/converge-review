@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/slots.ts:212-213 call dayjs(override.start.toString()) on a value typed as Date (packages/types/schedule.d.ts TimeRange.start), so dayjs falls back to parsing the non-ISO Date#toString string, which has no milliseconds, while lines 219-223 of the same block already use dayjs(override.start) directly. The practical effect is negligible, since the result is only used for utcOffset() and the ECMAScript spec requires Date.parse to accept toString output.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.24300159999999998
+}

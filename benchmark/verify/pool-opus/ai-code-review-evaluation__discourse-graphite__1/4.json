@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch hardcodes `var maxSizeKB = 10 * 1024; // 10 MB` in the 413 case of app/assets/javascripts/discourse/lib/utilities.js (~line 246), so the error message always shows 10240 KB. A 413 comes from the web server, and its limit is set by `client_max_body_size`: 10m in config/nginx.sample.conf:61 and 2m in docs/INSTALL-ubuntu.md:390, so the hardcoded value is wrong on some deployments.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0815292
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds this handler as a new file, and it is a plain Next.js handler with no try/catch or error wrapper. `appCredentialWebhookRequestBodySchema.parse(req.body)` at app-credential.ts:31 and `JSON.parse(symmetricDecrypt(...))` at lines 57-59 throw on bad input, so the error escapes and Next.js returns a 500 instead of a 4xx.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0431481
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:154 guards `englishMatcher.group()` behind `englishMatcher.find() &&`, so when the translation has more anchors than the English text the short-circuit falls to the else branch at line 157, which records \"Didn't find anchor tag ...\" and breaks. That is the correct validation outcome, and no group is consumed without a successful find.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.5050557
+}

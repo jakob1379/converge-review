@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts:117-125 the start exclusion is `slotEndTime.isBefore || isSame(date.start)` but the end exclusion is only `slotStartTime.isAfter(date.end)`, so a slot starting exactly at the override end is not rejected and line 133-135 returns true. Such a slot reaches this check for fixed hosts at slots.ts:485-493, where slots built from other hosts' availability are tested against each host's own override.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3269584
+}

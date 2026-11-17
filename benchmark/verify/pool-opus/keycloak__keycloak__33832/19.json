@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In ASN1Decoder.java:94 `readTagNumber` computes `tag & 0x1f`, and `readSequence` (lines 51-52) and `readInteger` (lines 67-68) compare only that number with SEQUENCE/INTEGER, so the class and constructed bits are never checked (for example, a context-specific tag 0xA2 would pass as INTEGER). The leniency only matters for malformed DER, and the decoder here only parses ECDSA signatures that the local signer produced (the patch's DER-to-concatenated conversion), so the practical effect is small.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0581028
+}

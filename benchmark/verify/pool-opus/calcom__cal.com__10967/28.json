@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "EventManager.ts:370 passes destination.externalId to createEvent, but CalendarManager.ts:221-268 never uses it and only echoes it back in the result (line 267). It passes credential.id to calendar.createEvent (line 236), and Google's CalendarService.ts:147-148 searches destinationCalendar by credentialId to find the externalId again, so the two values can disagree (e.g. Google falls back to 'primary' while the stored reference keeps destination.externalId).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2332381
+}

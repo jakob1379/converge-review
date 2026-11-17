@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The comment at app/assets/stylesheets/common/base/discourse.scss:72-73 still says the topic-list cell default is `scale-color($primary, $lightness: 50%)`. The patch changed that default to `dark-light-choose(scale-color($primary, $lightness: 50%), scale-color($secondary, $lightness: 50%))` (desktop/topic-list.scss, patch lines 538-562) and changed the coldmap rules just below it (discourse.scss:76-82). The comment therefore now only describes the light-theme value.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1114
+}

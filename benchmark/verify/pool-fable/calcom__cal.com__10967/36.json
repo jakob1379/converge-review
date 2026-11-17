@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:380 calls `createEvent(c, event)` with no third argument, so `externalId` is undefined in the result (packages/core/CalendarManager.ts:267) and `externalCalendarId: isCalendarType ? result.externalId : undefined` at EventManager.ts:169 stores undefined. Before the patch this came from `evt.destinationCalendar?.externalId`, which was populated on this no-credentialId path.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5159421
+}

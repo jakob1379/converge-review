@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/models/blocked_email_spec.rb:12-16 asserts `BlockedEmail.create(email: email).last_match_at` is nil, but no model code sets that field on create (`set_defaults` at app/models/blocked_email.rb:88-90 only sets `action_type`). The nil comes solely from the nullable, default-less column in db/migrate/20130724201552_create_blocked_emails.rb:7, so the example only documents intent and guards against a future regression.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09349310000000001
+}

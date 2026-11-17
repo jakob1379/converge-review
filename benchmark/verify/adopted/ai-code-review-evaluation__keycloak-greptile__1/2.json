@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AuthenticatorUtils.java:126-128 repeats the getAuthNote(USER_SET_BEFORE_USERNAME_PASSWORD_AUTH) and Boolean.parseBoolean logic from AbstractUsernameFormAuthenticator.isUserAlreadySetBeforeUsernamePasswordAuth (:257-260), and also sets the USERNAME_HIDDEN/REGISTRATION_DISABLED pair already set in UsernamePasswordForm.java:100-101. The patch makes the constant public (AbstractUsernameFormAuthenticator.java:58) so the util class can static-import it from the browser package (AuthenticatorUtils.java:35); none of the other util-package files import browser classes.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22980550000000005
+}

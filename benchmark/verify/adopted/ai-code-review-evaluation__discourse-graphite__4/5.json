@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/topic_retriever.rb:40-41 calls Jobs::PollFeed.new.execute({}) inline whenever feed_polling_enabled? is on, and that fetches and imports every feed item (app/jobs/scheduled/poll_feed.rb:270-283). The throttle at topic_retriever.rb:26 is keyed per URL, so each anonymous embed/best request with a new embed_url on the allowed host enqueues RetrieveTopic (embed_controller.rb:191) and triggers a full feed poll. That poll is synchronous inside the background job, not inside the web request.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16241950000000002
+}

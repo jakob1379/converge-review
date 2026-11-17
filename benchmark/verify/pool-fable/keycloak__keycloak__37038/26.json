@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.java:141-152 falls back to the typed all-groups resource, and DefaultPolicyEvaluator.java:73-74 then loads every permission with defaultResourceType 'Groups' (PolicyEntity.java:64 has no resource filter), whose scopes DecisionPermissionCollector.java:80-91 grants without checking the resource. The leak needs at least one all-groups permission to exist (guard at GroupPermissionsV2.java:147) that does not itself deny VIEW; traced by reading only, not executed.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 1.9645649
+}

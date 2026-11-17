@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The shared `exchangeClientToOIDCClient` at AbstractTokenExchangeProvider.java:399-410 builds the `clientSessionCtx` and calls `generateAccessToken()` without ever setting `Constants.GRANT_TYPE`, so DefaultTokenContextEncoderProvider.java:57-60 falls back to `UNKNOWN = \"na\"`. Only the override at StandardTokenExchangeProvider.java:237 sets it; V1 (V1TokenExchangeProvider.java:154), impersonation (SubjectImpersonationTokenExchangeProvider.java:151) and federated (AbstractTokenExchangeProvider.java:535) all go through the base method.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.7991341999999999
+}

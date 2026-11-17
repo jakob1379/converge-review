@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/server/repository/user.ts:899-900 adds `updatedAt` and `googleChannelId` to the `selectedCalendars` select in `findUnlockedUserForSession`, which runs on every session lookup (packages/trpc/server/middlewares/sessionMiddleware.ts:29). Nothing reads either field off the session user's selected calendars: the only other mention is the widened type at packages/lib/getConnectedDestinationCalendars.ts:21-28, and the cache status shown in the UI comes from `CalendarCache.updatedAt` (packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts:27-36).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.7516777
+}

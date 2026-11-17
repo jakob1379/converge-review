@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `owner = ActorField(...)` to BaseDetectorTypeValidator (src/sentry/workflow_engine/endpoints/validators/base/detector.py:37) and persists it only in the base create() (lines 120-136). ErrorDetectorValidator.create() (src/sentry/workflow_engine/endpoints/validators/error_detector.py:45-53) overrides it without calling super and passes no owner_user_id/owner_team_id to Detector.objects.create, so a supplied owner is accepted and silently dropped.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6090233
+}

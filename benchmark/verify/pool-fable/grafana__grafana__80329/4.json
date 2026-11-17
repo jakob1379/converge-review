@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/annotations/annotationsimpl/xorm_store.go:534, 554 and 576 the log calls pass \"err\", err immediately after `if err != nil { return 0, err }` (lines 531-533, 551-553, 573-575), so err is always nil there. The follow-up logs at 537, 557 and 579 log `y` from deleteByIDs, which can be non-nil and are not affected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.21175549999999999
+}

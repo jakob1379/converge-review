@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/email/notification.html.erb:10 has `<h4 class='.previous-discussion'>`, so the Nokogiri selector `.previous-discussion` in lib/email/styles.rb:75 (which matches class token `previous-discussion`) never matches and the heading's inline style is not applied. The dot was already present in the pre-patch line (change.patch:352); the patch only re-indented it (change.patch:360).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2021487
+}

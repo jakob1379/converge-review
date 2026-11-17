@@ -1,0 +1,758 @@
+{
+ "findings": [
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 119,
+   "severity": "Critical",
+   "claim": "A Google Meet booking with no destination calendar throws a TypeError instead of falling back to Cal Video.",
+   "evidence": "const [mainHostDestinationCalendar] = evt.destinationCalendar ?? [] gives undefined when the value is null (handleNewBooking.ts:1063-1067) or [] (confirm and payment webhooks). The next line reads .integration without ?. and the base used evt.destinationCalendar?.integration. Three seats ran a node one-liner that mirrors the logic and got 'TypeError: Cannot read properties of undefined'. It is not a project test. ponytail raised the same issue outside its remit.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with 4 seats. It needs a red test before the fix: EventManager.create with location MeetLocationType and destinationCalendar null. The node repro only mirrors the expression.",
+   "list": "main"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/organizations/create.handler.ts",
+   "line": 151,
+   "severity": "Critical",
+   "claim": "The organization slug condition is inverted. The slug is now set when billing is enabled and omitted when billing is disabled.",
+   "evidence": "The base was ...(!IS_TEAM_BILLING_ENABLED && { slug }) and the head is ...(IS_TEAM_BILLING_ENABLED ? { slug } : {}). A node repro over B=true/false shows opposite results. Line 153 (requestedSlug) is unchanged, so billing deployments now get both slug and requestedSlug before payment. Self-hosted deployments get neither, and createTeams.handler.ts:66-67 throws NoOrganizationSlugError. The change is unrelated to #7754 and came from commit db92960dc4. ponytail raised it outside its remit and also listed it as churn.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with 4 seats. It needs a red test that runs the create handler with IS_TEAM_BILLING_ENABLED=false and asserts the slug is set. The node repro only mirrors the spread.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 1078,
+   "severity": "Important",
+   "claim": "The collective fan-out does nothing when neither the event type nor the organizer has a destination calendar, so the other hosts' calendars are silently dropped.",
+   "evidence": "evt.destinationCalendar is null in that case (lines 1063-1067), so evt.destinationCalendar?.push(...teamDestinationCalendars) is a no-op. createAllCalendarEvents then takes the organizer-only legacy branch (EventManager.ts:384+), which is the original #7754 symptom. ponytail's finding 5 states the same drop. Reasoned only.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with 4 seats. It needs a red test: a COLLECTIVE booking where the organizer has no destination calendar and a second host has one, asserting both destinations reach EventManager. Unverified until that test exists.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 993,
+   "severity": "Important",
+   "claim": "Collective hosts without a destinationCalendar row get no event, even when they have calendar credentials.",
+   "evidence": "teamDestinationCalendars is pushed only when user.destinationCalendar is set (line 992/993). Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats, so it is not fixed. ponytail: settle with a COLLECTIVE booking test where host 2 has credentials but no destination calendar row.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 170,
+   "severity": "Important",
+   "claim": "Video conferencing references (Zoom, Daily and others) are stored without credentialId, so cancelling a booking no longer deletes the meeting.",
+   "evidence": "The line changed from isCalendarType ? evt.destinationCalendar?.credentialId : result.credentialId to isCalendarType ? result.credentialId : undefined. videoClient.ts:78 does set credentialId on the result. handleCancelBooking.ts:486-503 deletes the video meeting only when bookingVideoReference.credentialId is set. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with 3 seats. It needs a red test: create a booking with a video location and assert the stored video reference has the credentialId.",
+   "list": "main"
+  },
+  {
+   "path": "packages/app-store/googlecalendar/lib/CalendarService.ts",
+   "line": 256,
+   "severity": "Important",
+   "claim": "The updateEvent calendar-id fallback is dead code, so references without externalCalendarId update with calendarId undefined.",
+   "evidence": "The expression is externalCalendarId ? externalCalendarId : event.destinationCalendar?.find(cal => cal.externalId === externalCalendarId)?.externalId. The find runs only when externalCalendarId is falsy, so it cannot match and returns undefined. The base fell back to event.destinationCalendar.externalId, and events.update (line 261) fails with an undefined calendarId. This affects older bookings plus the references from the no-credentialId branch and editLocation. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with 4 seats. It needs a red unit test: updateEvent with externalCalendarId null and a non-primary destination calendar, asserting the calendarId passed to events.update. ponytail suggests externalCalendarId || mainHostDestinationCalendar?.externalId.",
+   "list": "main"
+  },
+  {
+   "path": "packages/app-store/googlecalendar/lib/CalendarService.ts",
+   "line": 317,
+   "severity": "Important",
+   "claim": "The deleteEvent calendar-id fallback is dead code, so references without externalCalendarId delete from \"primary\" and silently leave events in the selected calendar.",
+   "evidence": "The same dead find expression appears here. Delete (line 322) falls back to \"primary\", and a 404 is swallowed (err.code === 404 resolves). The base used destinationCalendar.externalId. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with 4 seats. It needs a red unit test: deleteEvent with externalCalendarId null and a non-primary destination, asserting the calendarId passed to events.delete.",
+   "list": "main"
+  },
+  {
+   "path": "packages/app-store/googlecalendar/lib/CalendarService.ts",
+   "line": 147,
+   "severity": "Important",
+   "claim": "Destination calendars with a null credentialId are ignored when creating an event, so the event goes to \"primary\" instead of the selected calendar.",
+   "evidence": "selectedCalendar is matched only by cal.credentialId === credentialId. DestinationCalendar.credentialId is Int? (schema.prisma:159). The no-credentialId branch in EventManager.ts:375-381 calls createEvent without an externalId, and the base used destinationCalendar.externalId. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats, so it is not fixed. ponytail: settle with a createEvent test using a destination row that has credentialId null and a non-primary externalId.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": 449,
+   "severity": "Important",
+   "claim": "Cancelling a recurring collective booking never deletes the other hosts' copies.",
+   "evidence": "The recurring branch deletes with the organizer's credentials only (bookingToDelete.user.credentials, line 449) and only the first _calendar reference of each occurrence (.find, line 454). Non-recurring cancel does handle all references. open-code-review cites the same branch at 620-659 (diff numbering). Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with 3 seats. It needs a red test: cancel a recurring COLLECTIVE booking with two host references and assert a delete per host reference using that host's credential.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": 443,
+   "severity": "Minor",
+   "claim": "The recurring-series delete sweep sits inside the per-reference loop, so it repeats the same deletes N times.",
+   "evidence": "The block in for (const reference of bookingCalendarReference) does not depend on reference. With N references the same events get N delete calls, and the repeats hit already-deleted events whose errors are caught and logged. This is split from the host-coverage defect above. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted with 4 seats. The impact is redundant API calls and logged errors, not a wrong outcome, so I normalised it to Minor. Fix it with the line 449 fix by moving the block out of the loop.",
+   "list": "main"
+  },
+  {
+   "path": "packages/app-store/office365calendar/lib/CalendarService.ts",
+   "line": 73,
+   "severity": "Important",
+   "claim": "Office365 always targets the main host's destination calendar, even when called with another host's credential, so the member insert fails.",
+   "evidence": "The service uses destinationCalendar[0]. Host 2 posts to /me/calendars/<host1 externalId>/events. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats, so it is not fixed. ponytail: settle with a two-host Office365 collective booking integration test.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/CalendarService.ts",
+   "line": 156,
+   "severity": "Important",
+   "claim": "CalDAV-style calendars filter on the main host's calendar URL, so no event is created for other hosts while a success reference is still stored.",
+   "evidence": "The service filters c.externalId === destinationCalendar[0].externalId, which matches none of host 2's calendars. Promise.all([]) then returns a success with a uid. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats, so it is not fixed. ponytail: settle with a BaseCalendarService createEvent test using host 2's calendars.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/app-store/larkcalendar/lib/CalendarService.ts",
+   "line": 128,
+   "severity": "Important",
+   "claim": "Lark uses the main host's calendar id with a team member's token.",
+   "evidence": "destinationCalendar[0] is used at 128/164/192/237. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats, so it is not fixed. ponytail: settle with a two-host Lark booking against the Lark API.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 208,
+   "severity": "Important",
+   "claim": "updateLocation stores calendar references with undefined externalCalendarId and credentialId.",
+   "evidence": "The head uses result.externalId and result.credentialId, but CalendarManager.updateEvent (313-322) sets neither. The base used evt.destinationCalendar. editLocation.handler.ts:117-119 appends these references, and the cancel switch from find to filter then sends them down the legacy delete-all path with uid \"\". Reasoned.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat, so it is not fixed. ponytail: settle with an editLocation test asserting the stored reference ids.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 592,
+   "severity": "Minor",
+   "claim": "updateAllCalendarEvents failures are no longer logged, and the message variable is now dead.",
+   "evidence": "console.error(message) was removed from the catch block, and message is still built.",
+   "seats": [
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats. ponytail: restore the log.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 592,
+   "severity": "Minor",
+   "claim": "If an update throws before calendarReference is assigned, the method returns [] instead of a failure result.",
+   "evidence": "From the catch-block control flow. Reasoned.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: settle with an update test that throws early.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 375,
+   "severity": "Minor",
+   "claim": "Each destination without a credentialId fans out to all of the organizer's credentials of that integration, which creates duplicate events.",
+   "evidence": "This happens inside the per-destination loop (open-code-review cites 357-363, superpowers 375-382). Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats. ponytail: settle with a createAllCalendarEvents test using two credential-less destinations.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 375,
+   "severity": "Minor",
+   "claim": "Results from the no-credentialId branch carry no externalId, so their references store a null externalCalendarId.",
+   "evidence": "createEvent is called without a third argument. This feeds the dead-fallback findings at Google CalendarService:256/317. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats. ponytail: assert externalCalendarId on the stored references.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 543,
+   "severity": "Minor",
+   "claim": "The per-reference update fan-out duplicates updates.",
+   "evidence": "This is the same fan-out pattern as create, at lines 543-548. Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: settle with an update test that counts calls.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 511,
+   "severity": "Minor",
+   "claim": "In updateAllCalendarEvents the credential can still be undefined and is passed straight to updateEvent.",
+   "evidence": "This is in the credential-from-DB fallback at lines 511-541. Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: settle with an update whose credential row is missing.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 341,
+   "severity": "Minor",
+   "claim": "The credential-from-DB fallback is copy-pasted three times, and the copies have already diverged.",
+   "evidence": "EventManager.ts:341-366 and :512-539 are identical. handleCancelBooking.ts:431-441 is a variant without the app include or appName.",
+   "seats": [
+    "mattpocock",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Main list with 3 seats. It is duplication, not a wrong result, so I normalised it to Minor. ponytail: extract getCredentialById next to calendarCredentials after the correctness fixes land, so the fix diff stays small.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 724,
+   "severity": "Minor",
+   "claim": "The loadUsers rewrite drops organization { slug } from the dynamic-user select, although IsFixedAwareUser still declares it.",
+   "evidence": "See lines 724-763 and the type at line 355. No seat confirmed a downstream reader breaks.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list with 4 seats. The rewrite is unrelated to #7754, so revert to the base select.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 724,
+   "severity": "Minor",
+   "claim": "An empty dynamicUserList now throws a plain Error that surfaces as a generic 500 'Unable to load users' instead of reaching the 404 path.",
+   "evidence": "The base returned [] and reached the 404 path. The new throw is not an HttpError, so the catch turns it into a 500.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list with 4 seats. Revert the unrelated behaviour change.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 724,
+   "severity": "Minor",
+   "claim": "The new try/catch in loadUsers rewraps every error: Prisma errors become 400s with the raw Prisma message, and other errors become an unlogged 500.",
+   "evidence": "See the catch block in lines 724-763. open-code-review notes the Prisma message leaks DB details to the client.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list with 4 seats. Revert to the base error handling.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 724,
+   "severity": "Minor",
+   "claim": "Array.isArray(hosts) after hosts = eventType.hosts || [] can never be false.",
+   "evidence": "The check follows const hosts = eventType.hosts || [].",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: it goes away with the loadUsers revert.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/app-store/googlecalendar/lib/CalendarService.ts",
+   "line": 122,
+   "severity": "Minor",
+   "claim": "Every host's Google event names the main host as organizer.",
+   "evidence": "The organizer email always comes from destinationCalendar[0] (lines 114-124 and 222-230), even when the event is inserted into another host's calendar. superpowers raised the same point from EventManager.ts:337-385. open-code-review notes Google mostly ignores this field on insert. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Main list with 3 seats. It is Minor and the user impact is unverified. ponytail: settle by inserting into a second host's calendar and inspecting the organizer Google stores.",
+   "list": "main"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 337,
+   "severity": "Important",
+   "claim": "Per-host inserts reuse a constant conferenceData requestId, so each host may get its own Meet link while the booker receives only results[0]'s link.",
+   "evidence": "The requestId is uuidv5(location) (EventManager.ts:31), and the booker gets results[0] (handleNewBooking.ts:2186). superpowers rates this medium confidence. Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: settle with a live two-host Google Meet booking.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 337,
+   "severity": "Important",
+   "claim": "Team members who are already Google attendees on host 1's event may see the booking twice: the invitation plus the explicit insert.",
+   "evidence": "Members are added as attendees and also get their own insert. Google's exact behaviour is unknown. Reasoned, medium confidence.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: settle against live Google Calendar.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/types/Calendar.d.ts",
+   "line": 171,
+   "severity": "Important",
+   "claim": "The public webhook payload's destinationCalendar changes from an object to an array, and nothing documents the breaking change.",
+   "evidence": "See the e2e expectation at apps/web/playwright/webhook.e2e.ts:249. There is no changeset or PR-body note, and the PR template asks for breaking changes to be flagged.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: document it, or add a changeset.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 1063,
+   "severity": "Minor",
+   "claim": "The webhook destinationCalendar is inconsistent across events: BOOKING_CREATED sends null while BOOKING_REJECTED sends [].",
+   "evidence": "handleNewBooking uses ': null' (e2e line 119), and the other callers use [].",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: settle by running the webhook e2e for both triggers.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 1078,
+   "severity": "Minor",
+   "claim": "The webhook payload now includes every collective member's destination calendar row (credentialId, externalId, userId).",
+   "evidence": "The pushed team calendars flow into the payload.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: inspect a collective BOOKING_CREATED payload.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 1074,
+   "severity": "Minor",
+   "claim": "The schedulingType field added to CalendarEvent leaks into webhook payloads.",
+   "evidence": "evt is serialized into the payload. Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: inspect the webhook payload.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/types/Calendar.d.ts",
+   "line": 182,
+   "severity": "Minor",
+   "claim": "The schedulingType field added to CalendarEvent is never read by code.",
+   "evidence": "A grep for property reads finds only Booker EventMeta.tsx:67, which is not a CalendarEvent. Serialization into webhooks is a separate claim from superpowers.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: delete the field, the assignment and the import if no consumer needs it in the payload.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 991,
+   "severity": "Minor",
+   "claim": "Dynamic group bookings are not covered, and the TODO that tracked them was removed.",
+   "evidence": "Only eventType.schedulingType === \"COLLECTIVE\" is handled.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: track as follow-up scope.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/bookings/confirm.handler.ts",
+   "line": 175,
+   "severity": "Important",
+   "claim": "Confirm and payment flows (confirm.handler, the payment webhooks) build evt with the organizer's calendar only, so collective bookings that needed confirmation or payment still reach only the organizer.",
+   "evidence": "These sites wrap a single calendar in an array. mattpocock counted this under its finding 2. Unverified.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: settle with a confirm test on a two-host collective booking.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 991,
+   "severity": "Minor",
+   "claim": "teamDestinationCalendars is filled through a side effect inside an async .map callback, so host order is implicit.",
+   "evidence": "It works only because the push runs before the first await.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats. ponytail: build the array in a single expression.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 1077,
+   "severity": "Minor",
+   "claim": "The isTeamEventType && COLLECTIVE guard is redundant, because COLLECTIVE implies a team event.",
+   "evidence": "The same guard appears at lines 987-994 and 1077-1079.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 998,
+   "severity": "Minor",
+   "claim": "Team members get hardcoded firstName \"\" and lastName \"\", which changes the team-member shape sent to emails and webhooks. The TeamMember type has neither field.",
+   "evidence": "See lines 998-999 and the TeamMember type at Calendar.d.ts:41.",
+   "seats": [
+    "mattpocock",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list with 3 seats. Revert the unrelated change.",
+   "list": "main"
+  },
+  {
+   "path": "packages/core/CalendarManager.ts",
+   "line": 230,
+   "severity": "Minor",
+   "claim": "The user-visible calendar note text changed from 'organiser' to 'organizer', which is unrelated to the PR.",
+   "evidence": "The string appears in calendar event notes.",
+   "seats": [
+    "mattpocock",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Main list with 3 seats. It is a harmless spelling change and no seat showed anything that depends on the old text. ponytail: leave as is, or split it into its own PR.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 688,
+   "severity": "Minor",
+   "claim": "The isTeamEventType expression was rewritten from the typed SchedulingType comparison to string literals with !!, with no gain.",
+   "evidence": "See lines 688-689.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 370,
+   "severity": "Minor",
+   "claim": "The rename from orginal to original is unrelated churn.",
+   "evidence": "See lines 370 and 383.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "(whole patch)",
+   "line": null,
+   "severity": "Important",
+   "claim": "No test covers create, reschedule or cancel for collective events with several destination calendars.",
+   "evidence": "The only test change is webhook.e2e.ts:249 (null to []). The PR template asks for tests. superpowers notes the Meet crash, video credentialId and Google fallback findings would each have been caught by an integration test.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 2 seats. The red tests required for the main-list fixes partly cover it.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/types/Calendar.d.ts",
+   "line": 221,
+   "severity": "Minor",
+   "claim": "The production build is unverified after Calendar.createEvent gained a second credentialId parameter.",
+   "evidence": "mattpocock found the only caller (CalendarManager.ts:236) passes the new argument, and implementations with one parameter still satisfy the type. superpowers concurs that fewer parameters stays type-compatible.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "reject",
+   "reason": "The seat reports themselves found no type break, so no defect stands. The fact that no build was run is recorded under coverage.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/app-store/googlecalendar/lib/CalendarService.ts",
+   "line": 145,
+   "severity": "Minor",
+   "claim": "The new comment adds noise and is followed by a stray blank line.",
+   "evidence": "The comment reads '// Find in calEventRaw.destinationCalendar the one with the same credentialId', followed by a blank line.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 117,
+   "severity": "Minor",
+   "claim": "The comment '@NOTE: destinationCalendar it's an array now' is ungrammatical, and the code under it does not handle the empty case.",
+   "evidence": "See the comment at line 117 and the crash at line 119.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/CalendarManager.ts",
+   "line": 236,
+   "severity": "Minor",
+   "claim": "The target calendar is passed twice. externalId is echoed back unused, and Google re-searches the array by credentialId to find it. Only Google reads the new credentialId argument.",
+   "evidence": "See CalendarManager.ts:221/236/267, Calendar.d.ts:221 and Google CalendarService.ts:87,145-150.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleNewBooking.ts",
+   "line": 1063,
+   "severity": "Minor",
+   "claim": "Nested ternaries breach the open-code-review rule at 7 sites.",
+   "evidence": "The sites are handleNewBooking 1063-1067, handleCancelBooking 251-255 and 528-532, paypal-webhook 152-156, deleteCredential 290-294, confirm 175-179 and editLocation 85-89.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": 251,
+   "severity": "Minor",
+   "claim": "The 'booking calendar, else user calendar, wrapped in an array' logic is written two different ways across 10 sites.",
+   "evidence": "7 sites use the nested-ternary form. bookingReminder.ts:107,130 and webhook.ts:101,119,207,229 use selected ? [selected] : [].",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/bookings/requestReschedule.handler.ts",
+   "line": 240,
+   "severity": "Minor",
+   "claim": "The old x || x self-duplication is kept, now written as a ternary.",
+   "evidence": "See lines 240-242.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 554,
+   "severity": "Minor",
+   "claim": "When a reschedule merges two bookings, only one old calendar event is deleted, and the other hosts' old copies remain.",
+   "evidence": "The line still uses .find for the old calendar event.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat. ponytail: settle with a collective reschedule-merge test.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/EventManager.ts",
+   "line": 209,
+   "severity": "Minor",
+   "claim": "result.credentialId ?? undefined is a no-op.",
+   "evidence": "See line 209.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/app-store/googlecalendar/lib/CalendarService.ts",
+   "line": 100,
+   "severity": "Minor",
+   "claim": "x && x.length > 0 ? x : [] does the same job as the ?? [] used elsewhere in the patch.",
+   "evidence": "See lines 100-103.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/builders/CalendarEvent/builder.ts",
+   "line": 1,
+   "severity": "Minor",
+   "claim": "An unrelated import-type split widens the diff.",
+   "evidence": "See lines 1-2.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/CalendarManager.ts",
+   "line": 234,
+   "severity": "Minor",
+   "claim": "An indentation-only rewrap widens the diff.",
+   "evidence": "See lines 234-253.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix with 1 seat.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate not run (benchmark mode): no build, typecheck, lint, unit or e2e tests were executed, so the review is unanchored. The only executed evidence is node one-liners that mirror the expressions at EventManager.ts:119 and create.handler.ts:151; they are not project tests. No spec: intent was inferred from issue #7754, the branch name and commit messages. Standards sources: CONTRIBUTING.md, .github/PULL_REQUEST_TEMPLATE.md and packages/config/eslint-preset.js (lint left to tooling). There is no AGENTS.md, CLAUDE.md or .cursorrules, and open-code-review applied only its generic TS/JS checklist. Every seat reports reviewing all 22 files, with these depth limits. mattpocock reviewed only the diff for builder.ts, larkcalendar, office365calendar and packages/lib/CalendarService.ts, and checked bookingReminder, the payment webhook and paypal-webhook, and the trpc confirm, editLocation, requestReschedule and deleteCredential handlers only for array-wrapping. superpowers read builder.ts, class.ts, Calendar.d.ts and EventManager.d.ts as type changes only, without checking every Calendar implementer, and reviewed bookingReminder, webhook, paypal-webhook, deleteCredential, confirm, editLocation, requestReschedule and BrokenIntegrationEmail.tsx as diff-only. ponytail made no findings on webhook.e2e.ts or builder.ts beyond churn. Rejection verifiers could not be dispatched, so no Critical or Important finding was rejected. No red tests were written and steps 5 and later were not run."
+}

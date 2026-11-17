@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/expr/reader.go:195 sets `enabled := !h.features.IsEnabledGlobally(featuremgmt.FlagSqlExpressions)`, so `enabled` is true when the flag is off. The variable name means the opposite of what it holds. Both branches (lines 196-199) return false, so the function always returns false whatever the flag is set to.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.036545
+}

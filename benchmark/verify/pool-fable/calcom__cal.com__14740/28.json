@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/ui/form/MultiEmail.tsx:26 does use `<li key={index}>` and line 41 splices from the middle, but each EmailField is fully controlled (`value={field}`, line 29) and InputField keeps internal state only for type \"search\" (packages/ui/components/form/inputs/TextField.tsx:142-148), so displayed values stay correct and the practical effect is at most focus/tooltip state shifting to the neighbouring row.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.193741
+}

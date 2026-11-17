@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`getIsProvisioned` at `public/app/features/alerting/unified/rule-list/components/RuleActionsButtons.V2.tsx:118-128` is 11 lines and reduces to a single ternary. The `logWarning`/`return undefined` fallback at `RuleActionsButtons.V2.tsx:146-150` cannot be hit by the four current callers: `StateView.tsx:131-132`, `DataSourceRuleLoader.tsx:59-60` and `DataSourceGroupLoader.tsx:196` always pass a defined ruler rule, and `GrafanaRuleListItem.tsx:47` passes a `GrafanaPromRuleDTO`, which satisfies the Grafana rule guard.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.8571454
+}

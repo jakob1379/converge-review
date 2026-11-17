@@ -1,0 +1,274 @@
+{
+ "findings": [
+  {
+   "path": "app/models/blocked_email.rb",
+   "line": 12,
+   "severity": "Important",
+   "claim": "Letter case bypasses the email block. BlockedEmail.where(email: email) is an exact, case-sensitive match on Postgres, and neither the stored value nor the lookup is normalised. If bad@spammers.org is blocked, Bad@spammers.org or bad@SPAMMERS.org passes.",
+   "evidence": "User.new_from_params (app/models/user.rb:87) assigns params[:email] raw, with no downcase, strip or before_validation hook. lib/email.rb Email.downcase exists but is unused here, and it lowercases only the domain. The domain whitelist/blacklist in the same validator is case-insensitive (Regexp.new(..., true)), so the two checks disagree. blocked_email_spec.rb uses only lowercase emails. Proposed red test: Fabricate(:blocked_email, email: 'bad@spammers.org'); BlockedEmail.should_block?('bad@SPAMMERS.org').should be_true, which returns false on the patched code. A User-level variant is Fabricate.build(:user, email: 'Spam@X.com').should_not be_valid. All seats reasoned this; none executed it.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Three seats agree and each gives a concrete red test against the pinned code. Make it red before fixing (step 5).",
+   "list": "main"
+  },
+  {
+   "path": "app/models/blocked_email.rb",
+   "line": 13,
+   "severity": "Important",
+   "claim": "should_block? increments match_count and last_match_at inside validation, and users#create validates twice (user.valid? and then user.save). A do_nothing match that signs up successfully is counted 2 per attempt, and any other valid? call on a user with a changed email also bumps the counter.",
+   "evidence": "Validation runs from lib/validators/email_validator.rb:13. app/controllers/users_controller.rb calls user.valid? (line 168 per mattpocock and open-code-review, line 166 per superpowers; the line number is unconfirmed) and then user.save (line 172). When validation passes, both increments commit. Proposed red test: a controller spec with Fabricate(:blocked_email, action_type: do_nothing) and xhr :post, :create with that email, expecting match_count to change by 1. It changes by 2. The EmailValidator spec stubs should_block?, so no existing test covers this. ponytail raised it out of scope and framed it as a blocked signup that may count twice when call_discourse_hub? is on. The other seats say valid? always runs and that blocked increments from save are rolled back (see the rollback finding).",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Four seats agree, and the red test is a controller spec that sees committed increments even under transactional fixtures. Make it red before fixing.",
+   "list": "main"
+  },
+  {
+   "path": "app/models/blocked_email.rb",
+   "line": 13,
+   "severity": "Important",
+   "claim": "Blocked-attempt stats are lost on rollback. In Rails 3.2.12, save and save! run validations inside with_transaction_returning_status, which rolls back when validation fails, so the BlockedEmail increment made during a :block match is undone. users#create records a hit only by accident, through the extra valid? call outside the transaction. User.create_for_email (invite redemption, save! inside Invite.transaction) and EmailToken.confirm (User.transaction plus save!, rescuing RecordInvalid) never record blocked attempts.",
+   "evidence": "This rests on Rails 3.2.12 transaction semantics (Gemfile.lock). No seat opened the gem source or ran anything. mattpocock and open-code-review both say the suite's use_transactional_fixtures swallows the nested rollback, so specs cannot show it. superpowers proposed be = Fabricate(:blocked_email, email: 'x@y.com'); User.create_for_email('x@y.com') rescue nil; be.reload.match_count.should == 1, expecting 0. That test probably will not go red under transactional fixtures. The model spec calls should_block? directly, outside any save.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted, conditionally. The red test must run with transactional fixtures off, for example self.use_transactional_fixtures = false for that example with truncation cleanup. If it cannot be made red there, this keeps Important, is marked unverified, and is deferred. The settling check is then exercising create_for_email or EmailToken.confirm against a real non-fixture DB transaction and reading match_count.",
+   "list": "main"
+  },
+  {
+   "path": "app/models/blocked_email.rb",
+   "line": 14,
+   "severity": "Minor",
+   "claim": "The counter update is read-modify-write (record.match_count += 1; record.save), so concurrent signup attempts lose increments. The return value of save is ignored, and save re-runs the uniqueness SELECT on every check.",
+   "evidence": "Lines 14-16. Suggested atomic alternative: BlockedEmail.where(id: record.id).update_all(['match_count = match_count + 1, last_match_at = ?', Time.zone.now]). Reasoned by all seats. ponytail noted it out of scope.",
+   "seats": [
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted as Minor. This is the same code the stats fixes will touch, so an atomic update_all outside validation covers it in the same change.",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/controllers/create_account_controller.js",
+   "line": 274,
+   "severity": "Minor",
+   "claim": "Any server-side email error adds the address to rejectedEmails, including 'has already been taken' and the domain whitelist/blacklist errors. The form then shows the generic user.email.invalid text instead of the server's reason, so a taken address is reported as 'invalid'. The list lasts until a page reload, so an address unblocked in the meantime cannot be retried.",
+   "evidence": "Lines 274-276 push on any result.errors.email, and lines 69-74 render the generic invalid message. Reasoned. superpowers notes that blocking a resubmit is still correct and only the message is wrong.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted as Minor. Three seats agree on a misleading user-facing message.",
+   "list": "main"
+  },
+  {
+   "path": "app/models/user.rb",
+   "line": 47,
+   "severity": "Minor",
+   "claim": "Changing your email to a blocked address fails silently. change_email does not check the blocklist and sends a confirmation to the blocked address. On confirmation, EmailToken.confirm hits RecordInvalid, rescues it, and returns nil, so the user sees a generic token failure with no reason.",
+   "evidence": "The validation applies on any email_changed? save (user.rb:47), not only on signup. EmailToken.confirm (email_token.rb:46-53) rescues RecordInvalid. users_controller.rb:265-286 change_email has no blocklist check. superpowers mentions the silent nil failure but, under 'Declined to judge', calls applying the block to email changes intentional and consistent with the domain blacklist. mattpocock also says it may be intended.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Deferred, with a ponytail: comment noting it needs a product decision on whether blocking covers email changes. Two seats call the scope possibly or likely intentional, and a fix would add a check whose intended behaviour is unsettled. Minor, so it does not block.",
+   "list": "main"
+  },
+  {
+   "path": "spec/components/validators/email_validator_spec.rb",
+   "line": 11,
+   "severity": "Minor",
+   "claim": "The EmailValidator spec stubs BlockedEmail.should_block?, a class this patch owns. Nothing tests the real validator-to-model boundary, where the case-sensitivity and counter defects live.",
+   "evidence": "Both examples stub should_block? (lines 11, 17). ponytail and superpowers cite the user's documented 'never mock things you own' standard. mattpocock and open-code-review note that the stub hides the combined behaviour. Suggested change: Fabricate(:blocked_email, email: record.email) with no stub in the match case, and no row and no stub in the no-match case. superpowers rated the test gap Important. It is normalised to Minor because the production defects it hides are tracked as separate Important findings with their own red tests.",
+   "seats": [
+    "ponytail",
+    "superpowers",
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted as Minor. Four seats agree, and it breaches a documented standard.",
+   "list": "main"
+  },
+  {
+   "path": "app/controllers/users_controller.rb",
+   "line": 198,
+   "severity": "Minor",
+   "claim": "No controller spec covers the new errors and values keys in the users#create failure JSON.",
+   "evidence": "Lines 198-199 add errors: user.errors.to_hash and values: user.attributes.slice(...). None of the patch's specs exercise them. mattpocock cites the CONTRIBUTING.md \u00a73 'Include tests' rule.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted as Minor. Three seats agree on the missing test, which breaches the CONTRIBUTING.md \u00a73 standard.",
+   "list": "main"
+  },
+  {
+   "path": "lib/validators/email_validator.rb",
+   "line": 24,
+   "severity": "Minor",
+   "claim": "The file has no trailing newline.",
+   "evidence": "The patch shows '\\ No newline at end of file'. mattpocock says every other file in the repo ends with one, and that CONTRIBUTING \u00a74 does not strictly cover this. ponytail noted it out of scope.",
+   "seats": [
+    "mattpocock",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Trivial fix that matches the repo convention.",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/controllers/create_account_controller.js",
+   "line": 17,
+   "severity": "Minor",
+   "claim": "rejectedEmails: Em.A([]) sits on the class prototype, so every controller instance shares it.",
+   "evidence": "Both seats say this is harmless while the controller is a singleton.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by two seats, so it is not fixed. Deferred with a ponytail: comment about the shared prototype array.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/user.rb",
+   "line": 102,
+   "severity": "Minor",
+   "claim": "Invite redemption to a blocked email raises an unhandled RecordInvalid. create_for_email calls save! inside Invite.transaction.",
+   "evidence": "open-code-review notes the domain blacklist already behaved this way and this change adds a second trigger. mattpocock S3 says it is untested.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by two seats, so it is not fixed. Deferred with a ponytail: comment. The existing domain blacklist already raises the same way.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/blocked_email.rb",
+   "line": 13,
+   "severity": "Minor",
+   "claim": "match_count and last_match_at also go up for do_nothing matches. This contradicts the commit message ('how many times each email address is blocked').",
+   "evidence": "spec/models/blocked_email_spec.rb:42-44 asserts that counting do_nothing is deliberate, so the commit message and the code disagree.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat, so it is not fixed. Deferred with a ponytail: comment. The spec shows the behaviour is deliberate.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/blocked_email.rb",
+   "line": 3,
+   "severity": "Minor",
+   "claim": "The do_nothing action_type is a speculative feature. Nothing in the patch creates a do_nothing row: there is no admin UI, no caller and no setting. The enum, NOT NULL column, set_defaults callback, fabricator line and two spec contexts are dead weight, about 15 lines.",
+   "evidence": "ponytail grepped app, lib and config and found no use of do_nothing or BlockedEmail.actions outside the model. If a follow-up adds a watch-only mode, this is premature rather than wrong.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat, so it is not fixed. Deferred with a ponytail: comment to drop action_type unless a watch-only mode lands.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/users_controller.rb",
+   "line": 199,
+   "severity": "Minor",
+   "claim": "The values key echoes name, username and email to the client. The client reads only values.email, which always equals the email it already sent, since new_from_params does no normalisation.",
+   "evidence": "create_account_controller.js:274-276 reads only result.values.email. The email is captured in createAccount at line 262.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat, so it is not fixed. Deferred with a ponytail: comment.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/controllers/users_controller.rb",
+   "line": 198,
+   "severity": "Minor",
+   "claim": "errors: user.errors.to_hash exposes every attribute error as structured JSON, while the client needs only email.",
+   "evidence": "superpowers rates the risk low because the response echoes the requester's own input. open-code-review found no security issue in the new response fields.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so it is not fixed. Deferred with a ponytail: comment. No seat shows any exposure beyond the requester's own input.",
+   "list": "appendix"
+  },
+  {
+   "path": "spec/models/blocked_email_spec.rb",
+   "line": 12,
+   "severity": "Minor",
+   "claim": "The 'last_match_at is null' example tests framework or migration default behaviour, not app logic.",
+   "evidence": "Cites the user's 'Never test: Framework code' standard. Removing the example saves 5 lines.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat, so it is not fixed. Deferred with a ponytail: comment.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/controllers/create_account_controller.js",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The client-side rejectedEmails behaviour has no test; nothing was added under test/javascripts/.",
+   "evidence": "Cites the CONTRIBUTING.md \u00a73 'Include tests' rule.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat, so it is not fixed. Deferred with a ponytail: comment.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/blocked_email.rb",
+   "line": 11,
+   "severity": "Minor",
+   "claim": "should_block? is named like a query but writes to the database (counter and timestamp). The name hides the side effect behind the stats defects.",
+   "evidence": "mattpocock lists this as a judgement-call smell and suggests splitting the query from the counter update. This is the root cause of the double-count and rollback findings.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one advisory seat, so it is not fixed. Moving the write out of validation for the main-list stats findings is expected to settle it. Deferred with a ponytail: comment.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/models/blocked_email.rb",
+   "line": 7,
+   "severity": "Minor",
+   "claim": "The code uses def self. where CONTRIBUTING \u00a74 prefers class << self.",
+   "evidence": "mattpocock suppressed this itself: def self. is the overwhelming convention in app/models, and CONTRIBUTING \u00a73 says to follow existing conventions.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "reject",
+   "reason": "Disproved by the raising seat's own report. Existing repo convention takes precedence under CONTRIBUTING \u00a73. This is a Minor finding from an advisory seat.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate not run (benchmark mode), so the review is unanchored: no build, test, lint or type-check results back any finding. No seat ran any spec, and all claims are reasoned. Rails 3.2.12 gem source was not inspected; the rollback finding depends on with_transaction_returning_status semantics and is unverified. Transactional fixtures prevent the suite from showing the rollback loss. Spec axis: no spec was given, so the commit message stood in as the spec. Standards axis: the only repo standards doc is CONTRIBUTING.md, plus the user's 'never mock things you own / never test framework code' standard cited by ponytail and superpowers. Files skipped: none by any seat. open-code-review's tool excluded spec/components/validators/email_validator_spec.rb and spec/models/blocked_email_spec.rb (rule default_path), but the seat read them manually. ponytail said it reviewed '11' files but listed the same 10 as the other seats. One line number is inconsistent across seats: users_controller valid? at 168 vs 166."
+}

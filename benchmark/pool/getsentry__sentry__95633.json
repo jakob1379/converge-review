@@ -1,0 +1,552 @@
+{
+ "pr_url": "https://github.com/getsentry/sentry/pull/95633",
+ "cost_usd": 0.12877159999999999,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "The arroyo commit callable is called from the background _commit_loop thread instead of the consumer thread, racing with StreamProcessor's main loop and with rebalance callbacks"
+  },
+  {
+   "id": "c2",
+   "source": "cubic-v2",
+   "text": "Test assertion expects no commit after a processing error, but the queue worker completes offsets in `finally` and will still commit them."
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "The add_offset/complete_offset pair is duplicated in submit() on the filtered-payload path and the error path"
+  },
+  {
+   "id": "c4",
+   "source": "golden",
+   "text": "The magic number 50 for max_wait is used repeatedly throughout the tests. Consider extracting this as a named constant to improve maintainability."
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "New-mode tests are added as methods on ProcessResultSerialTest instead of a ProcessResultTest subclass with strategy_processing_mode set, so the full behavioural suite never runs in thread-queue-parallel mode; the Literal['batched-parallel','parallel','serial'] annotation is not extended"
+  },
+  {
+   "id": "c6",
+   "source": "qodo-extended-v2",
+   "text": "Several tests create SimpleQueueProcessingStrategy which starts a daemon commit thread but only call factory.shutdown() and never strategy.close()/terminate(), leaving background commit threads running and making commit-related assertions timing-dependent"
+  },
+  {
+   "id": "c7",
+   "source": "qodo-extended-v2",
+   "text": "OffsetTracker.get_committable_offsets builds list(self.all_offsets.keys()) without any lock while submit threads can add a new partition key on first-seen partitions, causing concurrent key insertion during list construction to raise and intermittently break the commit loop"
+  },
+  {
+   "id": "c8",
+   "source": "golden",
+   "text": "The test test_thread_queue_parallel_error_handling has a docstring that doesn't match the test implementation."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "The thread-queue-parallel Kafka test drives arroyo's private StreamProcessor methods (_run_once, _shutdown) and monkeypatches factory.create_with_partitions, breaking the rule to never test private methods/framework code"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review-replay",
+   "text": "join(timeout) ignores its timeout parameter and just calls close() again, potentially blocking 5s for the commit thread plus 5s per busy worker, exceeding the deadline arroyo passes"
+  },
+  {
+   "id": "c11",
+   "source": "coderabbit",
+   "text": "try-except-pass silently swallows all exceptions during cleanup when deleting test topic - should catch Kafka-specific exception and log the error instead"
+  },
+  {
+   "id": "c12",
+   "source": "coderabbit",
+   "text": "Unused identifier parameter in track_calls function in test_results_consumer.py - should rename to _identifier to satisfy Ruff linter"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review",
+   "text": "Shutdown/revoke abandons queued and completed work: FixedQueuePool.shutdown sets worker.shutdown=True before q.shutdown(immediate=False), so workers exit after the current item and do not drain; close() stops the commit thread with no final commit, so up to ~1s of completed offsets plus everything queued is reprocessed by the next owner; join(timeout) ignores timeout and just calls close() again, potentially blocking 5s per thread past arroyo's rebalance deadline"
+  },
+  {
+   "id": "c14",
+   "source": "augment",
+   "text": "SimpleQueueProcessingStrategy.close() shuts down the passed-in queue_pool, but the pool is created/stored on ResultsStrategyFactory and shared into each strategy instance - if create_with_partitions is called again (e.g., Kafka rebalance), the factory will reference a previously-shutdown pool and subsequent processing may break"
+  },
+  {
+   "id": "c15",
+   "source": "augment",
+   "text": "complete_offset is called in finally block, so offsets will be considered processed even when result_processor raises an exception, leading to committing past failed items and dropping them - contradicts docstring guarantee 'Only commits offsets after successful processing'"
+  },
+  {
+   "id": "c16",
+   "source": "coderabbit",
+   "text": "hash(group_key) % self.num_queues will raise ZeroDivisionError if num_queues is 0 - need to guard against num_queues <= 0 in __init__"
+  },
+  {
+   "id": "c17",
+   "source": "qodo-extended-v2",
+   "text": "Unit tests rely on probabilistic timing/distribution: asserting 20 hashed group keys must hit all 3 queues and asserting queue depth is >0 immediately after enqueuing even though workers can drain faster than the assertion runs, causing intermittent CI failures"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "The shared OffsetTracker is never reset on rebalance, so stale state for revoked partitions carries over to the next strategy"
+  },
+  {
+   "id": "c19",
+   "source": "coderabbit",
+   "text": "Unused identifier parameter in result_processor function in test_queue_consumer.py - should rename to _identifier to satisfy Ruff linter"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "Each result is wrapped in two nested Sentry transactions: the worker opens start_transaction(op='queue_worker.process') around result_processor, which already opens its own transaction; other modes add no outer transaction"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "test_different_groups_distributed can fail randomly: string hash() is randomized per process, so 20 keys miss one of 3 queues with probability ~0.09% per run"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "No backpressure: each per-group queue is queue.Queue() with no maxsize and submit() never raises MessageRejected, so during consumer lag arroyo keeps polling and memory grows without bound; the docstring claiming 'Natural backpressure when queues fill up' is false"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review-replay",
+   "text": "The commit thread is stopped before the pool shuts down with no final get_committable_offsets/commit call"
+  },
+  {
+   "id": "c24",
+   "source": "claude-code",
+   "text": "SimpleQueueProcessingStrategy.close() calls self.queue_pool.shutdown() which permanently destroys all workers and queues in the shared FixedQueuePool, causing any Kafka partition rebalance to leave the new strategy referencing a dead pool where submitted messages will never be processed"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "The --mode help text was not updated for the new thread-queue-parallel choice and still says 'Parallel uses multithreading', misdescribing both parallel (multiprocessing) and the new mode"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "test_concurrent_processing_across_groups and test_thread_queue_parallel_concurrent_subscriptions assert only that all items were processed, which serial execution also satisfies; nothing checks concurrency"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review-replay",
+   "text": "stage_offsets raises ConsumerError for unassigned partitions, and the tracker is never pruned for revoked partitions, causing the error to be swallowed and mark_committed never runs, stalling every partition's commit on retry"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review-replay",
+   "text": "close()/join() do not drain queued work or perform a final commit - FixedQueuePool.shutdown sets worker.shutdown = True before shutting queues down, causing the while-not-shutdown loop to exit after the current item and defeat the immediate=False drain"
+  },
+  {
+   "id": "c29",
+   "source": "qodo-extended-v2",
+   "text": "test_thread_queue_parallel_error_handling asserts no offsets are committed after an error, but OrderedQueueWorker.run() unconditionally calls complete_offset in its finally block, so both errored and successful offsets ARE marked complete and committable - test only passes due to timing race with commit loop's 1-second delay"
+  },
+  {
+   "id": "c30",
+   "source": "converge-review",
+   "text": "The OffsetTracker gap logic (all_offsets, min/max/range scan, pruning) does not provide the 'block commits past a gap' guarantee it and its tests claim: after one commit cycle start=max(last_committed+1, min_offset) jumps the gap"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "get_stats builds a queue_depths list that production never reads; both production callers only use total_items"
+  },
+  {
+   "id": "c32",
+   "source": "coderabbit",
+   "text": "pytestmark class attribute is a mutable list which triggers RUF012 - should be changed to immutable tuple (requires_kafka,)"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "FixedQueuePool.wait_until_empty is dead code - only found in its definition in src/ and tests/"
+  },
+  {
+   "id": "c34",
+   "source": "qodo-extended-v2",
+   "text": "FixedQueuePool.shutdown sets worker.shutdown=True before shutting down the queues, so each worker can exit after processing at most one more item even when its queue still has backlog, causing graceful shutdown to drop in-memory queued work and leave offsets outstanding/uncommitted"
+  },
+  {
+   "id": "c35",
+   "source": "coderabbit",
+   "text": "Unused force parameter in track_commits functions in test_results_consumer.py - should rename to _force to satisfy Ruff linter"
+  },
+  {
+   "id": "c36",
+   "source": "qodo-extended-v2",
+   "text": "In SimpleQueueProcessingStrategy.close(), the commit thread is joined before queue_pool.shutdown() is called, so items drained by workers after commit thread exits will have their offsets completed but never committed, causing unnecessary message reprocessing on restart"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review-replay",
+   "text": "KafkaConsumer stage_offsets/commit state is unlocked shared state accessed by both the main thread in _run_once and the commit thread"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review-replay",
+   "text": "After partition rebalance, thread-queue-parallel mode drops every message without processing it and still commits its offset, causing silent data loss. The factory builds one FixedQueuePool and one OffsetTracker in __init__ and shares them with every strategy, but queue_pool.shutdown() is called on revoke while factory.queue_pool is only reset in factory.shutdown(), so the next strategy reuses the dead pool"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "The inner except queue.ShutDown around result_processor in OrderedQueueWorker.run is unreachable, since result_processor never touches the queue"
+  },
+  {
+   "id": "c40",
+   "source": "cubic-v2",
+   "text": "The `FixedQueuePool` is owned by the factory but `SimpleQueueProcessingStrategy.close()` shuts it down. After a Kafka rebalance, the next call to `create_with_partitions` will reuse the dead pool, silently dropping all messages. Either the strategy should not shut down the factory-owned pool in `close()`/`terminate()`, or the factory should recreate the pool in `create_thread_queue_parallel_worker`."
+  },
+  {
+   "id": "c41",
+   "source": "converge-review",
+   "text": "WorkItem.message is stored but never read, keeping the full arroyo Message alive for every queued item (worse given unbounded queues)"
+  },
+  {
+   "id": "c42",
+   "source": "augment",
+   "text": "Setting worker.shutdown = True before shutting down the queues means workers can exit without draining items still queued, leaving work unprocessed during shutdown and potentially preventing offsets from becoming committable for abandoned items during rebalances"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review-replay",
+   "text": "No backpressure: docstring promises 'Natural backpressure when queues fill up' but each queue is an unbounded queue.Queue() without maxsize and submit() never raises MessageRejected, causing unbounded memory growth under consumer lag"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review-replay",
+   "text": "In submit(), work_queue.put() raises queue.ShutDown after rebalance, but the broad except clause logs it and calls add_offset/complete_offset, causing the commit loop to commit the offset for unprocessed messages"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review-replay",
+   "text": "The commit thread is joined with only a 5s timeout on revoke, so a commit for a partition that is no longer owned can still happen"
+  },
+  {
+   "id": "c46",
+   "source": "coderabbit",
+   "text": "Unused timeout parameter in join method - should silence with _ = timeout to satisfy Ruff linter"
+  },
+  {
+   "id": "c47",
+   "source": "claude-code",
+   "text": "FixedQueuePool.shutdown() sets worker.shutdown = True for all workers before calling q.shutdown(immediate=False), creating a race where workers exit their while loop before draining remaining queued items, causing unnecessary reprocessing on restart"
+  },
+  {
+   "id": "c48",
+   "source": "cubic-v2",
+   "text": "`queue.Queue.shutdown(immediate=False)` and the `queue.ShutDown` exception were added in Python 3.13. If the code runs on any earlier Python version, `shutdown()` will raise `AttributeError` and the `except queue.ShutDown` handlers in `OrderedQueueWorker.run` will fail at import/catch time. Consider adding a compatibility guard or documenting the Python 3.13+ requirement explicitly."
+  },
+  {
+   "id": "c49",
+   "source": "converge-review",
+   "text": "The arroyo commit callable is invoked from a background thread (_commit_loop) rather than from submit/poll/join on the StreamProcessor thread; the KafkaConsumer offset-staging state is not thread-safe, and because the OffsetTracker is shared across strategies and never reset, the loop can stage offsets for revoked partitions, which stage_offsets rejects with ConsumerError, swallowed so mark_committed never runs and the same failing dict is retried every second, stalling commits for all partitions"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review",
+   "text": "After the first partition revocation, thread-queue-parallel silently drops every subsequent message and still commits its offset: SimpleQueueProcessingStrategy.close()/join() shut down the FixedQueuePool that ResultsStrategyFactory creates once and shares with every strategy from create_with_partitions; the next strategy's submit() gets queue.ShutDown from put(), the broad except logs it and marks the offset complete, and the commit loop commits it"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "Docstring says offsets are committed 'only after successful processing', but complete_offset runs in the worker's finally block so failed items are committed too; test_thread_queue_parallel_error_handling asserts no commit and passes only because it checks within ~0.3s, before the first 1s commit tick, making it timing-dependent"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The arroyo commit callable is invoked from the background _commit_loop thread rather than the consumer/StreamProcessor thread, so KafkaConsumer's unlocked stage_offsets/commit state is accessed concurrently with the main loop and rebalance callbacks.",
+   "path": null,
+   "members": [
+    "c1",
+    "c37",
+    "c49"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The shared OffsetTracker is never reset or pruned on rebalance, so state for revoked partitions carries over. stage_offsets then raises ConsumerError for unassigned partitions, the error is swallowed, mark_committed never runs, and commits stall for every partition.",
+   "path": null,
+   "members": [
+    "c18",
+    "c27"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "OrderedQueueWorker.run calls complete_offset in its finally block, so offsets of items whose result_processor raised are still committed, contradicting the docstring 'Only commits offsets after successful processing'. test_thread_queue_parallel_error_handling asserts no commit after an error and passes only because it checks before the first 1s commit tick.",
+   "path": null,
+   "members": [
+    "c2",
+    "c15",
+    "c29",
+    "c51"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The add_offset/complete_offset pair is duplicated in submit() on the filtered-payload path and the error path.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The magic number 50 for max_wait is repeated throughout the tests instead of being a named constant.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "New-mode tests are added as methods on ProcessResultSerialTest instead of a ProcessResultTest subclass with strategy_processing_mode set, so the full behavioural suite never runs in thread-queue-parallel mode. The Literal['batched-parallel','parallel','serial'] annotation is not extended.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "Several tests create SimpleQueueProcessingStrategy, which starts a daemon commit thread, but only call factory.shutdown() and never strategy.close()/terminate(). This leaves commit threads running and makes commit assertions timing-dependent.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "OffsetTracker.get_committable_offsets builds list(self.all_offsets.keys()) without a lock while submit threads can insert new partition keys, which can raise during iteration and break the commit loop.",
+   "path": null,
+   "members": [
+    "c7"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The docstring of test_thread_queue_parallel_error_handling does not match the test implementation.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The thread-queue-parallel Kafka test drives arroyo's private StreamProcessor methods (_run_once, _shutdown) and monkeypatches factory.create_with_partitions.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "join(timeout) ignores its timeout parameter and calls close() again, which can block 5s for the commit thread plus 5s per busy worker, beyond the deadline arroyo passes.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "Test cleanup that deletes the test topic uses try-except-pass, silently swallowing all exceptions.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The identifier parameter of track_calls in test_results_consumer.py is unused, which triggers the Ruff linter.",
+   "path": "test_results_consumer.py",
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The identifier parameter of result_processor in test_queue_consumer.py is unused, which triggers the Ruff linter.",
+   "path": "test_queue_consumer.py",
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The force parameter of the track_commits functions in test_results_consumer.py is unused, which triggers the Ruff linter.",
+   "path": "test_results_consumer.py",
+   "members": [
+    "c35"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The timeout parameter of the join method is unused, which triggers the Ruff linter.",
+   "path": null,
+   "members": [
+    "c46"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The pytestmark class attribute is a mutable list, which triggers RUF012.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "FixedQueuePool.shutdown sets worker.shutdown=True before calling q.shutdown(immediate=False), so workers exit after the current item without draining queued work. Queued items are abandoned and their offsets stay uncommitted, causing reprocessing.",
+   "path": null,
+   "members": [
+    "c13",
+    "c28",
+    "c34",
+    "c42",
+    "c47"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "SimpleQueueProcessingStrategy.close() stops/joins the commit thread before queue_pool.shutdown() and makes no final get_committable_offsets/commit call, so offsets completed afterwards are never committed.",
+   "path": null,
+   "members": [
+    "c23",
+    "c36"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "SimpleQueueProcessingStrategy.close() shuts down the FixedQueuePool that ResultsStrategyFactory creates once and shares with every strategy. After a Kafka rebalance, create_with_partitions hands the next strategy a dead pool, and submitted messages are never processed.",
+   "path": null,
+   "members": [
+    "c14",
+    "c24",
+    "c38",
+    "c40",
+    "c50"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "In submit(), work_queue.put() raising queue.ShutDown is caught by a broad except that logs it and calls add_offset/complete_offset, so the commit loop commits offsets of unprocessed messages.",
+   "path": null,
+   "members": [
+    "c44"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "hash(group_key) % self.num_queues raises ZeroDivisionError when num_queues is 0, and __init__ does not guard against num_queues <= 0.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "Unit tests depend on probabilistic timing and distribution. test_different_groups_distributed asserts that 20 hashed group keys hit all 3 queues even though string hash() is randomized per process, and another test asserts queue depth > 0 right after enqueuing although workers may already have drained it.",
+   "path": null,
+   "members": [
+    "c17",
+    "c21"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "Each result is wrapped in two nested Sentry transactions: the worker opens start_transaction(op='queue_worker.process') around result_processor, which opens its own transaction.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "There is no backpressure: each per-group queue is an unbounded queue.Queue() and submit() never raises MessageRejected, so memory grows without bound under consumer lag. The docstring's 'Natural backpressure when queues fill up' is false.",
+   "path": null,
+   "members": [
+    "c22",
+    "c43"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The --mode help text was not updated for the thread-queue-parallel choice and still says 'Parallel uses multithreading'.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "test_concurrent_processing_across_groups and test_thread_queue_parallel_concurrent_subscriptions assert only that all items were processed, which serial execution also satisfies, so concurrency is never checked.",
+   "path": null,
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The OffsetTracker gap logic does not block commits past a gap as it and its tests claim: after one commit cycle, start=max(last_committed+1, min_offset) jumps the gap.",
+   "path": null,
+   "members": [
+    "c30"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "get_stats builds a queue_depths list that production never reads; both production callers use only total_items.",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "FixedQueuePool.wait_until_empty is dead code, referenced only in its definition and in tests.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "The inner except queue.ShutDown around result_processor in OrderedQueueWorker.run is unreachable because result_processor never touches the queue.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "WorkItem.message is stored but never read, keeping the full arroyo Message alive for every queued item.",
+   "path": null,
+   "members": [
+    "c41"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "On revoke the commit thread is joined with only a 5s timeout, so a commit for a partition that is no longer owned can still happen.",
+   "path": null,
+   "members": [
+    "c45"
+   ]
+  },
+  {
+   "id": "i34",
+   "claim": "queue.Queue.shutdown(immediate=False) and queue.ShutDown exist only in Python 3.13+, so the code fails on earlier Python versions.",
+   "path": null,
+   "members": [
+    "c48"
+   ]
+  }
+ ]
+}

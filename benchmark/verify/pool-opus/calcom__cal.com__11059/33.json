@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/refreshOAuthTokens.ts:230-236 (patch lines 230-236), the fetch to CALCOM_CREDENTIAL_SYNC_ENDPOINT sends no headers, only `calcomUserId` and `appSlug` as URLSearchParams, with no secret or signature. The receiver therefore cannot tell a genuine Cal.com request from a forged one before returning access tokens. The patch's inbound webhook checks CALCOM_WEBHOOK_SECRET (app-credential.ts:61-66), but this outbound call never sends it.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0871413
+}

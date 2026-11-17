@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `if client_sample_rate:` in `_set_sample_rate_from_error_sampling` (src/sentry/testutils/factories.py, around line 353, patch line 316). Because of that truthiness check, a client_sample_rate of 0 or 0.0 is skipped and `sample_rate` is never set.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.038972599999999996
+}

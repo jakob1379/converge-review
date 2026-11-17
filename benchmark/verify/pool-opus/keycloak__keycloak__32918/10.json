@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a `getOrganizationId()==null || BROKER_PUBLIC` check to `getLoginPredicate()` (IdentityProviderStorageProvider.java:254), but the Javadoc at :151-152, :216 and IdentityProviderBean.java:201-202 still lists only enabled/linkOnly/hideOnLogin. `getLoginSearchOptions()` (:248-249) still covers only those three enum entries. `getForLogin` adds BROKER_PUBLIC separately (:180), so the two methods no longer encode the same criteria.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1722504
+}

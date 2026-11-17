@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In V2, a per-client resource is created by getOrCreateResource (AdminPermissionsSchema.java:104). It is named after the client's id but owned by the admin-permissions client. When a client is deleted, nothing removes it: AdminPermissions' ClientRemovedEvent listener is gated on V1 ADMIN_FINE_GRAINED_AUTHZ (patch line 76), and ClientApplicationSynchronizer.java:49-75 only removes the deleted client's own resource server and its entries in client policies. So the resource and its scope permissions are left behind.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4535934
+}

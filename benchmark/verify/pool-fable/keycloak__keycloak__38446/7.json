@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `testsuite/.../federation/BackwardsCompatibilityUserStorage.java`, `disableCredentialType()` (lines 217-224) only clears `myUser.otp` and logs \"Unsupported\" for any other type, and `getDisableableCredentialTypesStream()` (lines 255-264) only ever adds `CredentialModel.OTP`. The patch adds recovery-codes handling to `supportsCredentialType`, `updateCredential`, `isConfiguredFor`, `isValid` and `getCredentials`, but nothing ever nulls `myUser.recoveryCodes` (the only assignment is line 200).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4112909
+}

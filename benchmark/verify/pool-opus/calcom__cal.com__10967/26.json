@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/core/EventManager.ts:376-380, a destination with no credentialId sends the event to every organizer credential whose type matches the integration, once for each such destination. That call to createEvent(c, event) passes no externalId, so result.externalId is undefined and line 169 stores references with externalCalendarId undefined. Before the patch it took evt.destinationCalendar.externalId.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.22788129999999998
+}

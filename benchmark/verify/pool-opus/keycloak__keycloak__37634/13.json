@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "TokenManager.initToken calls session.getProvider(TokenContextEncoderProvider.class) without a null check, but the patch always registers a provider. It adds the internal TokenContextEncoderSpi (isInternal()=true) to META-INF/services/org.keycloak.provider.Spi and registers DefaultTokenContextEncoderProviderFactory in META-INF/services/org.keycloak.protocol.oidc.encode.TokenContextEncoderProviderFactory, which is the usual Keycloak pattern for a built-in SPI with a default implementation, so the lookup does not return null in normal deployments.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1091235
+}

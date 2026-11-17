@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The canView() Javadoc at GroupPermissionEvaluator.java:85-91 says 'Or if it has a permission to VIEW or MANAGE groups' and does not say 'For V2 only', unlike canList() and canManage(). But V1 GroupPermissions.java:286-287 returns only root.hasOneAdminRole(MANAGE_USERS, VIEW_USERS), and only GroupPermissionsV2.java:47-51 also checks permissions.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1107243
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `assignment_source` to the abstract `sync_status_outbound` at src/sentry/integrations/mixins/issues.py:411-418, but the only non-test caller (src/sentry/integrations/tasks/sync_status_outbound.py:44-46) passes just three positional arguments. No implementation reads it: jira/integration.py:990, jira_server/integration.py:1090, vsts/issues.py:266 and example/integration.py:161 never reference `assignment_source`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3005289
+}

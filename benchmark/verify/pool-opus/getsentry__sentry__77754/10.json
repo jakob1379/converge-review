@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a matching-source test only for assign (tests/sentry/models/test_groupassignee.py:~207-218). The deassign outbound test (line 273) passes no assignment_source. test_assignee_sync_inbound_deassign (lines 349-388) reaches deassign through sync_group_assignee_inbound but runs outside self.tasks() and never mocks or checks sync_assignee_outbound, so it does not test that the outbound sync is skipped.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1353416
+}

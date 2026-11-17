@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes the public `Context(Context context)` copy constructor (change.patch lines 39-53). In the patched OAuth2GrantType.java:87-103 the only constructor left is the 7-argument one, which now also fills `grantType`; nothing in the repository calls the copy constructor, and the only `new OAuth2GrantType.Context(...)` is at TokenEndpoint.java:149.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0708662
+}

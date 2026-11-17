@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GrafanaRuleListItem.tsx:40 builds the view link as createRelativeUrl(`/alerting/grafana/${uid}/view`) with no returnTo argument. The deleted GrafanaRuleLoader.tsx (patch line 1209 and 1222) called createReturnTo() and passed { returnTo }, and DataSourceRuleListItem.tsx:36-42 still does.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0810244
+}

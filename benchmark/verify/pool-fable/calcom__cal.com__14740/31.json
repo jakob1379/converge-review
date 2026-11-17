@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/ui/form/MultiEmail.tsx:1 starts directly with imports and calls useLocale() at line 13 with no 'use client' directive, unlike its sibling packages/ui/form/PhoneInput.tsx:1. It causes no failure here: its only consumer, AddGuestsDialog, is reached via BookingListItem from apps/web/modules/bookings/views/bookings-listing-view.tsx:1, which is already 'use client'.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2408634
+}

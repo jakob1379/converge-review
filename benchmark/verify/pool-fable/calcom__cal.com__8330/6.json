@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/slots.ts:218-223 reduces the offset-shifted override start/end to hour()*60+minute(), discarding the day, so an override whose shifted end passes the invitee's midnight (e.g. 09:00-19:00 organizer UTC, invitee +6 gives 900/60) has endTime < startTime. buildSlots skips it at slots.ts:68 (`if (start >= end) continue`) after that user's working hours were already spliced out at slots.ts:228-243, leaving no slots for that host that day.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2874369
+}

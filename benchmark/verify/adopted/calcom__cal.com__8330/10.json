@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only test the patch adds (getSchedule.test.ts:788-805) reruns the 'Check for Date overrides' scenario. That scenario has one user and an empty hosts list (lines 746-766). The new run keeps the +5:30 window (18:30Z) and only changes timeZone to +6:00. So it never reaches the loose-host or round-robin paths (slots.ts lines 210-235 in the patch), busy times on override days, or the new working-hours branch, which an override day skips because dateOverrideExist returns true first.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0838962
+}

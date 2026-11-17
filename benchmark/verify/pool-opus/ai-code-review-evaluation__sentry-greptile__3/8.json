@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`invalidate_upsampling_cache` (src/sentry/api/helpers/error_upsampling.py:67-74) is never called anywhere in the repo, and nothing hooks the allowlist option. Its key needs the exact sorted project set (line 73, same as line 27), so an allowlist change cannot find every cached (org, project-set) entry to delete; only the 60s TTL at line 38 limits how long a stale result lasts.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0494272
+}

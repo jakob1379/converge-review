@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/blocked_email.rb:15 (new file), should_block? increments match_count, sets last_match_at, then calls `record.save` without checking the result. A failed save is silently ignored, and the method's return value depends only on action_type.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0642261
+}

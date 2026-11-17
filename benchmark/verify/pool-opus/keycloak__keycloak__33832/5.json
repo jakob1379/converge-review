@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The code does return the default KeyStore provider (e.g. SUN), at change.patch:425-431. That is on purpose: AuthzClientCryptoProvider is the order-100 fallback used only when no BouncyCastle provider is present, and BouncyIntegration.loadProvider already falls back to a JDK provider in that case (common/.../BouncyIntegration.java:34-36). In common/core/authz-client, PROVIDER is only used in a debug log (CryptoIntegration.java:34), so the value derived is not wrong.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1560415
+}

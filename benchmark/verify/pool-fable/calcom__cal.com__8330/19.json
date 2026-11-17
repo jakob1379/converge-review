@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/slots.ts:219-223 builds `dayjs(override.start).utc().add(offset, \"minute\")` twice and the same chain for `override.end` twice, and the `flatMap` callback at packages/lib/slots.ts:211-225 returns a single object literal, so `map` would behave identically. The duplicated chains are new in this patch; the `flatMap` call was already there but sits on lines the patch rewrote.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1464292
+}

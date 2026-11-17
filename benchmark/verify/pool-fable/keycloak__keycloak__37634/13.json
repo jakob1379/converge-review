@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "There is indeed no null check at services/src/main/java/org/keycloak/protocol/oidc/TokenManager.java:1052-1054, but the same patch registers the SPI (services/src/main/resources/META-INF/services/org.keycloak.provider.Spi:28) and a built-in factory with id \"default\" (DefaultTokenContextEncoderProviderFactory.java:94-96, service file line 20). DefaultKeycloakSessionFactory.java:301-308 resolves a sole or \"default\"-id factory as the default provider, so getProvider cannot return null unless an operator explicitly disables the built-in provider.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.31139890000000003
+}

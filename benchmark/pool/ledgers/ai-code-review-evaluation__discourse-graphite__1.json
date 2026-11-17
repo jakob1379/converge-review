@@ -1,0 +1,236 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "app/models/optimized_image.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`self.downsize` is defined twice in OptimizedImage. Ruby has no overloading, so the later (from, to, dimensions, opts) definition replaces the (from, to, max_width, max_height, opts) one, and existing 5-argument callers such as ResizeEmoji (app/jobs/regular/resize_emoji.rb:14) raise ArgumentError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "API URL-based uploads now call FileHelper.download with a hardcoded 10.megabytes cap instead of SiteSetting.max_image_size_kb. This ignores the configured limit: larger files are truncated or blocked on sites allowing more than 10 MB, and more than allowed is downloaded on sites with smaller limits.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Client-side upload validation hardcodes maxSizeKB = 10 * 1024 for all upload types instead of using Discourse.SiteSettings['max_' + type + '_size_kb']. Files the server will reject can pass the browser check, and files that sites configured above 10 MB allow are blocked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The same 10 MB constant is duplicated in several places, so the client and server limits can drift apart.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The HTTP 413 handler always reports a limit of 10240 KB, although the actual limit depends on the nginx/proxy client_max_body_size setting.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The error message in displayErrorForUpload (line 246) shows a hardcoded 10 MB instead of the actual configured limit when the server rejects a file for exceeding a smaller configured limit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the switch statement, `case 413` declares `maxSizeKB` without a surrounding block, so the declaration is visible to the other cases.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The downsize loop reads `tempfile.size`, which stays stale after the in-place downsize and ImageOptim rename. As a result, the loop may run all passes or fail to terminate correctly, and Upload.create_for receives a stale filesize, dimensions and a mismatched sha1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Downsizing passes '80%' as the dimensions. For animated GIFs this goes to `gifsicle --resize-fit`, which accepts only WxH pixel geometry, so gifsicle fails and every retry attempt is used up.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The allow_animation option is effectively dead code, because animated GIF downsizing fails through both upload paths.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Each upload can trigger up to 5 sequential ImageMagick plus ImageOptim runs on files up to 10 MB.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When OptimizedImage.downsize fails and returns false, the loop ignores the result, keeps retrying, and lets the oversized file continue.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The downsize loop shrinks the image to only about 33% of the original after 5 iterations (0.8^5), so an image can still exceed max_image_size_kb and proceed to Upload.create_for.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Non-API uploads run in the shared Scheduler::Defer.later queue, so large uploads stall unrelated deferred work.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover the new downsize loop, the changed OptimizedImage.downsize/optimize signatures, or the client validation change.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Image processing uses the same path for input and output, so the original file is lost if the operation fails mid-write.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "With allow_animated_thumbnails off, `convert file[0]` writes only the first frame back over the original GIF.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "For regular browser uploads, Rack tempfile paths lack a .gif extension, so the GIF detection regex in optimize() never matches and `convert` with [0] strips animation from GIFs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `tempfile &&` and `tempfile.size > 0` checks in the new guard are redundant with the loop condition and the later handling of a nil tempfile.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "FileHelper.is_image? matches .svg, so oversized SVGs enter the downsize loop and ImageMagick rewrites the user's SVG in place.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An inline `rescue nil` silently swallows all exceptions, including network errors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "users_controller.rb:168 always calls user.valid?, because it is the left operand of the &&, and user.save then runs validation again at line 172. For a new user, email_changed? is true both times, so EmailValidator (lib/validators/email_validator.rb:183) calls BlockedEmail.should_block? twice. That method saves match_count += 1 each time (blocked_email.rb:13-16), so a successful do_nothing signup adds 2 to the count, and any other valid? call on a user with a changed email also adds 1.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0918573
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "AbstractOIDCProtocolMapper.java:84-86 reads session.getContext().getClient(), but every token-issuing path sets that to the client the token is for (AbstractTokenExchangeProvider.java:376 sets targetClient, StandardTokenExchangeProvider.java:200, PreAuthorizedCodeGrantType sets the client-session client), so it is not a different requesting client. The mappers use the same check, so the token type the patch writes into the token ID (DefaultTokenContextEncoderProvider.java:54) matches how the mappers built the token; the patch only made the method public static.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3201765
+}

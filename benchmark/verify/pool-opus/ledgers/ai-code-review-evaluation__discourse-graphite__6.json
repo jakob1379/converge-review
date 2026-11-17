@@ -1,0 +1,257 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The serializer method `include_website_name` lacks the trailing `?` that ActiveModel::Serializer requires for `include_<attr>?` predicates. As a result it is never called and `website_name` is always serialized, as null when there is no website.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/serializers/user_serializer.rb:153 defines `include_website_name` with no `?`. The repo pins active_model_serializers 0.8.3 (Gemfile:38), which only looks for `include_<attr>?` predicates, so this method is never called and `website_name` (lines 137-151) is always included, as nil when the website has no host.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.06118939999999999
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "UserSerializer's `website_name` does not honor `Guardian#restrict_user_fields?` and is not in `untrusted_attributes`, unlike `website`. This exposes the website host/path of TL0 users to anonymous viewers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/serializers/user_serializer.rb:43 adds `website_name` to `attributes`, but `untrusted_attributes` (lines 105-111) still lists only `website`. The patch's `include_website_name` (line 153) has no `?`, so the serializer never calls it and never checks `scope.restrict_user_fields?`. As a result, `website_name` gives anonymous viewers the host and path of a TL0 user's website, which `website` itself hides.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.07409089999999999
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The sibling-subdomain branch of `website_name` treats any hosts with the same label count (>2) and equal labels after the first as the same site, even across public suffixes. For example, `evil.co.uk` matches `forum.co.uk` and `a.github.io` matches `forum.github.io`, so the full path is shown for unrelated sites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/serializers/user_serializer.rb (the patch's website_name, the elsif branch around patch lines 74-76), the only check is that both hosts have the same number of labels (more than 2) and that everything after the first label matches. There is no public-suffix check, so evil.co.uk against forum.co.uk (or a.github.io against forum.github.io) returns website_host + path, which shows the full path for an unrelated site.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0453822
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Tests are missing for the sibling-subdomain branch, nil/blank website, the unparseable-URI rescue path, the www-vs-apex case, and the TL0/anonymous restriction on `website_name`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds only three website_name specs (spec/serializers/user_serializer_spec.rb:76-91): a different domain, the same host, and a parent domain. None covers the sibling-subdomain branch (user_serializer.rb:144-146), a nil or blank website, the `rescue nil` path (user_serializer.rb:138) or www-vs-apex. The TL0 spec's untrusted_attributes list (spec:11) also leaves out website_name, which hides that website_name is missing from untrusted_attributes (user_serializer.rb:105-111) and that `include_website_name` lacks its `?` (user_serializer.rb:153).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0968667
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No spec covers a nil or blank website, including checking that `website_name` is absent or nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only website_name specs are the three in the 'with filled out website' context (spec/serializers/user_serializer_spec.rb:76-90), and each uses a non-blank URL. The TL0 untrusted-attributes list at line 11 leaves out website_name, and no other spec mentions it, so nothing tests a nil or blank website.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0709321
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No spec covers the sibling-subdomain branch (e.g. `www.example.com` vs `forum.example.com`).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The sibling-subdomain branch in app/serializers/user_serializer.rb:74-76 only runs when both hosts have the same number of labels and more than two. All three new specs (spec/serializers/user_serializer_spec.rb:78-89) use the two-label website host `example.com` against `discourse.org`, `example.com` or `forums.example.com`, so none of them reaches that branch, and no other spec mentions `website_name`.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.05167240000000001
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The host comparison in `website_name` is case-sensitive because URI#host preserves case and nothing downcases it. So `http://Example.com/u` does not match instance `example.com`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/serializers/user_serializer.rb:137-149 (added by the patch), `URI(website.to_s).host` keeps the host's case as typed, and it is compared with `==` / `ends_with?` against `Discourse.current_hostname` (lib/discourse.rb:178) with no downcasing. UserProfile (app/models/user_profile.rb) does not normalise the website either, so `http://Example.com/u` falls through and shows only the host.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.057371500000000006
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "For a same-domain URL with path `/`, `website_name` renders `example.com/`. The port is also silently dropped, so `example.com:8080/u` shows as `example.com/u`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/serializers/user_serializer.rb (patch lines 67-81), a same-host match returns `website_host + URI(website).path`, so `http://example.com/` renders as `example.com/`. `URI#host` leaves out the port, so `example.com:8080/u` shows as `example.com/u`; the removed JS `websiteName` (`website.split(\"/\")[2]`, controllers/user.js.es6:9-13) kept the port.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.05820170000000001
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Same-domain matching in `website_name` is asymmetric. With website `http://www.example.com/u` on instance `example.com`, the check runs in the wrong direction (`'example.com'.ends_with?('.www.example.com')`) and shows only the host without the path, while the reverse case shows the path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/serializers/user_serializer.rb:79 (patch line 79), website host www.example.com (3 labels) and instance example.com (2 labels) skip the equal-length branch, and 'example.com'.ends_with?('.www.example.com') is false, so it returns only 'www.example.com'. With the hosts swapped, 'www.example.com'.ends_with?('.example.com') is true, so the path is appended.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0458811
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The client-side computed websiteName that tracked `model.website` was replaced by a server-computed `model.website_name` that is set once. After a user edits their website in preferences, the profile shows a stale or missing website name until a full page reload.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch drops the computed `websiteName` (`controllers/user.js.es6`), so `user.hbs:66-71` now shows `model.website_name`, which only the serializer fills in. Preferences edit that same user model (`routes/preferences.js.es6:6`), but `User.save` (`models/user.js.es6:209-213`) copies back only `bio_excerpt` and never refreshes `website_name`. Going back to the profile stays inside the parent `user` route, so `findDetails` (`routes/user.js.es6:50-58`) does not run again and the old name stays on screen until a reload.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1070664
+   }
+  },
+  {
+   "issue": "i11",
+   "path": "controllers/preferences.js.es6",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The preferences controller's `.then` refreshes only `name` and `bio_cooked` after saving, not `website_name`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "After `model.save()`, the `.then` in controllers/preferences.js.es6:117-123 updates only `name` (and the current user's name) and `bio_cooked`. The save handler in models/user.js.es6:209-213 updates only `bio_excerpt`, so nothing refreshes `website_name` after a save.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.07608430000000001
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "models/user.js.es6",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`User#save` copies back only `bio_excerpt` from the PUT response and ignores `website_name`, even though `users_controller#update` returns the full UserSerializer.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "After the PUT, `save` copies back only `bio_excerpt` (`self.set('bio_excerpt', data.user.bio_excerpt)`, app/assets/javascripts/discourse/models/user.js.es6:210), although `users_controller#update` returns the full `UserSerializer` (app/controllers/users_controller.rb:100), which now includes `website_name`. The profile header now shows `model.website_name` (user.hbs:66-71) instead of the removed `websiteName` value, which used to be recomputed from `model.website`, so after a website edit the header keeps the old name until the user details are reloaded.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0925107
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The profile template gates rendering on `model.website_name` but uses `model.website` for the href/title. When `website` is omitted, it can render text with an empty or broken link.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`website_name` is computed from `website` (app/serializers/user_serializer.rb:137-140 returns nil unless `URI(website).host` exists), and `website` is always serialized with no `include_website?` filter (line 133). So whenever the template's `model.website_name` check passes, `model.website` is present and is a URL with a host.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.04058830000000001
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`website_name` parses `URI(website)` three times and calls `discourse_host.split('.')` four times, using nested ternaries.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In app/serializers/user_serializer.rb (patch lines 67-81), `URI(website.to_s)` is written four times, and a single call runs it at most twice. `discourse_host.split('.')` is written three times (two at patch line 74, one at 76), not four, and the two ternaries sit in separate if/elsif/else branches rather than being nested; the code does repeat parsing and splitting, but the claim's counts and description are wrong.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0522733
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

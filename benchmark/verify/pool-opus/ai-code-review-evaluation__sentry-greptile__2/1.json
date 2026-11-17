@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.get_item_key (src/sentry/api/paginator.py:838-840) runs math.floor/math.ceil directly on getattr(item, 'datetime'), and organization_auditlogs.py orders it by -datetime. When a page has results, build_cursor calls this key (src/sentry/utils/cursors.py:122/137/197), so math.floor(datetime) raises TypeError and the request returns 500 for admins using ?optimized_pagination=true.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1671835
+}

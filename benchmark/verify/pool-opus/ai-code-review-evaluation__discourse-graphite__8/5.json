@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/admin/groups_controller.rb, create (patch lines 541-544) now reads params[:name] and params[:visible], and update (580-583) reads params[:alias_level], params[:visible] and params[:name]; neither looks at params[:group] any more. A legacy create sending group[name] gets name '' and fails UsernameValidator, so render_json_error returns 422. A legacy update hits `params[:visible] == \"true\"`, which is false when the field is missing, so visible is silently set to false. The in-repo JS client (group.js asJSON) was updated in the same patch, so only outside API callers break.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1731863
+}

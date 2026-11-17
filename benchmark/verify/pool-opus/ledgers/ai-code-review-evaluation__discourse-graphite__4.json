@@ -1,0 +1,905 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In TopicEmbed.import, the 'Imported from' footer interpolates url unescaped into a single-quoted <a href='#{url}'> in raw HTML. Because the post uses cook_method raw_html, the sanitizer never runs, so a crafted embed_url allows HTML/JS injection (stored XSS).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At app/models/topic_embed.rb:13, `url` is placed unescaped into `<a href='#{url}'>#{url}</a>`. Nokogiri in absolutize_urls (lines 76-96) re-parses and keeps any injected attributes or tags. Because the post is created with cook_method raw_html (line 22), Post#cook returns raw unsanitized (app/models/post.rb:309), and app/views/embed/best.html.erb:427 outputs it with `raw post.cooked`. A `'` passes both URI() and the `^https?://` check, so a crafted embed_url can inject HTML.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.162823
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The raw_html cook method returns raw unchanged and skips sanitization. Remote content is stored as cooked HTML verbatim: RSS HTML that is only CGI.unescapeHTML'd, and Readability output that keeps javascript: hrefs. Later edits of such posts are also cooked raw.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/post.rb:133, `cook` returns `raw` unchanged when cook_method is raw_html, so the sanitizing pipeline is skipped. TopicEmbed.import (topic_embed.rb, patch lines 342/356) stores RSS content that poll_feed.rb only passes through CGI.unescapeHTML, plus Readability output limited by tag and attribute lists only, which keeps hrefs such as javascript:; I inferred that from the gem's tag/attribute options because the gem source isn't in the repo. The before_save at post.rb:321 cooks every later save or edit through the same raw path, and embed/best.html.erb renders the result with `raw post.cooked`.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.18413549999999998
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "embed/best.html.erb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "embed/best.html.erb uses '<%- end if %>' instead of '<%- end %>'. The stray postfix 'if' makes the block's closing conditional on the next buffer append, or is invalid syntax.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/views/embed/best.html.erb:6 (new file, patch line 414) closes the if/else with `<%- end if %>`. Ruby reads the next compiled statement, the output-buffer append, as the `if` modifier's condition. That append returns a truthy buffer, so the template likely still renders, but only by accident: the condition is a side effect that runs before the block, which reorders the output.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0605251
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The embed iframe passes request.referer, a full URL, as postMessage's targetOrigin instead of an origin (scheme://host[:port]). The parent page therefore does not receive the resize messages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "app/views/layouts/embed.html.erb:11 (patch line 474) does pass the full request.referer as targetOrigin, but under the HTML postMessage spec the browser parses targetOrigin as a URL and compares only its origin. A full page URL therefore still matches the parent's origin, and the parent listener (app/assets/javascripts/embed.js, patch lines 82-92) receives the resize messages.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0483459
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The parent page's postMessage origin check uses substring matching (discourseUrl.indexOf(e.origin) === -1) instead of strict origin comparison. Origins that are substrings or prefixes of discourseUrl pass validation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/javascripts/embed.js:17 checks the origin with `discourseUrl.indexOf(e.origin) === -1`, so any origin that appears as a substring of discourseUrl passes. For example, `https://forum.example.co` passes when discourseUrl is `https://forum.example.com/`. The handler (lines 19-22) only sets the iframe height, so a spoofed message can only resize the embed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.054782199999999996
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The postMessage height value is used without being parsed or validated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/assets/javascripts/embed.js:19 (patch line 88), `iframe.height = e.data.height + \"px\"` uses the received value after only a truthiness check. It is never parsed (e.g. parseInt) or checked to be a positive number; the only guard is the loose `discourseUrl.indexOf(e.origin)` origin check at embed.js:15.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1547595
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "X-Frame-Options: ALLOWALL is not a valid header value and only works because browsers ignore invalid values.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's ensure_embeddable sets response.headers['X-Frame-Options'] = \"ALLOWALL\" (change.patch line 204, spec at line 841), but X-Frame-Options only allows DENY, SAMEORIGIN or ALLOW-FROM (RFC 7034). Framing works only because browsers ignore the unknown value, which effectively drops Rails' default SAMEORIGIN; removing the header would be the cleaner fix.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0317824
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Setting X-Frame-Options: ALLOWALL disables clickjacking protection. The referer check relies on a spoofable header, and it falls back to an empty string when the referer is nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In app/controllers/embed_controller.rb:202, a nil referer becomes `URI('').host`, which is nil, so the request is rejected rather than let through. An attacker's page that frames this one cannot fake the browser-sent Referer, so `X-Frame-Options: ALLOWALL` (line 204) is only sent when the referer's host is the configured embeddable_host. The described clickjacking bypass does not exist.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1597834
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "request.referer is written into a JavaScript string in the embed layout without JS-context escaping.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/views/layouts/embed.html.erb:11 puts `'<%= request.referer %>'` inside an inline `<script>` string literal. It only gets ERB's HTML escaping, not `escape_javascript` or `to_json`. HTML escaping blocks quotes and `</script>`, but backslashes still pass through, and the controller (embed_controller.rb:202) only checks that the referer's host matches.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15433470000000002
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The migration adds a column to posts with default: 1, null: false in a single step. On PostgreSQL < 11 this rewrites the table under an exclusive lock, which takes a long time on large tables.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "db/migrate/20131219203905_add_cook_method_to_posts.rb (patch line 604) runs `add_column :posts, :cook_method, :integer, default: 1, null: false` in one step. On PostgreSQL before version 11, adding a column with a non-null default rewrites the whole posts table while holding an ACCESS EXCLUSIVE lock.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0322335
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch edits an already-shipped top_topics create_table migration to add force: true. This has no effect where the migration already ran, and drops an existing top_topics table on a fresh run.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch edits the already-shipped migration db/migrate/20131223171005_create_top_topics.rb:3 (patch lines 614-615) to `create_table :top_topics, force: true`. Rails will not re-run a migration already recorded in schema_migrations, so this does nothing on existing installs; when it does run, force: true drops any existing top_topics table first.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0516265
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The create_topic_embeds migration uses force: true, which drops an existing topic_embeds table and its data.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "db/migrate/20131217174004_create_topic_embeds.rb:3 (patch line 585) calls `create_table :topic_embeds, force: true`, and in Rails this drops any existing table with that name before creating it. The risk is small: the patch creates topic_embeds for the first time, and 10 other migrations in db/migrate already use `force: true`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0511823
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "absolutize_urls treats protocol-relative URLs (//cdn.example.com/x.png) as root-relative because they start with '/'. It rewrites them to http://host/cdn.example.com/x.png in both the a[href] and img[src] loops.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/topic_embed.rb:64 and :70, any href or src that starts with '/' is rewritten as \"#{prefix}/#{x.sub(/^\\/+/, '')}\". That turns //cdn.example.com/x.png into scheme://host/cdn.example.com/x.png, using the embed URL's own scheme rather than always http, in both the a and img loops.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0484211
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "absolutize_urls duplicates the a[href]/img[src] rewriting loop.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/topic_embed.rb (patch lines 382-393), absolutize_urls has two nearly identical loops: one over `a` rewriting `href` and one over `img` rewriting `src`. Only the selector and attribute name differ, so the duplication is real, though behaviour is correct.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.147828
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "open(SiteSetting.feed_polling_url) in PollFeed fetches an unvalidated URL. This allows SSRF to internal services, file:// URLs, or cloud metadata endpoints.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/jobs/scheduled/poll_feed.rb:20 calls `open(SiteSetting.feed_polling_url)` through open-uri's Kernel#open. Nothing checks the scheme, host or IP, and the only check before it (line 7) is `.present?`, so internal and metadata hosts can be fetched; the Kernel#open fallback also accepts local file paths and even `|cmd` strings. The URL comes from an admin-only site setting (config/site_settings.yml embedding section), though anonymous embed requests can trigger the fetch via lib/topic_retriever.rb:41.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1613542
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Kernel#open is used on URLs, so a value starting with '|' executes a shell command on the server.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/jobs/scheduled/poll_feed.rb:30 calls `open(SiteSetting.feed_polling_url)` with open-uri loaded. A value that isn't a scheme:// URL falls through to Kernel#open, so an admin-set value starting with '|cmd' runs a shell command. TopicEmbed.import_remote (topic_embed.rb:48) also calls bare `open(url)`. The public embed path is guarded because URI('|...') raises and TopicRetriever#invalid_host? rejects it (topic_retriever.rb:15-18), but the Disqus importer passes links from the export file with no check.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.16637919999999998
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "import_remote fetches the URL without validating its format or scheme first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "TopicEmbed.import_remote (app/models/topic_embed.rb:44-52 in the patch) passes the URL straight to `open(url).read` with no format or scheme check. The `/^https?:\\/\\//` check only runs later inside TopicEmbed.import (line 11), after the fetch. The TopicRetriever caller only checks that the host matches embeddable_host (lib/topic_retriever.rb:15), not the scheme, and the disqus.thor caller passes t[:link] unchecked.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15668949999999998
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "import_remote calls open(url).read with no timeout, so it can hang indefinitely.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/topic_embed.rb (patch lines 364-373), the new import_remote calls `open(url).read` through open-uri with no :open_timeout or :read_timeout, and it is reached from TopicRetriever#fetch_http (patch line 742). The fetch is not strictly endless, because Net::HTTP has a default 60s read timeout per read, but a slow or stalling remote host can still tie up a job worker for a long time.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.06421190000000002
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "PollFeed calls i.content.scrub, but RSS 2.0 items with only <description> have nil content (SimpleRSS exposes content:encoded as content_encoded). This raises NoMethodError, and with retry: false and no per-item rescue it aborts the whole feed poll.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/jobs/scheduled/poll_feed.rb:34 calls `CGI.unescapeHTML(i.content.scrub)` with no nil guard and no per-item rescue, and the job sets `retry: false` (line 11). In simple-rss 1.3.1 (Gemfile:211; the gem is not vendored, so this part rests on its known behaviour), `<content:encoded>` is exposed as `content_encoded` and a missing tag returns nil, so an RSS 2.0 item with only `<description>` makes `nil.scrub` raise NoMethodError, which escapes the `each` loop and aborts the whole poll.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.0778765
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TopicEmbed.import appends to contents with << without a nil check, so it raises NoMethodError when contents is nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/models/topic_embed.rb:13 runs `contents << ...` without checking for nil, so a nil `contents` raises NoMethodError. The callers in this patch probably never pass nil: poll_feed.rb:35 passes the String returned by `CGI.unescapeHTML(i.content.scrub)`, and topic_embed.rb:52 passes Readability's `doc.content`, which is normally a String.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0707431
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "contents << mutates the caller's string argument.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/models/topic_embed.rb:13 (patch line 333) runs `contents << \"\\n<hr>...\"`, and `<<` appends in place, so the string the caller passed in is changed. The current callers pass fresh strings (`CGI.unescapeHTML(...)` in app/jobs/scheduled/poll_feed.rb:35-36 and `doc.content` in topic_embed.rb:52), so no wrong output shows up today, but a frozen string argument would raise an error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0773476
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new feed-import and remote-fetch paths have no tests. PollFeed#poll_feed is always stubbed, TopicEmbed.import_remote and absolutize_urls are never exercised, and TopicRetriever#perform_retrieve/fetch_http are always mocked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Part of the claim is wrong: absolutize_urls is exercised, because TopicEmbed.import calls it (app/models/topic_embed.rb:28) and spec/models/topic_embed_spec.rb:34 checks that relative href/src URLs become absolute. The other points hold: poll_feed is always mocked with expects (spec/jobs/poll_feed_spec.rb:14-35), import_remote is never called in any spec, perform_retrieve is always mocked (spec/components/topic_retriever_spec.rb), and fetch_http is never reached.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.10905519999999999
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The specs stub private methods (perform_retrieve, retrieved_recently?), and the controller spec mocks TopicRetriever.new, which the controller never calls directly. The redis throttle is never tested.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "spec/components/topic_retriever_spec.rb:763-793 stubs the private methods perform_retrieve and retrieved_recently?, and the only tests that reach retrieved_recently? stub it, so the $redis.setnx/expire throttle in lib/topic_retriever.rb:711-723 is never run. spec/controllers/embed_controller_spec.rb:847 mocks TopicRetriever.new, but the controller only calls Jobs.enqueue(:retrieve_topic) (app/controllers/embed_controller.rb:191); the mock works only because app/jobs/base.rb:168-172 runs jobs synchronously when queue_jobs? is false.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1810803
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'is 404 without an embed_url' spec passes only because ensure_embeddable raises InvalidAccess (403) first, so the missing-param path is never exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The spec at spec/controllers/embed_controller_spec.rb:812-815 never stubs `embeddable_host`, so it uses the default '' (config/site_settings.yml:550). The `before_filter :ensure_embeddable` in app/controllers/embed_controller.rb:201 therefore raises InvalidAccess before `params.require(:embed_url)` on line 185 runs, and the test's `should_not be_success` only checks that the response failed, not why.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1525414
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'requires feed_polling_url' and 'requires embed_by_username' specs pass vacuously, because feed_polling_enabled defaults to false and execute returns at the first guard.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`feed_polling_enabled` defaults to false (config/site_settings.yml:551), and the 'requires feed_polling_url' and 'requires embed_by_username' specs (spec/jobs/poll_feed_spec.rb:886-896) never stub it to true. So `execute` stops at the first `SiteSetting.feed_polling_enabled?` check (app/jobs/scheduled/poll_feed.rb:261), and the specs pass whatever the url and username checks do.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15167519999999998
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Assertions are placed in an after block.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "spec/controllers/embed_controller_spec.rb:35-38 (new file) has an `after do` block that holds the assertions `response.should be_success` and `response.headers['X-Frame-Options'].should == \"ALLOWALL\"`. The 'success' examples rely on these instead of asserting in their own bodies.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1499856
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "embed_controller_spec expects EmbedController#best to instantiate TopicRetriever and call retrieve, but the controller enqueues the :retrieve_topic job instead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The controller does call Jobs.enqueue(:retrieve_topic) (app/controllers/embed_controller.rb:191), but queue_jobs is false in tests (config/site_settings.yml:348-350). So Jobs.enqueue runs the job right away (app/jobs/base.rb:168-172, 85-89), and Jobs::RetrieveTopic#execute calls TopicRetriever.new(...).retrieve (app/jobs/regular/retrieve_topic.rb:233 in the patch). That satisfies the expectations at spec/controllers/embed_controller_spec.rb:844-850, so the spec and the controller don't conflict.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.25843059999999995
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "require of email/sender is unused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new file app/jobs/regular/retrieve_topic.rb:1 loads 'email/sender', but the job only uses User and TopicRetriever (lines 9-18). lib/topic_retriever.rb doesn't use Email either, so the require does nothing.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0397611
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The feed_key method and require 'digest/sha1' are unused dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`feed_key` is defined at app/jobs/scheduled/poll_feed.rb:20-22 and nothing in the repository calls it; `poll_feed` and `execute` never use it. In that file, `require 'digest/sha1'` (line 4) is only needed by `feed_key`, so both are dead code.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1511863
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "PollFeed requires PostCreator/PostRevisor, which it does not use. TopicEmbed uses them and open-uri but has no requires, and works only because of load order.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/jobs/scheduled/poll_feed.rb:5-7 requires post_creator, post_revisor and open-uri, but the job only calls SimpleRSS, open and TopicEmbed.import. app/models/topic_embed.rb uses PostCreator (line 22), PostRevisor (line 35) and open(url) (line 48) but requires only nokogiri. lib/ is not on the autoload path (config/application.rb:46-48 adds only lib/validators), so TopicEmbed works only if something else has already loaded those files.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.18348509999999998
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The embed.permalink locale key is unused.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `embed.permalink` at config/locales/server.en.yml (patch line 510), but nothing references it. The embed views (app/views/embed/best.html.erb, loading.html.erb) and app/models/topic_embed.rb:13 use only embed.title, start_discussion, continue, loading and imported_from.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.053257500000000006
+   }
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The throttle calls setnx and then expire as two separate calls. A failure between them leaves a key with no TTL, so retrieval of that URL is blocked permanently.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In lib/topic_retriever.rb:27-28, `$redis.setnx(retrieved_key, \"1\")` and `$redis.expire(retrieved_key, 60)` are two separate calls that are not atomic. If the process or Redis connection fails between them, `retrieved:<url>` stays with no TTL, so `retrieved_recently?` returns true forever and `retrieve` (line 9) never fetches that URL. The only exception is callers that pass `no_throttle`.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0500975
+   }
+  },
+  {
+   "issue": "i33",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Each anonymous request with a distinct embed_url on an embeddable host enqueues RetrieveTopic. That job runs a full synchronous PollFeed#execute and can create a new topic. The throttle is keyed per exact URL, so outbound fetches and feed processing are unbounded.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "EmbedController#best (app/controllers/embed_controller.rb:185-191) queues :retrieve_topic for any embed_url not already stored, and the only check is a Referer header that a client can fake. TopicRetriever's throttle uses the key \"retrieved:#{@embed_url}\" (lib/topic_retriever.rb:716), so URLs that differ, for example only in the query string, all pass it, and each one runs Jobs::PollFeed.new.execute synchronously (line 731) and then import_remote, which fetches the page and creates a topic (topic_embed.rb:368-372, 340-349).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1568594
+   }
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no guard for a missing #discourse-comments container, so appendChild throws when it does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/assets/javascripts/embed.js:3-10, the patch calls `document.getElementById('discourse-comments')` and then `comments.appendChild(iframe)` with no null check, so a page without that element gets a TypeError. This only happens when the host page is set up wrongly, and the comments would not render with or without a guard.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1514064
+   }
+  },
+  {
+   "issue": "i35",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The spec uses the deprecated RSpec matcher be_true instead of be true.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The new spec does use `be_true` (spec/models/topic_embed_spec.rb, patch line 948), but the project is pinned to RSpec 2.14 (Gemfile.lock:360-365), where `be_true` is current and not deprecated. The rest of the suite uses `should be_true` about 251 times across 69 files, so this line follows the codebase convention.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0457966
+   }
+  },
+  {
+   "issue": "i36",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Disqus import regresses in several ways: the --category option is removed, created_at is not preserved, and each thread does a live HTTP fetch with no rescue. Also, open-uri is not required, and re-runs duplicate comments because import returns the existing post.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes the `--category` option and its `category_id` lookup, and swaps `PostCreator.new(..., created_at:, category:)` for `TopicEmbed.import_remote(user, t[:link], title:)` (lib/tasks/disqus.thor:148). That call does an unrescued `open(url).read` per thread, passes no created_at or category, and its file never requires 'open-uri' (app/models/topic_embed.rb:364-373); open-uri may still load through other files, so that point is the weakest. On a re-run, `import` returns the existing `embed.post` (topic_embed.rb:351-361), so every Disqus comment is created again in the same topic (disqus.thor:150-176).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2055222
+   }
+  },
+  {
+   "issue": "i37",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The header branch duplicates link_to calls that differ only by i18n key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/views/embed/best.html.erb:2-6, the header's if/else branches each have the same link_to(..., @topic_view.topic.url, class: 'button', target: '_blank') call, differing only in the i18n key ('embed.title' vs 'embed.start_discussion'). The patch adds this new file.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1575578
+   }
+  },
+  {
+   "issue": "i38",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "opts=nil is followed by opts = opts || {} instead of using opts={}, and there are no spaces around '='.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `def self.import_remote(user, url, opts=nil)` with no spaces around `=` at app/models/topic_embed.rb:44, then `opts = opts || {}` at line 47; lib/topic_retriever.rb:3,5 does the same with `opts=nil` and `@opts = opts || {}`, where a default of `opts={}` would do.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.049649399999999996
+   }
+  },
+  {
+   "issue": "i39",
+   "path": "lib/post_revisor.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch contains unrelated whitespace changes in a shipped migration and removes a blank line in lib/post_revisor.rb:11.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes only whitespace in the already-shipped migration db/migrate/20131210181901_migrate_word_counts.rb (line 3: trailing spaces removed; last line: trailing newline dropped). It also deletes the blank line after `return false if not should_revise?` in lib/post_revisor.rb, in the hunk at @@ -11; that line is old line 14, not 11.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.062819
+   }
+  },
+  {
+   "issue": "i40",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Disqus importer sets both raw and cooked to p[:cooked], so raw contains HTML instead of source text.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In lib/tasks/disqus.thor:162-163, the post attributes set both `raw: p[:cooked]` and `cooked: p[:cooked]`, so raw holds the HTML that Disqus exports. The patch only changes how the topic is created (line 148, `TopicEmbed.import_remote`) and does not touch these lines.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.05748930000000001
+   }
+  },
+  {
+   "issue": "i41",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Deleting an imported post or topic breaks the embed permanently because TopicEmbed rows are never cleaned up. A missing post makes PostRevisor.new(nil).revise! raise, and a trashed topic keeps returning its id, so comments return 404.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Posts and topics are soft-deleted and hidden by a default scope (lib/trashable.rb:5), and nothing removes or checks the TopicEmbed row. So in app/models/topic_embed.rb:352-356, `embed.post` returns nil for a trashed post, and when the feed content changes `PostRevisor.new(nil).revise!` crashes on `@post.raw` (lib/post_revisor.rb:27). Separately, `topic_id_for_embed` (topic_embed.rb:399) still returns a trashed topic's id; for non-staff users `TopicView#find_topic` then returns nil and raises NotFound (lib/topic_view.rb:261-262, 300), and the retriever never re-imports because the embed row still exists (lib/topic_retriever.rb:727).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2299632
+   }
+  },
+  {
+   "issue": "i42",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new gems (simple-rss, ruby-readability) are added only to Gemfile_rails4.lock, not to Gemfile.lock or Gemfile_rails_master.lock.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds ruby-readability and simple-rss to Gemfile:210-211 but updates only Gemfile_rails4.lock (patch lines 16-58); neither gem appears in Gemfile.lock or Gemfile_rails_master.lock. The Gemfile:23-26 dual-boot code picks Gemfile.lock for RAILS3 mode and Gemfile_rails_master.lock for RAILS_MASTER mode, so those two lockfiles are now out of date.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0647964
+   }
+  },
+  {
+   "issue": "i43",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SiteSetting.embed_by_username has .downcase called on it without a blank guard.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "lib/topic_retriever.rb:49 (fetch_http) calls SiteSetting.embed_by_username.downcase with no present?/blank? guard, unlike app/jobs/scheduled/poll_feed.rb:17. In practice it is harmless: the setting defaults to '' (config/site_settings.yml:357), ''.downcase is safe, and line 50 returns early when no user is found, so only a nil value (which a string setting should not hold) would crash.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0631743
+   }
+  },
+  {
+   "issue": "i44",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "poll_feed has no error handling for network or parsing failures.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/jobs/scheduled/poll_feed.rb:24-38, `open(SiteSetting.feed_polling_url)`, `SimpleRSS.parse` and the per-item loop (`i.content.scrub`, `TopicEmbed.import`) have no begin/rescue, so a network, parse or nil-content error fails the whole job and skips the remaining items. The job runs hourly and Sidekiq records the exception, so the damage is limited.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.057760900000000004
+   }
+  },
+  {
+   "issue": "i45",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cook_method option is persisted without validation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "lib/post_creator.rb:216 (patch line 627) copies @opts[:cook_method] straight onto the post, and app/models/post.rb has no check that the value is one of Post.cook_methods (only PostValidator at :40). However, users can't set it: PostsController#create_params (app/controllers/posts_controller.rb:226-253) does not allow cook_method, and the only caller (app/models/topic_embed.rb:22) passes the constant Post.cook_methods[:raw_html].",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.203293
+   }
+  },
+  {
+   "issue": "i46",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Avatar rendering interpolates the URL directly instead of using image_tag.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/views/embed/best.html.erb:10 (patch line 424) writes the avatar as `<img src='<%= post.user.small_avatar_url %>'>`, while the logo in the same file (line 8) uses image_tag. ERB `<%=` still HTML-escapes the URL, so this is an inconsistency rather than an injection.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.147596
+   }
+  },
+  {
+   "issue": "i47",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "discourse_expires_in caches via Middleware::AnonymousCache keyed only on HTTP_HOST + REQUEST_URI. The cached response is served to any Referer without running ensure_embeddable, and the first requester's referer is baked into the cached layout.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "EmbedController#best calls discourse_expires_in (app/controllers/embed_controller.rb:195 in the patch), which sets ANON_CACHE_DURATION for anonymous users (app/controllers/application_controller.rb:168-171). The cache key is only HTTP_HOST + REQUEST_URI (lib/middleware/anonymous_cache.rb:14), and the middleware is inserted at position 0 (config/initializers/99-rack-cache.rb:10), so a cache hit returns the stored body and headers, including X-Frame-Options ALLOWALL, before ensure_embeddable runs; the first requester's referer, which layouts/embed.html.erb writes into the page, is stored with it.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.19404509999999997
+   }
+  },
+  {
+   "issue": "i48",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Date.parse discards the time component of the feed item timestamp.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "After the patch, nothing calls Date.parse on a feed item timestamp. poll_feed (app/jobs/scheduled/poll_feed.rb, patch lines 277-283) and TopicEmbed.import never read the item date at all, and the only Date.parse (the Disqus created_at in lib/tasks/disqus.thor, patch line 678) is deleted by this patch.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.089587
+   }
+  },
+  {
+   "issue": "i49",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "content_sha1 is updated even when PostRevisor#revise! returns false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/topic_embed.rb:356-357 (patch lines 356-357), `embed.update_column(:content_sha1, content_sha1)` runs right after `revisor.revise!(...)` without checking what it returns, so the hash is saved even when revise! returns false. However, lib/post_revisor.rb:13,26-28 shows revise! only returns false when the post's raw text already equals the new raw text, so in practice saving the hash then does little harm.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.16338160000000002
+   }
+  },
+  {
+   "issue": "i50",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "{best: 5} lacks spaces inside the braces.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The hash is written `{best: 5}` with no spaces inside the braces at app/controllers/embed_controller.rb:13, and the same form appears at spec/controllers/embed_controller_spec.rb:50. The patch adds both files.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.046809800000000006
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

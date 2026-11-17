@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/integrations/mixins/issues.py:389-390, should_sync returns False whenever sync_source.integration_id equals the target org_integration.integration_id. sync_group_assignee_inbound (src/sentry/integrations/utils/sync.py:96-116) tags every inbound change with only the integration ID, and sync_group_assignee_outbound (sync.py:131-145) sends it to every linked external issue. So a second issue on the same integration that is linked to the same group no longer gets the assignee, although it did before the patch.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1100874
+}

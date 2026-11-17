@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/index.ts:3-30 sets every key to a bare `import(\"./x\")` inside the `appStore` object literal. Each of those calls starts loading its module as soon as index.ts is evaluated, so all 28 apps still load when the package is first imported. Callers such as getCalendar.ts:17 only `await` a promise that has already started, so loading becomes asynchronous but not lazy; deferring it needs thunks (`() => import(...)`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0763946
+}

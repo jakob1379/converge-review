@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/index.ts:2 has the commented-out `// example: import(\"./example\"),`, while the line it replaced read `// import * as example from \"./_example\";` and apps/docs/pages/developer/app-store.mdx:11-14 names the folder `_example`. Neither `_example` nor `example` exists under packages/app-store in this checkout, so it is a dead comment with an inconsistent path and no functional effect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.25319079999999994
+}

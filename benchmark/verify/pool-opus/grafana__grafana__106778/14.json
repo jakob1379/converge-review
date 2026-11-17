@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The @deprecated tag at hooks/useAbilities.ts (patch line 388) does give no reason, but the claim's main point is wrong. After the patch, useAllAlertRuleAbilities just calls useAllRulerRuleAbilities(rule.rulerRule, groupIdentifierV2) (patch line 397), so both hooks behave the same, and switching to the replacement changes nothing. The real issue is that the patch removed isFederatedRuleGroup(rule.group) and now hardcodes isFederated=false (patch lines 420-426), so federated groups are no longer treated as read-only \u2014 a separate problem from the deprecation note.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.07765720000000001
+}

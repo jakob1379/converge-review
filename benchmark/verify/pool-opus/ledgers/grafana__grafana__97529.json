@@ -1,0 +1,311 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch skips the only postgres integration test of storage-server startup and /metrics instead of fixing it. This removes coverage for a supported backend and hides the startup failure that eager Init exposes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/server/module_server_test.go:35-38 adds an unconditional postgres skip, marked with a TODO, to TestIntegrationWillRunInstrumentationServerWhenTargetHasNoHttpServer. This is the only test that starts the StorageServer target and checks /metrics. The patch also makes NewResourceServer call Init eagerly (resource/server.go:258-262), so postgres startup now fails in CI, likely because the test uses db_host \"localhost\" (lines 75-79). The skip hides that failure instead of fixing it, and only mysql keeps this coverage.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0986041
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test hardcodes db_host 'localhost' for postgres, but Drone runs postgres at host 'postgres'. Startup therefore fails when eager init opens the DB in NewResourceServer.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The localhost hardcoding is real (pkg/server/module_server_test.go:76), and Drone does set POSTGRES_HOST to postgres (.drone.yml:1155). But this patch adds a skip for postgres at module_server_test.go:36-38, before addStorageServerToConfig is called, so the test never starts up against postgres and the claimed failure cannot happen as the code stands.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.1011917
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The function-wide cacheMu lock was removed from BuildIndex, so concurrent callers (e.g. a Search request and handleEvent via getOrCreateIndex) can build the same key at once. The last writer wins, one built index goes untracked or its documents are lost, and file-backed indexes can be created concurrently in the same directory.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch takes the function-wide cacheMu lock out of BuildIndex. The lock is now held only around `b.cache[key] = idx` (pkg/storage/unified/search/bleve.go:137-139), so a Search and the handleEvent goroutine that both get nil from GetIndex in getOrCreateIndex (search.go:292-298) can now build the same key at the same time, and the last write to the cache wins. Some of this was already possible before the patch, because the old lock never covered the GetIndex-then-build check; also, the shared-directory part needs FileThreshold set below 10, since getOrCreateIndex passes size 10 and the default threshold is 10.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.16635830000000001
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "File-based indexes above index_file_threshold are created with bleve.New(dir) under a deterministic path. bleve v2 returns ErrorIndexPathExists when that directory already exists and nothing removes or reopens it, so NewResourceServer fails on every restart after the first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/storage/unified/search/bleve.go:96-98 calls bleve.New(dir) on the fixed path Root/<namespace>/<resource>.<group> whenever size > FileThreshold. Nothing in the backend removes or reopens an existing index there, and bleve.New returns ErrorIndexPathExists if that path already exists. That error passes through searchSupport.init (resource/search.go:190-198) into s.Init, which the patch now calls inside NewResourceServer (server.go hunk at line 255), so building the server fails on every restart. The bleve.New behaviour is from bleve v2 itself; I couldn't read the module cache to double-check it here.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.19749339999999999
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Eager Init runs inside the wire graph for every Grafana process on context.Background() with no deadline. A DB or search failure or hang now blocks Grafana startup.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `s.Init(ctx)` to `NewResourceServer` (pkg/storage/unified/resource/server.go:258-262). That ctx comes from `context.WithCancel(context.Background())` with no deadline (server.go:229). Init is reached from `ProvideUnifiedStorageClient` in the wire graph (pkg/server/wire.go:212; client.go:101, the default/legacy storage path). So backend DB init and ping (sql/backend.go:93-106) and, when the search flag is on, a full search index build (resource/search.go:181-198) now run during startup. Any error from these makes the provider fail, and a hang stalls startup with no timeout.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2069449
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "With the per-request s.Init(ctx) check removed, handlers (Create, Update, Delete, Read, List, Watch, Search, History, Origin, PutBlob, GetBlob) no longer reject requests after Stop is called. Writes can then reach the still-open DB with the poller cancelled, so Watch returns io.EOF and no events are published.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Stop sets s.initErr to \"service is stopping\"/\"service is stopped\" (pkg/storage/unified/resource/server.go:321,339). The per-request s.Init(ctx) checks were the only thing returning that error to callers, and the patch removes them from all the handlers (patch lines 106-216). After Stop, backend.Stop only cancels the poller (sql/backend.go:119-121) and leaves the DB open, so writes still succeed. Watch's broadcaster.Subscribe then returns io.EOF once the broadcaster has terminated (broadcaster.go:131-132), so Watch fails with io.EOF and no events are published.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1480749
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "IsHealthy reports healthy while the server is stopping or stopped.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Before this patch, IsHealthy called s.Init(), which returned the s.initErr that Stop() sets to \"service is stopping\" or \"service is stopped\" (pkg/storage/unified/resource/server.go:321,339). The patch removes that call, so IsHealthy (server.go:934-935) now just calls diagnostics.IsHealthy. For the SQL backend that only pings the DB and returns SERVING (sql/backend.go:109-116), and backend.Stop only cancels a context without closing the DB (sql/backend.go:119-122).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1377293
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "With the per-request Init calls removed, initErr has no reader after construction, so the writes to initErr in Stop are dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "initErr is still read after construction: Stop sets it at pkg/storage/unified/resource/server.go:328 and returns it at line 337, so that write is used. Only the sentinel writes at lines 321 and 339 have no reader now that Init is called only from NewResourceServer (server.go:258). So the claim is partly right, but its blanket statement is wrong.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.15386060000000001
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The sync.Once and initErr gating in Init are dead scaffolding. Init's only caller is the constructor, *server is unexported, and Init is not on the ResourceServer interface, so the once guard can never be hit twice.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "After the patch, the only call to `(*server).Init` is in `NewResourceServer` (pkg/storage/unified/resource/server.go:258). The patch removed every per-RPC `s.Init(ctx)` call, `ResourceServer` (server.go:27-32) does not include `Init`, and nothing in pkg asserts the server to `LifecycleHooks` or to an interface with `Init`, so `once.Do` (server.go:294) runs only once. `initErr` (server.go:289) now only carries the error within that single call and could be a local variable.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.15300410000000003
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is an untracked TODO about the RV short-circuit optimization.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/storage/unified/search/bleve.go (~line 100, patch line 245) now has a bare `// TODO, check last RV so we can see if the numbers have changed` comment with no issue link or owner, so the RV short-circuit for file-based indexes is still not done. Before the patch the same note was a `b.log.Info(\"TODO...\")` call; the patch turned it into an untracked comment.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.044658
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Docstring coverage is 0.00%, below the required 80.00% threshold.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Several functions the patch touches already have Go doc comments, for example `Init` (server.go:292), `History`/`Origin`/`IsHealthy` (server.go:923, 928, 933) and `init` (search.go:171), so coverage cannot be 0.00%. The patch adds no new functions, and nothing in the repository sets an 80% docstring threshold.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0903805
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The init error is logged twice with the identical message 'error initializing resource server', once inside Init and once in NewResourceServer, and is also returned to the caller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/storage/unified/resource/server.go, Init logs 'error initializing resource server' at line 314 and returns s.initErr at line 317. The patch adds a call in NewResourceServer (lines 258-261) that logs the same message with the same error again and then returns it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0785543
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When Init fails, NewResourceServer returns (nil, err) without calling cancel() or lifecycle.Stop. This leaks the context, and if search.init succeeded before initWatcher failed, it also leaks the search watch goroutine and its sql poller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "server.go:258-262 returns (nil, err) when Init fails, without calling s.cancel() or s.lifecycle.Stop(), and the caller gets nil so it can't clean up either. Now that search.init runs before initWatcher (server.go:304-311), a successful search.init has already started the event goroutine and the sql poller (search.go:202-213, sql/backend.go:558-566). Only backend.Stop's b.cancel() (sql/backend.go:119-121) stops that poller, so a later initWatcher failure leaves both running.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.13395310000000002
+   }
+  },
+  {
+   "issue": "i14",
+   "path": "apistore/watcher_test.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers NewResourceServer returning lifecycle/search/watcher init errors or handlers working without lazy Init. apistore/watcher_test.go still calls Init manually before construction, which is now redundant.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new `s.Init(ctx)` error return in `NewResourceServer` (resource/server.go:258-262) has no test: `resource/server_test.go`, `sql/test/integration_test.go` and `apistore/watcher_test.go:122-156` only assert NoError, and none check that handlers work without lazy Init. The manual `ret.Init(ctx)` at `apistore/watcher_test.go:148` is a harmless duplicate because both `backend.Init` and `server.Init` run only once, but it was already a duplicate before this patch, so 'now redundant' overstates the change.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.12982549999999998
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In searchSupport.init with initWorkers > 1, totalBatchesIndexed++ is a non-atomic increment from multiple concurrent goroutines, which is a data race.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At pkg/storage/unified/resource/search.go:177-192, each errgroup goroutine runs `totalBatchesIndexed++` on a plain shared int with no lock or atomic, and `group.SetLimit(s.initWorkers)` lets more than one of them run at once, so this is a data race. The shared `err` assignment at line 190 races the same way; none of these lines are in the patch, and the counter is read only for a tracing attribute at line 199.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0896325
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In searchSupport.init with initWorkers > 1, errgroup goroutines write the shared outer err variable without synchronization (assigned with = rather than :=), so one worker's error can be overwritten by another's nil and lost. The narrowed lock makes these builds truly parallel.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/storage/unified/resource/search.go:190, every errgroup goroutine assigns to the shared outer `err` from line 181 with `=` and then returns it at line 191. With no synchronization, worker B can write nil after worker A writes its error, so A returns nil and group.Wait (line 195) never sees the failure. The patch removes the lock that covered the whole of bleve BuildIndex (bleve.go:231-232) and now locks only the cache write (bleve.go:254-256), so builds really overlap and the race is easier to hit.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0895436
+   }
+  },
+  {
+   "issue": "i17",
+   "path": "resource/bleve_index_metrics.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "bleveBackend.TotalDocs iterates b.cache without holding cacheMu, while BuildIndex writes the map concurrently. Callers include the new startup log in searchSupport.init (after the watch goroutine starts) and BleveIndexMetrics.Collect on every scrape, so concurrent map iteration and write can cause a fatal runtime panic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`TotalDocs` (pkg/storage/unified/search/bleve.go:144-153) loops over `b.cache` without taking `cacheMu`, while `BuildIndex` writes the map at bleve.go:137-139 and can run in the watch goroutine started at search.go:207-213 via `handleEvent`, `getOrCreateIndex` and `build`. Both the new startup log at search.go:216 and `Collect` at bleve_index_metrics.go:96 can therefore read the map while it is being written, which can make the Go runtime abort with \"concurrent map iteration and map write\".",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1568019
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

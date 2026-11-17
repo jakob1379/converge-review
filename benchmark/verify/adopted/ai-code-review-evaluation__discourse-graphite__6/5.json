@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new specs at spec/serializers/user_serializer_spec.rb:77-90 test three cases: a different domain, an exact host match, and a website that is the parent domain of the instance. None uses two hosts with the same number of labels and more than two labels (for example www.example.com vs forum.example.com), so the sibling-subdomain branch at app/serializers/user_serializer.rb:74-76 has no test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0493416
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/monitors/logic/incident_occurrence.py:160-162 builds a modified copy `config` with the schedule_type display value, but line 168 returns `monitor_environment.monitor.config` (the original), so the copy is dead code. The patch only moved this function verbatim from mark_failed.py (identical removed lines at change.patch:563-575), so the bug pre-exists.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10517910000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/apps/components/CredentialActionsDropdown.tsx:69 computes `hasCache = isGoogleCalendar && cacheUpdatedAt` without consulting `disableConnectionModification` (only `canDisconnect` at :68 does), so the destructive 'Delete cached data' item at :98-109 renders whenever a Google credential has cache. EventAdvancedTab.tsx:375 passes `disableConnectionModification={true}`, and the pre-patch wrapper rendered no actions for the normal calendar card in that case (removed guard `!disableConnectionModification && (<DisconnectIntegration/>)` in SelectedCalendarsSettingsWebWrapper.tsx).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.40950719999999996
+}

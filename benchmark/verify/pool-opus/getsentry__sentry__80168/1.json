@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/incidents/grouptype.py:11-12 makes MetricAlertDetectorHandler a subclass of StatefulDetectorHandler whose body is only `pass`, but processors/detector.py:143-167 marks counter_names, get_dedupe_value, get_group_key_values and build_occurrence_and_event_data as @abc.abstractmethod. So the `group_type.detector_handler(self)` call in models/detector.py:86, for the MetricAlertFire type (grouptype.py:27), raises TypeError when it tries to instantiate an abstract class.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16106730000000002
+}

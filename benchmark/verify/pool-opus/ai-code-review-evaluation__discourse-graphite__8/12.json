@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new remove_member action in app/controllers/admin/groups_controller.rb (patch line 649) calls group.users.delete(user_id) and never clears User.primary_group_id. Before this patch, removing someone through usernames= went through Group#destroy_deletions (app/models/group.rb:287-291), which did clear it, and post_serializer.rb:96-102 still shows that group as the user's flair. One part of the claim is wrong: Group#remove (group.rb:276-278) does not clear primary_group_id either, so switching to it would not fix this.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2004104
+}

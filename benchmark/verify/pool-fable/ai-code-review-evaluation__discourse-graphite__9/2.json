@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The `||=` at lib/freedom_patches/translate_accelerator.rb:63 is indeed outside LOAD_MUTEX, but the claimed harm is not reachable: `@loaded_locales` is already `[]` from `reload!` (line 40), which the Rails 4.1 I18n railtie runs at boot (gem behaviour, not checked in this repo), and the existing `translate` at line 68 already dereferences it with no nil guard. The unsynchronised `include?` at line 64 is only a fast path, since `load_locale` re-checks and appends under the mutex (lines 47-58), so no write is lost and nothing loads twice.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2396413
+}

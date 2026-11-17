@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In scheduleSMSReminders.ts:38-42 the `{ retryCount: { gt: 1 } }` OR branch has no `method: WorkflowMethods.SMS` filter; only the date branch at lines 32-37 has one, so the deleteMany would remove any method's rows with retryCount > 1. It is latent today: the only code that increments retryCount is the SMS cron (scheduleSMSReminders.ts:184 and :195), and it only touches SMS rows.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0659693
+}

@@ -1,0 +1,705 @@
+{
+ "pr_url": "https://github.com/calcom/cal.com/pull/10967",
+ "cost_usd": 0.1518189,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review",
+   "text": "Each team member's Google event is inserted with main host as organizer and same conferenceData requestId - may cause duplicate events and separate Meet links"
+  },
+  {
+   "id": "c2",
+   "source": "augment",
+   "text": "selectedCalendar can be undefined when no destination calendar matches credentialId, but later code uses it directly (e.g., calendar.events.patch({ calendarId: selectedCalendar, ... })) which can result in invalid Google API calls or missed patching when falling back to primary for the initial insert"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "Collective fix does nothing when neither event type nor organizer has destination calendar - evt.destinationCalendar?.push drops every team member's calendar when evt.destinationCalendar is null"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "teamDestinationCalendars filled through side effect inside async .map callback - only works because push runs before first await"
+  },
+  {
+   "id": "c5",
+   "source": "coderabbit",
+   "text": "In requestReschedule.handler.ts lines 240-242, the second optional chain in bookingToReschedule?.destinationCalendar is redundant since bookingToReschedule is already checked in the truthy branch"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "Fallback calendar ID in updateEvent (line 256) and deleteEvent (line 317) is dead code - the find() only runs when externalCalendarId is falsy so it can never match, causing update to send calendarId: undefined which fails"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "No test covers core behavior change - fan-out over multiple destination calendars, reference credentialId/externalId mapping, and multi-reference update/cancel/reschedule"
+  },
+  {
+   "id": "c8",
+   "source": "qodo-extended-v2",
+   "text": "EventManager.createAllCalendarEvents loops over every destinationCalendar entry but passes the full event containing all destinationCalendars into each integration, causing Office365/Lark integrations to read only the first destinationCalendar and create events against the wrong calendar id/token combination for secondary hosts"
+  },
+  {
+   "id": "c9",
+   "source": "golden",
+   "text": "Logic error: when externalCalendarId is provided, you're searching for a calendar where externalId === externalCalendarId, but this will always fail since you're looking for a calendar that matches itself. Should likely find by credentialId or use different logic."
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "schedulingType added to CalendarEvent but nothing reads it - only leaks into webhook payloads"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "Organization slug condition is inverted - with billing on, org gets slug before payment; with billing off (self-hosted), it gets no slug causing NoOrganizationSlugError"
+  },
+  {
+   "id": "c12",
+   "source": "coderabbit",
+   "text": "Line 119 in EventManager dereferences mainHostDestinationCalendar.integration even when evt.destinationCalendar is null or empty, throwing before the Daily fallback can run for the 'Meet without Google Calendar' path"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review",
+   "text": "Destination with no credentialId fans out to every organizer credential of that integration - duplicates events and references lose externalCalendarId"
+  },
+  {
+   "id": "c14",
+   "source": "coderabbit",
+   "text": "Lines 338-380 in EventManager iterate event.destinationCalendar but each provider call still receives the full destination array, causing providers that read the first entry to create every collective event on the first host's calendar instead of the current destination"
+  },
+  {
+   "id": "c15",
+   "source": "augment",
+   "text": "If reference.credentialId points to a missing/removed credential and the DB lookup doesn't return an app slug, credential can remain falsy and updateEvent(credential, ...) will throw - need to handle the credential not found case before calling updateEvent"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "updateAllCalendarEvents catch block removed console.error(message) - failures swallowed without log and message is dead code"
+  },
+  {
+   "id": "c17",
+   "source": "coderabbit",
+   "text": "Lines 449-458 in handleCancelBooking ignore the current reference and use updBooking.references.find(), so each updated booking contributes at most one _calendar reference. In collective bookings with one calendar reference per host, the first host gets hit repeatedly while other hosts' events are never deleted. This branch also switches back to bookingToDelete.user.credentials, dropping a DB-fetched team credential"
+  },
+  {
+   "id": "c18",
+   "source": "coderabbit",
+   "text": "Lines 1063-1067 in handleNewBooking initialize evt.destinationCalendar to null when neither eventType nor organizerUser has a destination calendar, and lines 1077-1079 use optional chaining so teamDestinationCalendars are never appended. Collective events where only secondary hosts have calendars will be created with no destination calendars"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "When cancelling recurring booking, series-delete block runs once per calendar reference causing N duplicate deletes - block sits inside for loop but doesn't depend on reference, and only uses first calendar reference, leaving other hosts' copies never deleted"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "Reschedule merge only deletes one old calendar event using .find - other hosts' old copies remain"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "Bookings with a Google Meet location crash with a TypeError when no destination calendar is set - Line 118 destructures evt.destinationCalendar with fallback to empty array yielding undefined, then line 119 reads mainHostDestinationCalendar.integration without optional chaining, causing 'Cannot read properties of undefined (reading integration)'"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "Two parameters carry target calendar redundantly - EventManager passes externalId to CalendarManager.createEvent which only echoes it back, then credentialId where Google searches again"
+  },
+  {
+   "id": "c23",
+   "source": "cubic-v2",
+   "text": "The fallback compares every calendar ID to `externalCalendarId`, so when that argument is missing updates stop targeting the event's destination calendar"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "Dynamic group bookings not covered - TODO removed but only handles eventType.schedulingType === 'COLLECTIVE'"
+  },
+  {
+   "id": "c25",
+   "source": "claude-code",
+   "text": "GoogleCalendarService updateEvent (line 256) and deleteEvent (line 317) have broken fallback logic - the else branch searches .find(cal => cal.externalId === externalCalendarId) but externalCalendarId is falsy there, so it never matches"
+  },
+  {
+   "id": "c26",
+   "source": "coderabbit",
+   "text": "Lines 128, 164, 192, and 237 in LarkCalendarService select event.destinationCalendar[0] blindly which targets the first calendar, incorrect in collective flows where multiple destination calendars with different credentials exist"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review-replay",
+   "text": "User-visible calendar-note text changed from 'organiser' to 'organizer' at CalendarManager.ts:230, unrelated to the PR"
+  },
+  {
+   "id": "c28",
+   "source": "claude-code",
+   "text": "organizations/create.handler.ts:151 reverses the slug assignment logic - old: slug set when billing disabled, new: slug set when billing enabled"
+  },
+  {
+   "id": "c29",
+   "source": "coderabbit",
+   "text": "The nullish fallback in lines 254-256 and 315-317 never selects a stored destination calendar because the find() branch only runs when externalCalendarId is already nullish, comparing every cal.externalId against undefined/null and always returning undefined. updateEvent() then sends Google an undefined calendarId, while deleteEvent() falls back to 'primary' which can hit the wrong calendar"
+  },
+  {
+   "id": "c30",
+   "source": "augment",
+   "text": "When externalCalendarId is falsy, the fallback find((cal) => cal.externalId === externalCalendarId) compares against undefined, so selectedCalendar/calendarId will usually become undefined - this can cause updates to target an invalid calendarId and deletes to fall back to primary instead of the booking's actual destination calendar"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review-replay",
+   "text": "loadUsers rewrite changes behaviour: empty dynamicUserList now throws plain Error becoming 500 instead of returning [] and reaching 404 path; Prisma errors re-thrown as 400 with raw message; other errors swallowed; organization slug select dropped but IsFixedAwareUser still declares it"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "updateLocation saves calendar references with undefined externalCalendarId and credentialId - CalendarManager.updateEvent sets neither field"
+  },
+  {
+   "id": "c33",
+   "source": "golden",
+   "text": "A null reference occurs in GoogleCalendarService.createEvent() and updateEvent() when mainHostDestinationCalendar is destructured from evt.destinationCalendar but evt.destinationCalendar is null or an empty array, causing mainHostDestinationCalendar to be undefined."
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "Google Meet bookings crash with TypeError when there is no destination calendar - mainHostDestinationCalendar.integration lacks optional chaining after destructuring from evt.destinationCalendar ?? []"
+  },
+  {
+   "id": "c35",
+   "source": "golden",
+   "text": "Logic inversion in organization creation: The slug property is now conditionally set when IS_TEAM_BILLING_ENABLED is true, instead of when it's false as originally intended. This change, combined with requestedSlug still being set when IS_TEAM_BILLING_ENABLED is true, results in both properties being set when billing is enabled, and neither when disabled"
+  },
+  {
+   "id": "c36",
+   "source": "claude-code",
+   "text": "EventManager.ts:119 will crash with TypeError when destinationCalendar is null/empty - the old code used optional chaining but the new code accesses .integration directly on potentially-undefined mainHostDestinationCalendar"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review",
+   "text": "No-op and churn edits present - result.credentialId ?? undefined, redundant length checks, typed comparison replaced with string literals"
+  },
+  {
+   "id": "c38",
+   "source": "cubic-v2",
+   "text": "`externalId` is never forwarded to the provider create call, so multi-host creates still target the first destination calendar instead of each host's calendar"
+  },
+  {
+   "id": "c39",
+   "source": "augment",
+   "text": "mainHostDestinationCalendar can be undefined when evt.destinationCalendar is missing/empty, so mainHostDestinationCalendar.integration can throw at runtime - need to guard this check so Meet fallback doesn't crash for events without a destination calendar"
+  },
+  {
+   "id": "c40",
+   "source": "golden",
+   "text": "The Calendar interface now requires createEvent(event, credentialId), but some implementations (e.g., Lark/Office365) still declare createEvent(event) only\u2014this breaks the interface contract (also applies to other locations in the PR)."
+  },
+  {
+   "id": "c41",
+   "source": "claude-code",
+   "text": "Multiple places use destructuring like [first] = array without guarding against undefined before property access"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review",
+   "text": "Team members get hardcoded firstName: '' and lastName: '' which TeamMember type does not declare - changes shape of team-member data in emails and webhooks"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review",
+   "text": "loadUsers rewrite changes error behavior - empty dynamicUserList throws 500 instead of 404, Prisma errors expose raw message as 400, organization.slug select dropped while still declared"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review",
+   "text": "Video references (Zoom, Daily, etc.) no longer store credentialId - changed from evt.destinationCalendar?.credentialId to undefined, causing video meetings to remain after cancel"
+  },
+  {
+   "id": "c45",
+   "source": "golden",
+   "text": "The `credential` may be undefined when passed to `updateEvent` if `reference.credentialId` is set but the credential is not found. This can lead to a runtime error when `updateEvent` is called with an undefined credential, which should be handled to prevent crashes."
+  },
+  {
+   "id": "c46",
+   "source": "converge-review",
+   "text": "createEvent picks target calendar only by credentialId match - destination calendars with null credentialId go to 'primary' instead of selected calendar"
+  },
+  {
+   "id": "c47",
+   "source": "converge-review-replay",
+   "text": "Hardcoded firstName: '' and lastName: '' added to team members at lines 998-999, changing team-member shape sent to emails and webhooks, but TeamMember type has neither field"
+  },
+  {
+   "id": "c48",
+   "source": "augment",
+   "text": "The feature-flag conditional for setting slug/requestedSlug appears inverted vs the prior behavior: when IS_TEAM_BILLING_ENABLED is false, neither slug nor requestedSlug is set now - org creation could start producing records without a slug in the non-team-billing flow"
+  },
+  {
+   "id": "c49",
+   "source": "converge-review",
+   "text": "Same 'booking calendar else user calendar wrapped in array' logic written two different ways across ~10 sites"
+  },
+  {
+   "id": "c50",
+   "source": "coderabbit",
+   "text": "Line 151 in organization create.handler.ts assigns slug when IS_TEAM_BILLING_ENABLED is true, which conflicts with the publish flow and pending-state checks. slug should be set only when billing is disabled; keep requestedSlug for billing-enabled orgs"
+  },
+  {
+   "id": "c51",
+   "source": "coderabbit",
+   "text": "updateEvent and deleteEvent in Office365CalendarService don't match the Calendar interface: updateEvent is missing the externalCalendarId parameter, and deleteEvent is missing both event and externalCalendarId parameters. This causes createEvent to correctly use calendar-specific endpoints but updateEvent and deleteEvent always use the default calendar path"
+  },
+  {
+   "id": "c52",
+   "source": "qodo-extended-v2",
+   "text": "When neither eventType.destinationCalendar nor organizerUser.destinationCalendar exists, evt.destinationCalendar is set to null, causing the subsequent evt.destinationCalendar?.push(...teamDestinationCalendars) to be a no-op due to optional chaining on null, silently discarding all team members' destination calendars for collective events"
+  },
+  {
+   "id": "c53",
+   "source": "converge-review",
+   "text": "Multi-host routing only works for Google - Office365, CalDAV, and Lark always use destinationCalendar[0] (main host's calendar) even when called with team member's credential"
+  },
+  {
+   "id": "c54",
+   "source": "coderabbit",
+   "text": "Lines 511-542 in EventManager can leave credential undefined when a saved credentialId no longer resolves, causing updateEvent(credential, ...) to throw and lines 597-608 to convert that single stale reference into a failure result for every calendar update in the booking"
+  },
+  {
+   "id": "c55",
+   "source": "coderabbit",
+   "text": "CalendarService.ts in packages/lib violates the Calendar interface contract by missing the credentialId parameter, and line 156 selects only the first destination calendar ignoring credential routing needed for collective/multi-host flows"
+  },
+  {
+   "id": "c56",
+   "source": "converge-review",
+   "text": "Public webhook payload's destinationCalendar changes from object to array inconsistently - BOOKING_CREATED can send null while other triggers send [], breaking change not flagged"
+  },
+  {
+   "id": "c57",
+   "source": "converge-review-replay",
+   "text": "Credential-from-DB fallback code is copied three times and copies have already diverged - EventManager.ts:342-365 and :515-538 are identical with app.slug and appName, but handleCancelBooking.ts:431-441 lacks app include or appName"
+  },
+  {
+   "id": "c58",
+   "source": "converge-review",
+   "text": "Organizer email on every host's Google event is destinationCalendar[0].externalId (main host's calendar) even for other hosts' calendars"
+  },
+  {
+   "id": "c59",
+   "source": "converge-review-replay",
+   "text": "Collective fix fails when neither event type nor organizer has destination calendar - evt.destinationCalendar is set to null, making evt.destinationCalendar?.push(...teamDestinationCalendars) a no-op, causing other hosts' calendars to be silently dropped"
+  },
+  {
+   "id": "c60",
+   "source": "qodo-extended-v2",
+   "text": "Organization creation sets team.slug only when team billing is enabled and sets neither slug nor metadata.requestedSlug when billing is disabled, breaking downstream flows that require one of them to exist"
+  },
+  {
+   "id": "c61",
+   "source": "claude-code",
+   "text": "In updateAllCalendarEvents (line 542), updateEvent(credential, ...) is called without checking if credential is defined, causing a runtime error if both in-memory lookup and DB fallback fail"
+  },
+  {
+   "id": "c62",
+   "source": "qodo-extended-v2",
+   "text": "EventManager.create destructures the first destinationCalendar and unconditionally reads .integration, which throws when destinationCalendar is null/empty, breaking the Google Meet to Daily fallback for events without a Google destination calendar"
+  },
+  {
+   "id": "c63",
+   "source": "converge-review",
+   "text": "Recurring-series cancel branch runs once per calendar reference - causes N duplicate deletes and other hosts' events in recurring collective series are never deleted"
+  },
+  {
+   "id": "c64",
+   "source": "cubic-v2",
+   "text": "`mainHostDestinationCalendar` will be `undefined` when `evt.destinationCalendar` is `null` or an empty array (the `?? []` fallback produces `[]`, and destructuring yields `undefined`). Accessing `.integration` on it throws a `TypeError`. Add a guard before dereferencing"
+  },
+  {
+   "id": "c65",
+   "source": "claude-code",
+   "text": "In createAllCalendarEvents, the else branch (line 380) calls createEvent(c, event) without passing destination.externalId as the third argument, unlike the if-branch, causing externalCalendarId to be undefined for the legacy fallback path and potentially breaking future update/delete operations"
+  },
+  {
+   "id": "c66",
+   "source": "qodo-extended-v2",
+   "text": "In GoogleCalendarService's updateEvent and deleteEvent, the else-branch of the ternary runs only when externalCalendarId is falsy, then searches destinationCalendar.find comparing against that same falsy value which never matches any real calendar entry, making the fallback always return undefined"
+  },
+  {
+   "id": "c67",
+   "source": "converge-review",
+   "text": "Credential-from-DB fallback code is copy-pasted in three locations with slight variations - credential can still be undefined when passed to updateEvent"
+  },
+  {
+   "id": "c68",
+   "source": "coderabbit",
+   "text": "The createEvent method signature in LarkCalendarService is missing the credentialId parameter required by the Calendar interface, violating the TypeScript interface contract"
+  },
+  {
+   "id": "c69",
+   "source": "converge-review-replay",
+   "text": "Video references (Zoom, Daily, etc.) no longer store credentialId - changed from 'isCalendarType ? evt.destinationCalendar?.credentialId : result.credentialId' to 'isCalendarType ? result.credentialId : undefined', so video meetings are never deleted when booking is cancelled"
+  },
+  {
+   "id": "c70",
+   "source": "converge-review-replay",
+   "text": "Organization slug condition is inverted - base had '...(!IS_TEAM_BILLING_ENABLED && { slug })' but head has '...(IS_TEAM_BILLING_ENABLED ? { slug } : {})', causing NoOrganizationSlugError to be thrown with billing off (self-hosted) since orgs are created with no slug"
+  },
+  {
+   "id": "c71",
+   "source": "golden",
+   "text": "The optional chaining on mainHostDestinationCalendar?.integration is redundant since you already check mainHostDestinationCalendar in the ternary condition."
+  },
+  {
+   "id": "c72",
+   "source": "converge-review",
+   "text": "Fallback calendar ID in updateEvent and deleteEvent is dead code - only searches when externalCalendarId is falsy so it never matches, causing events in non-primary calendars to be left behind"
+  },
+  {
+   "id": "c73",
+   "source": "claude-code",
+   "text": "The loadUsers function in handleNewBooking.ts was refactored and the organization select was removed from the dynamic user query, which could break organization-related user lookups"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In EventManager (around line 118-119), mainHostDestinationCalendar is destructured from `evt.destinationCalendar ?? []`, then `.integration` is read without a guard. When evt.destinationCalendar is null or empty this throws a TypeError, which breaks the Google Meet to Daily fallback.",
+   "path": "EventManager.ts",
+   "members": [
+    "c12",
+    "c21",
+    "c34",
+    "c36",
+    "c39",
+    "c62",
+    "c64"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "In GoogleCalendarService createEvent() and updateEvent(), mainHostDestinationCalendar is destructured from evt.destinationCalendar. It is undefined when evt.destinationCalendar is null or empty, which causes a null reference.",
+   "path": "GoogleCalendarService",
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "Several places destructure the first element of an array (`[first] = array`) and access its properties without guarding against undefined.",
+   "path": null,
+   "members": [
+    "c41"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The optional chaining on `mainHostDestinationCalendar?.integration` is redundant because mainHostDestinationCalendar is already checked in the ternary condition.",
+   "path": null,
+   "members": [
+    "c71"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "In GoogleCalendarService updateEvent (line ~256) and deleteEvent (line ~317), the fallback `destinationCalendar.find(cal => cal.externalId === externalCalendarId)` runs only when externalCalendarId is falsy, so it never matches. As a result, updateEvent sends an undefined calendarId, and deleteEvent falls back to 'primary' instead of the booking's destination calendar.",
+   "path": "GoogleCalendarService",
+   "members": [
+    "c6",
+    "c9",
+    "c23",
+    "c25",
+    "c29",
+    "c30",
+    "c66",
+    "c72"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "In Google createEvent, selectedCalendar can be undefined when no destination calendar matches credentialId, but later code passes it directly as calendarId (e.g., calendar.events.patch).",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "Google createEvent picks the target calendar only by credentialId match, so destination calendars with a null credentialId go to 'primary' instead of the selected calendar.",
+   "path": null,
+   "members": [
+    "c46"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "In handleNewBooking (lines ~1063-1079), evt.destinationCalendar is set to null when neither the event type nor the organizer has a destination calendar. Because of this, `evt.destinationCalendar?.push(...teamDestinationCalendars)` is a no-op and all team members' destination calendars are dropped for collective events.",
+   "path": "handleNewBooking.ts",
+   "members": [
+    "c3",
+    "c18",
+    "c52",
+    "c59"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The organization slug condition in organizations/create.handler.ts (line ~151) is inverted from `!IS_TEAM_BILLING_ENABLED && { slug }` to `IS_TEAM_BILLING_ENABLED ? { slug } : {}`. With billing on, the org gets a slug before payment; with billing off, neither slug nor requestedSlug is set, causing NoOrganizationSlugError.",
+   "path": "organizations/create.handler.ts",
+   "members": [
+    "c11",
+    "c28",
+    "c35",
+    "c48",
+    "c50",
+    "c60",
+    "c70"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The loadUsers rewrite in handleNewBooking.ts changes behavior:\n- An empty dynamicUserList throws a plain Error (500) instead of reaching the 404 path.\n- Prisma errors are re-thrown as 400 with the raw message.\n- Other errors are swallowed.\n- The organization slug select is dropped while IsFixedAwareUser still declares it.",
+   "path": "handleNewBooking.ts",
+   "members": [
+    "c31",
+    "c43",
+    "c73"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "EventManager.createAllCalendarEvents (lines ~338-380) loops over each destinationCalendar entry but passes the full event with all destination calendars to each integration, and does not forward externalId to the provider. Providers that read destinationCalendar[0] (Office365, Lark, CalDAV) therefore create every host's event on the first host's calendar.",
+   "path": "EventManager.ts",
+   "members": [
+    "c8",
+    "c14",
+    "c38",
+    "c53"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "LarkCalendarService (lines 128, 164, 192, 237) uses event.destinationCalendar[0], which targets the first calendar even in collective flows with multiple destination calendars and credentials.",
+   "path": "LarkCalendarService",
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The Calendar interface now requires createEvent(event, credentialId), but some implementations (Lark, Office365, packages/lib CalendarService) still declare createEvent(event) without credentialId. packages/lib CalendarService also selects only the first destination calendar at line 156.",
+   "path": null,
+   "members": [
+    "c40",
+    "c68",
+    "c55"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "Office365CalendarService updateEvent lacks the externalCalendarId parameter and deleteEvent lacks the event and externalCalendarId parameters required by the Calendar interface, so update and delete always use the default calendar path.",
+   "path": "Office365CalendarService",
+   "members": [
+    "c51"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "In EventManager updateAllCalendarEvents (lines ~511-542), credential can remain undefined when reference.credentialId points to a missing credential and the DB fallback finds nothing. updateEvent(credential, ...) is then called and throws, which turns the update into a failure result for every calendar in the booking.",
+   "path": "EventManager.ts",
+   "members": [
+    "c15",
+    "c45",
+    "c54",
+    "c61"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The credential-from-DB fallback code is copy-pasted in three places (EventManager.ts:342-365, :515-538, handleCancelBooking.ts:431-441), and the copies have diverged. The handleCancelBooking copy lacks the app include and appName.",
+   "path": "EventManager.ts",
+   "members": [
+    "c57",
+    "c67"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "Video references (Zoom, Daily, etc.) no longer store credentialId because the expression changed to `isCalendarType ? result.credentialId : undefined`. As a result, video meetings are not deleted when a booking is cancelled.",
+   "path": null,
+   "members": [
+    "c44",
+    "c69"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "Team members are given hardcoded `firstName: ''` and `lastName: ''` (lines ~998-999), which the TeamMember type does not declare. This changes the team-member shape sent to emails and webhooks.",
+   "path": null,
+   "members": [
+    "c42",
+    "c47"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "When cancelling a recurring booking, the series-delete block sits inside the per-reference loop but does not depend on the reference. It deletes the series N times using only the first calendar reference, so other hosts' copies are never deleted.",
+   "path": "handleCancelBooking.ts",
+   "members": [
+    "c19",
+    "c63"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "In handleCancelBooking lines 449-458, the code ignores the current reference and uses updBooking.references.find(). Each updated booking therefore contributes at most one _calendar reference, so only the first host's event is deleted. The branch also uses bookingToDelete.user.credentials, dropping a DB-fetched team credential.",
+   "path": "handleCancelBooking.ts",
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The reschedule merge deletes only one old calendar event via .find, so other hosts' old copies remain.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "Each team member's Google event is inserted with the main host as organizer and the same conferenceData requestId.",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "teamDestinationCalendars is populated through a side effect inside an async .map callback, which works only because the push runs before the first await.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "In requestReschedule.handler.ts lines 240-242, the second optional chain in `bookingToReschedule?.destinationCalendar` is redundant inside the branch where bookingToReschedule is already checked.",
+   "path": "requestReschedule.handler.ts",
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "No test covers the fan-out over multiple destination calendars, the reference credentialId/externalId mapping, or multi-reference update/cancel/reschedule.",
+   "path": null,
+   "members": [
+    "c7"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "schedulingType is added to CalendarEvent but nothing reads it; it only appears in webhook payloads.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "A destination with no credentialId fans out to every organizer credential of that integration, duplicating events, and the resulting references lack externalCalendarId.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The updateAllCalendarEvents catch block no longer calls console.error(message), so failures are swallowed without logging and `message` is unused.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "Two parameters redundantly carry the target calendar: EventManager passes externalId to CalendarManager.createEvent, which only echoes it back, and passes credentialId, which Google uses to search again.",
+   "path": null,
+   "members": [
+    "c22"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "Dynamic group bookings are not handled; the TODO was removed but the code only handles eventType.schedulingType === 'COLLECTIVE'.",
+   "path": null,
+   "members": [
+    "c24"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "The user-visible calendar-note text at CalendarManager.ts:230 changed from 'organiser' to 'organizer'.",
+   "path": "CalendarManager.ts",
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "updateLocation saves calendar references with undefined externalCalendarId and credentialId because CalendarManager.updateEvent sets neither field.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "The PR contains no-op edits such as `result.credentialId ?? undefined`, redundant length checks, and typed comparisons replaced with string literals.",
+   "path": null,
+   "members": [
+    "c37"
+   ]
+  },
+  {
+   "id": "i34",
+   "claim": "The logic 'booking calendar else user calendar wrapped in array' is written two different ways across about 10 sites.",
+   "path": null,
+   "members": [
+    "c49"
+   ]
+  },
+  {
+   "id": "i35",
+   "claim": "The public webhook payload's destinationCalendar changes from an object to an array, and is inconsistent: BOOKING_CREATED can send null while other triggers send [].",
+   "path": null,
+   "members": [
+    "c56"
+   ]
+  },
+  {
+   "id": "i36",
+   "claim": "The organizer email on every host's Google event is destinationCalendar[0].externalId (the main host's calendar), even for other hosts' calendars.",
+   "path": null,
+   "members": [
+    "c58"
+   ]
+  },
+  {
+   "id": "i37",
+   "claim": "In createAllCalendarEvents, the else branch (line ~380) calls createEvent(c, event) without passing destination.externalId, so externalCalendarId is undefined on that path.",
+   "path": "EventManager.ts",
+   "members": [
+    "c65"
+   ]
+  }
+ ]
+}

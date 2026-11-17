@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/embed/best.html.erb:16 renders the avatar as `<img src='<%= post.user.small_avatar_url %>'>`, while the logo in the same file (lines 8, 26) uses image_tag. The `<%= %>` output is still HTML-escaped by Rails, so this is a consistency nit (also no alt attribute), not an injection hole.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.36773639999999996
+}

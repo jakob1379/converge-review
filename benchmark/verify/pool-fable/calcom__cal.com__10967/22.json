@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/bookings/lib/handleNewBooking.ts:990-994 pushes into teamDestinationCalendars as a side effect inside the async .map callback, before the only await at line 1002. The fragility is overstated, though: Promise.all at line 1008 is awaited before the array is read at line 1078, so it would still be fully populated if the push came after the await; only its order depends on the push being synchronous.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1437478
+}

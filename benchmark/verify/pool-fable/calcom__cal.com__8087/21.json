@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/index.ts:1-31 now builds `appStore` from 28 eager `import(\"./app\")` calls evaluated when the module loads, with no `.catch` attached. The only handlers come from later `await appStore[key]` sites such as packages/app-store/_utils/getCalendar.ts:15 and packages/core/videoClient.ts:26, so an app module that throws on evaluation yields an unhandled rejection, where the old static `import * as` would have failed the importer's load synchronously.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2657712
+}

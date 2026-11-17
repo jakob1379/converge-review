@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Every call to `build_handler` in tests/sentry/workflow_engine/processors/test_detector.py (lines 329-582) passes no arguments, and nothing in tests/ passes `detector_type`, so the parameter at line 102 is never used. `create_detector_and_conditions` (lines 86-88) defaults `type` to None and then swaps None for 'handler_with_state' instead of making that string the default.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1537941
+}

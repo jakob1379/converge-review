@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/api/paginator.py:183-185 the patch only clamps offsets for non-prev cursors (`max(0, offset) if not cursor.is_prev else offset`), so a negative prev-cursor offset still reaches `queryset[start_offset:stop]`, where Django rejects negative indexing. The comment at lines 179-181 says negative offsets are allowed and handled safely, which is not true.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0875193
+}

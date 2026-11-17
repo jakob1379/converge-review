@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After the PUT, `save` copies back only `bio_excerpt` (`self.set('bio_excerpt', data.user.bio_excerpt)`, app/assets/javascripts/discourse/models/user.js.es6:210), although `users_controller#update` returns the full `UserSerializer` (app/controllers/users_controller.rb:100), which now includes `website_name`. The profile header now shows `model.website_name` (user.hbs:66-71) instead of the removed `websiteName` value, which used to be recomputed from `model.website`, so after a website edit the header keeps the old name until the user details are reloaded.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0925107
+}

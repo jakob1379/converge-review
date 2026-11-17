@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At pkg/apiserver/rest/dualwriter_mode3.go:165-166 the goroutine calls d.Legacy.DeleteCollection, then records the time with d.recordStorageDuration(err != nil, ..., startLegacy). The matching legacy goroutines in Update (line 140) and Delete call recordLegacyDuration, so legacy time here ends up in the storage metric.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0588503
+}

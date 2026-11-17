@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java:94 computes `tagNo = tag & 0x1f`, and readSequence (line 52) and readInteger (line 68) compare only that number to ASN1Encoder.SEQUENCE (0x10) / INTEGER (0x02), so class bits and the constructed bit (0x20) are never checked \u2014 e.g. 0x10, 0x30, 0x90 all pass as a SEQUENCE and 0x02, 0x22, 0x82 as an INTEGER.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13102439999999999
+}

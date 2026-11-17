@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes `findMembers` at app/assets/javascripts/discourse/models/group.js:21 from returning `Ember.RSVP.resolve([])` to a bare `return ;` (undefined) while its other path returns a promise, and the new `addMembers` action at app/assets/javascripts/admin/controllers/admin-group.js.es6:61-65 falls off the end without a return. No current caller chains on these results (group.js:47,58; admin_group_route.js:13; group-members.js.es6:11), so nothing breaks today.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.412138
+}

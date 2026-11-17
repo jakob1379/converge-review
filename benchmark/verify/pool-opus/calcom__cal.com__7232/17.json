@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The same `if (method === EMAIL) deleteScheduledEmailReminder(...) else if (method === SMS) deleteScheduledSMSReminder(...)` block appears at exactly 7 sites: workflows.tsx:214, 378, 521 and 576, bookings.tsx:490, handleCancelBooking.ts:488 and handleNewBooking.ts:968. The patch rewrites six copies that already existed and adds a new seventh one in handleNewBooking.ts.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1404098
+}

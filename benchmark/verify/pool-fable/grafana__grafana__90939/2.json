@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch only touches pkg/api/webassets/webassets.go (adds the RWMutex around entryPointAssetsCache) and adds no test; no *_test.go in the repo calls GetWebAssets at all (pkg/api/webassets/webassets_test.go:11,89 only cover the read helpers, with no goroutines). contribute/create-pull-request.md:28 says bug-fix PRs \"should include tests that replicate the fixed bug\" \u2014 a \"should\", not a hard requirement as the claim words it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.135496
+}

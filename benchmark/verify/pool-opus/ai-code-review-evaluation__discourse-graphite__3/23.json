@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "There was never a format check to lose. The removed User#email_validator (patch lines 114-130) only checked the domain whitelist and blacklist, and the new lib/validators/email_validator.rb:3-16 keeps those checks and adds the BlockedEmail check. No other EmailValidator or email-validation gem is defined (the Gemfile has none), so strings like 'sam' were accepted before this patch too.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0985541
+}

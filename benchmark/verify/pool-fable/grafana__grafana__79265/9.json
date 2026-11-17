@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/api/frontendsettings.go:198 copies hs.Cfg.AnonymousDeviceLimit into the frontend settings DTO with no signed-in check, and that DTO is served unauthenticated via LoginView (pkg/api/api.go:76 -> pkg/api/login.go:101 setIndexViewData -> pkg/api/index.go:29) and to anonymous sessions on index pages. The value is only a configured cap sitting next to the already-public anonymousEnabled flag, so the disclosure is low-sensitivity.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4141335
+}

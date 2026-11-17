@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both helpers are called exactly once, each with `true` (BackwardsCompatibilityUserStorageTest.java:249 and :253), so the `if (!logoutOtherSessions)` branch at :423-425 is never executed. The second helper (:456-463) has no branch at all, only an always-true parameter passed to `assertEquals`, so \"dead branch\" is loose wording for that one.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1667383
+}

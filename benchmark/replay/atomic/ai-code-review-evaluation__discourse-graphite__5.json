@@ -1,0 +1,295 @@
+{
+ "findings": [
+  {
+   "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+   "line": 121,
+   "severity": "Minor",
+   "claim": "The align-items mixin emits `-ms-align-items`, which no browser implements. The line is dead output; IE10 reads `-ms-flex-align` on line 120.",
+   "evidence": "All four seats say this. Reasoned from vendor property tables; nothing was run. Fix: delete the line.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. No seat disputes it. Minor, so no red test is required; a grep for `-ms-align-items` serves as the guard.",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/mobile/topic-post.scss",
+   "line": 521,
+   "severity": "Important",
+   "claim": "The mobile rule `.small-action .custom-message { margin-left: -40px }` was sized to cancel the old 4em left padding on `.small-action-desc`. The patch changes that padding to `0 1.5%` and makes `.topic-avatar` a flex item. The custom message is now pulled about 40px left, over the icon or past the left edge.",
+   "evidence": "Patch change at common/base/topic-post.scss:263-265,280. The mobile file is untouched. Reasoned by every seat; no browser render was possible because Chromium was blocked in the sandbox.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Before fixing, make it red with a visual or acceptance check of a mobile small-action post that has a custom message. It is currently unverified (reasoned only). If no red can be produced, defer as unverified per step 5.",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/mobile/topic-post.scss",
+   "line": 530,
+   "severity": "Minor",
+   "claim": "`.small-action.time-gap .topic-avatar { margin-top: -5px }` was tuned for the old float layout. Now that `.small-action` uses `align-items: center`, the clock icon sits 5px above centre.",
+   "evidence": "The override comes from base commit 98fa098e (\"fix up mobile alignment on time gaps\"). The patch adds flex centring at common/base/topic-post.scss:263-265. Reasoned; not rendered.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. No seat disputes it. Minor, so a red test is not mandatory. Unverified in a browser.",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/header.scss",
+   "line": 37,
+   "severity": "Minor",
+   "claim": "Browsers that only support the 2009 `display: -webkit-box` model ignore `margin-left: auto` on `.panel`. The patch removed the `float: right` fallback, so on those browsers the header panel is no longer right-aligned.",
+   "evidence": "The README support table (Safari 5.1+, Android 4.1+, per ponytail) includes such browsers. Reasoned; no seat tested on legacy browsers.",
+   "seats": [
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "ponytail: unverified. Settling it needs live rendering on Safari 5.1 or the Android \u22644.3 stock browser, which no seat had. Kept at Minor.",
+   "list": "main"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/header.scss",
+   "line": 17,
+   "severity": "Important",
+   "claim": "In the docked desktop header, a long topic title is an unconstrained flex item in the nowrap `.contents` container (no `min-width: 0` or flex sizing). The header panel breaks as a result.",
+   "evidence": "The seats disagree on the mechanism. open-code-review: the panel shrinks and its floated icons wrap inside the 60px header; on IE10 the panel is pushed off-screen. superpowers: the flex item is the `header-extra-info` ember-view, its `min-width: auto` equals the full nowrap title width, and the panel overflows off-screen. Both reasoned; neither repro could run. Related lines: header.scss:35-40, topic.scss:29-31.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats (<3). Listed, not reported, not fixed under the merge rule. Unverified.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/topic-post.scss",
+   "line": 264,
+   "severity": "Important",
+   "claim": "`.small-action-desc` is now a flex item with no `flex-grow`, so it shrinks to its content. Its `float: right` edit/delete buttons now sit right after the text instead of at the row's right edge.",
+   "evidence": "Buttons are inside the desc per templates/components/small-action.hbs:3-8; float rule at topic-post.scss:~306-310. Reasoned. Suggested fix: `flex: 1`.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats (<3). Not fixed under the merge rule. Unverified.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/topic-post.scss",
+   "line": 263,
+   "severity": "Important",
+   "claim": "Scope creep. The commit says \"adding flexbox to header\", but it also re-lays out `.small-action` post rows (flex, new padding, removed margins), which breaks the one-change-per-branch rule.",
+   "evidence": "CONTRIBUTING.md \u00a72 (mattpocock). superpowers notes the same plan misalignment: header-only message, but small-action and badge changes are included. Lines 263-265, 280, 292, 303.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats (<3). Not fixed under the merge rule.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+   "line": 117,
+   "severity": "Minor",
+   "claim": "The `align-items` mixin emits no `-moz-box-align`, even though `flexbox()` emits `display: -moz-box`. On old Firefox the items stretch instead of centring, so \"all prefixes\" is incomplete.",
+   "evidence": "Reasoned from the mixin bodies at mixins.scss:100-123.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats (<3). Not fixed under the merge rule.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+   "line": 119,
+   "severity": "Minor",
+   "claim": "The `align-items` mixin passes its value straight to `-webkit-box-align` and `-ms-flex-align`. Those properties take `start`/`end`, so a future call with `flex-start`/`flex-end` would silently emit invalid legacy CSS.",
+   "evidence": "Current callers pass only `center` and `baseline`, which are valid. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats (<3). Latent; no current call site is affected.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+   "line": 127,
+   "severity": "Minor",
+   "claim": "The `order` mixin passes its value to `-webkit-box-ordinal-group`, which must be 1 or greater. `order(0)` or a negative value would produce invalid legacy CSS.",
+   "evidence": "Current calls use 2 and 3, which are valid. Reasoned; mixin at mixins.scss:125-131.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. Latent.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/topic.scss",
+   "line": 30,
+   "severity": "Minor",
+   "claim": "`@include order(2)` on `.extra-info-wrapper` has no effect. The correct visual order comes from `.panel`'s `order(3)` alone.",
+   "evidence": "ponytail: with only `.panel` ordered, source order already places the extra info after the title (header.hbs lines 4, 6, 94). superpowers: `.extra-info-wrapper` is not a flex item, because it sits inside the `header-extra-info` ember-view. The two seats give different causes for the same dead declaration.",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats (<3). Not fixed under the merge rule.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/header.scss",
+   "line": 39,
+   "severity": "Minor",
+   "claim": "Over-engineering. Moving the `header-extra-info` block above `.panel` in header.hbs would remove the need for the `order` mixin and both calls. CSS reordering also makes keyboard tab order differ from visual order.",
+   "evidence": "DOM order in app/assets/javascripts/discourse/templates/header.hbs lines 4, 6, 92-94. Reasoned. Advisory seat.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. Advisory finding.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/javascripts/discourse/templates/header.hbs",
+   "line": 2,
+   "severity": "Minor",
+   "claim": "`clearfix` on `.contents` is dead weight now that `.contents` is a flex container. Its `::before`/`::after` boxes become stray zero-width flex items, which would be a trap if `justify-content` is added later.",
+   "evidence": "Clearfix is defined at foundation/helpers.scss:53-62. Both seats say it is harmless today; open-code-review also lists it as \"not an issue\" (no defect today), which does not contradict the dead-weight claim.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats (<3). Not fixed under the merge rule.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/topic-post.scss",
+   "line": 270,
+   "severity": "Minor",
+   "claim": "`.small-action .topic-avatar { float: left }` is now dead, because floats are ignored on flex items.",
+   "evidence": "CSS flex spec behaviour. Reasoned.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/mobile/topic-post.scss",
+   "line": 516,
+   "severity": "Minor",
+   "claim": "The mobile override `.small-action .small-action-desc p { padding-top: 0 }` is now dead. The patch deleted the base `> p { padding-top: 4px }` rule that it cancelled.",
+   "evidence": "Reasoned from the patch hunk in common/base/topic-post.scss.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+   "line": 120,
+   "severity": "Minor",
+   "claim": "There is trailing whitespace after `-ms-flex-align: $alignment;`.",
+   "evidence": "Breaches CONTRIBUTING.md \u00a74 and .editorconfig `trim_trailing_whitespace = true`. Repro: `grep -nE ' +$' app/assets/stylesheets/common/foundation/mixins.scss` prints line 120.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+   "line": 122,
+   "severity": "Minor",
+   "claim": "`align-items:$alignment;` has no space after the colon.",
+   "evidence": "Breaches CONTRIBUTING.md \u00a74 (spaces after colons). superpowers declined to judge formatting, so it does not count toward this finding.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/foundation/mixins.scss",
+   "line": 117,
+   "severity": "Minor",
+   "claim": "The `align-items` mixin body is indented 4 spaces; the standard is 2.",
+   "evidence": "Breaches CONTRIBUTING.md \u00a74 and .editorconfig `indent_size = 2`. Mitigation: the older `clearfix` mixin (lines 38-47) already uses 4 spaces.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "(commit 5b229316ee)",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit message is a summary line only, with no body explaining the change.",
+   "evidence": "CONTRIBUTING.md \u00a75 requires a blank line followed by a detailed description. The commit also changes small-action and badge spacing without explaining why.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets/common/base/header.scss",
+   "line": 15,
+   "severity": "Minor",
+   "claim": "Production risk for third-party themes and plugins. Customisations that rely on `.d-header .title { float: left }` or `.panel { float: right }`, or that add floated children to `.contents`, will change layout, because floats are ignored in a flex container.",
+   "evidence": "Reasoned. No actual themes were checked.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. Unverified.",
+   "list": "appendix"
+  },
+  {
+   "path": "app/assets/stylesheets",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests were added. The QUnit suite does not cover layout, so none of the reported layout regressions would be caught.",
+   "evidence": "superpowers' Tests section. A suggested acceptance or visual check: a long-title topic with the header docked, and a mobile small-action post with a custom message.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats reviewed all five patch files (common/base/header.scss, common/base/topic-post.scss, common/base/topic.scss, common/components/badges.css.scss, common/foundation/mixins.scss). Axes that did not run: (1) The gate was not run (benchmark mode), so the review is unanchored and no finding has executed ground truth. (2) There is no spec; mattpocock used the commit message as a stand-in. (3) Standards: mattpocock used CONTRIBUTING.md and .editorconfig; open-code-review found no repo-specific rules; no SCSS lint config exists. (4) No seat compiled the SCSS or rendered anything. Headless Chromium was blocked in the sandbox for open-code-review and superpowers, so every layout claim is reasoned only. (5) ponytail and superpowers could not inspect older git history (partial clone, fetch denied). (6) No reviewer from another model family took a correctness seat. Rejections: none. No seat report disproves any finding, so no verifier was needed."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Once an email is pushed to rejectedEmails (create_account_controller.js:275), emailValidation fails for that same address (patch lines 68-73), which sets submitDisabled (create_account_controller.js:22). The same email therefore cannot be submitted again from the form, and users_controller.rb:199 sends back the email unchanged, so no normalization mismatch lets it slip through.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0808958
+}

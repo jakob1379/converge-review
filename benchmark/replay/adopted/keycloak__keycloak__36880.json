@@ -1,0 +1,337 @@
+{
+ "findings": [
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java",
+   "line": 77,
+   "severity": "Important",
+   "claim": "The removal listener for roles, clients and groups is now wrapped in a V1-only feature gate. As a result: (a) deployments without V1 no longer clean up leftover V1 permission resources and policies when a role, client or group is deleted; (b) under V2, deleting a client leaves its per-client resource and scope permissions orphaned, still referencing a client that no longer exists. No V2 cleanup path exists.",
+   "evidence": "Reasoned, not run. Old code (b7b84d75d1, lines 74-93) had no gate. Profile.java:56/58 makes V1 and V2 mutually exclusive versions of one feature, so the gate means 'V1 only'. ClientApplicationSynchronizer has no V2 cleanup. open-code-review and superpowers note that some gate is required, because ClientPermissionsV2.setPermissionsEnabled throws UnsupportedOperationException (ClientPermissionsV2.java:193).",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list (3 seats). Severity normalised to Important (mattpocock Important; open-code-review and superpowers Minor) because cleanup now silently stops for every non-V1 deployment and V2 leaves dangling data. mattpocock's framing that this is an unrelated change is contradicted by the other two seats: some gate is needed. The defect is that the gate is too broad and V2 has no cleanup. Narrower direction: gate only the V2/ClientRemovedEvent path, or gate on !ADMIN_FINE_GRAINED_AUTHZ_V2, and add V2 per-client resource cleanup. Unverified: needs a red test before fixing (under V2, create a per-client permission, delete the client, assert the resource and permission are gone).",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 217,
+   "severity": "Important",
+   "claim": "Realms whose admin-permissions client predates this change never receive the Clients resource type or the new scopes (configure, map-roles-client-scope, map-roles-composite). In those realms getResourceTypeResource returns null, and findByResource(server, null) then throws a NullPointerException, so non-short-circuited per-client checks return HTTP 500 instead of 403. Creating a Clients permission there also fails ('Scope [configure] does not exist' / 'No scopes found.').",
+   "evidence": "Reasoned, not run. AdminPermissionsSchema.init (around lines 222-228) returns early when realm.getAdminPermissionsClient() != null. Its callers are JpaClientProviderFactory.java:73 and RealmManager.java:572, and realm import with an exported adminPermissionsClient also skips init. JPAPolicyStore.findByResource (:215) dereferences resource.getId() unconditionally. hasPermission(String) (:244-247) already null-guards; this path does not. The same NPE occurs when realm admin permissions are disabled after the client exists (supportsAuthorizationSchema returns false). No migration is added. Example trigger: a query-users admin calling GET /clients runs canView(c) for each client.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Main list (4 seats; ponytail raised the missing null check in its out-of-focus note). Severity normalised to Important (open-code-review and superpowers Important; mattpocock Minor because the feature is EXPERIMENTAL). A crash path in authorization code is Important regardless of feature maturity. Fix direction: null-guard the resource, and either make init idempotent for missing types and scopes or add a migration. Unverified: needs a red test before fixing (a realm with a pre-existing admin-permissions client that lacks the Clients resource, where a query-users admin lists clients and expects no 500).",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 138,
+   "severity": "Minor",
+   "claim": "getClientsWithPermission can never return client IDs. findByType(server, 'Clients') matches only the typed all-clients resource, because per-client resources are created without a type. The method therefore returns either an empty set or the literal {'Clients'}.",
+   "evidence": "Reasoned. AdminPermissionsSchema.getOrCreateResource calls resourceStore.create(...) without setType (around line 102). Only init() sets a type (around line 249). The only caller, AvailableRoleMappingResource.java:229-230, would throw a NullPointerException on realm.getClientById('Clients'). That caller is gated on the V1 feature, so the bug is latent under V2 (Profile.java:285).",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list (3 seats, all Minor because it is unreachable today). The override does not implement its contract and is a NullPointerException waiting for its first V2 caller. The fix is small.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionEvaluator.java",
+   "line": 95,
+   "severity": "Minor",
+   "claim": "The Javadoc on the void methods requireView() and requireViewClientScopes() says 'Returns true if...'. These methods throw ForbiddenException.",
+   "evidence": "The method signatures are void. The other require* Javadocs added in the same hunk correctly say 'Throws ForbiddenException if...'.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list (4 seats). Wrong documentation with a trivial fix.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 262,
+   "severity": "Minor",
+   "claim": "Dead code copied from V1 token-exchange support: the private getEvaluationContext(ClientModel, AccessToken), the logger field, the static TOKEN_EXCHANGE import, and the imports used only by them (ClientModelIdentity, DefaultEvaluationContext, EvaluationContext, Scope). This contradicts canExchangeTo, which throws 'Not supported in V2'.",
+   "evidence": "ponytail: grep finds getEvaluationContext, logger, TOKEN_EXCHANGE and Scope only at their declarations (lines 22, 23, 27, 29, 46, 51, 262-272). Corroborated by mattpocock, open-code-review and superpowers.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Main list (4 seats). Severity normalised to Minor: ponytail rated it Important as a cleanup priority, but it has no behavioural impact, as ponytail itself states. Delete it.",
+   "list": "main"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 91,
+   "severity": "Important",
+   "claim": "Privilege escalation. A map-roles grant on 'all clients' falls back to the Clients resource for every client without its own resource, including realm-management. RolePermissions.canMapRole and canMapComposite return true when clients().canMapRoles/canMapCompositeRoles is true, skipping checkAdminRoles. An admin with all-clients map-roles plus users map-roles on themselves can therefore assign realm-management/realm-admin to themselves. The same applies to composites via configure + map-roles-composite.",
+   "evidence": "Reasoned, not run. RolePermissions.java:308/398/437 short-circuit before checkAdminRoles. ClientPermissionsV2.hasPermission(client, ...) (:214-221) falls back to the all-clients resource with no exclusion of system clients. ClientRoleMappingsResource.addClientRoleMapping (:166-176) checks only users().requireMapRoles and roles().requireMapRole. resolveClient (AdminPermissionsSchema.java:175) accepts realm-management and the admin-permissions client. open-code-review adds that checkAdminRoles (RolePermissions.java:153-155) compares against getRealmPermissionsClient(), which MgmtPermissionsV2 overrides to return the admin-permissions client, so it never fires for real admin roles under V2. Both seats sketch a failing test: map realm-admin to self as myadmin, expect ForbiddenException.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by 2 seats, so under the three-seat rule it is neither reported nor fixed in this loop. Both seats raising it are correctness seats and both rate it a security issue, so it needs human triage and a red test outside this loop. Unverified. ponytail: all-clients map-roles may cover realm-management and bypass checkAdminRoles; needs a red test (self-assign realm-admin).",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 214,
+   "severity": "Important",
+   "claim": "Once any permission targets client X, X gets its own untyped resource and only that resource is evaluated. All-clients permissions then stop applying to X. Example: admin A's all-clients MANAGE is lost on X after a VIEW-only per-client permission is added for admin B.",
+   "evidence": "Reasoned. getOrCreateResource creates untyped resources. DefaultPolicyEvaluator (:70-81) adds type-level policies only when resource.getType() != null, and findByScopes(resourceServer, null, ...) matches only resource-less policies. The pattern is inherited from UserPermissionsV2. No test combines an all-clients grant with a per-client grant.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats). Severity normalised to Important (open-code-review Important; superpowers Minor) because it removes granted access. Not fixed in this loop. Unverified. ponytail: a per-client resource hides all-clients permissions (inherited Users semantics); undocumented and untested.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 148,
+   "severity": "Important",
+   "claim": "canExchangeTo throws UnsupportedOperationException. With token-exchange (V1) and admin-fine-grained-authz:v2 both enabled, an exchange to a different audience client now returns 500 instead of 403. Before this patch, MgmtPermissionsV2.clients() returned V1 ClientPermissions, which returned false.",
+   "evidence": "Reasoned. AbstractTokenExchangeProvider.java:276 calls management().clients().canExchangeTo. management() returns MgmtPermissionsV2 whenever V2 is on, without checking the realm flag. TOKEN_EXCHANGE has no FGAP dependency (Profile.java:76), so the feature combination is valid.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats). Severity normalised to Important (superpowers Important; open-code-review Minor) because it regresses a valid feature combination from 403 to 500. Not fixed in this loop. Unverified. ponytail: canExchangeTo throws under V2; return false instead to keep the 403.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 86,
+   "severity": "Important",
+   "claim": "canView() accepts only VIEW (or the default roles), so an all-clients MANAGE grant does not imply view or list. canManageClientScopes and canView(ClientScopeModel) accept MANAGE, but the inherited canListClientScopes does not. As a result, client-scope endpoints and ClientInitialAccessResource.list return 403 for a MANAGE-only admin.",
+   "evidence": "Reasoned. ClientScopesResource.java:91 and :141 call requireListClientScopes. ClientInitialAccessResource list() calls requireView() (around line 123). ClientsResource.getClients takes the canView == false path. Proposed failing test: testManageAllClients calling clientScopes().findAll().",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). Not fixed in this loop. Unverified. ponytail: MANAGE does not imply view/list, so client-scope management via MANAGE is unreachable.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 237,
+   "severity": "Minor",
+   "claim": "hasPermission(String) runs a full policy evaluation on every call without first checking whether any policies exist. Combined with the unpaginated canView-false path in ClientsResource.getClients, this means many evaluations per client.",
+   "evidence": "Reasoned. The per-client variant and UserPermissionsV2 short-circuit when there are no policies. canView(c) can trigger up to 4 evaluations and getAccess(c) about 3 more.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). ponytail: add a no-policies short-circuit as UserPermissionsV2 does.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 207,
+   "severity": "Minor",
+   "claim": "hasPermission(ClientModel, String) accepts a granted scope from any returned permission. It omits the permission.getResourceId().equals(resource.getId()) check that UserPermissionsV2 performs, so client and user resource types evaluate differently.",
+   "evidence": "UserPermissionsV2.java:135 filters on resource id; the client version does not. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats; ponytail flagged it as outside its focus). ponytail: missing resourceId filter compared with UserPermissionsV2; confirm whether this is intended.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 274,
+   "severity": "Minor",
+   "claim": "The evaluate-and-match-scope loop is written three times. hasGrantedPermission duplicates the parent's private ClientPermissions.hasPermission(Resource, String) (:689). The two hasPermission overloads could be one varargs method where null means all clients, mirroring UserPermissionsV2.",
+   "evidence": "Reasoned by reading lines 207-235, 237-260 and 274-286. hasPermission(String) re-derives the type resource via findByName, which is what getResourceTypeResource already returns.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). Severity normalised to Minor (ponytail rated it Important for cleanup priority) because it has no behavioural impact. ponytail: consolidate into hasPermission(ClientModel, String...) and reuse the parent helper.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java",
+   "line": 66,
+   "severity": "Minor",
+   "claim": "The class re-implements parent helpers. hasOneAdminRole(MANAGE_CLIENTS) duplicates canManageClientsDefault(). hasOneAdminRole(VIEW_CLIENTS, MANAGE_CLIENTS) at L119 duplicates canViewClientDefault(). canManageClientScopes() (L106-110) duplicates canManage().",
+   "evidence": "Reasoned. The class already uses canViewClientDefault() at L86.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). ponytail: reuse the parent default helpers.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/MgmtPermissionsV2.java",
+   "line": 29,
+   "severity": "Minor",
+   "claim": "The new private ClientPermissionsV2 clientPermissions field hides the inherited protected clientPermissions (MgmtPermissions.java:76), so two fields hold the same cache.",
+   "evidence": "Reasoned. This mirrors the existing userPermissions pattern.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). Low priority because it follows the existing pattern. ponytail: assign to the inherited field instead of shadowing it.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java",
+   "line": 310,
+   "severity": "Minor",
+   "claim": "getResourceName handles only the Users type. Client resources fall through to getDisplayName(), which is never set, so permission listings show no name for per-client or all-clients resources.",
+   "evidence": "Reasoned. getOrCreateResource never sets a display name. Representations are built at PolicyResourceService.java:218.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats). ponytail: return the clientId or 'All clients' for the Clients type.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionEvaluator.java",
+   "line": 150,
+   "severity": "Minor",
+   "claim": "The 'For V2 only: Also if ... for all clients' Javadoc on canManage, canConfigure, canView(ClientModel) and the canMap* methods misdescribes V2 in two ways. For canMap*, V2 replaces the V1 check rather than adding to it. V2 also honours per-client grants, not only all-clients grants.",
+   "evidence": "ClientPermissionsV2.java:91-103. PermissionClientTest#testMapRolesAndCompositesOnlyOneClient and #testManageOnlyOneClient rely on per-client grants.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). ponytail: correct the V2 Javadoc wording.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionEvaluator.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The canView() Javadoc says only VIEW counts, while canView(ClientScopeModel) also accepts MANAGE. The documentation reflects the inconsistency behind the canView/MANAGE finding.",
+   "evidence": "superpowers cites lines 186-191, or roughly 110-122 in the patched file; the exact line is ambiguous in the report.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). ponytail: align the canView Javadoc once the VIEW/MANAGE semantics are settled.",
+   "list": "appendix"
+  },
+  {
+   "path": "server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java",
+   "line": 53,
+   "severity": "Minor",
+   "claim": "An empty line was replaced with a line of four trailing spaces, which is formatting noise unrelated to the change.",
+   "evidence": "Visible in the diff. CONTRIBUTING.md says: 'Do not format or refactor code that is not directly related to your contribution.'",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats). ponytail: revert the whitespace-only line.",
+   "list": "appendix"
+  },
+  {
+   "path": "services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java",
+   "line": 78,
+   "severity": "Minor",
+   "claim": "Wrapping the listener in the feature gate re-indents about 18 unchanged lines and also changes cast spacing from (X)event to (X) event. An early return would make the gate a one-line diff.",
+   "evidence": "Visible in the diff at lines 77-97. CONTRIBUTING.md forbids unrelated formatting changes.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats). Moot if the main-list gate finding is reworked. ponytail: use an early return and revert the cast-spacing changes.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/PermissionClientTest.java",
+   "line": 25,
+   "severity": "Minor",
+   "claim": "The test uses the JUnit 4 import org.junit.Assert.fail, against the project's test standards. The same file otherwise uses JUnit 5 Assertions.",
+   "evidence": "tests/MIGRATING_TESTS.md:24,31 and docs/tests-development.md:29 ('Please avoid ... org.junit.Assert.*'). The sibling UserResourceTypeEvaluationTest.java:25 uses org.junit.jupiter.api.Assertions.fail.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). This is a clear breach of a documented standard. ponytail: switch to org.junit.jupiter.api.Assertions.fail.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/PermissionClientTest.java",
+   "line": 79,
+   "severity": "Minor",
+   "claim": "Coverage gaps: nothing tests MAP_ROLES_CLIENT_SCOPE, CONFIGURE or MANAGE via the client-scope endpoints, the all-clients map-roles escalation, token exchange under V2, or V2 client-deletion cleanup. Hygiene: @AfterEach removes only permissions, and tests mutate the shared realm (rename myclient, move a scope, create roles and mappings), making outcomes depend on test order. testViewAllClients sends create(null), so it never exercises a real payload.",
+   "evidence": "Reasoned by reading the test: @AfterEach at line 79, testMapRolesAndCompositesOnlyOneClient at lines 326-334, and testConfigureOnlyOneClient reading getDefaultClientScopes().get(0) after testManageOnlyOneClient mutates it.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). ponytail: restore realm state in @AfterEach and add the missing scope tests.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/AbstractPermissionTest.java",
+   "line": 54,
+   "severity": "Minor",
+   "claim": "The test helpers (getPermissionsResource, getScopePermissionsResource, createPermission, createUserPolicy, createAllPermission) were made static and take client and realm arguments that the base class already holds. This forced about 40 call-site edits and is inconsistent with the instance-method overloads at L163/L167.",
+   "evidence": "Reasoned. Every caller passes the inherited client and realm fields (L48-52), and no caller is static.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). ponytail: keep the helpers as instance methods that use the inherited fields.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/AbstractPermissionTest.java",
+   "line": 136,
+   "severity": "Minor",
+   "claim": "createClientPolicy is never used.",
+   "evidence": "ponytail: grep -rn createClientPolicy in the fgap test directory matches only the declaration.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat). ponytail: delete the unused helper.",
+   "list": "appendix"
+  },
+  {
+   "path": "docs/documentation",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch adds no documentation for the Clients resource type or its scopes, against CONTRIBUTING.md's 'Includes documentation'.",
+   "evidence": "mattpocock's own report: no V2 docs exist for the existing Users type either (the only hit is the V1 page fine-grain.adoc), and leaving docs out for this EXPERIMENTAL feature matches project practice. The seat marked it 'noted but not pressed'.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "reject",
+   "reason": "Rejected on the raising seat's own evidence. The V2 feature is EXPERIMENTAL (Profile.java:58) and has no V2 documentation for any resource type, so omitting it here matches existing project practice rather than breaching it. Advisory seat, Minor: no verifier needed.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate: not run (benchmark mode). The review is unanchored: no build, tests, linters or type checks ran, and every finding is reasoned from source. Only ponytail's dead-code and createClientPolicy claims are grep-confirmed. Spec axis: no spec. mattpocock checked against the PR's stated intent instead. Standards axis ran on CONTRIBUTING.md, PR-CHECKLIST.md, docs/tests-development.md, tests/MIGRATING_TESTS.md and .editorconfig. No reviewer from another model family was available, so all four seats share one family's blind spots. Files skipped or partly reviewed: open-code-review excluded all 5 test files (AbstractPermissionTest.java, PermissionClientTest.java, PermissionRESTTest.java, UserResourceTypeEvaluationTest.java, UserResourceTypePermissionTest.java) through its default_path filter, grepping only PermissionClientTest for scenarios. mattpocock read UserResourceTypeEvaluationTest.java only on changed lines past patch line ~1250, and UserResourceTypePermissionTest.java and PermissionRESTTest.java only for call-site consistency. ponytail checked PermissionClientTest.java and UserResourceTypeEvaluationTest.java only for helper usage and dead code. superpowers checked PermissionRESTTest.java, UserResourceTypeEvaluationTest.java and UserResourceTypePermissionTest.java only for behaviour-preserving substitutions, and did not check the JPA cache-layer store or admin-console UI. As a result, the test files had no full correctness-seat review from open-code-review. Not run in this replay: red tests, fixes, scoped re-review and verifier dispatch. All Important findings are unverified."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/server/service/insightsBooking.ts:119-122 (AND), :171-174 (OR) and :204-207 (OR) each hand-write the same `conditions.reduce((acc, condition, index) => index === 0 ? condition : Prisma.sql`(acc) OP (condition)`)` fold, and the file uses no Prisma.join or shared helper. All three are lines added by the patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0955627
+}

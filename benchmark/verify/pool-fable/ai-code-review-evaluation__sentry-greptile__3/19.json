@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The rewrite to \"upsampled_count() as count\" is local to `_get_event_stats` (src/sentry/api/endpoints/organization_events_stats.py:296), so with transformAliasToInputFormat=1 `process_results` renames the result key `count` to \"upsampled_count() as count\" (src/sentry/search/events/builder/base.py:1566-1571, 1613), while `get_event_stats_data` resolves the axis from the untouched `query_columns` to \"count()\" (src/sentry/api/bases/organization_events.py:75-76, 605-607) and the serializer's `r.get(column, 0)` returns 0 (src/sentry/api/serializers/snuba.py:92). Without the flag both sides resolve to `count`, so only the flagged path breaks.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.8448705
+}

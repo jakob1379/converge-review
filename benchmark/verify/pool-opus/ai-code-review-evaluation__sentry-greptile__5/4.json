@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py:47-48, both age and timestamp are required=False. Their field validators (lines 50-60) only reject reports that have both fields, and DRF skips them when a field is missing. There is no object-level validate(), so a report with neither field passes, even though the docstrings say one of them is present.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11440140000000001
+}

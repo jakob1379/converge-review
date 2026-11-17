@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In addGuests.handler.ts (patch lines 450-466), the booking `findFirst` includes `user: { include: { destinationCalendar: true, credentials: true } }`, but `booking.user.credentials` is never read: EventManager gets its credentials from `getUsersCredentials(ctx.user)` (patch line 582), and `updateCalendarAttendees` only uses `PartialBooking` (id/userId/references). The rule in packages/eslint-plugin/src/rules/no-prisma-include-true.ts:27-44 searches nested `include` blocks and flags `credentials: true`, though recommended.ts:9 sets the rule to only warn.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21418140000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In handleCancelBooking.ts:449-458 the recurring branch is inside the per-reference loop, but it never uses `reference`. It loops over `bookingToDelete.user.credentials` and, for each updated booking, deletes only the first `_calendar` reference found with `updBooking.references.find(...)` (line 454). Other hosts' events stay in their calendars, and the `calendarCredential` fetched from the DB at lines 431-440 is not used in this branch.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2334001
+}

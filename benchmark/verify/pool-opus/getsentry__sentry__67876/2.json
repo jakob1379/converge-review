@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's OAuthLoginView (integration.py, new lines ~101-113) sends and checks `pipeline.signature` as the OAuth state. `src/sentry/pipeline/base.py:132-133` sets that value to an MD5 of the pipeline view class names, so it is the same for every user and session; the patch's tests reuse the same constant 9cae5e88\u2026 for different users and orgs. An attacker can therefore make a setup link with their own `code`, this known state and their own `installation_id` (which OAuthLoginView binds from GET). That binds the attacker's GitHub login and installation into the victim's in-progress pipeline, and it passes the sender-login check in GitHubInstallation.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.11606830000000001
+}

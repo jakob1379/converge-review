@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the before_validation block at app/models/embeddable_host.rb:5-8, `self.host.sub!` is called with no nil check. If the request has no host, app/controllers/admin/embeddable_hosts_controller.rb:23 sets `host.host` to nil, and `host.save` (line 27) raises NoMethodError on nil instead of failing validation and reaching render_json_error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06475059999999999
+}

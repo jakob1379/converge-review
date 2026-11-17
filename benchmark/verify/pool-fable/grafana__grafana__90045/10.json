@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/apiserver/rest/dualwriter_mode3.go:134-140 starts a goroutine that calls d.Legacy.Update with the caller's raw objInfo, where the removed code passed an updateWrapper pinned to the object unified storage returned. Legacy implementations such as pkg/registry/apis/playlist/legacy_storage.go:142-147 do their own s.Get and then objInfo.UpdatedObject(ctx, old), so the transform is re-run against legacy's old object and can yield a different result.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.46866150000000006
+}

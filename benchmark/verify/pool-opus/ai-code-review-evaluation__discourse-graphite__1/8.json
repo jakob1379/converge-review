@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "uploads_controller.rb:66 calls `OptimizedImage.downsize(tempfile.path, tempfile.path, \"80%\", allow_animation: SiteSetting.allow_animated_thumbnails)`. For a .gif path (API downloads keep the extension via lib/file_helper.rb:14), optimized_image.rb:155 routes this to downsize_instructions_animated \u2192 resize_instructions_animated, which builds `gifsicle --resize-fit 80%` (optimized_image.rb:120). gifsicle only accepts WxH there, so the command fails every time and the loop at uploads_controller.rb:64-67 spends all 5 attempts without shrinking the file.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.09561050000000001
+}

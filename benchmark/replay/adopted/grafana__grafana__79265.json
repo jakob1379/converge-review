@@ -1,0 +1,245 @@
+{
+ "findings": [
+  {
+   "path": "pkg/services/anonymous/anonimpl/impl.go",
+   "line": 87,
+   "severity": "Critical",
+   "claim": "The device limit blocks only the first over-limit request. tagDeviceUI writes the device into localCache before CreateOrUpdateDevice, and the entry stays when the store returns ErrDeviceLimitReached. For the next 29 minutes, TagDevice returns nil from the cache path and Authenticate grants an anonymous identity to the refused device.",
+   "evidence": "localCache.SetDefault(key, ...) at impl.go:87 runs before anonStore.CreateOrUpdateDevice at impl.go:93. The cache is localcache.New(29*time.Minute, ...) and is keyed by device ID. The cache hit at impl.go:84 returns nil, so client.go:44 returns an identity. TestIntegrationBeyondDeviceLimit calls the store directly and never goes through the cache. Proposed red test (not run): in impl_test.go set cfg.AnonymousDeviceLimit=1, tag device a, then tag device b twice, and require.ErrorIs(err, anonstore.ErrDeviceLimitReached) on both b calls; the second b call returns nil. All three seats reasoned this; none executed it.",
+   "seats": [
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Two correctness seats raised it independently and ponytail raised it outside its lane, all with consistent line-level evidence. Step 5 must first make the impl_test.go red test fail on the pinned code; until then the finding is reasoned, not verified.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/server/wire.go",
+   "line": 374,
+   "severity": "Important",
+   "claim": "The Wire wiring is now stale. wire.go:374-375 still registers anonstore.ProvideAnonDBStore and binds AnonStore to it, but the provider now takes an extra int64 that no Wire provider supplies. ProvideAnonymousDeviceService builds its own store at impl.go:43, so in OSS the registration is dead. If anything injects AnonStore (e.g. Enterprise), it either gets a different store without the limit or Wire generation fails with 'no provider found for int64'.",
+   "evidence": "The signature changed to ProvideAnonDBStore(sqlStore db.DB, deviceLimit int64) while wireBasicSet still registers it with wire.Bind(new(anonstore.AnonStore), ...). Grep of non-test pkg/ code finds no OSS consumer of anonstore.AnonStore outside impl.go/api.go (ponytail). superpowers says wire_gen.go is gitignored (.gitignore:192), so a generation failure would break the server build. No seat ran it. Proposed red check: make gen-go (or wire gen -tags oss ./pkg/server).",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. All four seats agree the registration is at least dead and possibly breaks generation. Seats disagree on whether Wire rejects an unused provider with an unprovidable input; that is unverified. The red check is make gen-go failing on the pinned code. If it passes, the dead-wiring part stands on the grep evidence but has no failing check, so mark it unverified. Candidate fixes: delete wire.go:374-375, or take *setting.Cfg in ProvideAnonDBStore and keep Wire injection.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/client.go",
+   "line": 44,
+   "severity": "Important",
+   "claim": "Device tagging used to run in a goroutine with a 2-minute timeout and panic recovery. It now runs synchronously on the anonymous auth path with the request context, and it does so even when device_limit = 0, where blocking gains nothing. Anonymous request latency now depends on the database (an upsert, plus COUNT(*) when a limit is set; SQLite lock contention), the panic guard is gone, and a cancelled request drops the tag write.",
+   "evidence": "The goroutine using context.WithTimeout(context.Background(), 2m) and recover() was replaced by an inline TagDevice call at client.go:44. A cache miss now waits on CreateOrUpdateDevice and, when deviceLimit > 0, on CountDevices. mattpocock flagged the same synchronous CountDevices call as outside its lane but did not file it as a finding. All seats reasoned this; nothing was measured. A possible red test: with device_limit=0 and a store stub that blocks or panics, Authenticate must return promptly and without panic.",
+   "seats": [
+    "open-code-review",
+    "superpowers",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Two correctness seats and ponytail agree. Suggested smallest fix (superpowers): run synchronously only when deviceLimit > 0 and keep the async path with recover otherwise. The red test has to be written first; if it cannot be made red, defer with severity kept and mark unverified.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/setting/setting.go",
+   "line": 1654,
+   "severity": "Minor",
+   "claim": "The new [auth.anonymous] device_limit key is not added to conf/defaults.ini, conf/sample.ini, or docs/sources/administration/configuration.md, and nothing documents that 0 means unlimited.",
+   "evidence": "contribute/create-pull-request.md, 'Configuration changes', says all of these files 'must be changed correspondingly'. None is in the patch. grep -c device_limit conf/defaults.ini conf/sample.ini returns 0 and 0 (mattpocock, not executed). The sibling hide_version is at sample.ini:581 and defaults.ini:592.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. This breaches a documented 'must' rule. Severity normalised to Minor: both correctness seats rated it Minor and it has no runtime effect, while advisory mattpocock rated it Important. The grep command above is the red check.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/anonstore/database.go",
+   "line": 16,
+   "severity": "Minor",
+   "claim": "The 30-day device window is defined in three places: anonymousDeviceExpiration in anonstore/database.go:16, anonymousDeviceExpiration in api/api.go:18, and thirtyDays in impl.go:25. If one drifts, the enforced limit count, the device listing, and the usage stats will disagree.",
+   "evidence": "All three are 30 * 24 * time.Hour. Commit 7af474db0b renamed api.go's constant and added a private copy in anonstore instead of exporting one shared constant. OCR cites database.go:14 instead of :16 for the same constant.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Low-risk cleanup: export one anonstore.AnonymousDeviceExpiration and reuse it in api.go and impl.go.",
+   "list": "main"
+  },
+  {
+   "path": "packages/grafana-runtime/src/config.ts",
+   "line": 97,
+   "severity": "Minor",
+   "claim": "The frontend type for anonymousDeviceLimit does not match what the server sends. The server always serialises an int64, with 0 meaning unlimited, and never undefined. Yet grafana-data/src/types/config.ts:200 declares number | undefined, and the unannotated class field 'anonymousDeviceLimit = undefined;' in grafana-runtime is inferred as undefined, so it cannot be read as a number.",
+   "evidence": "The DTO in pkg/api/dtos/frontend_settings.go:195 is a plain int64 with json:\"anonymousDeviceLimit\". The declarations are at packages/grafana-data/src/types/config.ts:200 and packages/grafana-runtime/src/config.ts:97.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Type it as number with default 0, unless the appendix finding about the unused field leads to removing the field altogether.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/impl.go",
+   "line": 121,
+   "severity": "Important",
+   "claim": "Any client can skip the limit by omitting the X-Grafana-Device-Id header, or by sending an unparseable IP. TagDevice returns nil in both cases and Authenticate grants anonymous access without the device being counted.",
+   "evidence": "TagDevice returns nil when deviceID == \"\" (impl.go:121) and when the IP fails to parse (impl.go:128). client.go:44 then returns an anonymous identity. The header is entirely client-controlled. Reasoned; no test was given or run.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats, so it is neither reported nor fixed in this loop. Severity is kept. Whether it matters depends on whether device_limit is meant as access control or only as counting, which is open because there is no spec. ponytail: deferred; settle the intent of device_limit.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/anonstore/database.go",
+   "line": 108,
+   "severity": "Important",
+   "claim": "CountDevices and the insert are not atomic, so concurrent new devices (or several HA instances, each with its own local cache) can all see count < limit and all insert, pushing past the limit permanently.",
+   "evidence": "CountDevices runs in one session and the upsert later runs in another, with no transaction or lock (database.go:108-119). Nothing reconciles the overshoot. Reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: fewer than three seats; not fixed. Severity is kept. ponytail: deferred; fix with a transactional or INSERT ... SELECT WHERE COUNT < limit check, or document the limit as approximate.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/anonstore/database.go",
+   "line": 18,
+   "severity": "Minor",
+   "claim": "ErrDeviceLimitReached is a plain fmt.Errorf value rather than an errutil error. The client therefore gets a generic 401 with no device-limit message, and authnimpl.errorLogFunc logs every rejection at Warn.",
+   "evidence": "contribute/backend/errors.md says service errors should be declared with errutil.<status>(messageID, ...). The error leaves the authn client at client.go:45-46, and the contexthandler stores it in LookupTokenErr.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: fewer than three seats; not fixed. ponytail: deferred; consider errutil.Unauthorized or errutil.TooManyRequests.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/grafana-data/src/types/config.ts",
+   "line": 200,
+   "severity": "Minor",
+   "claim": "anonymousDeviceLimit is added to the DTO, frontend settings, and both TS config types, but nothing in public/ or packages/ reads it (speculative generality).",
+   "evidence": "grep -rn anonymousDeviceLimit public packages hits only the two declarations. The affected lines are pkg/api/dtos/frontend_settings.go:195, pkg/api/frontendsettings.go:198, packages/grafana-data/src/types/config.ts:200, and packages/grafana-runtime/src/config.ts:97. superpowers mentions in passing that no frontend code reads the field but does not file it as a finding.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: fewer than three seats; not fixed. ponytail: deferred; drop these lines (about -4) until a UI needs the value.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/grafana-data/src/types/config.ts",
+   "line": 200,
+   "severity": "Minor",
+   "claim": "Adding a required member to the exported GrafanaConfig interface in a published package is a breaking change for anything that implements the interface.",
+   "evidence": "This falls under contribute/breaking-changes-guide/breaking-changes-guide.md.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not fixed. ponytail: deferred; make the member optional or remove it.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/api/frontendsettings.go",
+   "line": 198,
+   "severity": "Minor",
+   "claim": "The device limit is sent in frontend settings to every client, including unauthenticated anonymous ones. That is a small information leak about license or tier sizing.",
+   "evidence": "AnonymousDeviceLimit is included in the frontend settings DTO, which anonymous clients receive.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not fixed. ponytail: deferred; confirm whether exposing it is intended.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/anonstore/database.go",
+   "line": 84,
+   "severity": "Minor",
+   "claim": "The line args = append([]interface{}{query}, args...) mutates the captured args inside the WithDbSession callback. When SQLite reports 'database locked', WithDbSession retries the callback, the query is prepended a second time, and Exec fails.",
+   "evidence": "The retry loop is in sqlstore/session.go:83-102. The same pattern already exists at database.go:150. Reasoned.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not fixed. ponytail: deferred; use dbSession.Exec(append([]any{query}, args...)...).",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/anonstore/database.go",
+   "line": 72,
+   "severity": "Minor",
+   "claim": "The doc comment says devices are counted 'between the given times', but the function takes no times; the window comes from device.UpdatedAt \u00b1(30d, 1m).",
+   "evidence": "The function signature has no time parameters (database.go:72).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not fixed. ponytail: deferred; correct or remove the comment.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/setting/setting.go",
+   "line": 1649,
+   "severity": "Minor",
+   "claim": "Extracting an anonSection local variable rewrites four untouched lines in order to add one, which adds diff and blame noise.",
+   "evidence": "setting.go:1649-1654.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not fixed. ponytail: deferred; optional style cleanup.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/anonstore/database_test.go",
+   "line": 51,
+   "severity": "Minor",
+   "claim": "The new TestIntegrationBeyondDeviceLimit lacks the required if testing.Short() { t.Skip(...) } guard for integration tests.",
+   "evidence": "contribute/backend/style-guide.md, 'Integration Tests', requires the testing.Short() check. The existing tests in this file and in impl_test.go also lack it, and the new test copies that pattern.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not fixed. ponytail: deferred; add the guard.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/services/anonymous/anonimpl/anonstore/database_test.go",
+   "line": 51,
+   "severity": "Minor",
+   "claim": "Test gaps: nothing checks that a known device can still refresh once the limit is reached, that a device older than 30 days counts as new, or the client/cache path. impl_test.go only ever uses limit 0, so the feature has no end-to-end test.",
+   "evidence": "The new test only asserts that a second new device is rejected (database_test.go:51-71). OCR separately notes that no test covers the cache bypass, which is the main-list Critical finding.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: single seat; not fixed. The cache-path gap is covered by the red test planned for the main-list Critical finding. ponytail: deferred; add tests for the known-device refresh path and the 30-day expiry.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. Every seat reports reviewing all 11 patch files. OCR's tool excluded anonstore/database_test.go and anonimpl/impl_test.go by default path, but the seat read both manually. ponytail read the two test files only for signature fallout and lean issues, not for coverage. pkg/server/wire.go is outside the patch and was read as context by all seats.\n\nAxes that did not run:\n- Gate not run (benchmark mode), so the review is unanchored: no finding has executed ground truth, and every Critical and Important claim is reasoned only.\n- Nothing compiled or executed by any seat: no build, tests, lint, or make gen-go. Whether Wire generation fails is unconfirmed.\n- Enterprise wire sets and injectors not inspected.\n- Spec axis skipped: there is no spec and no commit references an issue.\n- No AGENTS.md exists. The standards axis used CONTRIBUTING.md and contribute/*.md.\n- All four seats come from the same model family; no cross-family reviewer was available.\n- Rejections: none. No seat report disproves another seat's finding, so no reject verdicts were issued and no verifier was needed."
+}

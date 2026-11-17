@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py:199 the wait_produce timer is tagged `{\"shards\": shard_tag}`, while the produce timer and counters at lines 185, 195 and 244 use the key \"shard\". Before this patch the wait_produce timer had no tags at all.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.048209100000000005
+}

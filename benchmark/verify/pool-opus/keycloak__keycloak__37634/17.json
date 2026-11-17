@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "DefaultTokenContextEncoderProviderTest.java (patch lines 1004-1007, 1016-1019, 1039-1042, 1050-1053) calls Assert.assertEquals(ctx.getX(), EXPECTED), putting the actual value where expected belongs. docs/tests-development.md:26-29 does not mention argument order, but it says to avoid org.junit.Assert and use hamcrest assertThat, so these calls go against it either way.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2488205
+}

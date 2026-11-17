@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/ui/form/MultiEmail.tsx:2 imports Button, EmailField, Icon and Tooltip from \"@calcom/ui\", while packages/ui/index.tsx:153 re-exports MultiEmail via ./form/MultiEmailLazy, so the package barrel and this file reference each other. The cycle is only reached through the next/dynamic import at packages/ui/form/MultiEmailLazy.tsx:4, and many other files in packages/ui already self-import the same way, so the practical risk is low.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1376807
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The dereference at test-framework/core/src/main/java/org/keycloak/testframework/util/ApiUtil.java:11 is unguarded, but every endpoint its callers hit sets Location whenever it returns 201 (UsersResource.java:160, ClientsResource.java:222, GroupsResource.java:206, GroupResource.java:226), so no NPE is reachable. The line is also unchanged from before the patch, which only wrapped it in try-with-resources, and it sits in a test-only helper.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3231102
+}

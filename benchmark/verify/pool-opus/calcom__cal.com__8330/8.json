@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Before the patch, checkIfIsAvailable did not accept workingHours or dateOverrides, so these fields were ignored. The patch adds them to the function and filters slots with them (packages/trpc/server/routers/viewer/slots.ts diff lines 78-149). They reach the function through `...schedule` for fixed hosts (slots.ts:488-493) and `...userSchedule` for round-robin hosts (slots.ts:513-518), which carry both fields (slots.ts:400-406).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10130639999999999
+}

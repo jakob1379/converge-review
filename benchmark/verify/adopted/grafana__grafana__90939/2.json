@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes only pkg/api/webassets/webassets.go, where it adds the RWMutex at lines 36-49. The tests in pkg/api/webassets/webassets_test.go (TestReadWebassets at :11, TestReadWebassetsFromCDN at :89) each run in a single goroutine, and none of them calls GetWebAssets concurrently. contribute/create-pull-request.md:28 says bug-fix PRs should include tests that replicate the fixed bug, so this one falls short.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0475488
+}

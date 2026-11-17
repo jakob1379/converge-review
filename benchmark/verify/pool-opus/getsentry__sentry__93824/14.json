@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The comments are new in this patch and only repeat what the next line does: flusher.py:82 'Create processes based on shard mapping' above a loop calling _create_process_for_shards, :92 'Create a buffer for these specific shards' above SpansBuffer(shards), :241 'Report unhealthy for all shards\u2026' above a per-shard metrics.incr loop, and :336 'Wait for all processes to finish' above the join loop. :59 is a loose paraphrase of the shard-to-process assignment.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1455288
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionEvaluator.java:95-103: the patch adds Javadoc saying 'Returns {@code true} if...' on `void requireView()` and `void requireViewClientScopes()`. A void method cannot return true, and the sibling require* methods' docs (e.g. lines 36, 48, 60, 84) correctly say 'Throws ForbiddenException if...'.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0907164
+}

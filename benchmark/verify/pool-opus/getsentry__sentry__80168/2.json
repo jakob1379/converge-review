@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the test file, the packet sets `group_2: 10` (patch line 379), but the expected occurrence is built with `build_mock_occurrence_and_event(..., \"group_2\", 6, ...)` (patch line 393). That helper never reads `value` (patch lines 458-489), so the mismatch goes unnoticed and the test still passes.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1369448
+}

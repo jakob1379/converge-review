@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql:9 adds `updatedAt` as NOT NULL DEFAULT NOW(), so every pre-existing CalendarCache row gets the migration timestamp; packages/features/calendar-cache/calendar-cache.repository.ts:173-187 takes max(updatedAt) per credential and CredentialActionsDropdown.tsx shows it as 'Last updated', which stays wrong until the next upsert (repository.ts:150) bumps it via @updatedAt.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3268239
+}

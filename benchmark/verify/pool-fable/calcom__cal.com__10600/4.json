@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only `URL.revokeObjectURL` call is at apps/web/components/settings/EnableTwoFactorModal.tsx:98, just before a new URL is created at :99; `resetState` (:71-75) clears neither `backupCodesUrl` nor `backupCodes`, and the sole `useEffect` (:157-161) has no cleanup, so the blob holding the plaintext backup codes lives until the document unloads.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16065200000000002
+}

@@ -1,0 +1,519 @@
+{
+ "pr_url": "https://github.com/calcom/cal.com/pull/7232",
+ "cost_usd": 0.1274669,
+ "items": [
+  {
+   "id": "c1",
+   "source": "golden",
+   "text": "Asynchronous functions deleteScheduledEmailReminder and deleteScheduledSMSReminder are called without await inside forEach loops. This occurs during booking rescheduling/cancellation, and workflow/workflow step deletion/updates. Consequently, scheduled workflow reminders may not be reliably cancelled, potentially leaving them active."
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "Prisma is imported but no longer used, breaking unused-imports/no-unused-imports (error). PrismaPromise is now a value import but used only as a type, breaking @typescript-eslint/consistent-type-imports (error). Line 9 lacks the trailing comma required by prettier."
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "The import type { App, Credential, EventTypeCustomInput, Prisma } was folded into a value import, though all four names are used only as types, breaking @typescript-eslint/consistent-type-imports (error) in handleNewBooking.ts."
+  },
+  {
+   "id": "c4",
+   "source": "converge-review-replay",
+   "text": "The patch changes 'import type { Prisma, PrismaPromise }' to a value import, but PrismaPromise is used only as a type, which breaks @typescript-eslint/consistent-type-imports (error, prefer: type-imports)."
+  },
+  {
+   "id": "c5",
+   "source": "augment",
+   "text": "Because cancellations are processed after the earlier delete-by-date logic, if this cron runs late a cancelled reminder could be removed from DB without ever sending the corresponding SendGrid cancellation request"
+  },
+  {
+   "id": "c6",
+   "source": "coderabbit",
+   "text": "In workflows.tsx, deleteScheduledEmailReminder is called with immediateDelete=true which reintroduces direct SendGrid cancellation that the PR is moving away from"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "The patch uses prisma.workflowReminder.delete where callers previously used deleteMany. delete throws P2025 when the row is already gone (e.g., racing a cascade delete), causing log noise."
+  },
+  {
+   "id": "c8",
+   "source": "converge-review-replay",
+   "text": "Line 9 ('Prisma') in the merged import has no trailing comma, which breaks prettier trailingComma: 'es5' and causes a lint error through plugin:prettier/recommended."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review-replay",
+   "text": "The DB write that marks a reminder cancelled (or deletes it) is no longer awaited at any changed caller. deleteScheduledEmailReminder/deleteScheduledSMSReminder are async and called inside forEach without await at handleCancelBooking.ts:485-493, packages/trpc/server/routers/viewer/bookings.tsx:488-494, packages/trpc/server/routers/viewer/workflows.tsx:376-382 and workflows.tsx:574-580. On serverless hosting the request can end before the write lands, so the cron never cancels the batch and the email is sent."
+  },
+  {
+   "id": "c10",
+   "source": "cubic-v2",
+   "text": "When immediateDelete is true in deleteScheduledEmailReminder, the function cancels the SendGrid scheduled send but returns without deleting or marking the workflowReminder DB record as cancelled, leaving stale reminder rows in the database"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "Reminder cleanup is now fire-and-forget: async deleteScheduledEmailReminder/deleteScheduledSMSReminder calls inside forEach are not awaited. The cancelled=true write or row delete can be lost when the request ends (serverless freeze), and failures are only console-logged, so the reminder may still be sent."
+  },
+  {
+   "id": "c12",
+   "source": "coderabbit",
+   "text": "Reminder deletion calls (deleteScheduledEmailReminder and deleteScheduledSMSReminder) are not awaited in handleCancelBooking.ts, making them fire-and-forget which means booking cancellation response is sent before reminder cancellation completes and any errors are silently lost"
+  },
+  {
+   "id": "c13",
+   "source": "qodo-extended-v2",
+   "text": "Async functions deleteScheduledEmailReminder and deleteScheduledSMSReminder are called inside forEach without await, creating fire-and-forget promises where the wrapping try/catch cannot catch promise rejections, making the error handler unreachable for async failures"
+  },
+  {
+   "id": "c14",
+   "source": "coderabbit",
+   "text": "Critical: In emailReminderManager.ts, the immediateDelete path cancels SendGrid scheduled send but returns without deleting the workflowReminder row from the database, creating orphaned records"
+  },
+  {
+   "id": "c15",
+   "source": "coderabbit",
+   "text": "In scheduleEmailReminders.ts, the cancellation query doesn't filter by method: EMAIL, which could inadvertently process SMS reminders marked as cancelled"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review-replay",
+   "text": "The new try/catch around the reminder forEach can never catch anything because deleteScheduledEmailReminder/deleteScheduledSMSReminder are async and not awaited, making log.error at line 974 dead code."
+  },
+  {
+   "id": "c17",
+   "source": "qodo-extended-v2",
+   "text": "immediateDelete branch in deleteScheduledEmailReminder cancels email via SendGrid but returns without deleting the WorkflowReminder record or setting cancelled: true, causing orphaned database records that accumulate permanently"
+  },
+  {
+   "id": "c18",
+   "source": "cubic-v2",
+   "text": "Passing `true` to deleteScheduledEmailReminder bypasses the new deferred email-cancellation flow and reintroduces the SendGrid cancellation-cap bug for reschedules"
+  },
+  {
+   "id": "c19",
+   "source": "coderabbit",
+   "text": "In bookings.tsx, same fire-and-forget pattern where reminder deletion calls are not awaited during reschedule, which could result in duplicate notifications"
+  },
+  {
+   "id": "c20",
+   "source": "cubic-v2",
+   "text": "deleteScheduledEmailReminder and deleteScheduledSMSReminder are async functions called inside .forEach() without await in handleCancelBooking.ts - promises are fire-and-forget, cancellations may not complete before booking data is deleted, and failures surface as unhandled rejections"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "The cron cancel loop has one try/catch around sequential awaited SendGrid cancel calls. The first SendGrid error aborts the loop, leaving later cancelled reminders uncancelled in that run, and queued row deletes never execute. Rows already cancelled at SendGrid stay cancelled:true and are re-sent cancel on every run. If one row keeps failing, every row behind it is never cancelled until its scheduledDate passes, causing those emails to go out."
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "The SendGrid scheduled_sends cancel request is duplicated in the cron and in emailReminderManager.ts:214-221, and the copies can drift."
+  },
+  {
+   "id": "c23",
+   "source": "qodo-extended-v2",
+   "text": "Single try/catch wrapping the entire for...of loop for cancelling reminders means if SendGrid API fails for any reminder, the loop aborts and skips all remaining reminders AND the Promise.all that deletes already-processed reminders, causing duplicate cancel requests and permanently blocking cleanup"
+  },
+  {
+   "id": "c24",
+   "source": "cubic-v2",
+   "text": "Both call sites (handleCancelBooking.ts:488 and handleNewBooking.ts:968) invoke deleteScheduledEmailReminder async function inside .forEach() without await - async DB/SendGrid work becomes fire-and-forget and rejections are silently lost"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "twilio.cancelSMS and the row delete share one try block. If cancelSMS throws (e.g., the message was already sent), the row is not deleted, whereas old callers deleted the row whatever Twilio returned."
+  },
+  {
+   "id": "c26",
+   "source": "converge-review-replay",
+   "text": "About 60 lines inside a commented-out block are re-indented with no behaviour change, creating unrelated diff and blame noise."
+  },
+  {
+   "id": "c27",
+   "source": "augment",
+   "text": "The SendGrid call assumes reminder.referenceId is always a valid batch id; if it's null/empty (or for non-email rows), this will throw and the reminder won't be deleted, causing repeated failures on subsequent runs"
+  },
+  {
+   "id": "c28",
+   "source": "claude-code",
+   "text": "deleteScheduledEmailReminder does not delete the WorkflowReminder DB record when immediateDelete is true and referenceId is not null. It cancels the email via SendGrid but then returns immediately without cleaning up the database. This leaves orphaned WorkflowReminder records, particularly in the rescheduling path where the old booking is only marked CANCELLED (not deleted), so no Prisma cascade fires. A prisma.workflowReminder.delete call should be added after the SendGrid cancel in the immediateDelete branch."
+  },
+  {
+   "id": "c29",
+   "source": "augment",
+   "text": "deleteScheduledEmailReminder/deleteScheduledSMSReminder are async but calls aren't awaited/collected, so reminder cancellations/DB updates can be lost if the handler returns before the promises settle"
+  },
+  {
+   "id": "c30",
+   "source": "coderabbit",
+   "text": "In workflows.tsx, PrismaPromise is used only as a type but imported as a runtime value instead of using type-only import"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "Deferred cancellation only sets cancelled=true and relies on the 15-minute cron, which cancels only reminders due within the next hour. A booking cancelled less than about 15 minutes before its reminder's send time (after the last cron pass) still gets the reminder email, whereas before the patch cancellation was immediate."
+  },
+  {
+   "id": "c32",
+   "source": "coderabbit",
+   "text": "In handleNewBooking.ts, the forEach loop calls async deletion functions without awaiting, so the try/catch won't catch errors from the actual deletion operations"
+  },
+  {
+   "id": "c33",
+   "source": "coderabbit",
+   "text": "In workflows.tsx, cancellation helpers are invoked inside forEach without awaiting, which can race with later mutations and silently miss cancellations"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "The EMAIL/SMS reminder-deletion dispatch block is copied at 7 call sites, and the patch had to edit every copy."
+  },
+  {
+   "id": "c35",
+   "source": "converge-review-replay",
+   "text": "The new 'import { Prisma, WorkflowReminder } from \"@calcom/prisma/client\"' imports two names that are used only as types in scheduleEmailReminders.ts, which breaks consistent-type-imports (error)."
+  },
+  {
+   "id": "c36",
+   "source": "coderabbit",
+   "text": "In scheduleEmailReminders.ts, reminder.referenceId is nullable but passed directly to SendGrid API which expects a valid batch_id, causing API errors for reminders without a referenceId"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review",
+   "text": "The cron cancel loop wraps sequential awaited SendGrid cancel requests in one try/catch and queues row deletes as lazy Prisma promises that only run at the final Promise.all. One failed cancel aborts the loop: none of the queued deletes run, including those whose batch was already cancelled, and later cancelled reminders are not processed. A persistently failing row blocks every reminder queued behind it until its scheduledDate passes."
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "The new try/catch wraps a forEach of un-awaited async calls whose callees already catch their own errors, so log.error in the catch at handleNewBooking.ts:964-975 is unreachable."
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "No tests cover the new cancel lifecycle (flag on cancel, cron cancels at SendGrid, row deleted) or the reschedule paths."
+  },
+  {
+   "id": "c40",
+   "source": "coderabbit",
+   "text": "In scheduleEmailReminders.ts, if SendGrid API call fails for one reminder, the loop exits early and remaining reminders are not processed, while DB deletions collected before failure are still executed"
+  },
+  {
+   "id": "c41",
+   "source": "coderabbit",
+   "text": "In WorkflowStepContainer.tsx, users can trigger multiple verification SMS sends before the first resolves because the button is not disabled during sendVerificationCodeMutation.isLoading"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review",
+   "text": "Immediate SendGrid cancels on workflow deletion, step deletion and reschedule may exceed a SendGrid limit on concurrently cancelled or paused batches, causing later cancels to fail and emails to be sent."
+  },
+  {
+   "id": "c43",
+   "source": "coderabbit",
+   "text": "In schema.prisma, missing composite index on (cancelled, scheduledDate) for WorkflowReminder which could cause slow queries as the table grows"
+  },
+  {
+   "id": "c44",
+   "source": "coderabbit",
+   "text": "In handleNewBooking.ts, deleteScheduledEmailReminder is called with immediateDelete=true which triggers a buggy path that doesn't delete the DB record"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review-replay",
+   "text": "The immediateDelete branch cancels the SendGrid batch but neither deletes the DB row nor sets cancelled. Rows can be left behind (scheduled:true, or cancelled:true after a request-reschedule), and a later cron run sends a second cancel for the same batch_id, which feeds the cron-stall issue."
+  },
+  {
+   "id": "c46",
+   "source": "cubic-v2",
+   "text": "deleteScheduledEmailReminder and deleteScheduledSMSReminder are async functions called inside .forEach() without await in handleNewBooking.ts - reminder deletions are fire-and-forget, failures won't be caught by try/catch, and no guarantee they complete before response is sent"
+  },
+  {
+   "id": "c47",
+   "source": "converge-review",
+   "text": "The boolean immediateDelete parameter makes one function do two unrelated jobs: cancel at SendGrid without touching the DB, or flag in the DB only. The name is misleading because it deletes nothing, and relies on an undocumented precondition that the caller cascade-deletes the row."
+  },
+  {
+   "id": "c48",
+   "source": "converge-review-replay",
+   "text": "Prisma is imported but no longer used in packages/trpc/server/routers/viewer/workflows.tsx, which breaks unused-imports/no-unused-imports (error)."
+  },
+  {
+   "id": "c49",
+   "source": "cubic-v2",
+   "text": "The cancellation pass in scheduleEmailReminders.ts should restrict to reminders that are already scheduled email sends - otherwise an unscheduled or non-email reminder can produce an invalid SendGrid batch_id and prevent other cancellations from running"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review-replay",
+   "text": "The patch folds 'import type { App, Credential, EventTypeCustomInput, Prisma }' into a value import, but all four names are used only as types in handleNewBooking.ts, which breaks consistent-type-imports (error)."
+  },
+  {
+   "id": "c51",
+   "source": "claude-code",
+   "text": "The cancellation loop in the CRON job wraps a single try-catch around the entire for loop. If any SendGrid cancellation request fails, the loop breaks immediately - all subsequent reminders are skipped and none of the accumulated prisma.workflowReminder.delete queries execute. A persistently failing reminder would block all other cancellations every CRON run. The try-catch should be moved inside the for loop to match the per-iteration pattern used by the scheduling loop."
+  },
+  {
+   "id": "c52",
+   "source": "golden",
+   "text": "When immediateDelete is true, the deleteScheduledEmailReminder function cancels the SendGrid email but fails to delete the corresponding WorkflowReminder record from the database. This creates orphaned database entries and is inconsistent with the immediateDelete: false path, which marks the record as cancelled. The SendGrid DELETE API call is also omitted in this path."
+  },
+  {
+   "id": "c53",
+   "source": "converge-review",
+   "text": "The new import { Prisma, WorkflowReminder } from '@calcom/prisma/client' imports names used only as types, breaking @typescript-eslint/consistent-type-imports (error) in scheduleEmailReminders.ts."
+  },
+  {
+   "id": "c54",
+   "source": "golden",
+   "text": "The 'cancelled' field is nullable, which can lead to existing records having null values instead of a default of false. This can cause incorrect behavior in the application when checking the cancellation status of reminders."
+  },
+  {
+   "id": "c55",
+   "source": "coderabbit",
+   "text": "In WorkflowStepContainer.tsx, verification can be submitted with empty phone number or empty code, causing unnecessary mutation calls"
+  },
+  {
+   "id": "c56",
+   "source": "coderabbit",
+   "text": "In WorkflowStepContainer.tsx, hardcoded strings 'Verification code' placeholder and 'Verify' button label bypass i18n"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The async functions deleteScheduledEmailReminder and deleteScheduledSMSReminder are called inside forEach loops without await. The call sites include handleCancelBooking.ts, handleNewBooking.ts, bookings.tsx and workflows.tsx. Because of this, reminder cancellation or DB updates may not complete before the request ends, and rejections are lost.",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "members": [
+    "c1",
+    "c9",
+    "c11",
+    "c12",
+    "c19",
+    "c20",
+    "c24",
+    "c29",
+    "c33",
+    "c46"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "In handleNewBooking.ts the new try/catch wraps a forEach of un-awaited async reminder-deletion calls. As a result, the catch block and its log.error are unreachable.",
+   "path": "handleNewBooking.ts",
+   "members": [
+    "c13",
+    "c16",
+    "c32",
+    "c38"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "In deleteScheduledEmailReminder (emailReminderManager.ts), the immediateDelete=true branch cancels the SendGrid scheduled send and then returns. It neither deletes the workflowReminder DB row nor marks it cancelled, which leaves orphaned rows.",
+   "path": "emailReminderManager.ts",
+   "members": [
+    "c10",
+    "c14",
+    "c17",
+    "c28",
+    "c44",
+    "c45",
+    "c52"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "deleteScheduledEmailReminder is called with immediateDelete=true on workflow deletion, step deletion and reschedule. This performs direct SendGrid cancellation that bypasses the deferred cancellation flow and is subject to SendGrid's cancelled-batch limit.",
+   "path": "packages/trpc/server/routers/viewer/workflows.tsx",
+   "members": [
+    "c6",
+    "c18",
+    "c42"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "Prisma is imported but no longer used in workflows.tsx, which violates unused-imports/no-unused-imports.",
+   "path": "packages/trpc/server/routers/viewer/workflows.tsx",
+   "members": [
+    "c2",
+    "c48"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "In workflows.tsx, PrismaPromise was changed to a value import but is used only as a type, which violates @typescript-eslint/consistent-type-imports.",
+   "path": "packages/trpc/server/routers/viewer/workflows.tsx",
+   "members": [
+    "c4",
+    "c30"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "In handleNewBooking.ts, 'import type { App, Credential, EventTypeCustomInput, Prisma }' was folded into a value import even though all four names are used only as types. This violates @typescript-eslint/consistent-type-imports.",
+   "path": "handleNewBooking.ts",
+   "members": [
+    "c3",
+    "c50"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "Line 9 ('Prisma') in the merged import lacks a trailing comma, which violates the prettier trailingComma 'es5' rule.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "In scheduleEmailReminders.ts, the new import of Prisma and WorkflowReminder from '@calcom/prisma/client' is a value import of names used only as types. This violates @typescript-eslint/consistent-type-imports.",
+   "path": "scheduleEmailReminders.ts",
+   "members": [
+    "c35",
+    "c53"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The cron cancel loop in scheduleEmailReminders.ts wraps all sequential SendGrid cancel calls in a single try/catch. One failed cancel therefore aborts the loop, skips the remaining cancelled reminders, and affects the queued row deletes.",
+   "path": "scheduleEmailReminders.ts",
+   "members": [
+    "c21",
+    "c23",
+    "c37",
+    "c40",
+    "c51"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The cancellation query in scheduleEmailReminders.ts does not restrict to scheduled EMAIL reminders. A reminder with a null referenceId, or an SMS reminder, is passed to SendGrid as an invalid batch_id, which causes API errors and prevents its deletion.",
+   "path": "scheduleEmailReminders.ts",
+   "members": [
+    "c15",
+    "c27",
+    "c36",
+    "c49"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "Cancellations in the cron are processed after the earlier delete-by-date logic. If the cron runs late, a cancelled reminder can be removed from the DB without a SendGrid cancellation request ever being sent.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The patch uses prisma.workflowReminder.delete where callers previously used deleteMany. delete throws P2025 when the row is already gone.",
+   "path": null,
+   "members": [
+    "c7"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The SendGrid scheduled_sends cancel request is duplicated in the cron and in emailReminderManager.ts:214-221.",
+   "path": "emailReminderManager.ts",
+   "members": [
+    "c22"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "twilio.cancelSMS and the row delete share one try block. If cancelSMS throws, the row is not deleted, whereas the old callers deleted it regardless of the Twilio result.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "About 60 lines inside a commented-out block are re-indented with no behaviour change.",
+   "path": null,
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "Deferred cancellation only sets cancelled=true and relies on the 15-minute cron, which cancels only reminders due within the next hour. A booking cancelled shortly before its reminder's send time, after the last cron pass, still gets the reminder email.",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "The EMAIL/SMS reminder-deletion dispatch block is duplicated at 7 call sites.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "No tests cover the new cancel lifecycle or the reschedule paths.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "In WorkflowStepContainer.tsx, the verify button is not disabled while sendVerificationCodeMutation is loading, so multiple verification SMS sends can be triggered.",
+   "path": "WorkflowStepContainer.tsx",
+   "members": [
+    "c41"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "schema.prisma has no composite index on (cancelled, scheduledDate) for WorkflowReminder.",
+   "path": "schema.prisma",
+   "members": [
+    "c43"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The boolean immediateDelete parameter makes deleteScheduledEmailReminder do two different jobs. In the immediate path it deletes nothing and relies on an undocumented precondition that the caller cascade-deletes the row.",
+   "path": null,
+   "members": [
+    "c47"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "The new 'cancelled' field on WorkflowReminder is nullable without a default of false, so existing records can have null values.",
+   "path": null,
+   "members": [
+    "c54"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "In WorkflowStepContainer.tsx, verification can be submitted with an empty phone number or empty code.",
+   "path": "WorkflowStepContainer.tsx",
+   "members": [
+    "c55"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "In WorkflowStepContainer.tsx, the 'Verification code' placeholder and the 'Verify' button label are hardcoded strings that bypass i18n.",
+   "path": "WorkflowStepContainer.tsx",
+   "members": [
+    "c56"
+   ]
+  }
+ ]
+}

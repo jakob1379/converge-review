@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "themes/src/main/resources-community/theme/base/login/messages/messages_ka.properties:172, 174, 451 and 452 all end in `<br />{0}` with no space, while most other locales in the patch (en, de, fr, cs, etc.) use `<br /> {0}`; messages_ca has the same no-space form on two keys. The missing space was already there before the patch (`<br/>{0}`), which only rewrote `<br/>` to `<br />`, and whitespace after a `<br>` has no effect on rendered HTML.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.20056580000000002
+}

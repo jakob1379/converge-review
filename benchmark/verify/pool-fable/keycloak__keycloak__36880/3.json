@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch gates the only admin-permissions `ClientRemovedEvent` cleanup behind the V1 feature flag (services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java:77,89-91), and `ClientPermissionsV2.setPermissionsEnabled` just throws. The remaining listener (server-spi-private/src/main/java/org/keycloak/authorization/store/syncronization/ClientApplicationSynchronizer.java:49-74) only removes the deleted client's own resource server and client-policy references, so the per-client resource created in the admin-permissions resource server (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:93-104) and its scope permissions are never removed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.160153
+}

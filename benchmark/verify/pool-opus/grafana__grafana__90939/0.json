@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/api/webassets/webassets.go:48-49, after the RLock check at lines 41-47, the code takes the write lock and goes straight to readWebAssetsFromFile (line 60) without checking entryPointAssetsCache again. So every goroutine that hit the cold cache re-reads and re-parses the manifest one after another and overwrites the cache at line 69.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0421831
+}

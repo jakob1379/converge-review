@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "When the ownership check fails, the new packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts:18-20 throws a plain `new Error(\"Credential not found or access denied\")`, not a TRPCError. The repo's errorFormatter (packages/trpc/server/errorFormatter.ts:25-39) only remaps ZodError causes, and no middleware converts plain errors, so tRPC returns INTERNAL_SERVER_ERROR (500).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06694610000000001
+}

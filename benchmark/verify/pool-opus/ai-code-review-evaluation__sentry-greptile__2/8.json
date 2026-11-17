@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a comment at src/sentry/utils/cursors.py:26-27 saying the Cursor allows negative offsets to enable efficient reverse pagination, but the code below it at line 28 (`self.offset = int(offset)`) is unchanged and implements no such behaviour. All it does is store whatever integer it is given, and nothing in Cursor handles negative offsets.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.135378
+}

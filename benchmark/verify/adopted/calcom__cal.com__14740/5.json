@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts:26-56 finds the booking by id alone and checks only who the caller is, never booking.status or startTime. It then writes attendee rows (lines 92-106) and sends the new emails, whose invites use method REQUEST and status CONFIRMED (attendee-add-guests-email.ts:311-313, organizer-add-guests-email.ts:355-357), even for cancelled, rejected or past bookings. The only check on status or time is in the UI (BookingListItem.tsx:544).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10141739999999999
+}

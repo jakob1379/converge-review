@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "getCalendar is async (packages/app-store/_utils/getCalendar.ts:9), so a rejected import awaited at line 15 rejects the promise getCalendar returns, and callers that await it receive the error (e.g. CalendarManager.ts createEvent/deleteEvent, handleCancelBooking). Passing the error up instead of catching it locally is normal, and it is not an unhandled rejection at this line. Any unhandled rejection would come from callers such as the `forEach(async ...)` in reschedule.ts, or from the eager `import()` calls in app-store/index.ts, not from getCalendar.ts:15.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1218267
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/authz/rbac/service.go:116-121 returns Allowed=false straight from permDenialCache before any permCache or DB lookup, while a permCache denial falls through to the DB (service.go:123-139). The denial entry is written at service.go:153-155 with shortCacheTTL (30s, service.go:32,85) and is never deleted or invalidated anywhere, so a grant made after a cached denial stays blocked for up to 30s.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3307389
+}

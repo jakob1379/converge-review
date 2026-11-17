@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "testRecoveryKeysSetupAndLogin creates a fresh TestAppHelper (BackwardsCompatibilityUserStorageTest.java:255), calls startLogin and submits the recovery code but never completeLogin(), so refreshToken is null when logout() runs at line 264 (TestAppHelper.java:70-74,104-106). AbstractHttpPostRequest.parameter drops null values (line 79-83), so the logout request carries no refresh token and its result is not asserted, leaving the session in place.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4523378
+}

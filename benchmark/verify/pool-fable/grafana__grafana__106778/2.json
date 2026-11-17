@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/hooks/useAbilities.ts:222-228 now delegates to useAllRulerRuleAbilities, which sets `isFederated = false` (line 245) where the patch removed `isFederatedRuleGroup(rule.group)`, so Update/Delete (lines 264-265) are no longer blocked for federated Mimir groups and RuleActionsButtons.tsx:57-84 will show Edit. The claim overstates Pause/Restore: those stay gated by `isGrafanaManagedAlertRule` (lines 269-270), so they do not open up for Mimir rules.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3368434
+}

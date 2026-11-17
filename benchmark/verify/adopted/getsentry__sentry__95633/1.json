@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch starts a daemon thread at queue_consumer.py:270 whose `_commit_loop` calls `self.commit_function(committable)` at :287. That function is arroyo's `Commit` callable, wrapped by `commit_offsets` in result_consumer.py, so arroyo is driven from outside the consumer thread. Nothing ever prunes revoked partitions from `OffsetTracker`, and the 5s `join` at :337 can time out, so a stale partition can make the one batched commit fail at :290 and stop `mark_committed` from running for every partition. arroyo is not installed here, so its internals (`stage_offsets` raising `ConsumerError`, the unlocked consumer state) come from known library behaviour rather than code I read.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1233534
+}

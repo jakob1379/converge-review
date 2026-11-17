@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The array passed to `skip_before_filter` is single-line and has a comma after `:unsubscribe` (app/controllers/topics_controller.rb:32: `only: [:show, :unsubscribe, :feed]`). The multiline array ending in `:unsubscribe]` belongs to `before_filter :ensure_logged_in` (lines 8-28); its missing trailing comma is valid Ruby and matches the pre-patch style (`:bookmark]`), so there is no defect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2950889
+}

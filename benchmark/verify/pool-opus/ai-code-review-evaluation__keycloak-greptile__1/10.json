@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AuthenticatorUtils.setupReauthenticationInUsernamePasswordFormError (patch lines 168-171) reads the USER_SET_BEFORE_USERNAME_PASSWORD_AUTH auth note and runs Boolean.parseBoolean on it. That is the same logic as AbstractUsernameFormAuthenticator.isUserAlreadySetBeforeUsernamePasswordAuth (AbstractUsernameFormAuthenticator.java:257-260), and the patch changes the constant at line 58 from protected to public.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08339940000000001
+}

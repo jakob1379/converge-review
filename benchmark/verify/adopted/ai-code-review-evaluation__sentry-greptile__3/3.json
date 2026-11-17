@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "error_upsampling.py:30 calls the Django cache (sentry.utils.cache wraps django.core.cache) on every events-stats call, before the _should_apply_sample_weight_transform dataset check at :32/:40. The option it replaces is already served from options/store.py:123-150 get_cache/get_local_cache, which keeps values in-process for the default 10s TTL (manager.py:144); the allowlist option sets no TTL of its own (defaults.py:3464).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.18485509999999997
+}

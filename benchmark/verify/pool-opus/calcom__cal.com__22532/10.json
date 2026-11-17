@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The `dev:cron` script (apps/web/package.json:9-10) runs apps/web/cron-tester.ts, which calls `/calendar-cache/cron` every 5 seconds (cron-tester.ts:26). Switching it to tsx is therefore a fix to the tool developers use to exercise the calendar-cache feature, much like the scripts/test-gcal-webhooks.sh helper the patch also adds.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0649014
+}

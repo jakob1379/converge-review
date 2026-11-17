@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After the patch, the only call to `(*server).Init` is in `NewResourceServer` (pkg/storage/unified/resource/server.go:258). The patch removed every per-RPC `s.Init(ctx)` call, `ResourceServer` (server.go:27-32) does not include `Init`, and nothing in pkg asserts the server to `LifecycleHooks` or to an interface with `Init`, so `once.Do` (server.go:294) runs only once. `initErr` (server.go:289) now only carries the error within that single call and could be a local variable.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.15300410000000003
+}

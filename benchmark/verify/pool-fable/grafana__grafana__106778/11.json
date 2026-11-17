@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "RulesTable.test.tsx:20 does automock the whole useAbilities module, but the conclusion is wrong: GrafanaGroupLoader.test.tsx (rewritten in this patch, no jest.mock of useAbilities) renders GrafanaRuleListItem.tsx:47 -> RuleActionsButtons.V2 with only a promRule, so the real useGrafanaPromRuleAbility/useAllGrafanaPromRuleAbilities/useIsGrafanaPromRuleEditable and the OR-merges in RuleActionsButtons.V2.tsx:61 and AlertRuleMenu.tsx:83-100 run unmocked there (edit allowed/denied at GrafanaGroupLoader.test.tsx:148-169, menu items at 171-208).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.6698283
+}

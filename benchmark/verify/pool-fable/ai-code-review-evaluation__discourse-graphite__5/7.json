@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/templates/header.hbs:2 still has `class='contents clearfix'`, and the patch makes `.d-header .contents` a flex container (app/assets/stylesheets/common/base/header.scss:14-19), so the `.clearfix` `:before`/`:after` pseudo-elements (app/assets/stylesheets/common/foundation/helpers.scss:53-62) become zero-size flex items and `clear: both` does nothing. The leftover is redundant and has no visible layout effect, since no `justify-content` or `gap` is set.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2222755
+}

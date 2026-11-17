@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At apps/web/components/dialog/AddGuestsDialog.tsx:43 the message is the template `${err.data?.code}: ${t(err.message)}`, which always contains at least \": \" and so is always truthy. The `|| t(\"unable_to_add_guests\")` fallback at line 44 therefore never runs, and users see strings like \"BAD_REQUEST: ...\" or \"undefined: ...\".",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.044159500000000004
+}

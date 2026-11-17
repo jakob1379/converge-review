@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "No test calls ReadQuery with a SQL query: pkg/expr/reader_test.go only tests reduce modes (lines 15-162), so the new rejection at reader.go:128-132 is never exercised, and the legacy path (UnmarshalSQLCommand at nodes.go:159-160) has no rejection or test of its own. Every existing SQL test starts with t.Skip() (sql_command_test.go:9 and all 16 tests in sql/parser_test.go); query_test.go:84 only builds a schema example.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.24789970000000003
+}

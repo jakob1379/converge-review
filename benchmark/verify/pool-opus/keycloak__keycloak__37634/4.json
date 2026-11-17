@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The V1, impersonation and federated paths (V1TokenExchangeProvider.java:154, SubjectImpersonationTokenExchangeProvider.java:151, AbstractTokenExchangeProvider.java:535) all reach the base exchangeClientToOIDCClient, which calls generateAccessToken() at AbstractTokenExchangeProvider.java:409-410 without ever setting Constants.GRANT_TYPE. Only StandardTokenExchangeProvider sets it (line 237), so DefaultTokenContextEncoderProvider falls back to 'na' for those tokens.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.36365899999999995
+}

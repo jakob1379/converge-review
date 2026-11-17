@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The ESLint preset at packages/config/eslint-preset.js:4,36 extends only next, prettier, turbo, @typescript-eslint/recommended and @calcom/eslint/recommended, and neither no-floating-promises nor no-misused-promises appears in it or in packages/eslint-plugin. So the patch's new forEach(async ...) callbacks (vital/lib/reschedule.ts:127, wipemycalother/lib/reschedule.ts:144, bookings.tsx:444) would pass lint; whether the build and lint were actually run can't be checked from the source.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1438352
+}

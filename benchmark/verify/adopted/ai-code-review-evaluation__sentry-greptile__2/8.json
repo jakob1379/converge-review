@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the only reader of `self.max_segment_spans` (the span-count check that was in `_load_segment_data`). A repo-wide grep now finds the name only at its declaration and assignment (`src/sentry/spans/buffer.py:150,158`), and `add-buffer.lua` caps sets with the literal 1000 (`if span_count > 1000 then zpopmin ...`) rather than an ARGV, so the default of 1001 no longer controls anything.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.114451
+}

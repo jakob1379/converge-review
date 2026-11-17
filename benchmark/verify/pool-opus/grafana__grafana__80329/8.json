@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new deleteByIDs comment and constant say SQLite's parameter limit is 999 (xorm_store.go, patch lines 319-321), but the new test case is named for SQLITE_MAX_VARIABLE_NUMBER in SQLite >= 3.32.0 and uses a batch size of 32767 (annotation cleanup test, patch lines 105-108). Since 3.32.0 the default limit is 32766; 999 was the default before that. Using 999 is the cautious choice, so the code still works and only the wording is inconsistent.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0875393
+}

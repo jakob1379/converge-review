@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`sendAddGuestsEmails(calEvent, newGuests)` at packages/emails/email-manager.ts:525-550 takes no `eventTypeMetadata` and sends organizer, team-member and attendee emails unconditionally, unlike `sendLocationChangeEmails` just above it (lines 495-524), which gates on `eventTypeDisableHostEmail`/`eventTypeDisableAttendeeEmail`. The handler calls it as `sendAddGuestsEmails(evt, guests)` at packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:168 without passing `booking.eventType?.metadata`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2781106
+}

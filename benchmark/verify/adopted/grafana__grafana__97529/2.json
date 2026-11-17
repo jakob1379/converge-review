@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "TotalDocs (bleve.go:144-154) loops over b.cache without taking cacheMu, while BuildIndex writes b.cache[key] under cacheMu.Lock() (bleve.go:137-139). The new log call at search.go:216 runs after the event goroutine has started (search.go:207-211), and that goroutine can reach BuildIndex through handleEvent and getOrCreateIndex (search.go:237, 298), so a concurrent map read and write can happen. The window is very small, though: an event for a resource with no index yet must finish a full build before the log line runs. The same unlocked read already existed in BleveIndexMetrics.Collect (bleve_index_metrics.go:96).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1547124
+}

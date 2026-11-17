@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`isConditionalPasskeysEnabled` at UsernamePasswordForm.java:160-162 requires `user != null`, so the `fillContextForm` calls at lines 115-117 and 137-140 are skipped when no user is set, whereas the pre-patch code ran them exactly when `context.getUser() == null`. `enableWebAuthnConditionalUI` is only set inside that path (WebAuthnConditionalUIAuthenticator.java:43), and `UsernameForm` inherits it through `super.authenticate` (UsernameForm.java:54), so the initial login page gets no passkey UI.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5147842
+}

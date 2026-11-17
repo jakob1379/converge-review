@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "runSplitQuery now calls applyTemplateVariables with request.filters (querySplitting.ts:296-299), and so does runShardSplitQuery (shardQuerySplitting.ts:49-52). Sub-requests are built with `...request`, so they keep `filters` (querySplitting.ts:174, shardQuerySplitting.ts:154). DataSourceWithBackend.ts:185 then applies the variables and filters again, and addFilterAsLabelFilter (modifyQuery.ts:511-541) always appends a parsed-label filter without checking for duplicates; before the patch the shard path called interpolateVariablesInQueries without filters, so filters were added only once.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2002563
+}

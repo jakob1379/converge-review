@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts (patch lines 103-129), `dateOverrides.find` returns true as soon as any same-day override range has the slot outside it, and the function then returns false. With ranges 09:00-11:00 and 14:00-16:00 on the same date, a 15:00 slot matches the 09-11 range's `slotStartTime.isAfter(date.end)` check first and is rejected, even though it fits the second range.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0629764
+}

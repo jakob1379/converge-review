@@ -1,0 +1,213 @@
+{
+ "findings": [
+  {
+   "path": "docs/guides/operator/advanced-configuration.adoc",
+   "line": 446,
+   "severity": "Important",
+   "claim": "The new CAUTION block (lines 446-450) says the Operator 'will fail' unless the `rolling-updates` feature is enabled, but nothing in the operator checks this. Either the operator's spec.update / update strategy is not actually gated behind the preview feature, or the documentation is wrong.",
+   "evidence": "open-code-review and superpowers: `grep -rn \"ROLLING_UPDATES\\|rolling-updates\" operator/src/main` finds nothing. UpgradeLogicFactory.create (UpgradeLogicFactory.java:35-43) picks the logic from UpdateSpec.findUpdateStrategy alone. KeycloakDistConfigurator.java:122-124 only passes spec.features through to the server. KeycloakSpec.getUpdateSpec has no validation tied to features. mattpocock: UpgradeTest.java:50 and 104-106 still expect the null-strategy path to pass without the feature. All three seats agree the UpgradeTest change (110-115) proves nothing about gating. ponytail noted the same gap but outside its role, so it is not counted. Every seat's claim is reasoned; no gate was run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted, with a decision needed: add a real operator gate (a status error or validation when spec.update is set without `rolling-updates`) or remove the sentence from the docs. Red test before fixing: an operator integration test that sets spec.update.strategy with no features.enabled and expects the operator to fail. On the pinned code it does not fail, so the test is red. Not yet executed (benchmark mode).",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The operator never checks the `rolling-updates` feature. UpgradeLogicFactory.java:35-43 picks its logic from UpdateSpec.findUpdateStrategy alone, and nothing in operator/src/main mentions rolling-updates, ROLLING_UPDATES or update-compatibility. The patch only gates the CLI commands (UpdateCompatibilityCheck/Metadata run()), so the CAUTION at advanced-configuration.adoc:446-450 saying the Operator 'will fail' is wrong.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.12850029999999998
+   }
+  },
+  {
+   "path": "quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java",
+   "line": 46,
+   "severity": "Important",
+   "claim": "The patch renumbers the public exit-code contract (recreate 4 -> 3, feature-disabled = 4), but no test asserts either new value. testFeatureNotEnabled and testIncompatible check only the message text.",
+   "evidence": "The only exit-code assertion in the file is assertEquals(0, ...) at line 75. CompatibilityResult.java:34-35 changes the constants. The guide tells users to rely only on the exit code of `check`. The tests are @RawDistOnly, so result.exitCode() is available and meaningful. superpowers rated this Important (lines 46-50 and 88-107). mattpocock and open-code-review rated it Minor. It is normalised to Important because it guards a renumbered public contract.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Add assertEquals(4, result.exitCode()) to testFeatureNotEnabled and assertEquals(3, result.exitCode()) to testIncompatible. The pinned code is believed correct, so red is shown by mutation: swapping FEATURE_DISABLED and RECREATE_UPGRADE_EXIT_CODE must turn the new assertions red. Not yet executed (benchmark mode).",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes the exit codes at CompatibilityResult.java:34-35 (recreate is now 3, feature-disabled is 4), but UpdateCommandDistTest.java never checks either value: testFeatureNotEnabled (lines 46-50) and the incompatible-version test, which is actually named testWrongVersions (lines 86-107), only check message text, and the file's only exit-code check is assertEquals(0, ...) at line 75. No other test refers to RECREATE_UPGRADE_EXIT_CODE or FEATURE_DISABLED.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1407528
+   }
+  },
+  {
+   "path": "quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java",
+   "line": 46,
+   "severity": "Minor",
+   "claim": "Only `update-compatibility metadata` is run with the feature off. The separate copy of the gate in UpdateCompatibilityCheck.run() (lines 46-50) is never run without the feature.",
+   "evidence": "The @Launch({UpdateCompatibility.NAME, UpdateCompatibilityMetadata.NAME}) call is the only launch without ENABLE_FEATURE (superpowers). mattpocock and open-code-review make the same observation.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Add a feature-off launch of `update-compatibility check` that asserts the message and exit code 4. This is Minor, so no red test is required.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In UpdateCommandDistTest.java:46-50, testFeatureNotEnabled is the only test that runs without ENABLE_FEATURE, and it runs only `update-compatibility metadata`; every UpdateCompatibilityCheck launch (lines 65, 81, 96, 105) passes `--features=rolling-updates`, so the gate added in UpdateCompatibilityCheck.run() (patch lines 173-177) is never tested with the feature off. HelpCommandDistTest only prints help and never calls run().",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.126147
+   }
+  },
+  {
+   "path": "quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityCheck.java",
+   "line": 46,
+   "severity": "Minor",
+   "claim": "The same 5-line feature gate (isFeatureEnabled, printFeatureDisabled, exit(FEATURE_DISABLED), return) is copied into UpdateCompatibilityCheck.java:46-50 and UpdateCompatibilityMetadata.java:46-50, instead of living once in AbstractUpdatesCommand.",
+   "evidence": "The two blocks are identical. `grep -rn printFeatureDisabled` shows only the definition (AbstractUpdatesCommand.java:83-85) and the two copies (ponytail). Any future subcommand could miss the gate (open-code-review). mattpocock lists it as a possible duplicated-code smell. Behaviour is unchanged, and open-code-review confirmed the early return after picocli.exit is needed.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted as a small consolidation. Replace printFeatureDisabled() with one helper in AbstractUpdatesCommand, for example isRollingUpdatesDisabled(), that prints, exits and returns true. This is a net line reduction, not a speculative abstraction. Advisory and Minor, so it does not block convergence.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the same five-line ROLLING_UPDATES gate (isFeatureEnabled, printFeatureDisabled(), picocli.exit(FEATURE_DISABLED), return) to UpdateCompatibilityCheck.java:46-50 and UpdateCompatibilityMetadata.java:46-50. AbstractUpdatesCommand.java:83-85 holds only the printFeatureDisabled() message helper, not the gate itself. Both copies currently behave the same, so this is a duplication smell, not a bug, and it follows the existing pattern where each subclass calls printPreviewWarning() itself.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.07852100000000001
+   }
+  },
+  {
+   "path": "docs/guides/server/update-compatibility.adoc",
+   "line": 132,
+   "severity": "Minor",
+   "claim": "The table row for exit code 4 (lines 132-134) says 'Rolling Upgrade is not possible', which presents a precondition failure (tool disabled) as an upgrade verdict. `metadata` returns the same code, and the table does not cover that case.",
+   "evidence": "UpdateCompatibilityMetadata.java:46-50 (mattpocock cites line 48) exits with FEATURE_DISABLED. Scripts that treat any non-zero `check` result as 'recreate' will silently recreate when the feature is simply off (superpowers).",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats. Listed, not reported, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/compatibility/CompatibilityResult.java",
+   "line": 34,
+   "severity": "Minor",
+   "claim": "Moving RECREATE_UPGRADE_EXIT_CODE from 4 to 3 and giving 4 to FEATURE_DISABLED is a behaviour change bundled into a feature-flag commit. It should be called out in the PR, release or migration notes.",
+   "evidence": "The base docs already said 3, so this aligns code with docs. The command is unreleased (999.0.0-SNAPSHOT, added in 588e60e058) and preview. Scripts written against the old actual value 4 would now read 'feature disabled' as 'recreate'.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats. Listed, not reported, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/compatibility/CompatibilityResult.java",
+   "line": 35,
+   "severity": "Minor",
+   "claim": "The name FEATURE_DISABLED drops the _EXIT_CODE suffix that its siblings ROLLING_UPGRADE_EXIT_CODE and RECREATE_UPGRADE_EXIT_CODE use.",
+   "evidence": "mattpocock flags this as a 'possible mysterious name' smell, a judgement call.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat. Listed, not reported, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "docs/guides/templates/kc.adoc",
+   "line": 53,
+   "severity": "Minor",
+   "claim": "The macro hard-codes `--features=rolling-updates` after the user's parameters. That overrides features the user enabled through KC_FEATURES or keycloak.conf, and it likely has no effect on an --optimized (pre-built) image, which would need a rebuild with the feature.",
+   "evidence": "This is reasoned from CLI priority and build-time option semantics, and the guide's own 'include all configuration options' rule. The branch history points the same way: b1965bb9c4 'do not use custom image, it fails', then 5d2490d33a bakes the feature into the image. Whether runtime --features applies under --optimized was not checked.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat. Listed, not reported, not fixed. The --optimized part is unverified.",
+   "list": "appendix"
+  },
+  {
+   "path": "operator/scripts/Dockerfile-custom-image",
+   "line": 5,
+   "severity": "Minor",
+   "claim": "The shared operator test image is now built with the `rolling-updates` preview feature on, so every operator test that uses the custom image runs with it, not just UpgradeTest. This is out of scope for the change.",
+   "evidence": "build-testing-docker-images.sh:12 builds one image for the whole suite, and BaseOperatorTest.getTestKeycloakDeployment applies customImage to every deployment (superpowers). mattpocock lists it as 'not asked for'. Impact is low today, because the feature changes no server behaviour beyond the CLI gate.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by fewer than three seats. Listed, not reported, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "docs/documentation/release_notes",
+   "line": null,
+   "severity": "Minor",
+   "claim": "A new preview feature (Profile.java:136) and a CLI behaviour change (the command now fails without --features=rolling-updates) have no release-note entry.",
+   "evidence": "PR-CHECKLIST asks for release notes 'if applicable', and there is no hit under docs/documentation/release_notes. Whether this applies is arguable, because the command is unreleased.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat. Listed, not reported, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "(commit history)",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The branch has 5 commits ('feedback', 'fix test failure', and others), and only the first ends with 'Closes #36840'. CONTRIBUTING requires one commit per PR with the issue link on the last line.",
+   "evidence": "Commits c698590195, b1965bb9c4, 5d2490d33a, a44563d5c1 and 62bf98939e. The breach goes away if the PR is squashed on merge.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat. Listed, not reported, not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "docs/guides/server/update-compatibility.adoc",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The guide says exit code 1 means a missing or corrupt metadata file, but the code throws PropertyException, which exits with 2 (usage error).",
+   "evidence": "superpowers set this aside as out of scope because it predates the patch.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat. It is a pre-existing issue in code the patch did not touch, so it goes to the ledger as non-blocking.",
+   "list": "appendix"
+  },
+  {
+   "path": "quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/command/UpdateCompatibilityCheck.java",
+   "line": 46,
+   "severity": "Important",
+   "claim": "Profile.isFeatureEnabled in the new gate (here and in UpdateCompatibilityMetadata.java:46) could throw a NullPointerException if Profile is not initialised before run().",
+   "evidence": "mattpocock raised this as an unverified concern. open-code-review and superpowers both cite source showing Profile.getInstance() is set by PropertyMappers.sanitizeDisabledMappers() before cmd.execute (Picocli.java:128, PropertyMappers.java:302-306).",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "reject",
+   "reason": "Disproved by source citations in the open-code-review and superpowers reports (Picocli.java:128, PropertyMappers.java:302-306): Profile is initialised before the subcommand runs, so there is no null-pointer path.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats report reading all 11 files. open-code-review's tool excluded 5 files (3 docs as unsupported_ext; UpgradeTest.java and UpdateCommandDistTest.java as default_path), and the seat reviewed them by hand. ponytail checked the docs, the Dockerfile and the two tests only for extra or duplicated content (advisory role). mattpocock checked the docs for accuracy but did not render them. Axes that did not run: (1) The gate was not run (benchmark mode), and no seat ran builds or tests, so the review is unanchored and every finding is reasoned, with no gate failures to report. (2) Spec: no spec was provided, and issue #36840 was not fetched, so spec compliance was judged only against intent inferred from the commits. (3) Standards: only CONTRIBUTING.md, PR-CHECKLIST.md and quarkus/CONTRIBUTING.md exist; there is no CODING_STANDARDS, AGENTS.md or CLAUDE.md. (4) No reviewer from a different model family took a correctness seat. (5) Unchecked: whether a runtime --features takes effect under --optimized (kc.adoc finding). (6) No verifier agents could be dispatched; the only rejection rests on source citations from the seat reports, not on a verifier."
+}

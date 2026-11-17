@@ -1,0 +1,93 @@
+{
+ "findings": [
+  {
+   "issue": "i4",
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The migration indexes execute(...)[0]['id'] for the embed_category lookup without checking for an empty result. It raises IndexError when no matching site_settings row exists, such as on fresh installs or the test DB.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The migration backfill interpolates legacy host strings directly into raw SQL (VALUES ('#{h}', ...)) without quoting or parameter binding. A value containing a single quote aborts the migration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "EmbeddableHost's before_validation calls self.host.sub! without a nil guard. A missing host raises NoMethodError (500) instead of producing a validation error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": "embedding_controller.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Admin::EmbeddingController#update persists nothing and only re-renders show. The PUT customize/embedding route and the client saveChanges action that back it are therefore dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new create/update/destroy and embedding show endpoints have no behavioural tests. The specs only assert subclassing of AdminController.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": "app/controllers/admin/embeddable_hosts_controller.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Admin::EmbeddableHostsController#update and #destroy use EmbeddableHost.where(id:).first and then call methods on the result. An unknown id raises NoMethodError (500) instead of returning 404.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The host validation regex's [a-z]{2,5} TLD rule rejects localhost, IP addresses and TLDs longer than 5 characters such as .museum. Migrated rows that skipped validation then fail on later edit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i37",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The singleton embedding record is fetched with store.find without an id, which resolves to a collection.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

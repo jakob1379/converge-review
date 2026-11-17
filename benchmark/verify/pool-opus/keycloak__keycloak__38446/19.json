@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "LDAPStorageProvider.getCredentials (federation/ldap/.../LDAPStorageProvider.java:1214-1216) throws IllegalStateException when the LDAP entry is missing. The patch's RecoveryAuthnCodesUtils.getCredential (server-spi/.../RecoveryAuthnCodesUtils.java:57-61) calls getFederatedCredentialsStream (which reaches that method via UserCredentialManager.java:138-141) before it falls back to locally stored codes, so the exception fires before any local recovery codes are looked up. RecoveryAuthnCodesFormAuthenticator and RecoveryAuthnCodeInputLoginBean call it during login. Before the patch, login only read stored codes. In practice it is narrow: a user whose LDAP entry is gone is normally deleted or turned into a disabled read-only user by UserStorageManager.importValidation (lines 151-159). It only bites for a cached user who gets past the first step without an LDAP password check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3149003
+}

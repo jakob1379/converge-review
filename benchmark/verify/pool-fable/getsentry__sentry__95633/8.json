@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The docstring at tests/sentry/uptime/consumers/test_results_consumer.py:1876 says errors \"don't block offset commits for other messages\", but the final assertion at :1922 asserts that no offset was committed for the partition (`len(committed_offsets) == 0 or test_partition not in committed_offsets`). The only thing the test checks in the docstring's direction is that both messages were processed (:1921).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2261412
+}

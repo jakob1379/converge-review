@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At handleCancelBooking.ts:458-470 the recurring-series branch runs `.forEach(async (credential) => { const calendar = await getCalendar(credential); ... apiDeletes.push(await calendar?.deleteEvent(...)) })`. Nothing awaits these callbacks, so `await Promise.all(prismaPromises.concat(apiDeletes))` at line 652 can run before anything is pushed, and errors become unhandled rejections. The forEach(async)/push-after-await pattern was already there before this patch; the patch's added `await getCalendar` at line 461 only delays the deletes further.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1340802
+}

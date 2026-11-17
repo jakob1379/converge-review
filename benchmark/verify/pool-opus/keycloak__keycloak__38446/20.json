@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In BackwardsCompatibilityUserStorageTest.java:123-140 the patch adds a copy of the helper from RecoveryAuthnCodesAuthenticatorTest.java:123. The copy takes a `long delay` (its only caller, at line 243, passes 0), adds a 'delayed-authenticator' execution with the misspelled alias 'delayed-suthenticator-config', and takes a `testingClient` parameter that duplicates the inherited field.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.07458379999999999
+}

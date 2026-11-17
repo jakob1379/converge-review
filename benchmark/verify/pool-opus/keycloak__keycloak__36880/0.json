@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:217-219 passes the result of getResourceTypeResource() straight to findByResource() without a null check. getResourceTypeResource() returns null when realm admin permissions are off (AdminPermissionsSchema.java:117-118, 144-149), and both findByResource implementations then call resource.getId() (JPAPolicyStore.java:215, StoreFactoryCacheSession.java:938). Turning admin permissions off only clears the realm flag (DefaultExportImportManager.java:783) and leaves the permissions client in place, so realmResourceServer() is still non-null and this code is reached.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4399143999999999
+}

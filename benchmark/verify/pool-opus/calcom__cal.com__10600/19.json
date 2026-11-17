@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The `errorMessages` map in apps/web/pages/auth/login.tsx:73-80 has no entries for IncorrectBackupCode or MissingBackupCodes, so without the new branches (patch lines 512-513) these errors would fall back to the generic `something_went_wrong` text. The new branches are what give these codes their own messages, and DisableTwoFactorAuthModal (patch lines 123-126) has no such map at all.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.07575890000000002
+}

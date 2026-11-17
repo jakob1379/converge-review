@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/initializers/i18n.rb:9 reads `I18n.backend.class.send(:include, I18n::Backend::Fallbacks)`, a new line in a file the patch adds; `Module#include` has been public since Ruby 2.1, so `send` is unnecessary there. It is purely stylistic and behaves correctly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11942839999999999
+}

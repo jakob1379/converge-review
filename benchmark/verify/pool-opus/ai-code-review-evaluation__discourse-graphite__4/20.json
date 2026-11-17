@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:13 (patch line 333) runs `contents << \"\\n<hr>...\"`, and `<<` appends in place, so the string the caller passed in is changed. The current callers pass fresh strings (`CGI.unescapeHTML(...)` in app/jobs/scheduled/poll_feed.rb:35-36 and `doc.content` in topic_embed.rb:52), so no wrong output shows up today, but a frozen string argument would raise an error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0773476
+}

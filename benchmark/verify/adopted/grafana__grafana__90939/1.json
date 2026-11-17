@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At webassets.go:45-49, when cfg.Env == setting.Dev the cached-value fast path is always skipped, and every caller takes the exclusive entryPointAssetsCacheMu.Lock() while it reads the manifest file (lines 60, 69). As a result, the GetWebAssets calls from frontendsettings.go:62, index.go:82 and recovery.go:141 run one at a time in dev; only this short file-read step is serialized, not the whole request.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.055509100000000006
+}

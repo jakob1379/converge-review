@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`RecoveryAuthnCodesUtils.getCredential` (server-spi/src/main/java/org/keycloak/models/utils/RecoveryAuthnCodesUtils.java:56-61) reads `getFederatedCredentialsStream()` first and only falls back to local `getStoredCredentialsByTypeStream`, and it replaces the previous local-only lookups in RecoveryAuthnCodesFormAuthenticator.java:80 and RecoveryAuthnCodeInputLoginBean.java:17. This is the documented intent (Javadoc at lines 50-55) and matches the new write path, which also tries user storage first (CredentialHelper.createRecoveryCodesCredential), so it is a behaviour change rather than a defect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3940776
+}

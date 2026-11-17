@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:534, 537, 554, 557, 576 and 579 call r.log.Error unconditionally inside the cleanup batch closures. The first call of each pair runs only after the `if err != nil { return }` guard, so it fires on every successful ID fetch (including empty ones, with a nil err), and the second fires after every delete whether or not it failed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0773344
+}

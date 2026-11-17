@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "normalizeDateTimeParams always returns an object built with Object.fromEntries (static/app/components/organizations/pageFilters/parse.tsx:259-272), so `Boolean(normalizedDateRange)` in useFeedbackSummary.tsx (patch line 1596) is always true. Only the feature-flag check actually controls `enabled`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0544764
+}

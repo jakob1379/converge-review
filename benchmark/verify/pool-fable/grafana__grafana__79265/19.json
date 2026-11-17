@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "TagDevice returns nil when X-Grafana-Device-Id is empty (pkg/services/anonymous/anonimpl/impl.go:119-122) or the IP fails to parse (impl.go:124-129), before the limit check in CreateOrUpdateDevice is ever reached. Authenticate only rejects on ErrDeviceLimitReached and otherwise returns the anonymous identity (pkg/services/anonymous/anonimpl/client.go:44-58), so such requests bypass the limit.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2745158
+}

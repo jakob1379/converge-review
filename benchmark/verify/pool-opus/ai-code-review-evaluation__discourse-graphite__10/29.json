@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At store.js.es6:192, any key that matches `/(.+)\\_id(s?)$/` with the trailing 's' goes to the branch that calls `obj[k].map(...)` at line 197, and nothing checks for null or for an array first. So a `*_ids` value that is null throws a TypeError (and a non-array without `.map` does too). The `hydrated || []` fallback on the next line runs too late to prevent this.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.059032
+}

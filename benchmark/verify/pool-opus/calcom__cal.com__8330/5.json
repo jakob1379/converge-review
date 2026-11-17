@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The day filter at packages/lib/slots.ts:206-208 compares `dayjs.utc(override.start)` with the invitee's day boundaries. But `override.start` is the organizer's wall-clock time stored as fake UTC (packages/core/getUserAvailability.ts:218-222), and the patch applies the organizer-to-invitee offset only to the hours/minutes at slots.ts:211-224, not to this day check. Example: an organizer at UTC+10 sets an override starting 08:00 on day D, which is 22:00 on day D-1 for a UTC invitee. The filter still puts it on day D, and the shifted hours come out as start 22:00 and an end earlier than the start.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1373726
+}

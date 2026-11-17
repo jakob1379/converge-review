@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In user_serializer.rb:144-149, website host www.example.com (3 labels) and instance example.com (2 labels) fail the equal-length check at :144. The else branch at :149 then evaluates 'example.com'.ends_with?('.www.example.com'), which is false, so it returns only 'www.example.com'. The reverse case (website example.com, instance forum.example.com) passes the check and shows the path.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0536875
+}

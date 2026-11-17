@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only place `device_limit` appears in the repo is pkg/setting/setting.go:1654, where it is read with `MustInt64(0)`. It is not in conf/defaults.ini, conf/sample.ini or the docs, and nothing explains that 0 means no limit, even though contribute/create-pull-request.md:136 says configuration changes must update those files too.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.041867900000000006
+}

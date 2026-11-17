@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/docs/pages/developer/app-store.mdx:43 and :56 still say to \"import your app into the file and add it to the `appStore` object\", which describes the old two-step static-import pattern; the patch changes packages/app-store/index.ts:1-31 to `appname: import(\"./appname\")` entries and does not touch the docs.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.252362
+}

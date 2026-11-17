@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:29, the helper returns the whole safeParse result ({success, data}), and googlecalendar/lib/CalendarService.ts:97-100 writes that whole object to Credential.key. On the next request, googleCredentialSchema.parse(credential.key) at CalendarService.ts:75 throws because scope, token_type, access_token and the other required fields sit under .data, not at the top level.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.08658859999999999
+}

@@ -1,0 +1,509 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "FilterView.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In FilterView.tsx, inside rules.map(...), the 'grafana' branch renders <GrafanaRuleListItem> without key={key>. The sibling branches (DataSourceRuleLoader, UnknownRuleListItem) and the removed GrafanaRuleLoader pass the key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At FilterView.tsx:157-162, inside rules.map, the 'grafana' branch renders <GrafanaRuleListItem> without key={key}. The datasource branch (line 165) and the default UnknownRuleListItem branch (line 169) both pass key={key}, and the patch removed `key={key}` along with the old <GrafanaRuleLoader>.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.042693999999999996
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GrafanaRuleListItem builds the rule view URL without the { returnTo } parameter. The deleted GrafanaRuleLoader and the sibling DataSourceRuleListItem both pass it, so navigating back from rule details loses the list's filters and position.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new GrafanaRuleListItem.tsx builds the link as `createRelativeUrl(`/alerting/grafana/${uid}/view`)` (patch line 1066), with no returnTo. The deleted GrafanaRuleLoader called createReturnTo() and passed `{ returnTo }` (patch lines 1209, 1222), and DataSourceRuleListItem.tsx:36-42,83 still does the same, so going back from Grafana rule details no longer returns to the filtered list.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2956923
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllAlertRuleAbilities now delegates to useAllRulerRuleAbilities, which hardcodes isFederated = false instead of checking isFederatedRuleGroup(rule.group). As a result, federated Mimir rule groups are no longer treated as immutable, and Update/Delete/Pause/Restore become allowed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In public/app/features/alerting/unified/hooks/useAbilities.ts:222-228, useAllAlertRuleAbilities now only calls useAllRulerRuleAbilities, which hardcodes `const isFederated = false` (line 245) instead of the removed `isFederatedRuleGroup(rule.group)`. So immutableRule (line 250) is no longer true for federated Mimir groups, and useIsRuleEditable has no federated check to make up for it, which re-enables Update/Delete (and Pause/Restore wherever the rule counts as Grafana-managed).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2482659
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GrafanaGroupLoader calls promResponse.data.groups.at(0)?.rules.map(...) without optional chaining on .map. An empty groups array therefore causes undefined.map(...) to throw.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "At public/app/features/alerting/unified/rule-list/GrafanaGroupLoader.tsx:68, `groups.at(0)?.rules.map(...)` uses optional chaining, which stops the whole rest of the chain once `at(0)` returns undefined. An empty groups array therefore makes the expression evaluate to undefined, which React renders as nothing, and `.map` is never called on undefined.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.047055
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "RuleActionsButtons.V2.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the list view, GrafanaRuleListItem passes only promRule to RuleActionsButtons. The 'Silence notifications' menu item is shown based on Prom abilities, but the SilenceGrafanaRuleDrawer and click handler require a Ruler rule (rulerRuleType.grafana.alertingRule(rule)). Clicking Silence therefore sets state but never renders the drawer.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GrafanaRuleListItem.tsx (patch line 1073) passes only `promRule` to RuleActionsButtons. AlertRuleMenu.tsx:96/126 shows 'Silence' when the Prom-based `grafanaSilenceAbility` allows it, but RuleActionsButtons.V2.tsx:104 renders SilenceGrafanaRuleDrawer only when `rulerRuleType.grafana.alertingRule(rule)` is true, and `rule` is undefined here, so the click sets state and no drawer appears.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.33078280000000004
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Delete and Pause menu items are still gated on rulerRule presence, even though their abilities are ORed from ruler and Grafana Prom sources. In the promRule-only list view, Delete and Pause never appear for Grafana rules.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AlertRuleMenu.tsx:123 still requires `rulerRuleType.grafana.rule(rulerRule)` for Pause, and line 165 requires `canDelete && rulerRule` for Delete, even though canPause and canDelete are now ORed with the Grafana Prom abilities (lines 80-86). GrafanaRuleListItem.tsx now passes only promRule to RuleActionsButtons, so rulerRule is undefined and neither item renders; the new GrafanaGroupLoader test even expects exactly 4 menu items with no Delete.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3144882
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllAlertRuleAbilities now calls groupIdentifier.fromCombinedRule, which calls getDatasourceAPIUid. That function throws 'Datasource not found' during render for unregistered rule sources, whereas the old getRulesSourceName path never threw.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes useAllAlertRuleAbilities (useAbilities.ts:396) to call groupIdentifier.fromCombinedRule. For non-Grafana rules, that function calls getDatasourceAPIUid (groupIdentifier.ts:21-22), which throws `Datasource \"...\" not found` when the name isn't in getAllDataSources() (datasource.ts:299-306). The old path, getRulesSourceName (datasource.ts:238-240), only read the name and never threw; the patch also had to change RuleDetails.test.tsx to pass a registered mimir data source so the cloud-rule tests would pass.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.268312
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useCanSilence invokes hooks before its early return when rule is undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The statement is accurate, but it is not a bug. In useAbilities.ts:560-572, useCanSilence calls useFolder, useGrafanaRulesSilenceSupport and useCanSilenceInFolder before `if (!rule) return [false, false]`, which React's Rules of Hooks require. The patch only changes the call site at line 415 and leaves this function body untouched.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0978096
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useIsRuleEditable calls featureDiscoveryApi.endpoints.discoverDsFeatures.useQuery() before checking whether rule is undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In useIsRuleEditable.ts, the hook calls `featureDiscoveryApi.endpoints.discoverDsFeatures.useQuery({ rulesSourceName })` at lines 19-25, and the `if (!rule)` early return comes later, at line 43. React's rules of hooks require this order, and the patch does not change useIsRuleEditable.ts; it only moves the existing callers in useAbilities.ts.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.1111309
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Leftover optional chaining (rule?.health, rule?.lastError, rule?.isPaused) and a redundant promAlertingRule recomputation remain inside the alerting branch, even though rule is no longer optional.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new GrafanaRuleListItem.tsx, `rule` is typed as a required `GrafanaPromRuleDTO`, yet `rule?.health`, `rule?.lastError` and `rule?.isPaused` are still used (patch lines 1067-1071). Strictly, those three are in `commonProps`, not inside the alerting branch. Inside the branch, `promAlertingRule = rule && rule.type === PromRuleType.Alerting ? rule : undefined` (line 1077) repeats a check the `prometheusRuleType.grafana.alertingRule(rule)` guard has already done, and `promAlertingRule?.totals` and `promAlertingRule?.state` are therefore needless.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2392068
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A custom skipToken Symbol is introduced only to be converted back to undefined. It shadows RTK Query's skipToken, which is already imported in the folder, and it is a module constant that is not ALL-CAPS.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "useAbilities.ts:380 adds `export const skipToken = Symbol('ability-skip-token')`, and its only use is `rule === skipToken ? undefined : rule` (useAbilities.ts:387, 401). It reuses the name of RTK Query's skipToken, which hooks/useCombinedRule.ts:1 and hooks/useFolder.ts:1 in the same folder already import from '@reduxjs/toolkit/query'. It is a camelCase module constant, not ALL-CAPS.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0616056
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "RulesTable.test.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "RulesTable.test.tsx mocks every useAbilities hook, including the new prom path. The OR-merge in AlertRuleMenu/RuleActionsButtons.V2, useAllGrafanaPromRuleAbilities, and useIsGrafanaPromRuleEditable are therefore never exercised unmocked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "RulesTable.test.tsx does mock the whole useAbilities module (line 20), but GrafanaGroupLoader.test.tsx (patch lines 662-870) does not. It renders GrafanaGroupLoader \u2192 GrafanaRuleListItem \u2192 RuleActionsButtons.V2 \u2192 AlertRuleMenu with only a promRule, using real folder access control, and checks the Edit button and menu items. That runs the OR-merge, useAllGrafanaPromRuleAbilities and useIsGrafanaPromRuleEditable without mocks.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.3119801
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A stray '// duplicate' comment carries no information.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a bare trailing `// duplicate` comment to the useIsGrafanaPromRuleEditable(rule) call at public/app/features/alerting/unified/hooks/useAbilities.ts:289. It doesn't say what is duplicated or why, and the comment on line 288 already explains the call, so it reads as a leftover note.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.07202520000000001
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "isProvisionedPromRule accesses promRule.provenance without type narrowing. PromRuleDTO has no provenance property, and prometheusRuleType.grafana.rule() is not a type predicate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "isProvisionedPromRule (utils/rules.ts, patch line 1409) reads promRule.provenance on PromRuleDTO = PromAlertingRuleDTO | PromRecordingRuleDTO (unified-alerting-dto.ts:162), and neither type has provenance; the patch adds it only to GrafanaPromRuleDTOBase (line 135). prometheusRuleType.grafana.rule (rules.ts:133) is a plain arrow function returning boolean, not a type predicate, so the && check does not narrow the type and TypeScript will report that the property does not exist.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.08066300000000001
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The @deprecated TSDoc on useAllAlertRuleAbilities gives no reason. It points to useAllRulerRuleAbilities, which is not equivalent because it hardcodes isFederated=false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The @deprecated tag at hooks/useAbilities.ts (patch line 388) does give no reason, but the claim's main point is wrong. After the patch, useAllAlertRuleAbilities just calls useAllRulerRuleAbilities(rule.rulerRule, groupIdentifierV2) (patch line 397), so both hooks behave the same, and switching to the replacement changes nothing. The real issue is that the patch removed isFederatedRuleGroup(rule.group) and now hardcodes isFederated=false (patch lines 420-426), so federated groups are no longer treated as read-only \u2014 a separate problem from the deprecation note.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.07765720000000001
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The component-level doc comment says the loader fetches from Prometheus and Ruler endpoints, but the implementation only calls the Prometheus API.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GrafanaGroupLoader.tsx:25 still says it 'Loads an evaluation group from Prometheus and Ruler endpoints', but the patch removed useGetGrafanaRulerGroupQuery, so the component now only calls prometheusApi.useGetGrafanaGroupsQuery (GrafanaGroupLoader.tsx:34-41).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.303413
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The comment 'All GrafanaPromRuleDTO rules are Grafana-managed by definition' does not match the code beneath it. That code checks prometheusRuleType.grafana.alertingRule (alerting vs recording).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the useAllGrafanaPromRuleAbilities hunk of change.patch (lines 471-472), the comment says all GrafanaPromRuleDTO rules are Grafana-managed, but the line below it sets `isAlertingRule = prometheusRuleType.grafana.alertingRule(rule)`. That checks whether the rule is an alerting rule rather than a recording rule, not whether it is Grafana-managed. The comment explains why the old `isGrafanaManagedAlertRule` check was dropped, not what the new line does.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0524493
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useIsGrafanaPromRuleEditable duplicates the Grafana branch of useIsRuleEditable (useFolder -> getRulesPermissions -> hasPermissionInMetadata).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new useIsGrafanaPromRuleEditable (patch lines 528-557 in hooks/useAbilities.ts) calls useFolder(folderUid), then getRulesPermissions('grafana'), then ctx.hasPermissionInMetadata(update/delete, folder). That is the same flow as the Grafana-rule branch of useIsRuleEditable (hooks/useIsRuleEditable.ts:27-30, 50-75), including the identical 'Loading or invalid folder UID' fallback. The patch even marks the call site with a '// duplicate' comment.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1001735
+   }
+  },
+  {
+   "issue": "i19",
+   "path": "GrafanaGroupLoader.test.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ui.menuItems.delete is defined but never used in GrafanaGroupLoader.test.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `ui.menuItems.delete` at GrafanaGroupLoader.test.tsx:42, and nothing else in the file uses it. The menu test only checks silence, copyLink, duplicate and export, and asserts 4 menu items, so delete is never referenced.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1007334
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The five-item action list is written twice, and each ability is destructured from both sources and ORed by hand. The inline arrays are recreated every render, which defeats the useMemo inside both hooks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In AlertRuleMenu.tsx (patch lines 56-78) the same five-action array is written inline twice, once for useRulerRuleAbilities and once for useGrafanaPromRuleAbilities. Each ability is then destructured from both results and ORed by hand (patch lines 80-99). Both hooks memoize on [abilities, actions] (useAbilities.ts, patch lines 380 and 584), so a new inline array on every render recomputes that memo each time.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2211561
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "handleDelete's type signature expects RulerRuleDTO, but its call sites pass EditableRuleIdentifier.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "AlertRuleMenu.tsx:31 types handleDelete as (rule: RulerRuleDTO, groupIdentifier) => void, and its only call (AlertRuleMenu.tsx:172) passes rulerRule, which is a RulerRuleDTO. The consumer in RuleActionsButtons.V2.tsx:99 passes a closure that takes no arguments, `() => showDeleteModal(identifier, groupIdentifier)`, so nothing passes an EditableRuleIdentifier where a RulerRuleDTO is expected and the types match.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.36422089999999996
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getIsProvisioned uses 11 lines for a one-line expression, and the logWarning + return undefined fallback in getEditableIdentifier is unreachable for current callers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "getIsProvisioned (RuleActionsButtons.V2.tsx, patch lines 1340-1350) is 11 lines of if/return that could be one ternary: `rule ? isProvisionedRule(rule) : !!promRule && isProvisionedPromRule(promRule)`. In getEditableIdentifier, the logWarning/undefined fallback (patch lines 1368-1372) is never reached by current callers: StateView.tsx:131, DataSourceRuleLoader.tsx:59 and DataSourceGroupLoader.tsx:196 always pass a rulerRule. GrafanaRuleListItem passes only promRule, but it uses those action buttons only for alerting and recording rules, where prometheusRuleType.grafana.rule is true; unknown rule types go to UnknownRuleListItem, which doesn't render them.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3996399
+   }
+  },
+  {
+   "issue": "i23",
+   "path": "useAbilities.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllGrafanaPromRuleAbilities is exported but used only inside useAbilities.ts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "A repo-wide search finds `useAllGrafanaPromRuleAbilities` only in its exported definition (useAbilities.ts:287) and two internal calls (useAbilities.ts:387 and :401). No other file or test imports it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0305295
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The RulerRuleLoadingError export is orphaned because its only user was the deleted GrafanaRuleLoader.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "After the patch, the only remaining reference to RulerRuleLoadingError is its definition at public/app/features/alerting/unified/rule-list/components/AlertRuleListItemLoader.tsx:24. The patch deletes rule-list/GrafanaRuleLoader.tsx, which was its only importer (it imported it and rendered it), so the export is now dead code.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0558781
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Duplicate is enabled for non-Grafana rules. AlertRuleMenu passes skipToken, so useAllGrafanaPromRuleAbilities(undefined) sets loading=false and yields Duplicate=[true, hasPermission(AlertingRuleCreate)], which is ORed into canDuplicate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "For non-Grafana rules AlertRuleMenu.tsx:72 passes skipToken, and useIsGrafanaPromRuleEditable returns loading:false when rule is undefined (useAbilities.ts, `if (!rule || !folderUID)`). So MaybeSupported=AlwaysSupported, isPluginProvided=false, and Duplicate=toAbility(true, getRulesPermissions('grafana').create), which is ORed into canDuplicate at AlertRuleMenu.tsx:91-92. Users with Grafana AlertingRuleCreate then see Duplicate on cloud rules even when the ruler-based check denies it.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3773908
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllGrafanaPromRuleAbilities rebuilds the same 10-entry ability map as useAllRulerRuleAbilities, so the immutability, plugin and admin logic exists in two places.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In useAbilities.ts, the new useAllGrafanaPromRuleAbilities (lines 287-333) builds the same 10-key map (Duplicate through DeletePermanently, lines 318-330) as useAllRulerRuleAbilities (lines 262-274). It repeats the provisioned/federated/plugin immutableRule logic (line 306 vs 250), the duplicate-of-plugin-rule rule, and the `isRemovable && isAdmin()` check (line 329 vs 273); only the Silence/ModifyExport inputs and the supported flags differ.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.24078360000000001
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllGrafanaPromRuleAbilities gates ModifyExport, Pause, Restore and DeletePermanently on prometheusRuleType.grafana.alertingRule. The ruler path also covered Grafana recording rules, so those rules lose these abilities in the new list.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "useAllGrafanaPromRuleAbilities (useAbilities.ts, patch lines 472-506) gates ModifyExport, Pause, Restore and DeletePermanently on prometheusRuleType.grafana.alertingRule, which accepts only Grafana alerting rules (rules.ts:103-104,134). The old ruler path used rulerRuleType.grafana.rule (rules.ts:58-59,113), which also accepts Grafana recording rules. The list view no longer loads the ruler rule, so the ruler-side fallback in AlertRuleMenu.tsx:57-100 gives nothing, and recording rules lose Pause and Export there.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.13797840000000003
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The operation prop on GrafanaRuleListItem is unused because neither caller passes it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GrafanaRuleListItem.tsx:18-32 still declares and forwards an optional `operation` prop, but its only two callers, FilterView.tsx:157-162 and GrafanaGroupLoader.tsx:70-77, don't pass it. The patch removed the call sites that passed RuleOperation.Creating and RuleOperation.Deleting.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.049554
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

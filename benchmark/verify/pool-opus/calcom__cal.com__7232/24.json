@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/components/WorkflowStepContainer.tsx, line 439 has the hardcoded `placeholder=\"Verification code\"` and line 456 has the literal `Verify` button label. Code around them uses t() for other strings, such as t(\"send_code\") and t(\"number_verified\"). The patch only re-indents this block: the same strings appear as removed lines at patch lines 284 and 301 and come back unchanged at lines 238 and 265.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.057687
+}

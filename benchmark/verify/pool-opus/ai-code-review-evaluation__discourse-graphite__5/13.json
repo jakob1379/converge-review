@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `.contents` a flex container (common/base/header.scss:14-19), but neither `.panel` (35-40) nor `.extra-info-wrapper` gets `flex-shrink:0`. The nowrap `.topic-link` (desktop/topic-post.scss:532-538) gives the wrapper a very wide flex basis, so with the default shrink split `.panel` gives up width and its floated `.icons > li` (header.scss:53-61) wrap inside the 60px header. One part of the claim is wrong: the wrapper's `overflow:hidden` (topic-post.scss:519) already lets it shrink, so the title does still ellipsize, just next to a squeezed panel.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1582626
+}

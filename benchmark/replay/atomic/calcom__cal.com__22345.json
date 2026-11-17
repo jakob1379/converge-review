@@ -1,0 +1,144 @@
+{
+ "findings": [
+  {
+   "path": "packages/lib/server/service/__tests__/insightsBooking.integration-test.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch deletes the whole \"Caching\" describe block. The memoisation it covered (cachedAuthConditions / cachedFilterConditions in insightsBooking.ts:49-50, 83-95) is unchanged and now has no test.",
+   "evidence": "The removed hunk at old lines ~437/476-545 (`describe(\"Caching\"` with 'should cache authorization conditions' and 'should cache filter conditions') has no replacement in the patch. Mattpocock notes the deleted tests only compared two return values for equality, so they would have passed without caching. Superpowers considers caching an internal detail. Reasoned; nothing run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Minor. The coverage actually lost is small, because the old tests did not prove memoisation. Under the repo's 'test contracts, not implementation' philosophy, caching is an implementation detail. Defer with a `ponytail:` comment at the cache fields. A meaningful guard would assert that the repository is called once across two calls.",
+   "list": "main"
+  },
+  {
+   "path": "packages/lib/server/service/insightsBooking.ts",
+   "line": 76,
+   "severity": "Minor",
+   "claim": "In getBaseConditions(), the `else if (filterConditions)` branch and the final `else return NOTHING_CONDITION` branch can never run. They suggest a fail-open or fallback path that does not exist.",
+   "evidence": "getAuthorizationConditions() is typed Promise<Prisma.Sql>. Every path in buildAuthorizationConditions (lines 125-143) returns NOTHING_CONDITION or a built Prisma.Sql, which is always truthy, so line 74 or line 75 always returns first. Reasoned from types and return paths.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Collapse to `return filterConditions ? Prisma.sql`(${authConditions}) AND (${filterConditions})` : authConditions;`. This is Minor, so no red test is required. The fix deletes code and does not change behaviour.",
+   "list": "main"
+  },
+  {
+   "path": "packages/lib/server/service/insightsBooking.ts",
+   "line": 58,
+   "severity": "Minor",
+   "claim": "The constructor now takes the looser InsightsBookingServicePublicOptions instead of the zod-inferred discriminated union. This removes the compile-time check that scope \"team\" comes with a teamId. `{ scope: \"team\", userId, orgId }` now compiles, fails safeParse at line 62, sets options to null, and every query silently returns 1=0 (empty results, no error).",
+   "evidence": "Diff hunk `-    options: InsightsBookingServiceOptions;` / `+    options: InsightsBookingServicePublicOptions;`. The type at lines 29-34 makes teamId optional for every scope. git grep finds no production callers, so nothing is affected today. Reasoned; tsc not run.",
+   "seats": [
+    "mattpocock",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Type the constructor with InsightsBookingServiceOptions as the base did. No caller needs the looser type, and a future unvalidated caller can parse with the exported schema first. This is Minor, so no red test is required; a type-level test (`// @ts-expect-error` on a team scope without teamId) would guard it.",
+   "list": "main"
+  },
+  {
+   "path": "packages/lib/server/service/insightsBooking.ts",
+   "line": 29,
+   "severity": "Minor",
+   "claim": "InsightsBookingServicePublicOptions is a hand-written copy of the zod schema at lines 10-27. It must be kept in sync by hand and will drift, while line 36 already derives the type from the schema.",
+   "evidence": "New type at lines 29-34 alongside `z.infer`-derived InsightsBookingServiceOptions at line 36. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats): listed, not reported and not fixed. Deleting the type as part of the main-list fix for the lost compile-time check would also resolve this.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/server/service/insightsBooking.ts",
+   "line": 171,
+   "severity": "Important",
+   "claim": "The public condition getters return SQL fragments without outer parentheses, so a caller that adds its own predicate gets the wrong AND/OR precedence. The org and team auth conditions are `(A) OR (B)` (171-174, 204-207), and getBaseConditions returns them bare when there are no filters (line 75). An eventType-only filter is `(\"eventTypeId\" = x) OR (\"eventParentId\" = x)` (line 106). `WHERE ${base} AND \"createdAt\" >= ${start}` becomes `A OR (B AND createdAt >= start)`, so team bookings skip the caller's date/status predicate and insights counts are inflated. Rows stay within the authorized set, so this is not a data leak. It is a regression from the composable Prisma `AND: [...]` object.",
+   "evidence": "The reduce builders at 171-174 and 204-207 add no outer brackets, and line 75 returns authConditions unchanged. The only end-to-end test (~line 480) uses `WHERE ${baseConditions}` alone, with filters set or in user scope, so it cannot catch this. Proposed red test (superpowers): org scope, no filters, a team booking outside the date range, query `WHERE ${base} AND \"createdAt\" > now()`; that booking is wrongly returned. Reasoned; nothing run.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats): listed with its seats, not reported and not fixed under the merge rule. Severity is kept at Important. Not rejected, because both correctness seats give consistent reasoning and the reports contain nothing that disproves it. Unverified: settle it with the red test above, or a fresh verifier.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/server/service/__tests__/insightsBooking.integration-test.ts",
+   "line": 332,
+   "severity": "Minor",
+   "claim": "The org-scope assertion depends on the order of the ids inside the `= ANY(...)` arrays, because Prisma.Sql equality includes the order of the values array. The test can flake with no logic change.",
+   "evidence": "Lines 331-343 expect [org, team, team2, team3] and [user, user2, user3]. Those arrays come from findAllByParentId and MembershipRepository.findAllByTeamIds, which have no orderBy. The old object-based assertion had the same problem; the patch carries it over.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats): listed, not reported and not fixed. Pre-existing and carried over.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/server/service/__tests__/insightsBooking.integration-test.ts",
+   "line": 273,
+   "severity": "Minor",
+   "claim": "Most tests assert the exact SQL text and parenthesisation instead of query results. Behaviour-preserving changes to whitespace or parentheses break them, which goes against the repo's 'test contracts, not implementation' philosophy.",
+   "evidence": "Exact Prisma.sql equality assertions at lines 273, 295-299, 332-343, 384-386, 407, 429-431.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat): listed, not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/server/service/__tests__/insightsBooking.integration-test.ts",
+   "line": 438,
+   "severity": "Minor",
+   "claim": "The org and team `= ANY(${array})` paths are never executed against the database; only user scope is, in the getBaseConditions test. Prisma 5 array-parameter binding against the int teamId/userId columns is therefore untested end to end.",
+   "evidence": "The only test that runs the condition in a query (the getBaseConditions test ~line 438/481) uses user scope. All org/team tests compare SQL objects only. Reasoned; Prisma 5.4 runtime binding not checked.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat): listed, not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/server/service/insightsBooking.ts",
+   "line": 119,
+   "severity": "Minor",
+   "claim": "The same hand-written reduce that joins Prisma.Sql pieces with AND/OR is repeated three times. Each list holds at most one fixed condition plus one optional one, so the general fold is more machinery than needed. Prisma.join with a separator (Prisma ^5.4.2) is already used in the repo.",
+   "evidence": "Repeated folds at lines 119-122, 171-174 and 204-207. Prisma.join is used in packages/features/insights/server/routing-events.ts:830. About -9 lines possible; the exact-equality tests would need updating.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat, advisory): listed, not reported and not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/server/service/insightsBooking.ts",
+   "line": 68,
+   "severity": "Minor",
+   "claim": "The public method findMany(args) is removed and replaced by getBaseConditions(): Promise<Prisma.Sql>, which breaks the class's public API.",
+   "evidence": "Diff hunk `-  async findMany(...)` / `+  async getBaseConditions()`. git grep shows no callers outside the service and its test, so nothing in the repo breaks; no docs mention the service.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat, informational): listed, not reported and not fixed. No in-repo impact.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats reviewed both patch files: packages/lib/server/service/insightsBooking.ts and packages/lib/server/service/__tests__/insightsBooking.integration-test.ts. open-code-review's tool left the test file out by its default path rule, but the seat reviewed it by hand. ponytail read the test file's diff hunks only, for over-engineering and consumer checks, not for test quality. Axes that did not run: (1) the gate was not run (benchmark mode), so the review is unanchored: no CI, build, lint, type-check or test result backs any finding. (2) No seat ran tsc, lint or the integration tests (no node_modules), so every finding is reasoned, with no failing command; Prisma 5.4 runtime array-parameter binding was not checked. (3) No spec: mattpocock's spec axis was skipped and superpowers' plan alignment was not checked; reviewers assumed the intent was row-visibility-preserving. (4) Standards: the repo has no AGENTS.md, CLAUDE.md, .cursor/rules or CODING_STANDARDS.md, and the external JS/TS style guide in docs/developing/open-source-contribution/code-styling.mdx has no link, so it could not be checked. Only CONTRIBUTING.md (lint) and the PR template were checked. (5) ponytail covered over-engineering only, by design. (6) No seat from another model family took part. (7) The rejection verifier was not dispatched (no agent access), but no finding was rejected, so none was needed."
+}

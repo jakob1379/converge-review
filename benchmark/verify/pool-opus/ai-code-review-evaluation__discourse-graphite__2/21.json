@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new route's model hook (routes/topic-unsubscribe.js.es6:111-117) calls only PostStream.loadTopicView, which fetches /t/<id>.json (post-stream.js.es6:811-823) and never reaches topics#unsubscribe. The template still renders the 'You will stop receiving notifications' text (templates/topic/unsubscribe.hbs:139), so an in-app transition shows the confirmation without changing the notification level. Following the email link is a full page load that does run the server action.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12527470000000002
+}

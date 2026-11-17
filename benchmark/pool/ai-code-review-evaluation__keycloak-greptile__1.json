@@ -1,0 +1,278 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1",
+ "cost_usd": 0.0615079,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review",
+   "text": "The 'user != null' term in isConditionalPasskeysEnabled reverses the old condition (context.getUser() == null), so on first login the user is unset and fillContextForm no longer runs, breaking passkey login on the start page of both UsernamePasswordForm and UsernameForm"
+  },
+  {
+   "id": "c2",
+   "source": "golden",
+   "text": "With isConditionalPasskeysEnabled(UserModel user) requiring user != null, authenticate(...) will not call webauthnAuth.fillContextForm(context) on the initial login page where context.getUser() is still null, so conditional passkey UI will not be set up for first-time passkey login. Consider whether this should also be enabled when no user has been selected yet so ID-less passkey authentication on the initial login form continues to work."
+  },
+  {
+   "id": "c3",
+   "source": "qodo-extended-v2",
+   "text": "In UsernameForm.java line 47, isConditionalPasskeysEnabled() is called with zero arguments, but the only definition in parent class UsernamePasswordForm requires one UserModel parameter, causing a compilation error"
+  },
+  {
+   "id": "c4",
+   "source": "cubic-v2",
+   "text": "The null-user login path never gets conditional passkey UI populated, so the initial username page drops passkey conditional UI"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "Test methods webauthnLoginWithExternalKey_reauthentication and webauthnLoginWithDiscoverableKey_reauthentication have significant code duplication, with about 60 lines that could be consolidated"
+  },
+  {
+   "id": "c6",
+   "source": "augment",
+   "text": "isConditionalPasskeysEnabled(UserModel user) requires user != null, which means webauthnAuth.fillContextForm() won't run when the username/password form is the first step and no user is identified yet; since the templates render the #webauth form only when enableWebAuthnConditionalUI is set, this could unintentionally disable conditional passkeys on the initial login page"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "Change enables passkeys during re-authentication (prompt=login) and changes identity-first organization flow but no documentation was updated"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review",
+   "text": "shouldShowWebAuthnAuthenticators overrides WebAuthnAuthenticator.shouldShowWebAuthnAuthenticators without @Override annotation, risking silent failure if parent method is renamed"
+  },
+  {
+   "id": "c9",
+   "source": "qodo-extended-v2",
+   "text": "PasskeysUsernamePasswordFormTest catches Exception when asserting the webauthn form is absent, so unrelated WebDriver failures (timeouts, driver errors) are treated as expected and can produce false-positive test passes - should catch NoSuchElementException specifically"
+  },
+  {
+   "id": "c10",
+   "source": "cubic-v2",
+   "text": "`isConditionalPasskeysEnabled` is invoked without the required `UserModel` argument, causing an unresolved method call"
+  },
+  {
+   "id": "c11",
+   "source": "coderabbit",
+   "text": "isConditionalPasskeysEnabled() is called with no arguments but now requires a UserModel parameter, causing a compile error - should pass context.getUser() as the argument"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "The new user parameter is only null-checked but user credentials are never checked (e.g., credentialManager().isConfiguredFor(webauthn passwordless type)), so during re-authentication a user with no passkey still gets the passkey form"
+  },
+  {
+   "id": "c13",
+   "source": "cubic-v2",
+   "text": "The new `user != null` check disables conditional passkey form setup for normal (unidentified) login, so passkey sign-in only works when a user is already preselected"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review-replay",
+   "text": "shouldShowWebAuthnAuthenticators overrides WebAuthnAuthenticator.shouldShowWebAuthnAuthenticators without @Override annotation - if the parent method is renamed, this override will silently stop applying"
+  },
+  {
+   "id": "c15",
+   "source": "coderabbit",
+   "text": "Same element absence check issue at lines 312-317 - try/catch pattern should be replaced with Assert.assertThrows(NoSuchElementException.class, ...)"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "reauthenticationOfUserWithoutPasskey test disables passkeys for the whole realm (setWebAuthnPolicyPasskeysEnabled(FALSE)) instead of testing the scenario where passkeys are enabled but user has no passkey, hiding the missing per-user check"
+  },
+  {
+   "id": "c17",
+   "source": "coderabbit",
+   "text": "findElement throws NoSuchElementException when element doesn't exist (doesn't return null), and catching generic Exception is too broad - should use Assert.assertThrows(NoSuchElementException.class, ...) instead"
+  },
+  {
+   "id": "c18",
+   "source": "golden",
+   "text": "In UsernameForm.authenticate(), isConditionalPasskeysEnabled() is called without passing the required UserModel parameter."
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "Element-absent checks at :290-295 and :311-317 use incorrect pattern 'try { assertThat(findElement(...), nullValue()); fail(...) } catch (Exception)' - the inner assertion can never pass and only works because AssertionError is not an Exception; should use Assert.assertThrows(NoSuchElementException.class, ...) per suite convention"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "The new predicate 'webauthnAuth != null && webauthnAuth.isPasskeysEnabled() && user != null' inverts the old condition - passkey data was previously filled only when no user was set, but now fillContextForm no longer runs on normal first login, breaking passkey login on the start page"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "Commit hygiene issues: change is two commits instead of one squashed, second commit missing Signed-off-by trailer and 'Closes #' link, first commit uses lowercase 'closes' and links two issues"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "Absence checks at ~:289-295 and ~:310-316 use 'try { assertThat(findElement(..), nullValue()); fail(..) } catch (Exception)' where assertThat is dead code; should use Assert.assertThrows(NoSuchElementException.class, ...) like rest of suite"
+  },
+  {
+   "id": "c23",
+   "source": "claude-code",
+   "text": "UsernameForm.java:47 calls isConditionalPasskeysEnabled() with no arguments, but the method requires a UserModel parameter after commit 3214b18 changed the signature to isConditionalPasskeysEnabled(UserModel user), causing a compilation error. The fix is to call isConditionalPasskeysEnabled(context.getUser()) instead."
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "UsernameForm.authenticate calls isConditionalPasskeysEnabled() with no arguments, but commit 3214b188de changed the only declaration to isConditionalPasskeysEnabled(UserModel user) with no zero-argument overload, causing compilation failure"
+  },
+  {
+   "id": "c25",
+   "source": "coderabbit",
+   "text": "Typo 'Succesful' should be 'Successful' at line 413"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "setupReauthenticationInUsernamePasswordFormError re-implements AbstractUsernameFormAuthenticator.isUserAlreadySetBeforeUsernamePasswordAuth by parsing the same auth note, creating code duplication and widening USER_SET_BEFORE_USERNAME_PASSWORD_AUTH from protected to public"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "The patch adds an unused PasswordCredentialModel import"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review-replay",
+   "text": "setupReauthenticationInUsernamePasswordFormError re-implements auth-note parsing that already exists in AbstractUsernameFormAuthenticator.isUserAlreadySetBeforeUsernamePasswordAuth, creating duplicate code that could drift apart and widening USER_SET_BEFORE_USERNAME_PASSWORD_AUTH from protected to public"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review-replay",
+   "text": "UsernameForm.authenticate calls isConditionalPasskeysEnabled() with no arguments, but the only declaration was changed to isConditionalPasskeysEnabled(UserModel user) - no zero-argument overload exists, causing compilation failure"
+  },
+  {
+   "id": "c30",
+   "source": "cubic-v2",
+   "text": "Catch `NoSuchElementException` instead of `Exception` so unexpected Selenium/runtime failures do not get treated as successful assertions"
+  },
+  {
+   "id": "c31",
+   "source": "qodo-extended-v2",
+   "text": "UsernamePasswordForm now only enables conditional passkeys UI when context.getUser() is non-null, which prevents enableWebAuthnConditionalUI from being set during normal unauthenticated login, effectively disabling discoverable-passkey login"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The new `user != null` term in `isConditionalPasskeysEnabled(UserModel user)` reverses the old `context.getUser() == null` condition. As a result, `webauthnAuth.fillContextForm(context)` no longer runs on the initial login page, where no user is set yet. Conditional passkey UI (`enableWebAuthnConditionalUI`) is therefore not set up for unidentified, first-time passkey login in `UsernamePasswordForm` and `UsernameForm`.",
+   "path": null,
+   "members": [
+    "c1",
+    "c2",
+    "c4",
+    "c6",
+    "c13",
+    "c20",
+    "c31"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "`UsernameForm.authenticate` (line 47) calls `isConditionalPasskeysEnabled()` with no arguments. The only declaration in `UsernamePasswordForm` now requires a `UserModel` parameter and has no zero-argument overload, so the call does not compile.",
+   "path": "UsernameForm.java",
+   "members": [
+    "c3",
+    "c10",
+    "c11",
+    "c18",
+    "c23",
+    "c24",
+    "c29"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The test methods `webauthnLoginWithExternalKey_reauthentication` and `webauthnLoginWithDiscoverableKey_reauthentication` duplicate about 60 lines of code.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The change enables passkeys during re-authentication (`prompt=login`) and changes the identity-first organization flow, but no documentation was updated.",
+   "path": null,
+   "members": [
+    "c7"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "`shouldShowWebAuthnAuthenticators` overrides `WebAuthnAuthenticator.shouldShowWebAuthnAuthenticators` without an `@Override` annotation.",
+   "path": null,
+   "members": [
+    "c8",
+    "c14"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The webauthn-form absence checks in `PasskeysUsernamePasswordFormTest` (around lines 289-295 and 310-317) use `try { assertThat(findElement(...), nullValue()); fail(...) } catch (Exception)`. The inner assertion is dead code because `findElement` throws `NoSuchElementException` rather than returning null. Catching the generic `Exception` treats unrelated WebDriver failures as expected.",
+   "path": "PasskeysUsernamePasswordFormTest",
+   "members": [
+    "c9",
+    "c15",
+    "c17",
+    "c19",
+    "c22",
+    "c30"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The new `user` parameter is only null-checked; the user's passkey credentials are never checked. During re-authentication, a user with no passkey is still shown the passkey form.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The `reauthenticationOfUserWithoutPasskey` test disables passkeys for the whole realm via `setWebAuthnPolicyPasskeysEnabled(FALSE)` instead of testing a user without a passkey while passkeys are enabled.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The change has two unsquashed commits. The second commit lacks a Signed-off-by trailer and a 'Closes #' link. The first commit uses lowercase 'closes' and links two issues.",
+   "path": null,
+   "members": [
+    "c21"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "Line 413 contains the typo 'Succesful' instead of 'Successful'.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "`setupReauthenticationInUsernamePasswordFormError` re-implements the auth-note parsing in `AbstractUsernameFormAuthenticator.isUserAlreadySetBeforeUsernamePasswordAuth`. It also widens `USER_SET_BEFORE_USERNAME_PASSWORD_AUTH` from protected to public.",
+   "path": null,
+   "members": [
+    "c26",
+    "c28"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The patch adds an unused `PasswordCredentialModel` import.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  }
+ ]
+}

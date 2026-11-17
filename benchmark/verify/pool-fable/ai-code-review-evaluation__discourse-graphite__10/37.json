@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/javascripts/discourse/models/store.js.es6:197-200, `hydrated` is the result of `obj[k].map(...)`, which always returns an array (truthy even when empty) or throws if `obj[k]` is null/not an array, so the `|| []` fallback on line 200 can never be taken.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1201179
+}

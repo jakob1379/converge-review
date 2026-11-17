@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "app/views/layouts/embed.html.erb:11 (patch line 474) does pass the full request.referer as targetOrigin, but under the HTML postMessage spec the browser parses targetOrigin as a URL and compares only its origin. A full page URL therefore still matches the parent's origin, and the parent listener (app/assets/javascripts/embed.js, patch lines 82-92) receives the resize messages.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0483459
+}

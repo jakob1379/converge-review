@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`website` is omitted for TL0 users viewed anonymously (`include_website?` at app/serializers/user_serializer.rb:25-32,109), but `website_name` is still serialized because its guard at user_serializer.rb:153 is named `include_website_name` without the `?` and never checks `restrict_user_fields?`. The template at app/assets/javascripts/discourse/templates/user/user.hbs:66-71 then shows the host name with an undefined `model.website`; in that case the user is TL0, so it renders the `<span>` with an empty title rather than a broken `<a>`, and exposes the hidden website host.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.27290669999999995
+}

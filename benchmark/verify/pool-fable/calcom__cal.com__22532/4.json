@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The deleteCache mutation at packages/features/apps/components/CredentialActionsDropdown.tsx:42-50 only shows a toast and calls onSuccess?.(), with no connectedCalendars invalidation (unlike disconnectMutation's onSettled at :61-64). EventAdvancedTab.tsx:372-384 renders SelectedCalendarsSettingsWebWrapper without onChanged, so onSuccess is undefined and the connectedCalendars query (refetchOnWindowFocus: false, SelectedCalendarsSettingsWebWrapper.tsx:152-161) keeps the stale cacheUpdatedAt.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4689969
+}

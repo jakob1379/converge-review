@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/core/EventManager.ts:511-542 `credential` stays undefined when neither `this.calendarCredentials` nor the DB lookup (which also requires `app?.slug`, line 529) yields one, yet line 542 calls `updateEvent(credential, ...)` unguarded, which rejects with a TypeError at `credential.appName` (packages/core/CalendarManager.ts:314). One detail differs from the claim: because `return Promise.all(result)` (line 590) is not awaited, the catch at 591 never runs, so the whole call rejects to the caller instead of returning failure results \u2014 the update still fails for every calendar.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.679042
+}

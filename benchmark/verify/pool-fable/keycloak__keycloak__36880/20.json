@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The Javadoc matches what V2 does: ClientPermissionsV2.java:207-222 checks a per-client grant first and falls back to the all-clients resource, which is what the per-client sentence plus \"For V2 only: Also ... all clients\" says (ClientPermissionEvaluator.java:172-174), and the V1 and V2 scope names are identical strings. V2 does override without calling super (ClientPermissionsV2.java:91-93), but that only changes where the grant is stored, not the documented conditions.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.7843640999999999
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/prisma/schema.prisma:644 declares `cancelled Boolean?` with no `@default(false)`, and the migration at packages/prisma/migrations/20230217230604_add_cancelled_to_workflow_reminder/migration.sql:2 adds the column as a plain nullable `BOOLEAN`, so existing and newly created rows hold NULL. The only reader filters on `cancelled: true` (packages/features/ee/workflows/api/scheduleEmailReminders.ts:46), so NULL currently behaves like false and nothing breaks.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1315203
+}

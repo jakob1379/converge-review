@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/core/EventManager.ts:170 the patch changes the reference credentialId to `isCalendarType ? result.credentialId : undefined` (it was `... : result.credentialId`), so _video references are now saved without a credentialId. handleCancelBooking.ts:491-500 deletes the meeting only when `bookingVideoReference.credentialId` is set and has no fallback, so Zoom/Daily meetings are no longer deleted on cancel.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.24452460000000004
+}

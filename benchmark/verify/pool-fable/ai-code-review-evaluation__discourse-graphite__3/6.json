@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/validators/email_validator.rb:19-21 builds `Regexp.new(\"@(#{domains})\", true)` with no `\\z` or boundary anchor, so `user@example.com.evil.com` matches a whitelisted `example.com` and passes the check at line 5. The method was moved verbatim from app/models/user.rb by this patch, so the flaw is carried over rather than new.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1877736
+}

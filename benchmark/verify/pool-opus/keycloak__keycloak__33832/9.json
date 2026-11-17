@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds an abstract `int order()` with no default to the public `CryptoProvider` interface (common/.../CryptoProvider.java:39-44), so any outside implementation stops compiling. The patch has no docs or release-note changes, and `docs/` never mentions CryptoProvider. PR-CHECKLIST.md:9 asks for release-note and upgrade-guide updates \"if applicable\", in this PR or an associated one, so this only weakly breaks a rule for what is mostly an internal SPI.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1713098
+}

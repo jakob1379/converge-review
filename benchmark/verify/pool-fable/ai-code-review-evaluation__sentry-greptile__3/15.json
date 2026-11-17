@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/search/events/datasets/discover.py:1046 defines `snql_aggregate=lambda args, alias: Function(\"toInt64\", [Function(\"sum\", [Column(\"sample_weight\")])], alias)` and never uses `args`; the same file uses `lambda _, alias` for unused-arg aggregates in 6 other places.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1280888
+}

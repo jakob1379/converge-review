@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In ClientPermissionEvaluator.java:95-103, the patch adds Javadoc reading 'Returns {@code true} if {@link #canView()} returns {@code true}' (and the same for canViewClientScopes) to the methods `void requireView()` and `void requireViewClientScopes()`. Both methods are void, so they cannot return true; they are require-style checks that throw when access is denied.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0524439
+}

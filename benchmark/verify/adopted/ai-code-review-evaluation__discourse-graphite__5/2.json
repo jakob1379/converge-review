@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch leaves mobile/topic-post.scss:530-532 (`.small-action.time-gap .topic-avatar { margin-top: -5px }`) unchanged, while common/base/topic-post.scss:263-265 now makes `.small-action` a flex container with `align-items: center` and removes the description's `margin-top: 5px` that this negative margin offset. The leftover -5px now moves the 35px clock icon above centre (by about 2.5\u20135px, depending on whether the icon is the tallest item; I reasoned this from the CSS and did not render it).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09967909999999998
+}

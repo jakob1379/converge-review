@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AdminPermissions.java:77 now runs the removal cleanup only when ADMIN_FINE_GRAINED_AUTHZ (V1, Profile.java:56) is on, so without V1 the V1 cleanup in RolePermissions.java:86, GroupPermissions.java:173 and ClientPermissions.java:215 no longer runs. Under V2, ClientPermissionsV2.java:193 throws, and the only client-removal synchronizer, ClientApplicationSynchronizer.java:49-75, just deletes the client's own resource server and edits client policies. Nothing removes the V2 'Clients' resources named by client id or their scope permissions.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5317354
+}

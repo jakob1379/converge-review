@@ -1,0 +1,212 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/36882",
+ "cost_usd": 0.0557895,
+ "items": [
+  {
+   "id": "c1",
+   "source": "cubic-v2",
+   "text": "`picocli.exit()` calls `System.exit(4)` for non-zero exit codes, which is a hard JVM termination path designed for build failures. For a 'feature disabled' condition, this bypasses graceful shutdown and makes the subsequent `return` unreachable. Consider throwing a `PropertyException` instead, consistent with how other error conditions in these commands are handled, or setting the exit code on the `CommandSpec` to let picocli handle it through its normal lifecycle"
+  },
+  {
+   "id": "c2",
+   "source": "golden",
+   "text": "Need to add changelog/release notes documenting the exit code change and migration guidance"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "Guide says exit code 1 means missing/corrupt metadata file, but the code throws PropertyException which exits with 2 (usage error)"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review-replay",
+   "text": "Only 'update-compatibility metadata' is run with the feature off in tests - the feature gate in UpdateCompatibilityCheck.run() (lines 46-50) is never exercised without the feature enabled"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "The patch renumbers the public exit-code contract (recreate 4->3, feature-disabled=4) but no test asserts either value - testFeatureNotEnabled and testIncompatible check only error text, not exit codes"
+  },
+  {
+   "id": "c6",
+   "source": "cubic-v2",
+   "text": "The default-strategy test case returns before the new rolling-updates feature flag is enabled, so the `null` branch no longer covers the rolling-update path"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "Exit code 4 is documented as 'Rolling Upgrade is not possible', conflating a disabled tool with a compatibility verdict; metadata also returns 4, which the table does not cover - scripts treating non-zero as 'recreate' will recreate when the feature is merely off"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review",
+   "text": "CAUTION documentation says the Operator will fail unless the rolling-updates feature is enabled, but the operator never checks this feature - spec.update.strategy is not gated, so either the docs are false or the operator gate is missing"
+  },
+  {
+   "id": "c9",
+   "source": "coderabbit",
+   "text": "Line 46 calls Profile.isFeatureEnabled(...) which will throw NullPointerException if Profile.getInstance() is null. The CLI bootstrap sequence does not guarantee Profile is initialized before run() is invoked. Need to add Environment.getCurrentOrCreateFeatureProfile() before the feature check, or make Profile.isFeatureEnabled() null-safe."
+  },
+  {
+   "id": "c10",
+   "source": "golden",
+   "text": "Incorrect method call for exit codes. The picocli.exit() method calls System.exit() directly, which is problematic:"
+  },
+  {
+   "id": "c11",
+   "source": "cubic-v2",
+   "text": "Documentation warning is broader than the implementation: the default `<not set>` strategy still works without `rolling-updates`, so saying the operator will fail is misleading"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review-replay",
+   "text": "The patch renumbers the public exit-code contract (recreate 4 -> 3, feature-disabled = 4) but no test asserts either new value - testFeatureNotEnabled and testIncompatible only check message text, not exit codes"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review-replay",
+   "text": "The same 5-line feature gate code (isFeatureEnabled, printFeatureDisabled, exit(FEATURE_DISABLED), return) is duplicated in UpdateCompatibilityCheck.java:46-50 and UpdateCompatibilityMetadata.java:46-50 instead of being centralized in AbstractUpdatesCommand"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "Only the metadata subcommand is run with the feature off in tests; the separate gate copy in UpdateCompatibilityCheck.run() is never exercised"
+  },
+  {
+   "id": "c15",
+   "source": "augment",
+   "text": "Documentation inconsistency: The exit-code 4 row in the table says 'Rolling Upgrade is not possible...' but the actual CLI error message when the feature is disabled is 'Unable to use this command...'. The table wording should be aligned with the actual behavior/message to avoid confusion for script authors."
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "The macro hard-codes --features=rolling-updates after the user's parameters, overriding features set via KC_FEATURES/keycloak.conf (CLI wins), and a runtime --features on an --optimized image may not take effect since features are build-time"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "New preview feature (Profile.java:136) and CLI behaviour change (update-compatibility now requires --features=rolling-updates) have no release-note entry despite PR-CHECKLIST asking for release notes if applicable"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "The CAUTION block (lines 446-450) states the Operator 'will fail' unless the rolling-updates feature is enabled, but the operator code has no check for this feature - the documentation and implementation are inconsistent"
+  },
+  {
+   "id": "c19",
+   "source": "claude-code",
+   "text": "Breaking exit code change: RECREATE_UPGRADE_EXIT_CODE moved from 4 to 3, which could break existing scripts consuming these codes"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "The feature-disabled guard (isFeatureEnabled / printFeatureDisabled / exit(FEATURE_DISABLED) / return) is duplicated verbatim in UpdateCompatibilityCheck.run() and UpdateCompatibilityMetadata.run() at lines 46-50; printFeatureDisabled() has no other caller"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "`picocli.exit()` is used for the feature-disabled exit code and calls `System.exit()` directly. This hard-terminates the JVM and makes the following `return` unreachable.",
+   "path": null,
+   "members": [
+    "c1",
+    "c10"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The PR has no changelog or release-note entry for the exit-code renumbering, the new rolling-updates preview feature, or the requirement that update-compatibility now needs --features=rolling-updates.",
+   "path": null,
+   "members": [
+    "c2",
+    "c17"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The guide documents exit code 1 for a missing or corrupt metadata file, but the code throws PropertyException, which exits with code 2 (usage error).",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "Tests run only the 'update-compatibility metadata' subcommand with the feature disabled. The separate feature gate in UpdateCompatibilityCheck.run() (lines 46-50) is never exercised.",
+   "path": "UpdateCompatibilityCheck.java",
+   "members": [
+    "c4",
+    "c14"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The exit-code contract was renumbered (recreate 4->3, feature-disabled=4), but no test asserts either value. testFeatureNotEnabled and testIncompatible check only the message text.",
+   "path": null,
+   "members": [
+    "c5",
+    "c12"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The default-strategy test case returns before the rolling-updates feature flag is enabled, so the `null` branch no longer covers the rolling-update path.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The documentation table describes exit code 4 as 'Rolling Upgrade is not possible'. Exit code 4 is also returned when the feature is disabled, with the message 'Unable to use this command...'. The table therefore conflates a disabled tool with a compatibility verdict and does not cover the metadata command returning 4.",
+   "path": null,
+   "members": [
+    "c7",
+    "c15"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The CAUTION documentation block (lines 446-450) says the Operator will fail unless the rolling-updates feature is enabled. The operator code does not check this feature, spec.update.strategy is not gated, and the default `<not set>` strategy works without it.",
+   "path": null,
+   "members": [
+    "c8",
+    "c18",
+    "c11"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "UpdateCompatibilityCheck.run() line 46 calls Profile.isFeatureEnabled(...) without ensuring Profile is initialized. This throws NullPointerException if Profile.getInstance() is null.",
+   "path": "UpdateCompatibilityCheck.java",
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The same feature-disabled guard (isFeatureEnabled / printFeatureDisabled / exit(FEATURE_DISABLED) / return) is duplicated in UpdateCompatibilityCheck.run() and UpdateCompatibilityMetadata.run() at lines 46-50 instead of being centralized in AbstractUpdatesCommand.",
+   "path": "UpdateCompatibilityCheck.java",
+   "members": [
+    "c13",
+    "c20"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The documentation macro hard-codes --features=rolling-updates after the user's parameters. This overrides features set via KC_FEATURES or keycloak.conf, and may not take effect on an --optimized image because features are build-time.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "RECREATE_UPGRADE_EXIT_CODE was changed from 4 to 3, which changes the exit code that existing scripts consume.",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  }
+ ]
+}

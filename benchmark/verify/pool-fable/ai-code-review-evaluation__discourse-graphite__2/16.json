@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes `post_number: /\\d+/` from both summary routes and moves the moderator-liked route below `t/:topic_id/wordpress` while adding the unsubscribe routes (config/routes.rb:438-442). Neither summary path has a `:post_number` segment, so the dropped constraint was a no-op and the reorder does not change matching; this is unrelated churn only.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09010569999999998
+}

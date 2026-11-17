@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/emails/src/templates/BrokenIntegrationEmail.tsx:89-90 tests `mainHostDestinationCalendar` as the ternary condition and then uses `mainHostDestinationCalendar?.integration.split(\"_\")` in the truthy branch, where the value cannot be nullish, so the `?.` is redundant. The pre-patch code had the same redundancy on `calEvent.destinationCalendar?.integration`, but the patch rewrote these lines and kept it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.16725089999999998
+}

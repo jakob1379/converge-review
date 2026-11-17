@@ -1,0 +1,71 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In SpanFlusher.join(), when the deadline expires the `break` exits the per-process loop before terminate() runs for the current and remaining flusher processes, leaving them running after join returns during shutdown/rebalance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isinstance(process, multiprocessing.Process) guard before process.kill() in the restart path (_ensure_processes_alive) is always False for spawn-context SpawnProcess objects, so hung or unhealthy processes are never killed before replacements start. The pre-PR code called kill() unconditionally.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In join(), terminate() sits behind the same isinstance(process, multiprocessing.Process) check, which is always False for SpawnProcess, so flusher processes are never terminated on shutdown or rebalance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "_create_process_for_shard (lines 127-132) has no callers in src/ or tests/ and only delegates to _create_process_for_shards, so it is dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The docstring 'Creates one process per shard' does not match the default deployment, where the CLI default of 1 runs all shards in one process. The comments at lines 178 and 235 also do not match the code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The spans.buffer.flusher.wait_produce timer (line 199) uses tag key 'shards', while the other metrics in the same flush loop (lines 185, 195, 244) use 'shard'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

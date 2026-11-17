@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's only change to cursors.py is two comment lines at src/sentry/utils/cursors.py:26-27 claiming negative offsets are now allowed as a performance optimization; the code line `self.offset = int(offset)` at :28 is unchanged and already accepted negative values (as did `int(bits[1])` in from_string at :59), so the comments describe a behaviour change that did not happen in Cursor.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1462125
+}

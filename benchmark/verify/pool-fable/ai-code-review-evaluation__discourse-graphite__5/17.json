@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/common/foundation/mixins.scss:117-123 emits only `-webkit-box-align`, `-webkit-align-items`, `-ms-flex-align`, `-ms-align-items` and `align-items`, with no `-moz-box-align`, while flexbox() at mixins.scss:102 emits `display: -moz-box`; no autoprefixer is in the Gemfile or config to add it. Only Firefox older than 22 (which lacks unprefixed `display: flex`) falls back to the old box model and its default stretch alignment \u2014 that part is from browser knowledge, not run here.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.23506929999999995
+}

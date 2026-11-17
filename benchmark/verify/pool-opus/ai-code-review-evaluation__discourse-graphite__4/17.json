@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/topic_embed.rb (patch lines 364-373), the new import_remote calls `open(url).read` through open-uri with no :open_timeout or :read_timeout, and it is reached from TopicRetriever#fetch_http (patch line 742). The fetch is not strictly endless, because Net::HTTP has a default 60s read timeout per read, but a slow or stalling remote host can still tie up a job worker for a long time.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06421190000000002
+}

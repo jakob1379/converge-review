@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "applyTemplateVariables (datasource.ts:1111-1113) deliberately leaves `__auto` out of scopedVars so the backend can expand it, and the Go backend does replace `$__auto` (pkg/tsdb/loki/parse_query.go:22, tested in parse_query_test.go:176-187). The test's mocked replace only checks that applyTemplateVariables runs before execution, so no real bug follows.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.10512189999999999
+}

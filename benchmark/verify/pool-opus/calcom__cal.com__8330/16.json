@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/slots.ts:490-492 and :515-517, the spread objects already include `timeZone` (built at :401). The patch also passes that same value again as `organizerTimeZone: schedule.timeZone` / `userSchedule.timeZone`, so checkIfIsAvailable could have read the spread `timeZone` itself (the selectedSlots call at ~:580 has no spread and does need it passed explicitly). The value is each host's own timezone, not the organizer's, so the name `organizerTimeZone` is misleading.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09533660000000001
+}

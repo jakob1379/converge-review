@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new ASN1Decoder.java (patch lines 141-173), readTagNumber fully decodes multi-byte high-tag-number tags, and readLength recognises the 0x80 indefinite-length marker by returning -1 (patch lines 181-182), although nothing actually decodes indefinite-length content. All the ECDSA path needs is readSequence (0x30) plus readInteger (0x02), so this general-purpose logic is more than it requires.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0661951
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "config/initializers/i18n.rb:5 and :9 do use `send(:include, ...)`, but only to mix in the i18n gem's own `I18n::Backend::Pluralization` and `I18n::Backend::Fallbacks` modules, which is the gem's documented extension mechanism (from memory of the gem docs and Rails' i18n railtie, not checked in this repo), not a fragile override of gem internals; line 5 was merely moved from the deleted config/initializers/pluralization.rb.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.120952
+}

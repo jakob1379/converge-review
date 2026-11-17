@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "FixedQueuePool.submit (queue_consumer.py:239-240) calls add_offset and then work_queue.put. On Python 3.13 queue.ShutDown subclasses Exception, so the error reaches the broad `except Exception` in SimpleQueueProcessingStrategy.submit (queue_consumer.py:345-353), which logs it and calls add_offset/complete_offset, and _commit_loop (306-317) then commits that offset as done. This is reachable: strategy close() shuts down the factory's shared queue_pool (364-366), which stays set on the factory (result_consumer.py), so a strategy created after a rebalance puts every message into a shut-down queue and commits it without processing.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2433011
+}

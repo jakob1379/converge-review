@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ApiUtil.handleCreatedResponse (test-framework/core/.../util/ApiUtil.java:8-14) already asserts the status is 201 and closes the response with try(response). The new GroupResourceTypeEvaluationTest.java still wraps add() in try(Response), checks CREATED with assertThat and then calls handleCreatedResponse, in onBefore and in two of the tests (patch lines 1159-1161, 1281-1283, 1347-1349), so that wrapping and check are redundant.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0588703
+}

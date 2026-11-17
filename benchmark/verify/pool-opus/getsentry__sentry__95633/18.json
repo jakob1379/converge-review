@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In queue_consumer.py (patch lines 363-366), close() sets shutdown_event and joins commit_thread before calling queue_pool.shutdown(). That shutdown uses q.shutdown(immediate=False) and joins the workers, so queued items are still processed. The commit loop's last pass (patch lines 302-317) runs before that drain, and nothing calls get_committable_offsets or commit_function afterwards, so offsets finished during the drain are never committed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0936553
+}

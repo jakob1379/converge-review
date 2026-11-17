@@ -1,0 +1,65 @@
+{
+  "findings": [
+    {
+      "path": "pkg/api/webassets/webassets_test.go",
+      "line": null,
+      "severity": "Important",
+      "claim": "The data-race fix ships without a regression test; no test calls GetWebAssets concurrently under the race detector.",
+      "evidence": "webassets_test.go is unchanged by the patch; existing TestReadWebassets/TestReadWebassetsFromCDN are single-goroutine. contribute/create-pull-request.md:28 requires bug-fix PRs to 'include tests that replicate the fixed bug'. Proposed red test: N goroutines calling GetWebAssets against a temp StaticRootPath/build/assets-manifest.json copied from testdata/sample-assets-manifest.json, run with `go test -race ./pkg/api/webassets/` (expected to report a race at base cca9dee702, pass at head). Reasoned, not run.",
+      "seats": ["mattpocock-skills:code-review", "open-code-review:delegate-review", "superpowers:requesting-code-review"],
+      "verdict": "fix",
+      "reason": "Documented repo standard (create-pull-request.md:28) verified in source; correctness seats independently flagged the gap as Minor. Normalised to Important because it breaches a written requirement and leaves the race fix unguarded."
+    },
+    {
+      "path": "pkg/api/webassets/webassets.go",
+      "line": 48,
+      "severity": "Minor",
+      "claim": "No re-check of entryPointAssetsCache after acquiring the write lock, so concurrent cold-cache misses serialize and each re-reads and re-parses assets-manifest.json.",
+      "evidence": "Lines 41-47 read under RLock and fall through on nil; line 48 takes Lock with no second nil check before readWebAssetsFromFile at line 60. Result remains correct and race-free; cost is duplicate file reads on cold start or after a failed load. Reasoned.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review", "ponytail:ponytail-review"],
+      "verdict": "fix",
+      "reason": "Cheap, local double-checked lock (`if cfg.Env != setting.Dev && entryPointAssetsCache != nil { return entryPointAssetsCache, nil }` after Lock) that makes the write lock actually dedupe work; stays within the existing RWMutex pattern. Four-seat agreement is correlated, but the claim is directly visible at lines 48-60."
+    },
+    {
+      "path": "pkg/api/webassets/webassets.go",
+      "line": 45,
+      "severity": "Minor",
+      "claim": "Uncached paths now run under the exclusive lock: in Dev mode every call serializes on manifest file I/O, and in production a missing/broken manifest causes every request to retry the failed read serially; the dead CDN branch would hold the lock across an HTTP call.",
+      "evidence": "Line 45 bypasses the cache when cfg.Env == setting.Dev; lines 48-70 hold Lock across readWebAssetsFromFile; line 69 stores nil on error; line 54 `cdn := \"\"` makes readWebAssetsFromCDN unreachable. Reasoned.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review"],
+      "verdict": "defer",
+      "reason": "ponytail: dev-only latency and the failed-load retry behaviour predate the patch (previously parallel and racy); CDN branch is dead code. Revisit if the CDN path is enabled or dev latency is reported."
+    },
+    {
+      "path": "pkg/api/webassets/webassets.go",
+      "line": 36,
+      "severity": "Minor",
+      "claim": "The fix extends package-level global state (adds a global mutex beside the global cache) against the documented guidance to avoid globals; the cache also leaks between tests in the package.",
+      "evidence": "Lines 35-38 declare entryPointAssetsCacheMu and entryPointAssetsCache as package vars with `// TODO: get rid of global state`. contribute/backend/style-guide.md:185-189, contribute/backend/recommended-practices.md:46-54, contribute/backend/services.md:5 discourage global variables.",
+      "seats": ["mattpocock-skills:code-review", "superpowers:requesting-code-review"],
+      "verdict": "defer",
+      "reason": "ponytail: the global cache pre-exists the patch and the TODO acknowledges it; moving it into a Wire-injected service is out of scope for a narrow race fix. Note for the regression test: reset the cache in test setup."
+    },
+    {
+      "path": "pkg/api/webassets/webassets.go",
+      "line": 36,
+      "severity": "Minor",
+      "claim": "sync.RWMutex is heavier than needed; atomic.Pointer[dtos.EntryPointAssets] would give the same behaviour with fewer lines.",
+      "evidence": "Reviewer reasoning from lines 35-49 and 69-70; go.mod targets Go 1.22. No file in pkg/ currently uses atomic.Pointer[.",
+      "seats": ["ponytail:ponytail-review"],
+      "verdict": "reject",
+      "reason": "Behaviourally equivalent to the patch, so it neither fixes nor dedupes anything; it introduces a pattern new to pkg/. The reviewer's alternative (b), a re-check under the existing RWMutex, is accepted as the line-48 finding. superpowers seat independently considered and set aside the same alternative."
+    },
+    {
+      "path": "pkg/api/webassets/webassets.go",
+      "line": null,
+      "severity": "Minor",
+      "claim": "Commit subject 'fix data race in GetWebAssets' lacks the required Area prefix.",
+      "evidence": "contribute/create-pull-request.md:94 'Subject line must begin with the _area_ of the commit.'; PR title format `<Area>: <Summary>` at line 125.",
+      "seats": ["mattpocock-skills:code-review"],
+      "verdict": "reject",
+      "reason": "The commit message is not part of the pinned patch, and Grafana squash-merges with the PR title as the subject, so the individual commit subject does not land on main. Belongs on the PR title, not in the code ledger."
+    }
+  ],
+  "coverage": "Files skipped: none; the patch touches one file (pkg/api/webassets/webassets.go) and all four seats reviewed it plus its callers (pkg/api/index.go:82, pkg/api/frontendsettings.go:62, pkg/middleware/recovery.go:141). Untracked environment files in the worktree (.bashrc, .bash_profile, .profile, .zprofile, .zshrc, .gitconfig, .gitmodules, .idea, .mcp.json, .ripgreprc, .claude/) were excluded from the pinned patch as harness noise, not PR content. Axes that did not run: gate not run (benchmark mode; no go build/vet/test, no `go test -race`), so every finding is reasoned, not executed; no spec (commit message used as the requirement); no cross-family reviewer (no codex seat, all four seats are the same model family, so agreement is correlated); steps 5-6 (red tests, fixes, scoped re-review) not run per benchmark override; the readWebAssetsFromCDN branch is dead code (cdn := \"\") and was not analysed in depth."
+}

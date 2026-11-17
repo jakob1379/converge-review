@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/workflow_engine/processors/detector.py:166-170 the new abstract `build_occurrence_and_event_data` has only `pass` and no docstring, while its sibling abstract members `counter_names`, `get_dedupe_value` and `get_group_key_values` (lines 142-164) all have one. Nothing says that it is called only in the non-OK branch, that it receives `PriorityLevel(new_status)`, or that `event_data` is passed unchanged to `produce_occurrence_to_kafka` (lines 82-87).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.15337350000000002
+}

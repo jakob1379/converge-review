@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In DualWriterMode3.Create, the `if err != nil { ...; return created, err }` at pkg/apiserver/rest/dualwriter_mode3.go:46 returns early, so the final `return created, err` at line 59 always returns a nil err. The goroutine uses its own `errObjectSt` and never sets the outer err. The patch replaced the old explicit `return created, nil` with this.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0877293
+}

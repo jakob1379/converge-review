@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/PermissionClientTest.java:320 is the only client-create call in testViewAllClients and it passes `create(null)`, asserting FORBIDDEN. The assertion still holds because ClientsResource.java:186 calls `auth.clients().requireManage()` before the payload is touched, so this is only a test-quality weakness.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.137773
+}

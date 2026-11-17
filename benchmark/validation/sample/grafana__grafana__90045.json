@@ -1,0 +1,71 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the mode-3 unit tests, legacyStoreMock and storageMock share one mock.Mock. As a result, 'legacy' expectations are satisfied by storage calls, success-case setupLegacyFn blocks are duplicate or no-op, and nothing verifies that reads skip legacy or that legacy is written. No AssertExpectations or AssertNotCalled calls are made, and no test waits for the goroutine.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In DualWriterMode3.Delete, the success path passes the object name instead of options.Kind as the kind label to recordStorageDuration. This creates a new histogram series per deleted object and differs from the other methods. The same pattern exists in dualwriter_mode1.go.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In Mode3 Update, when Storage.Update fails, the duration is recorded with recordLegacyDuration instead of recordStorageDuration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Delete calls klog.NewContext(ctx, d.Log) instead of passing the enriched log variable, so the name, kind and method fields are not propagated to downstream loggers. The same bug exists in mode 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Mode3 Update passes the caller's original objInfo to Legacy.Update in a goroutine. UpdatedObject is therefore re-applied against legacy's own old object after the request has ended, which can produce a different object than unified storage stored.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Legacy write failures in the async goroutines are not logged; only an is_error histogram label is recorded.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

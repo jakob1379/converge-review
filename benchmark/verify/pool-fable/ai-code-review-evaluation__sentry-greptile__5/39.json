@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/workflow_engine/endpoints/validators/base/detector.py:67-79 (update) and :120-127 (create) each implement the same owner.is_user/owner.is_team branching to derive owner_user_id/owner_team_id, with no shared helper. Both blocks are added by this patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5365956
+}

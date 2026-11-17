@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/auth/login.tsx:178-182 the footer is `!totpEmail ? TwoFactorFooter : ExternalTotpFooter`. Only TwoFactorFooter (lines 103-133) has the new 'lost_access' button, and ExternalTotpFooter (135-143) has only Cancel, so a totpEmail user can never turn on twoFactorLostAccess or see BackupCode (line 221). The backend would also reject such a login: packages/features/auth/lib/next-auth-options.ts:113 throws for non-CAL users who send no totpCode.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.20531560000000001
+}

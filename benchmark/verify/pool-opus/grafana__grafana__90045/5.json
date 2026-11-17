@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:43-45, Create logs \"unable to create object in storage\" when d.Storage.Create fails, then calls d.recordLegacyDuration(true, ..., startStorage) instead of recordStorageDuration. Update has the same pattern at line 129, and the patch adds these lines (patch lines 104 and 219).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0523645
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6:5-7 defines only `stopNotificiationsText`, a single `I18n.t` call with `title: model.fancyTitle`. The `i18n` helper resolves named hash params against the template context (helpers/register-unbound.js.es6:9-15), and templates/topic.hbs:94 already uses the triple-stash form `{{{i18n \"...\" count=model.pending_posts_count}}}`, so `{{{i18n \"topic.unsubscribe.stop_notifications\" title=model.fancyTitle}}}` would work in the template (unbound, but the route resolves the model before render).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3879318
+}

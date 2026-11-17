@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/core/EventManager.ts:170 the head sets `credentialId: isCalendarType ? result.credentialId : undefined`, so video references created by handleNewBooking.ts:2121/2369 are saved without a credentialId, even though videoClient.ts:78 supplies one. handleCancelBooking.ts:491 only calls deleteMeeting when `bookingVideoReference.credentialId` is set, so cancelling the booking never deletes the Zoom/Daily meeting.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2658737
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch replaces the old `safeParse` call (which only logged the error) with `parseRefreshTokenResponse` (office365calendar/lib/CalendarService.ts:263). That helper throws `Error(\"Invalid refreshed tokens were returned\")` when parsing fails (_utils/oauth/parseRefreshTokenResponse.ts:21-23), so `prisma.credential.update` at CalendarService.ts:265 is never reached with stale credentials.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0889943
+}

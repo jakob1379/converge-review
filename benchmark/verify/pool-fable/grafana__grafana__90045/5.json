@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `pkg/apiserver/rest/dualwriter_mode3.go:42-45`, when `d.Storage.Create` fails the code calls `d.recordLegacyDuration(true, mode3Str, options.Kind, method, startStorage)`, so a unified-storage failure lands in the legacy histogram (`metrics.go:54-56`). The same mis-attribution is in Update at line 129, and DeleteCollection has the inverse at line 166 (legacy call recorded with `recordStorageDuration`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4303249
+}

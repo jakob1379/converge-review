@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The route does use plain authedProcedure (_router.tsx:399) with a custom check that lets any matching attendee through (addGuests.handler.ts:476-478). But COLLECTIVE co-hosts are not refused: createBooking.ts:153-161 saves team members as Attendee rows, so co-hosts pass the isAttendee check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1872297
+}

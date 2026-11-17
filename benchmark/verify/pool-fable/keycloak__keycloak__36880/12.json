@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new ClientPermissionsV2.java the evaluatePermission-then-match-scope loop appears three times: hasPermission(ClientModel,String) at lines 224-234, hasPermission(String) at lines 249-259, and hasGrantedPermission at lines 274-286. The last is a line-for-line copy of the private ClientPermissions.hasPermission(Resource,String) at ClientPermissions.java:689-701.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.29287660000000004
+}

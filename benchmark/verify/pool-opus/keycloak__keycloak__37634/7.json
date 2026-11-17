@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "DefaultTokenContextEncoderProviderFactory.java:51-61 builds HashMaps for SessionType (4 values) and TokenType (3 values) inside init(). These two enums are fixed and defined in AccessTokenContext.java, so a static lookup method on each enum would work just as well.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0801158
+}

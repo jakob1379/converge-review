@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts (patch lines 470-472) sets isTeamAdminOrOwner to `isTeamAdmin(...) && isTeamOwner(...)`. isTeamAdmin already matches both ADMIN and OWNER (packages/lib/server/queries/teams/index.ts:270), while isTeamOwner matches only OWNER (:292), so the combined check passes only for owners. A team ADMIN who is neither the organizer nor an attendee hits the FORBIDDEN branch at line 478.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0503681
+}

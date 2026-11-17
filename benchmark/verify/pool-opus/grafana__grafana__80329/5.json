@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At xorm_store.go:608 (patch line 322) the branch condition is `r.db.GetDBType() == migrator.SQLite && r.cfg.AnnotationCleanupJobBatchSize > sqliteParameterLimit`, which never looks at len(ids). So on SQLite with a batch size above 999, every batch builds the inlined-ID DELETE, including small final ones. The results are still correct and safe, because the IDs are int64 values formatted with %d.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1053332
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In scheduleSMSReminders.ts, both the falsy-scheduledSMS branch (lines 178-186) and the catch block for any thrown error (lines 189-197) raise retryCount by 1, with no check on the error type and no delay between retries. Once retryCount reaches 2, the next run's deleteMany OR clause `retryCount: { gt: 1 }` (patch lines 20-24) deletes the reminder, so a transient Twilio or DB failure on two consecutive cron runs loses the SMS reminder for good.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0670528
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes the only production callers of the setter, `group.usernames = payload[:usernames]` and the one in `create` (change.patch:577, :609). After that, `usernames=` (app/models/group.rb:244) is assigned only in spec/models/group_spec.rb:149,153 and spec/models/user_spec.rb:1011,1022, so `@deletions` is never set and `destroy_deletions` (group.rb:287, run via `after_save` at group.rb:10) does nothing in production.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22979570000000002
+}

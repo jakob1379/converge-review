@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/components/settings/EnableTwoFactorModal.tsx:278-279 calls `navigator.clipboard.writeText(...)` with no await, .then/.catch or try/catch, then unconditionally calls `showToast(t(\"backup_codes_copied\"), \"success\")`; a rejected write still shows the success toast, and in an insecure context where `navigator.clipboard` is undefined the handler throws a TypeError before the toast.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.08080119999999999
+}

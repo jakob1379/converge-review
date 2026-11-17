@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "When safeParse fails, parseRefreshTokenResponse.ts:205-207 throws only `new Error(\"Invalid refreshed tokens were returned\")` and drops the zod error and the response. In office365calendar (patch lines 528-535), the `console.error` that logged the zodError and the MS response was removed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0569349
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "store-test.js.es6:111 asks for fruit 2 (banana, color_ids [3]), but lines 115-117 expect apple's colours [1,2]. The test passes only because the /fruits/:id handler in create-pretender.js.es6 ignores the id and always returns fruits[0] (`const fruit = fruits[0];`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.190578
+}

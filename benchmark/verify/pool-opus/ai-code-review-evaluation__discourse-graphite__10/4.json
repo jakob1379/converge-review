@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Line 15 does index `[0]` without a guard, but it does not fail on a fresh database: migration 20131022045114_add_uncategorized_category.rb:17-18 always inserts the `uncategorized_category_id` setting, so this query returns a row. The real fresh-database crash is the `embed_category` lookup at create_embeddable_hosts.rb:9-11, which returns no rows and fails before line 15 is reached.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.062453299999999996
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/topics_controller.rb:105-113 sets tu.notification_level and calls tu.save! directly, bypassing TopicUser.change (app/models/topic_user.rb:87-90, 112-114), which is the only place that defaults notifications_changed_at/notifications_reason_id and publishes notification_level_change; no model callback or observer does it instead. With notifications_reason_id left NULL, the update_last_read CASE at app/models/topic_user.rb:161-164 can flip the row back to tracking once view time passes the auto-track threshold.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.29513819999999996
+}

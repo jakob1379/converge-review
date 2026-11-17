@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/integrations/github/integration.py the patch fetches the Integration at line 478 with no status filter, then fetches it again at lines 494-496 with status=ObjectStatus.ACTIVE. If the Integration exists but is not active and has no OrganizationIntegration, the code now returns the generic error at line 498; before the patch it called next_step, and ensure_integration (pipeline.py:41-42) would have set the integration back to ACTIVE.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1284939
+}

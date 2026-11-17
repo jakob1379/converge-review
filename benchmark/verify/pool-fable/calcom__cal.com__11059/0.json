@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/salesforce/lib/CalendarService.ts:75-84 calls fetch on https://login.salesforce.com/services/oauth2/token directly and never imports or calls refreshOAuthTokens (only parseRefreshTokenResponse is imported, line 20). The CALCOM_CREDENTIAL_SYNC_ENDPOINT branch in packages/app-store/_utils/oauth/refreshOAuthTokens.ts:5-15 is therefore never reached for Salesforce, unlike hubspot, zoho, zoom and the other apps that wrap their refresh in it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.22425810000000002
+}

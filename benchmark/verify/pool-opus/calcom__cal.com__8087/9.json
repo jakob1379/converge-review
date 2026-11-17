@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/docs/pages/developer/app-store.mdx:43 and :56 still tell developers to import the app into packages/app-store/index.ts and then add it to the appStore object. The patch removed every top-level import there and replaced them with `appname: import(\"./appname\")` entries (change.patch lines 26-114), but it did not update the docs. A static import would still work, because awaiting a value that is not a promise just returns it, so the stale docs are only a nit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0804412
+}

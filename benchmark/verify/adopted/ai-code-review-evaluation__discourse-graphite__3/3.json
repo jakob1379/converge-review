@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/blocked_email.rb:14-16 loads the record, increments match_count in Ruby and calls save, ignoring its return value. Concurrent calls can therefore lose increments, and save re-runs the `uniqueness: true` validation from line 5, which costs an extra SELECT on every check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.037132899999999996
+}

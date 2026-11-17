@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AuthorizationTokenService.java:350/352 builds a fresh ClientSessionContext and :357-358 calls generateAccessToken(), which reaches createClientAccessToken and initToken (TokenManager.java:1205, 1048-1051) without ever setting Constants.GRANT_TYPE. PermissionGrantType.java:187 hands off to AuthorizationTokenService.authorize() rather than OAuth2GrantTypeBase.createTokenResponse, the place the patch sets the attribute. So DefaultTokenContextEncoderProvider falls back to UNKNOWN 'na', and the 'pg' shortcut registered at PermissionGrantTypeFactory.getShortcut() is never emitted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1915596
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Every mode 3 variant enables FlagKubernetesPlaylists (pkg/tests/apis/playlist/playlist_test.go:138,198,296), so the `/api/playlists` routes are served by the k8s-client handler (pkg/api/playlist.go:30-38, 339-377). Those reads go through DualWriterMode3.Get/List, which read only from Storage, written synchronously before the legacy goroutine starts (pkg/apiserver/rest/dualwriter_mode3.go:42,69,85), so the test's legacy-API assertions never observe the async legacy writes.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.7180582
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts:138-151, `workingHours.find` rejects a slot as soon as any entry for that weekday has the slot outside its range. With 09-12 plus 13-17, a 10:00 slot falls outside 13-17 and a 14:00 slot falls outside 9-12, so every slot is dropped. getWorkingHours (packages/lib/availability.ts:93-110) also splits a schedule at UTC midnight into two entries. The check runs for every fixed host (lines 484-493), and isFixed is true for every non-team event type (line 369).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1352661
+}

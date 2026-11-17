@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:67 passes \"80%\" with allow_animation (default true), and for a path ending in .gif app/models/optimized_image.rb:155 and :137-138 route it to `gifsicle --resize-fit 80%` (:120), which takes only WxH geometry; convert_with returns false (:162) and the loop at uploads_controller.rb:66-69 spends all 5 attempts on an unchanged file. Reachable at least for API URL uploads, where lib/file_helper.rb:13-14 keeps the .gif extension on the tempfile; browser multipart uploads under the locked rack 1.5.5 probably get an extensionless tempfile and skip this branch, and gifsicle's rejection of \"80%\" rests on its documented behaviour, not on a run here.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3554723
+}

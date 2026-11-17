@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/ui/components/form/inputs/Input.tsx:36-39, PasswordField sets type={isPasswordVisible ? \"text\" : \"password\"} and then spreads {...props}, so the type=\"password\" passed at apps/web/components/settings/EnableTwoFactorModal.tsx:174-176 (the claim says line 167) overrides it and the eye toggle has no effect.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.08425350000000001
+}

@@ -1,0 +1,546 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/37634",
+ "cost_usd": 0.1105499,
+ "items": [
+  {
+   "id": "c1",
+   "source": "cubic-v2",
+   "text": "Copy-paste bug: the second `requireNonNull` checks `grantType` again instead of `rawTokenId`. A null `rawTokenId` will be silently accepted and likely cause a NullPointerException later when it's used."
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "A prefix shorter than 5 chars throws StringIndexOutOfBoundsException instead of returning false in isAccessTokenId matcher"
+  },
+  {
+   "id": "c3",
+   "source": "qodo-extended-v2",
+   "text": "AccessTokenContext's constructor calls requireNonNull(grantType) twice instead of validating rawTokenId, allowing null rawTokenId which can produce malformed encoded IDs or downstream NPEs"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "V1/legacy token exchange in AbstractTokenExchangeProvider.java:410 doesn't set grant type, causing 'na' instead of proper grant shortcut"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "Factory builds HashMaps for 3- and 4-value enums (SessionType, TokenType) where an enum static fromShortcut would do"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "AbstractOIDCProtocolMapper.getShouldUseLightweightToken reads the requesting client rather than the token's client"
+  },
+  {
+   "id": "c7",
+   "source": "coderabbit",
+   "text": "Line 73 repeats the grantType null-check instead of checking rawTokenId, so rawTokenId == null can slip through and later be encoded as '...:null' instead of failing fast"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review",
+   "text": "client_credentials tokens are encoded with grant 'na' instead of the registered 'cc', because this grant builds tokens via tokenManager.responseBuilder(...).generateAccessToken() and never sets Constants.GRANT_TYPE on the client session context"
+  },
+  {
+   "id": "c9",
+   "source": "qodo-extended-v2",
+   "text": "The isAccessTokenId matcher extracts the grant type shortcut with substring(3, 5) but the encoding format places it at positions 4-5 (should be substring(4, 6))"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "Copy-paste slip: Objects.requireNonNull(grantType, 'Null rawTokenId not allowed') re-checks grantType instead of rawTokenId, so rawTokenId is never null-checked and a null raw id encodes to e.g. 'onrtac:null'"
+  },
+  {
+   "id": "c11",
+   "source": "golden",
+   "text": "In isAccessTokenId, the substring for the grant shortcut and the equality check look inverted: the grant shortcut occupies indices 4\u20135 (substring(4,6)), and a match should return true (combined with UUID check), not false."
+  },
+  {
+   "id": "c12",
+   "source": "claude-code",
+   "text": "Label 'area/dependencies' could not be found and needs to be created before Dependabot can use it"
+  },
+  {
+   "id": "c13",
+   "source": "coderabbit",
+   "text": "Test catches RuntimeException instead of the specific parsing exception, making the test pass on unrelated failures like IndexOutOfBoundsException or NullPointerException"
+  },
+  {
+   "id": "c14",
+   "source": "augment",
+   "text": "isAccessTokenId() has inverted logic where equals(expectedGrantShortcut) branch returns false when it matches, causing it to reject correct tokens and accept wrong grant shortcuts"
+  },
+  {
+   "id": "c15",
+   "source": "golden",
+   "text": " Catching generic RuntimeException is too broad. The implementation throws IllegalArgumentException specifically - catch that instead for more precise testing."
+  },
+  {
+   "id": "c16",
+   "source": "augment",
+   "text": "session.getProvider(TokenContextEncoderProvider.class) is used without checking for a missing provider, which will cause NPE during token issuance if the SPI isn't available/registered"
+  },
+  {
+   "id": "c17",
+   "source": "coderabbit",
+   "text": "grantType field is captured once in constructor but setFormParams() can replace parameters later without updating it, making getGrantType() return stale data"
+  },
+  {
+   "id": "c18",
+   "source": "augment",
+   "text": "isAccessTokenId() may throw StringIndexOutOfBoundsException for short prefixes instead of returning false"
+  },
+  {
+   "id": "c19",
+   "source": "qodo-extended-v2",
+   "text": "The isAccessTokenId matcher condition is inverted - it returns false when the grant matches instead of when it doesn't"
+  },
+  {
+   "id": "c20",
+   "source": "cubic-v2",
+   "text": "Make `getShortcut()` a default SPI method; adding it as abstract breaks existing custom grant factories on upgrade."
+  },
+  {
+   "id": "c21",
+   "source": "converge-review-replay",
+   "text": "UMA / permission-grant tokens are encoded with grant 'na' instead of 'pg' because the path never sets Constants.GRANT_TYPE"
+  },
+  {
+   "id": "c22",
+   "source": "augment",
+   "text": "isAccessTokenId() validates grant shortcut incorrectly: substring(3, 5) doesn't match the described 'grant is last 2 chars of the 6-char prefix'"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "Context.grantType is captured from formParams at construction and not refreshed by setFormParams"
+  },
+  {
+   "id": "c24",
+   "source": "coderabbit",
+   "text": "isAccessTokenId matcher has inverted logic - returns false when grant shortcut matches instead of when they do not match"
+  },
+  {
+   "id": "c25",
+   "source": "qodo-extended-v2",
+   "text": "Token ID decoding hard-requires a 6-character context prefix (2+2+2), but OAuth2GrantTypeFactory.getShortcut() javadoc suggests 3-letter shortcuts with no validation ensuring shortcuts are 2 characters, causing custom grants with 3-letter shortcuts to generate IDs that the decoder rejects"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "New unit test uses org.junit.Assert.assertEquals with actual and expected swapped, against docs/tests-development.md guidance; failure messages would read backwards"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review-replay",
+   "text": "Outdated comment 'starts at 4th char' left over from earlier 3-letter encoding"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "UMA/permission grant ('pg') is never emitted because AuthorizationTokenService.java:358 doesn't set the grant type"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "Commit format breaches CONTRIBUTING.md: two commits instead of one, ee2491268a uses lowercase 'closes #37118', daffb05b5a has no issue link"
+  },
+  {
+   "id": "c30",
+   "source": "converge-review",
+   "text": "isAccessTokenId matcher reads the wrong offset (substring(3,5) instead of substring(4,6)) and its comparison is inverted (returns false on equality), so it accepts essentially any grant; the updated expectCodeToToken/expectDeviceCodeToToken/expectRefresh/expectAuthReqIdToToken assertions never verify the grant shortcut"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "grantsToShortcuts duplicates sessionFactory.getProviderFactory(OAuth2GrantType.class, gt) with a hand-maintained, unsynchronised cache that can go stale on undeploy"
+  },
+  {
+   "id": "c32",
+   "source": "coderabbit",
+   "text": "The lazy refresh paths at Lines 106-137 bypass the one-time duplicate check, allowing a custom grant to overwrite an existing shortcut mapping at runtime"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "The hot-deploy refresh path in getGrantTypeByShortcut adds entries without the duplicate-shortcut check postInit performs"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "User-visible change to access-token jti and event token_id format (bare UUID -> '<ss><tt><gg>:<uuid>') has no upgrade/release note, breaching PR-CHECKLIST.md"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "AbstractOIDCProtocolMapper.getShouldUseLightweightToken is now invoked for every access token, dereferencing session.getContext().getClient(); a context without a client would NPE even when no mappers run"
+  },
+  {
+   "id": "c36",
+   "source": "converge-review-replay",
+   "text": "Client-credentials access tokens are encoded with grant 'na' instead of 'cc' because ClientCredentialsGrantType never calls createTokenResponse or sets Constants.GRANT_TYPE"
+  },
+  {
+   "id": "c37",
+   "source": "golden",
+   "text": "Javadoc mentions \"usually like 3-letters shortcut\" but some implementations use 2-letter shortcuts (\"ac\", \"cc\", \"rt\", \"te\", \"pc\", \"ci\", \"ro\"). Consider updating documentation to reflect actual usage pattern."
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "@Column(name='ID', length = 36) annotation is now shorter than the new 43-char access-token ids (stale annotation)"
+  },
+  {
+   "id": "c39",
+   "source": "claude-code",
+   "text": "Label 'area/ci' could not be found and needs to be created before Dependabot can use it"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "The maps include UNKNOWN 'un' shortcuts so decode accepts 'ununna:x' which encodeTokenId refuses to encode, causing asymmetry"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review-replay",
+   "text": "isAccessTokenId matcher reads substring(3,5) but the grant shortcut is at position [4,6) (session 2 + token type 2 + grant 2), causing incorrect offset"
+  },
+  {
+   "id": "c42",
+   "source": "cubic-v2",
+   "text": "The new access-token matcher rejects valid grant shortcuts because it reads the wrong substring and returns false on a match."
+  },
+  {
+   "id": "c43",
+   "source": "converge-review-replay",
+   "text": "Public Context(Context) copy constructor was removed from the grant SPI, breaking API compatibility"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review-replay",
+   "text": "V1 (legacy), federated and impersonation token-exchange tokens are encoded with grant 'na' because they never set Constants.GRANT_TYPE"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review-replay",
+   "text": "Copy-paste slip: Objects.requireNonNull(grantType, \"Null rawTokenId not allowed\") checks grantType instead of rawTokenId, leaving rawTokenId unchecked and encoding null as '<prefix>:null'"
+  },
+  {
+   "id": "c46",
+   "source": "converge-review",
+   "text": "Javadoc says the shortcut is 'usually like 3-letters', but decoding requires the prefix to be exactly 6 chars (2+2+2); a 3-letter shortcut encodes fine but produces IDs getTokenContextFromTokenId rejects with IllegalArgumentException"
+  },
+  {
+   "id": "c47",
+   "source": "coderabbit",
+   "text": "isAccessTokenId matcher uses wrong substring indices - substring(3, 5) extracts characters at indices 3-4 ('ta') instead of the grant type which should be substring(4, 6)"
+  },
+  {
+   "id": "c48",
+   "source": "converge-review-replay",
+   "text": "OAuth2GrantTypeFactory returning null from getShortcut() causes NPE from ConcurrentHashMap.put"
+  },
+  {
+   "id": "c49",
+   "source": "converge-review-replay",
+   "text": "New abstract getShortcut() method has no default, causing AbstractMethodError for custom OAuth2GrantTypeFactory compiled against old interface"
+  },
+  {
+   "id": "c50",
+   "source": "augment",
+   "text": "Objects.requireNonNull(grantType, \"Null rawTokenId not allowed\") is a typo that validates grantType instead of rawTokenId, allowing null raw ID to slip through and potentially cause malformed encoded token IDs or later failures"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "Constants.GRANT_TYPE = OAuth2Constants.GRANT_TYPE is a pure alias; the patch uses both names inconsistently (OAuth2GrantType.Context reads OAuth2Constants.GRANT_TYPE, grants/TokenManager write Constants.GRANT_TYPE)"
+  },
+  {
+   "id": "c52",
+   "source": "coderabbit",
+   "text": "The decoder assumes a fixed 2+2+2 prefix but the factory never validates that grant shortcuts are exactly 2 characters, meaning custom grants can emit token IDs that later fail to decode"
+  },
+  {
+   "id": "c53",
+   "source": "converge-review-replay",
+   "text": "isAccessTokenId matcher condition is inverted: returns false when value equals expected shortcut instead of true, making grant-type checks ineffective"
+  },
+  {
+   "id": "c54",
+   "source": "golden",
+   "text": "In AccessTokenContext constructor, the fourth Objects.requireNonNull validates grantType twice instead of validating rawTokenId, allowing null rawTokenId values to pass validation."
+  },
+  {
+   "id": "c55",
+   "source": "converge-review",
+   "text": "getShortcut() is a new abstract method with no default; a custom OAuth2GrantTypeFactory compiled against the old interface throws AbstractMethodError in DefaultTokenContextEncoderProviderFactory.postInit at server startup"
+  },
+  {
+   "id": "c56",
+   "source": "converge-review",
+   "text": "A null shortcut from getShortcut() causes NPE on ConcurrentHashMap.put in postInit"
+  },
+  {
+   "id": "c57",
+   "source": "converge-review-replay",
+   "text": "isAccessTokenId matcher throws StringIndexOutOfBoundsException for prefixes shorter than 5 characters instead of returning false"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In the AccessTokenContext constructor, the requireNonNull call with the message 'Null rawTokenId not allowed' checks grantType a second time instead of rawTokenId. A null rawTokenId is therefore accepted and gets encoded as '<prefix>:null', or causes a later NPE.",
+   "path": null,
+   "members": [
+    "c1",
+    "c3",
+    "c7",
+    "c10",
+    "c45",
+    "c50",
+    "c54"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The isAccessTokenId matcher throws StringIndexOutOfBoundsException for prefixes shorter than 5 characters instead of returning false.",
+   "path": null,
+   "members": [
+    "c2",
+    "c18",
+    "c57"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The isAccessTokenId matcher extracts the grant shortcut with substring(3, 5). The grant shortcut sits at positions 4-5 of the 2+2+2 prefix, so the correct call is substring(4, 6).",
+   "path": null,
+   "members": [
+    "c9",
+    "c22",
+    "c41",
+    "c47",
+    "c11",
+    "c30"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The isAccessTokenId matcher has inverted logic: it returns false when the extracted value equals the expected grant shortcut, so it rejects correct tokens and accepts wrong grant shortcuts.",
+   "path": null,
+   "members": [
+    "c14",
+    "c19",
+    "c24",
+    "c53",
+    "c42"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "V1/legacy, federated and impersonation token-exchange tokens are encoded with grant 'na' because these paths never set Constants.GRANT_TYPE (AbstractTokenExchangeProvider.java:410).",
+   "path": "AbstractTokenExchangeProvider.java",
+   "members": [
+    "c4",
+    "c44"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "Client-credentials access tokens are encoded with grant 'na' instead of 'cc'. ClientCredentialsGrantType builds tokens via tokenManager.responseBuilder(...).generateAccessToken() and never sets Constants.GRANT_TYPE on the client session context.",
+   "path": null,
+   "members": [
+    "c8",
+    "c36"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "UMA/permission-grant tokens are encoded with grant 'na' instead of 'pg' because AuthorizationTokenService.java:358 never sets Constants.GRANT_TYPE.",
+   "path": "AuthorizationTokenService.java",
+   "members": [
+    "c21",
+    "c28"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The factory builds HashMaps for the 3- and 4-value enums SessionType and TokenType, where a static fromShortcut method on the enum would do.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "AbstractOIDCProtocolMapper.getShouldUseLightweightToken reads the requesting client rather than the token's client.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "AbstractOIDCProtocolMapper.getShouldUseLightweightToken is now invoked for every access token and dereferences session.getContext().getClient(). A context without a client causes an NPE even when no mappers run.",
+   "path": null,
+   "members": [
+    "c35"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The Dependabot label 'area/dependencies' does not exist.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The Dependabot label 'area/ci' does not exist.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The test catches generic RuntimeException instead of the specific IllegalArgumentException thrown by the parser, so it also passes on unrelated failures such as IndexOutOfBoundsException or NullPointerException.",
+   "path": null,
+   "members": [
+    "c13",
+    "c15"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "session.getProvider(TokenContextEncoderProvider.class) is used without a null check, so an NPE occurs during token issuance if the provider is not registered.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "OAuth2GrantType.Context captures grantType from formParams once at construction. setFormParams() does not refresh it, so getGrantType() can return stale data.",
+   "path": null,
+   "members": [
+    "c17",
+    "c23"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "getShortcut() is added to OAuth2GrantTypeFactory as an abstract method with no default. Custom grant factories compiled against the old interface throw AbstractMethodError in DefaultTokenContextEncoderProviderFactory.postInit.",
+   "path": null,
+   "members": [
+    "c20",
+    "c49",
+    "c55"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "Token ID decoding requires an exact 6-character 2+2+2 prefix. However, the getShortcut() javadoc says shortcuts are usually 3 letters, and nothing validates that shortcuts are 2 characters. Custom grants with 3-letter shortcuts therefore produce IDs that getTokenContextFromTokenId rejects.",
+   "path": null,
+   "members": [
+    "c25",
+    "c46",
+    "c52",
+    "c37"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "The new unit test calls org.junit.Assert.assertEquals with the actual and expected arguments swapped, contrary to docs/tests-development.md.",
+   "path": "docs/tests-development.md",
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "An outdated comment saying 'starts at 4th char' is left over from the earlier 3-letter encoding.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "The commit format breaches CONTRIBUTING.md: there are two commits instead of one, ee2491268a uses lowercase 'closes #37118', and daffb05b5a has no issue link.",
+   "path": "CONTRIBUTING.md",
+   "members": [
+    "c29"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "grantsToShortcuts duplicates sessionFactory.getProviderFactory(OAuth2GrantType.class, gt) with a hand-maintained, unsynchronised cache that can go stale on undeploy.",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The lazy/hot-deploy refresh paths in getGrantTypeByShortcut (lines 106-137) add entries without the duplicate-shortcut check that postInit performs, so a custom grant can overwrite an existing shortcut mapping.",
+   "path": null,
+   "members": [
+    "c32",
+    "c33"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "The access-token jti and event token_id format changes from a bare UUID to '<ss><tt><gg>:<uuid>' with no upgrade/release note, as required by PR-CHECKLIST.md.",
+   "path": "PR-CHECKLIST.md",
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "The @Column(name='ID', length = 36) annotation is shorter than the new 43-character access-token IDs.",
+   "path": null,
+   "members": [
+    "c38"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "The shortcut maps include UNKNOWN 'un' entries, so decode accepts IDs like 'ununna:x' that encodeTokenId refuses to encode.",
+   "path": null,
+   "members": [
+    "c40"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The public Context(Context) copy constructor was removed from the grant SPI.",
+   "path": null,
+   "members": [
+    "c43"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "A null return from OAuth2GrantTypeFactory.getShortcut() causes an NPE from ConcurrentHashMap.put in postInit.",
+   "path": null,
+   "members": [
+    "c48",
+    "c56"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "Constants.GRANT_TYPE is a pure alias of OAuth2Constants.GRANT_TYPE, and the patch uses both inconsistently: OAuth2GrantType.Context reads OAuth2Constants.GRANT_TYPE, while grants and TokenManager write Constants.GRANT_TYPE.",
+   "path": null,
+   "members": [
+    "c51"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:118-119 does `const [mainHostDestinationCalendar] = evt.destinationCalendar ?? []` and then reads `mainHostDestinationCalendar.integration` with no `?.`. When there is no destination calendar (handleNewBooking can set it to null or []) and the location is Google Meet, this throws a TypeError where the old code fell back to Cal Video. It is the only unguarded site, not several: the googlecalendar, lark, office365, lib/CalendarService and BrokenIntegrationEmail destructurings all use `?.` or a guard.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1914261
+}

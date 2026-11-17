@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The Javadoc on `canManage()` at services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:73-78 says \"For V2 only: Also if it has permission to VIEW or MANAGE groups\". The implementation matches it: GroupPermissionsV2.java:65-71 checks `hasPermission(null, VIEW, MANAGE)`, and `requireManage()` gates top-level group creation at GroupsResource.java:181.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2627115
+}

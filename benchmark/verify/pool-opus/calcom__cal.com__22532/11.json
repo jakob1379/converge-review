@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The new scripts/test-gcal-webhooks.sh (patch lines 528-612) sets GOOGLE_WEBHOOK_URL, which CalendarService.ts:41-42 uses as the address for Google Calendar webhooks. The webhook handler packages/app-store/googlecalendar/api/webhook.ts:43-46 refreshes the calendar cache through fetchAvailabilityAndSetCache, so the script is a local test tool for the cache-update flow.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09280890000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "MgmtPermissionsV2.java:29 declares `private ClientPermissionsV2 clientPermissions`, which hides `protected ClientPermissions clientPermissions` at MgmtPermissions.java:76. It does no harm, because the base field is only touched inside the overridden clients() (MgmtPermissions.java:222-224), and the patch follows the existing userPermissions pattern (MgmtPermissionsV2.java:27).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.07374510000000001
+}

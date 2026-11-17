@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In scheduleEmailReminders.ts:53-77, each SendGrid cancel is awaited in turn (line 57) inside one try, and the catch at line 75 only logs. The first throw ends the loop and skips the `Promise.all` at line 74, so the lazy `prisma.workflowReminder.delete` calls from line 66 never run and earlier rows keep `cancelled: true` for the next run. Whether SendGrid rejects a second cancel, which would leave one row failing on every run, cannot be checked from this repository.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15282079999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`operation?: RuleOperation` is declared at GrafanaRuleListItem.tsx:22 and forwarded to AlertRuleListItem at :60, but the only two callers (GrafanaGroupLoader.tsx:70-77 and FilterView.tsx:157-162) never pass it, so it is always undefined. The patch removed the previous `operation={RuleOperation.Creating/Deleting}` call sites while keeping the prop in the new file.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1615958
+}

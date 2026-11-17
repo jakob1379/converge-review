@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "shardQuerySplitting.ts:52 calls applyTemplateVariables once per target, and each of the 4 shard sub-requests goes through runSplitQuery (shardQuerySplitting.ts:163), which interpolates again (querySplitting.ts:296-299 in the patch). That makes 1+4=5 calls, and the count at shardQuerySplitting.test.ts:112 is tied to that internal detail, while the runQuery payload assertions at test lines 114-160 already check what is actually sent.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0898597
+}

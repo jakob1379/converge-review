@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "integration.py:404-408 puts client_id, state and the raw absolute_uri(reverse(...)) result straight into an f-string with no URL encoding, while oauth2.py:250 builds the same kind of authorize URL with urlencode(params). The new test at test_integration.py (patch lines 313-316) checks for the unencoded 'redirect_uri=http://testserver/extensions/github/setup/', so it would have to change along with a fix.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1205254
+}

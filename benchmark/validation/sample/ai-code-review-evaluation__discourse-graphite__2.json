@@ -1,0 +1,38 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The unsubscribe endpoint is a GET route whose action changes and saves TopicUser.notification_level without CSRF protection or a signed token, so a third-party page (e.g. via <img src=.../unsubscribe>) can change a logged-in user's notification level for any topic they can see.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In TopicsController#unsubscribe, TopicUser.find_by can return nil when the user has no topic_users row for the topic. The next line calls tu.notification_level without a nil check, which raises and returns a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TopicsController#unsubscribe calls tu.save! directly instead of TopicUser.change. As a result, notifications_reason_id/notifications_changed_at are not set and the MessageBus notification_level_change publish is skipped, so update_last_read auto-tracking can later overwrite the user's choice.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

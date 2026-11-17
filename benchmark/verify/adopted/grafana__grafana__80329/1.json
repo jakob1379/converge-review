@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the ticker in pkg/services/cleanup/cleanup.go:77 from time.Minute * 10 to time.Minute * 1, and nothing in it explains why. That ticker drives all 8 cleanup jobs in clean(), and the per-run timeout at cleanup.go:89 is still 9 * time.Minute, so a slow run can be followed almost at once by the next one.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0539052
+}

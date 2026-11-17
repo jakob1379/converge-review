@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes `update_patch` and the `request.patch?` dispatch, so `update` at app/controllers/admin/groups_controller.rb:34-47 no longer reads `params[:changes]`. A PATCH still routes there via `resources :groups` (config/routes.rb:45), returns success, adds or removes nobody, and resets `visible` to false at line 38; the patch adds no deprecation note, changelog or docs pointing to the new PUT/DELETE `members` routes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3761003
+}

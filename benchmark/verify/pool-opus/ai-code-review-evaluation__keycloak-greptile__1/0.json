@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "UsernamePasswordForm.java:160-161 returns `webauthnAuth != null && isPasskeysEnabled() && user != null`, so on the first login page (getUser()==null) the calls at :115 and :137 skip webauthnAuth.fillContextForm, which is what sets ENABLE_WEBAUTHN_CONDITIONAL_UI (WebAuthnConditionalUIAuthenticator.java:43). The old code ran it exactly when the user was null; UsernameForm reaches the same path through the inherited authenticate/challenge.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2061181
+}

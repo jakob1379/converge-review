@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The method at InfinispanIdentityProviderStorageProvider.java:391-418 is 28 lines with 12 of Javadoc (391-402), and its FetchMode loop (415-417) duplicates the one in registerIDPLoginInvalidation (385-387). It has four getLoginPredicate().test() call sites (405, 409), though short-circuiting means at most three run per update, so \"up to four\" is overstated by one.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2082554
+}

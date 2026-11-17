@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/app-store/_utils/oauth/refreshOAuthTokens.ts:8-14, the fetch to CALCOM_CREDENTIAL_SYNC_ENDPOINT sends only calcomUserId and appSlug as a URLSearchParams body, with no headers and no secret or signature. That is true even though the same patch adds CALCOM_WEBHOOK_SECRET and CALCOM_WEBHOOK_HEADER_NAME and checks them only on the inbound webhook (change.patch:62-63).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0425127
+}

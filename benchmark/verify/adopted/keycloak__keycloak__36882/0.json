@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The operator never checks the `rolling-updates` feature. UpgradeLogicFactory.java:35-43 picks its logic from UpdateSpec.findUpdateStrategy alone, and nothing in operator/src/main mentions rolling-updates, ROLLING_UPDATES or update-compatibility. The patch only gates the CLI commands (UpdateCompatibilityCheck/Metadata run()), so the CAUTION at advanced-configuration.adoc:446-450 saying the Operator 'will fail' is wrong.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12850029999999998
+}

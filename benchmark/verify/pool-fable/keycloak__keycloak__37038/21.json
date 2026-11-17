@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`init()` returns as soon as `realm.getAdminPermissionsClient() != null` (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:250-252), and it is the only code that creates the schema's scopes and type resources; the patch adds the `Groups` type (line 79) but touches no migration code, and nothing under any `migration` package references the admin-permissions schema. In such a realm `getResourceTypeResource` returns null for Groups, which `GroupPermissionsV2.hasPermission` passes to `policyStore.findByResource` (JPAPolicyStore.java:215 dereferences `resource.getId()`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.8384509
+}

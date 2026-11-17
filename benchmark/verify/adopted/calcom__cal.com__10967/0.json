@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:118 gives `mainHostDestinationCalendar` the value undefined when `evt.destinationCalendar` is null or [], and handleNewBooking.ts:1063-1067 passes null when no calendar is set. Line 119 then reads `.integration` without `?.` whenever the location is Google Meet, so it throws a TypeError where the old `evt.destinationCalendar?.integration` fell back to Cal Video.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0571082
+}

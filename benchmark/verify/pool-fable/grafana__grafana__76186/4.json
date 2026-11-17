@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The unguarded `req.PluginContext` dereferences exist (contextual_logger_middleware.go:40,45,50,55), but a nil request cannot reach them: the only entry point, `Decorator`, returns `errNilRequest` before building the chain (pkg/plugins/manager/client/decorator.go:30,40,53,62). `TracingMiddleware` and `MetricsMiddleware`, which run earlier in the chain, dereference `req` unguarded too (tracing_middleware.go:85, metrics_middleware.go:146), so the 'other middlewares guard' premise is only partly true.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5585772
+}

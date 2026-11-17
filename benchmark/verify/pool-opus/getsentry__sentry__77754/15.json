@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`source_name` is set in src/sentry/integrations/services/assignment_source.py:23 and sent to the task through `to_dict()` (utils/sync.py:141), but nothing in src/ reads `.source_name`. `should_sync` (mixins/issues.py:35) compares only `sync_source.integration_id`. One correction: the field is not in every task payload, only when an assignment source is given; otherwise the task gets None.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1037084
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The route's model hook (app/assets/javascripts/discourse/routes/topic-unsubscribe.js.es6:6) calls PostStream.loadTopicView, which without preloaded data fetches /t/<id>.json (post-stream.js.es6:821-822), and config/routes.rb:412 maps that to topics#show, not topics#unsubscribe. The template (templates/topic/unsubscribe.hbs:3) still renders the 'You will stop receiving notifications' text; only a full page load hits the server action, and in-app routing is reachable via lib/click-track.js.es6:100 or back/forward.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5490151999999999
+}

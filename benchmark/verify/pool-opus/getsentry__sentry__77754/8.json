@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "ExampleIntegration.sync_status_outbound at src/sentry/integrations/example/integration.py:161 does lack **kwargs, but nothing passes it assignment_source. The patch only adds the parameter to the abstract signature in mixins/issues.py, and the only caller (src/sentry/integrations/tasks/sync_status_outbound.py:44-46) still passes just three positional arguments, so no TypeError can occur.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1027125
+}

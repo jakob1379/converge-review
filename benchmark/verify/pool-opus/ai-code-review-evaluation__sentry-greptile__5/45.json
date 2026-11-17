@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In useTraceItemAttributeKeys.tsx:26-33 the new useQuery call omits staleTime:0 and retry:false; staleTime 0 is already the default, so the real change is that failed requests now retry. That file also returns `isLoading: isFetching` and builds a fresh `projects.map(...)` array every render, which the useMemo/useCallback hooks list as a dependency. In useGetTraceItemAttributeKeys.tsx the catch block throws `new Error(`...${e}`)`, which loses responseJSON; the options are built a second time inside the callback; and `queryFn: () => getTraceItemAttributeKeys()` is the only caller, so the search parameter is never passed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4797714
+}

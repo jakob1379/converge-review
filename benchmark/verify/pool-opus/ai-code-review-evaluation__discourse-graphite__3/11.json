@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "app/models/user.rb:84-91 does assign params[:email] as-is, but that code is unchanged by the patch, and Email.downcase is used in many places (user.rb:127, invite.rb:20, session_controller.rb:17/60, users_controller.rb:269, topic.rb:410), so the claim that it is unused is wrong.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0904501
+}

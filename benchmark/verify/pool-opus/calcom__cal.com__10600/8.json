@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The block at disable.ts:48-64 repeats, nearly line for line, the logic the patch adds to packages/features/auth/lib/next-auth-options.ts:637-651: the encryption-key guard (with the same 'backup code login' message), the missing-codes guard, JSON.parse of symmetricDecrypt, and indexOf on replaceAll('-', ''). Only the error handling differs: disable.ts returns an HTTP 400, while the auth options throw.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.15434130000000001
+}

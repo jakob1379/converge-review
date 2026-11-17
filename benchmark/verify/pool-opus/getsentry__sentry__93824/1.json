@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In flusher.py (patch line 303), process.kill() only runs if `isinstance(process, multiprocessing.Process)` is true. On POSIX, CPython defines `SpawnProcess` as a subclass of `process.BaseProcess`, not of `multiprocessing.context.Process`, so this check is always false for the processes created by `mp_context.Process` (line 163). As a result, a hung process is left running while `_create_process_for_shards` starts a replacement, whereas the old code called `self.process.kill()` unconditionally.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1089421
+}

@@ -1,0 +1,60 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch skips the only postgres integration test of storage-server startup and /metrics instead of fixing it. This removes coverage for a supported backend and hides the startup failure that eager Init exposes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The function-wide cacheMu lock was removed from BuildIndex, so concurrent callers (e.g. a Search request and handleEvent via getOrCreateIndex) can build the same key at once. The last writer wins, one built index goes untracked or its documents are lost, and file-backed indexes can be created concurrently in the same directory.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Eager Init runs inside the wire graph for every Grafana process on context.Background() with no deadline. A DB or search failure or hang now blocks Grafana startup.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is an untracked TODO about the RV short-circuit optimization.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When Init fails, NewResourceServer returns (nil, err) without calling cancel() or lifecycle.Stop. This leaks the context, and if search.init succeeded before initWatcher failed, it also leaks the search watch goroutine and its sql poller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

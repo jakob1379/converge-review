@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/app-store/wipemycalother/lib/reschedule.ts:125-128 the patch makes the forEach callback async and awaits getCalendar. getCalendar is now async (packages/app-store/_utils/getCalendar.ts:9), so a failed dynamic app import or a throw from the `new CalendarService(credential)` constructor (line 22) becomes a rejected promise that forEach discards. The try/catch at lines 124-139 used to catch these errors synchronously and log them; now they skip logger.error and surface as unhandled rejections.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.08382419999999999
+}

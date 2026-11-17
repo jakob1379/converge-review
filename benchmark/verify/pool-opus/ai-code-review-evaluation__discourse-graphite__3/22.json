@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new spec/components/validators/email_validator_spec.rb:1-23 only tests the BlockedEmail path with a fixed non-blank email. The whitelist and blacklist tests in spec/models/user_spec.rb:494-565 always use non-blank emails, and no spec builds a user with a nil or blank email while those settings are stubbed, so nothing tests EmailValidator#validate_each (lib/validators/email_validator.rb:3-16) with a nil or blank value.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.104849
+}

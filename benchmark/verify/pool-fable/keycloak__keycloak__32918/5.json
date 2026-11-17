@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The re-filter at OrganizationAwareIdentityProviderBean.java:75 and :80 is tied to the patch's own change: the new cached getForLogin (InfinispanIdentityProviderStorageProvider.java:214-255) returns org-aware wrapped models whose isEnabled() also depends on the organization being enabled (lines 432-445). The login cache is not invalidated when an org is disabled, so the only consumer of getForLogin must re-check isEnabled(); it is not an unrelated edit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4646317
+}

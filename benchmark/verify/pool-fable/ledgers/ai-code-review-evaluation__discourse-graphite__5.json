@@ -1,0 +1,401 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The align-items mixin emits `-ms-align-items`, which is not a real CSS property in any IE/Edge version. IE10/11 use `-ms-flex-align`, which the mixin already emits on line 120, so the `-ms-align-items` line is dead output.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/stylesheets/common/foundation/mixins.scss:121 emits `-ms-align-items: $alignment;` right after `-ms-flex-align` on line 120. No IE/Edge version implements `-ms-align-items` (IE10 uses `-ms-flex-align`, IE11 and Edge the unprefixed `align-items`), so the line is ignored by every browser; this rests on known browser behaviour, not a test run.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.09406439999999999
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The align-items mixin body is indented 4 spaces, while the other new mixins use 2. This conflicts with CONTRIBUTING.md and .editorconfig indent_size=2.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/stylesheets/common/foundation/mixins.scss:117-123 indents the align-items mixin body 4 spaces, while the other new mixins (flexbox :100-106, inline-flex :108-114, order :125+) use 2; .editorconfig:10-11 sets indent_size = 2 and CONTRIBUTING.md:48 says \"two spaces, no tabs\".",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1275658
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The mixins pass values unchanged to legacy properties. `-webkit-box-align` and `-ms-flex-align` need start/end rather than flex-start/flex-end, so a call like align-items(flex-start) would emit invalid legacy CSS.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/stylesheets/common/foundation/mixins.scss:117-123 passes `$alignment` verbatim to `-webkit-box-align` and `-ms-flex-align`, which accept start/end rather than flex-start/flex-end, so `align-items(flex-start)` would emit invalid legacy declarations. The problem is latent only: every current caller passes `center` or `baseline` (header.scss:18, topic-post.scss:265, badges.css.scss:57), which are valid in both syntaxes.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1267617
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The order mixin passes `$val` directly to `-webkit-box-ordinal-group` and `-moz-box-ordinal-group`. Those legacy properties are 1-based, while `order` is 0-based, so ordering in older WebKit/Firefox is off by one, and a value of 0 is invalid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/stylesheets/common/foundation/mixins.scss:125-131 passes `$val` unchanged to `-webkit-box-ordinal-group` and `-moz-box-ordinal-group` (initial value 1, positive integers only) alongside `order` (initial value 0), so the mapping is off by one and `order(0)` would emit an invalid legacy value. The only callers, topic.scss:30 (`order(2)`) and header.scss:39 (`order(3)`), still sort after unordered siblings in both models, so the defect is latent and nothing renders wrongly today.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1340692
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "mobile/topic-post.scss",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`.small-action-desc` padding changed from `0.5em 0 0.5em 4em` to `0 1.5%`, but the mobile rule `.small-action .custom-message { margin-left: -40px }` (mobile/topic-post.scss) was not updated. The custom message is now pulled about 40px left, over the `.topic-avatar` icon or past the container's left edge.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch makes `.small-action` a flex container and cuts `.small-action-desc` padding to `0 1.5%` (common/base/topic-post.scss:264-265, 280), while the untouched mobile rule still sets `.custom-message { margin-left: -40px }` (mobile/topic-post.scss:520-522). That offset used to be absorbed by the old 4em left padding; now the message starts about 40px inside the 45px-wide `.topic-avatar` flex item (common/base/topic-post.scss:273), which is vertically centred beside it, so the text runs under the icon.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.30151659999999997
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The message of commit 5b229316ee has only a summary line and no body, even though the commit also changes small-action spacing and badge margins. This is contrary to the commit section of CONTRIBUTING.md.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "The commit message of 5b229316ee cannot be read here: change.patch is a bare diff with no commit header or message (it starts at `diff --git` on line 1), and the git metadata directory was not readable. CONTRIBUTING.md:61-63 does require a summary line plus a detailed body, and the patch does touch small-action spacing (topic-post.scss, change.patch:37-59) and badges.css.scss (change.patch:90), but whether the message lacks a body is not settled by the source.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.20432060000000002
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`align-items:$alignment;` has no space after the colon.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/stylesheets/common/foundation/mixins.scss:122 reads `align-items:$alignment;` with no space after the colon, unlike the sibling declarations at lines 118-121; the line is added by this patch. It is purely stylistic, since SCSS compiles it identically.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0843533
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "header.hbs",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`.contents` in header.hbs still has the `clearfix` class. Now that it is a flex container, the clearfix `::before`/`::after` pseudo-elements become empty flex items and the `clear: both` has no effect.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/javascripts/discourse/templates/header.hbs:2 still has `class='contents clearfix'`, and the patch makes `.d-header .contents` a flex container (app/assets/stylesheets/common/base/header.scss:14-19), so the `.clearfix` `:before`/`:after` pseudo-elements (app/assets/stylesheets/common/foundation/helpers.scss:53-62) become zero-size flex items and `clear: both` does nothing. The leftover is redundant and has no visible layout effect, since no `justify-content` or `gap` is set.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2222755
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Third-party themes or plugins that rely on `.d-header .title {float:left}` or `.panel {float:right}`, or that add floated children to `.contents`, will change layout, because floats are ignored inside the flex container.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch makes `.d-header .contents` a flex container (app/assets/stylesheets/common/base/header.scss:14-19) and drops `float: left` from `.title` and `float: right` from `.panel` (header.scss:35-40), so floats on direct children of `.contents` no longer apply. The effect on third-party themes is a hypothetical compatibility risk only: nothing in this repository (including `plugins/`) styles or adds floated children to the header.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2513865
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The mobile rule `.small-action.time-gap .topic-avatar { margin-top: -5px }` was tuned for the float layout. Under the new `align-items: center` on `.small-action`, it shifts the time-gap clock icon 5px above centre.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The untouched mobile rule at app/assets/stylesheets/mobile/topic-post.scss:530-532 still applies `margin-top: -5px` to the time-gap `.topic-avatar`, which is now a flex item of `.small-action` centred by the patch at app/assets/stylesheets/common/base/topic-post.scss:264-265, so the clock icon sits above the centred description text. The offset from centre is about 2.5px rather than the claimed 5px, because flex centring acts on the margin box (my reading of the CSS, not rendered).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.39782140000000005
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The mobile override `.small-action-desc p { padding-top: 0 }` is now dead, because the patch removed the base `p { padding-top: 4px }` it was cancelling.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch deletes `padding-top: 4px` from `.small-action-desc > p` (app/assets/stylesheets/common/base/topic-post.scss:301-303), and no other stylesheet rule sets padding on a `p` inside `.small-action-desc`. The mobile override `p { padding-top: 0 }` at app/assets/stylesheets/mobile/topic-post.scss:517-519 therefore resets a value that is already the default and has no effect.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3305654
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "header.hbs",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The order mixin and both order() calls could be replaced by moving the header-extra-info block above .panel in header.hbs. Reordering with CSS makes Tab order differ from visual order.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In `app/assets/javascripts/discourse/templates/header.hbs:6-95` the DOM order is home-logo, `.panel`, then `header-extra-info`, and the only `order()` uses (`common/base/header.scss:39`, `common/base/topic.scss:30`) exist to draw the focusable topic link between logo and panel, so Tab order differs from visual order. Moving the block above `.panel` (which keeps `margin-left: auto`) gives the same layout without them; the same mismatch already existed under the old float layout, so it is not a regression.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.47034580000000004
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`.small-action` is now a flex container and `.small-action-desc` is a flex item without flex-grow, so it shrink-wraps its text. The float:right edit/delete buttons inside it now sit next to the text instead of at the right edge of the row.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch makes `.small-action` a flex container (app/assets/stylesheets/common/base/topic-post.scss:263-265) and `.small-action-desc` (279-280) gets no flex-grow or width anywhere in the stylesheets, so it shrink-wraps; the `float: right` buttons (306-310) are children of that div (templates/components/small-action.hbs:2-9) and so float only to its edge, next to the text, unless a long custom message stretches the box. Read from the CSS, not rendered in a browser.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.26070570000000004
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Making `.d-header .contents` a flex container breaks long-title handling in the docked desktop header. The extra-info flex item keeps min-width:auto and the default flex-shrink, so a long nowrap `.topic-link` no longer ellipsizes. It either squeezes .panel until its icons wrap inside the 60px header or pushes .panel past the right edge.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch makes `.d-header .contents` a flex container and removes the floats (app/assets/stylesheets/common/base/header.scss:14-19, 35-40), but the flex item for the title is the classless Ember wrapper div of `{{header-extra-info}}` (templates/header.hbs:94; components/header-extra-info.js.es6:1 sets no tagName), not `.extra-info-wrapper`, whose `overflow: hidden` (desktop/topic-post.scss:518-519) therefore no longer constrains width. With no `min-width: 0` or flex rule anywhere for that item, the nowrap `.topic-link` (desktop/topic-post.scss:532-538) holds it at full title width, so `.panel` is squeezed or overflows; derived from CSS flex rules, not observed in a browser.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5592606
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "topic.scss",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`@include order(2)` on `.extra-info-wrapper` (topic.scss:29) has no effect. `.extra-info-wrapper` is a grandchild of the flex container, inside the header-extra-info ember-view div, and `order` only applies to direct children.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`.extra-info-wrapper` is the root element of the header-extra-info template (header-extra-info.hbs:1), and the component (header-extra-info.js.es6:1) sets no `tagName`, so Ember wraps it in a default `div.ember-view`; that wrapper, not `.extra-info-wrapper`, is the flex item of `.d-header .contents` (header.hbs:94, header.scss:14-19), so `order(2)` at topic.scss:30 does nothing. Visual order is still correct because `.panel` has `order(3)` (header.scss:39) and the wrapper defaults to 0, so the rule is only dead code.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2472979
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`.small-action` is now a flex container, yet its children (`.topic-avatar`, `.avatar`, `button`) still use `float: left`/`float: right`. Floats are ignored on flex items, so these declarations, such as float:left on `.topic-avatar`, are dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Only partly right: the patch makes `.small-action` a flex container (app/assets/stylesheets/common/base/topic-post.scss:264-265) and its direct child `.topic-avatar` keeps `float: left` (line 270), which is ignored on a flex item. But `.avatar` (line 298) and `button` (line 309) sit inside the non-flex `.small-action-desc` (app/assets/javascripts/discourse/templates/components/small-action.hbs:2-12), so their floats still apply and are not dead.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2664629
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the 2009 `display:-webkit-box` model (Safari 5.1, Android <=4.3, iOS <=6), auto margins are not honoured. With the float:right fallback removed, `margin-left:auto` on .panel no longer right-aligns it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "After the patch, `.d-header .panel` relies only on `margin-left: auto` (app/assets/stylesheets/common/base/header.scss:35-40) inside a `.contents` that the `flexbox()` mixin sets to `display: -webkit-box` for legacy engines (header.scss:17, common/foundation/mixins.scss:120-126), with the old `float: right` removed and no `-webkit-box-pack`/`box-flex` fallback anywhere in the mixins. The legacy-engine behaviour itself is not testable from the repo: I am relying on the known fact that the 2009 box model does not distribute free space to auto margins the way modern flexbox does, so the panel is not correctly right-aligned there.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3495071
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The align-items() mixin emits no `-moz-box-align`, although flexbox() emits `display:-moz-box`. Old-box-model Firefox therefore stretches items instead of centring them.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/stylesheets/common/foundation/mixins.scss:117-123 emits only `-webkit-box-align`, `-webkit-align-items`, `-ms-flex-align`, `-ms-align-items` and `align-items`, with no `-moz-box-align`, while flexbox() at mixins.scss:102 emits `display: -moz-box`; no autoprefixer is in the Gemfile or config to add it. Only Firefox older than 22 (which lacks unprefixed `display: flex`) falls back to the old box model and its default stretch alignment \u2014 that part is from browser knowledge, not run here.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.23506929999999995
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Zeroing `p` margins inside `.custom-message` removes paragraph spacing, so multi-paragraph cooked messages collapse into one block.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes `.small-action-desc .custom-message p` from `margin: 5px 0` to `margin: 0` (app/assets/stylesheets/common/base/topic-post.scss:291-293), and that div renders `{{{post.cooked}}}` (app/assets/javascripts/discourse/templates/components/small-action.hbs:16), so consecutive cooked paragraphs get no vertical gap; no other stylesheet rule restores it. Paragraphs still break onto separate lines, so the effect is purely cosmetic.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.24650930000000001
+   }
+  },
+  {
+   "issue": "i20",
+   "path": "_header.html.erb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The PR removes the float-based right alignment of `.d-header .panel` and relies on `margin-left: auto`/order. In the ERB/no-ember/noscript header (`_header.html.erb`), `.panel` is nested inside a float-based Bootstrap `.row` and is not a flex item, so it no longer right-aligns.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In `app/views/application/_header.html.erb:3-15` the `.panel` sits inside `.row`, which is the only flex item of the now-flex `.contents`, so the `margin-left: auto` and `order(3)` at `app/assets/stylesheets/common/base/header.scss:35-39` do nothing for it. With `float: right` removed, the login button (itself `float: left`) lands beside the left-floated `.title.span13` instead of at the right edge; traced from the CSS, not rendered.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4535707
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is trailing whitespace after `-ms-flex-align: $alignment;`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/stylesheets/common/foundation/mixins.scss:120 reads `    -ms-flex-align: $alignment;  ` with two trailing spaces (matched by the regex `;[ \\t]+$`), and the line is an added line in the patch (change.patch:140).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0717964
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit message says 'adding flexbox to header', but the patch also re-lays out `.small-action` post-stream rows and rewrites their spacing. This is contrary to the one-feature-per-branch rule in CONTRIBUTING.md.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch converts `.small-action` to flexbox and rewrites its padding/margins (app/assets/stylesheets/common/base/topic-post.scss:263-303) alongside the header flexbox change (common/base/header.scss:14-39), and CONTRIBUTING.md:40 does say \"one feature or bug-fix per branch\". The commit message itself is not in the patch and I could not read it, so the quoted wording is unchecked; this is a process/scope nit, not a code defect.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.18519239999999998
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

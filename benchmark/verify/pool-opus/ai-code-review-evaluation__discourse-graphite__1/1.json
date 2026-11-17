@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:55 now calls FileHelper.download(url, 10.megabytes, ...) where it used to pass SiteSetting.max_image_size_kb.kilobytes, so the configured limit is ignored. FileHelper.download stops reading once the file passes the cap (lib/file_helper.rb:18), so URL uploads over about 10 MB end up truncated even on sites that allow more; downloading past a smaller limit seems intended, since the new downsize loop shrinks the file afterwards.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.065856
+}

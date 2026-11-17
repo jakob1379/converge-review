@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`isConditionalPasskeysEnabled(UserModel user)` at services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java:160-162 only tests `user != null` plus the realm passkeys flag, so on re-authentication `fillContextForm` (lines 115-116, 137-139) always sets `enableWebAuthnConditionalUI`, which is what makes passkeys.ftl:2 render the passkey form. Nothing else checks the user's credentials, because WebAuthnConditionalUIAuthenticator.java:65-67 makes `shouldShowWebAuthnAuthenticators` return false, skipping the lookup in WebAuthnAuthenticator.java:101-107.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6198436
+}

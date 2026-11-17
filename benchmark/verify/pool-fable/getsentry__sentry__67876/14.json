@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/github/integration.py:438 binds only `authenticated_user_info[\"login\"]` and :501-505 compares it to `integration.metadata[\"sender\"][\"login\"]`, although the stable `sender.id` is stored alongside it at src/sentry/integrations/github/webhook.py:204-206 and `/user` also returns `id`. A user who renames their GitHub account between the install webhook and linking would therefore hit the \"Invalid installation request\" error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.28243399999999996
+}

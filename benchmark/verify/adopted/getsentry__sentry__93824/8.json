@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At flusher.py:144, `shard_tag` is set to `\",\".join(map(str, shards))`, and lines 185 and 195 use it as the `shard` tag. With the default `--flusher-processes=1`, one process holds every partition index from factory.py:67, so the tag value changes with each rebalance's assignment. Line 244 tags a single int under `shard`, while buffer.py:372 and buffer.py:447 use `shard_i` for the same concept.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1574189
+}

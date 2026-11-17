@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In OAuthLoginView.dispatch (src/sentry/integrations/github/integration.py, added in the patch), safe_urlopen() is called before the try block and get_user_info() is called with no try at all. get_user_info calls resp.raise_for_status() (src/sentry/identity/github/provider.py:16), and nothing catches errors on the way up through Pipeline.dispatch_to (src/sentry/pipeline/base.py:196) or PipelineAdvancerView. So network errors and a non-2xx from /user become a 500 instead of the error() page. One part of the claim is overstated: safe_urlopen does not raise on a non-2xx token response, which ends up on error() because no access_token is found.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1460128
+}

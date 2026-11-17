@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Every mode-3 test builds both mocks from one `m := &mock.Mock{}` (pkg/apiserver/rest/dualwriter_mode3_test.go:53-54, 112-113, 167-168, 221-222, 275-276, 333-334), so the 'legacy' Create expectation at line 40 is what satisfies the storage call in the error case, and the success-case setupLegacyFn blocks at lines 30 and 313 duplicate the storage expectations. The file contains no AssertExpectations/AssertNotCalled and no wait for the legacy goroutines started in dualwriter_mode3.go, so neither legacy writes nor legacy-free reads are verified.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.49937950000000003
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "parseRefreshTokenResponse.ts:199 switches to minimumTokenResponseSchema based only on APP_CREDENTIAL_SHARING_ENABLED and CALCOM_CREDENTIAL_SYNC_ENDPOINT, with no userId check. refreshOAuthTokens.ts:227 also requires userId, so team credentials (userId null) still refresh through the provider but are parsed with the minimal schema, which can strip fields such as expiry or refresh_token (e.g. googlecalendar CalendarService.ts:304).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0775029
+}

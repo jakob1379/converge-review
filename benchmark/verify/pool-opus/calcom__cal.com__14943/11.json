@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts around line 28, the comment still says only past-due SMS reminders are deleted. The deleteMany query below it now uses an OR that also deletes any reminder with retryCount > 1, and that branch is not even limited to SMS.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0372533
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the fixture BackwardsCompatibilityUserStorage.java, disableCredentialType (lines 217-224) only clears OTP and just logs other types, and getDisableableCredentialTypesStream (lines 255-264) only adds OTP. The patch makes the fixture store and report recovery codes (supportsCredentialType, updateCredential, getCredentials, isConfiguredFor) but has no way to disable or remove them.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1703552
+}

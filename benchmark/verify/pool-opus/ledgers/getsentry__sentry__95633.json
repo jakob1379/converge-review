@@ -1,0 +1,617 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The arroyo commit callable is invoked from the background _commit_loop thread rather than the consumer/StreamProcessor thread, so KafkaConsumer's unlocked stage_offsets/commit state is accessed concurrently with the main loop and rebalance callbacks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`SimpleQueueProcessingStrategy` starts a daemon thread running `_commit_loop` (queue_consumer.py:298-299), and that thread calls `self.commit_function(committable)` (queue_consumer.py:315). That function is `commit_offsets`, which calls arroyo's `commit` directly (result_consumer.py:469-472), so the commit runs off the StreamProcessor thread. I couldn't check arroyo's own source because it isn't vendored here, but its `StreamProcessor` commit stages offsets on the `KafkaConsumer` without any locking, so that state can be touched alongside the main poll loop and rebalance callbacks.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.25851820000000003
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The shared OffsetTracker is never reset or pruned on rebalance, so state for revoked partitions carries over. stage_offsets then raises ConsumerError for unassigned partitions, the error is swallowed, mark_committed never runs, and commits stall for every partition.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "OffsetTracker lives on the factory's FixedQueuePool (queue_consumer.py:208, result_consumer.py:424), so it survives rebalances, and nothing ever prunes partitions. After close() stops the commit thread (queue_consumer.py:364-366), the drained workers complete offsets that never get committed. The next strategy's _commit_loop then passes the revoked partition to commit together with the live partitions (queue_consumer.py:306-317). arroyo's stage_offsets rejects unassigned partitions with ConsumerError; arroyo is not vendored here, so that step is from its known behaviour. The except at :318 swallows the error, mark_committed never runs, and the same failing dict is retried every second.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.2799098
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OrderedQueueWorker.run calls complete_offset in its finally block, so offsets of items whose result_processor raised are still committed, contradicting the docstring 'Only commits offsets after successful processing'. test_thread_queue_parallel_error_handling asserts no commit after an error and passes only because it checks before the first 1s commit tick.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patched code, OrderedQueueWorker.run (patch lines 172-177) catches the processor exception and then calls complete_offset in `finally`, so the failed offset still becomes committable. That contradicts the 'Only commits offsets after successful processing' docstring (patch line 282). The test's assertion (patch line 1202) runs after about 0.2s of sleep, before _commit_loop's first 1s tick (line 304), so it passes only because of timing.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.09089670000000001
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The add_offset/complete_offset pair is duplicated in submit() on the filtered-payload path and the error path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In SimpleQueueProcessingStrategy.submit(), src/sentry/remote_subscriptions/consumers/queue_consumer.py calls add_offset then complete_offset once when result is None (~lines 302-303) and again in the except block (~lines 320-325). The two pairs differ only in whether they use the local variables or message.value.partition/offset, so this is duplicated logic.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.216384
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The magic number 50 for max_wait is repeated throughout the tests instead of being a named constant.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `max_wait = 50` as a separate local in three tests in tests/sentry/uptime/consumers/test_results_consumer.py (lines 1718, 1765 and 1812), plus `max_wait = 20` in three more (lines 1860, 1912 and 1961). The value is a local variable in each test, not a shared module-level constant.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0521913
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "New-mode tests are added as methods on ProcessResultSerialTest instead of a ProcessResultTest subclass with strategy_processing_mode set, so the full behavioural suite never runs in thread-queue-parallel mode. The Literal['batched-parallel','parallel','serial'] annotation is not extended.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new thread-queue-parallel tests are methods on ProcessResultSerialTest (tests/sentry/uptime/consumers/test_results_consumer.py, from ~line 1689). The only subclasses are the 'serial' one (line 1587) and the 'parallel' one (line 2009), so no ProcessResultTest subclass runs the full suite in thread-queue-parallel mode. The strategy_processing_mode annotation at line 74 is still Literal['batched-parallel','parallel','serial'], while the factory's own mode Literal was extended (result_consumer.py:406).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2320853
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Several tests create SimpleQueueProcessingStrategy, which starts a daemon commit thread, but only call factory.shutdown() and never strategy.close()/terminate(). This leaves commit threads running and makes commit assertions timing-dependent.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The strategy's `__init__` starts a daemon `_commit_loop` thread (queue_consumer.py:298-299), and only `close()` or `terminate()` sets `shutdown_event` to stop it (queue_consumer.py:363-370). Several new tests create the strategy and only call `factory.shutdown()`, which shuts down `queue_pool` but never closes the strategy: test_results_consumer.py `test_thread_queue_parallel*` (e.g. patch lines 977/1011, 1119/1152, 1221/1265) and test_queue_consumer.py:910/916. Their commit threads keep looping after the test ends; the 'timing-dependent' part mostly comes from the 1s commit interval, not from the leak.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2299924
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OffsetTracker.get_committable_offsets builds list(self.all_offsets.keys()) without a lock while submit threads can insert new partition keys, which can raise during iteration and break the commit loop.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In queue_consumer.py:102, `list(self.all_offsets.keys())` copies the keys in a single C-level pass, and CPython's GIL is not released mid-copy, so a concurrent insert from add_offset (line 87) cannot make it fail. Even if it did raise, `_commit_loop` catches every Exception (lines 318-319) and simply runs again on the next pass, so the commit loop would not break.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2237699
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The docstring of test_thread_queue_parallel_error_handling does not match the test implementation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The docstring at change.patch:1156 says errors don't block offset commits for other messages. The assertion at change.patch:1202 checks the opposite: no commit has happened for the partition yet. That passes only because the commit loop waits 1s per cycle (change.patch:304) and the test usually finishes first, so it never checks that offsets are committed after an error (the worker's finally block marks them complete at change.patch:177).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.087863
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The thread-queue-parallel Kafka test drives arroyo's private StreamProcessor methods (_run_once, _shutdown) and monkeypatches factory.create_with_partitions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/sentry/uptime/consumers/test_results_consumer.py, the new test ProcessResultThreadQueueParallelKafkaTest.test_thread_queue_parallel_kafka_offset_commit replaces factory.create_with_partitions with a tracking wrapper marked `# type: ignore[method-assign]` (patch lines 1348-1361). It then runs arroyo's StreamProcessor through the private methods `processor._run_once()` in a 5-second loop and `processor._shutdown()` (patch lines 1381-1386).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0740695
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "join(timeout) ignores its timeout parameter and calls close() again, which can block 5s for the commit thread plus 5s per busy worker, beyond the deadline arroyo passes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In queue_consumer.py, join(self, timeout=None) at lines ~344-345 simply calls self.close() and never uses timeout. close() joins the commit thread with timeout=5.0, then FixedQueuePool.shutdown() joins each worker in turn with timeout=5.0 (lines ~242-243), so a call that arroyo makes after close() can block about 5s plus 5s per busy worker, past the deadline arroyo passed in.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2184837
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Test cleanup that deletes the test topic uses try-except-pass, silently swallowing all exceptions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The cleanup in the test's `finally` block calls `admin_client.delete_topics([test_topic])` inside `try/except Exception: pass`, which hides every cleanup error (tests/sentry/uptime/consumers/test_results_consumer.py:2143-2146). The patch adds this code; it is not in the code being tested.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.05039400000000001
+   }
+  },
+  {
+   "issue": "i13",
+   "path": "test_results_consumer.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The identifier parameter of track_calls in test_results_consumer.py is unused, which triggers the Ruff linter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`identifier` is indeed unused in the `track_calls` stub (change.patch:1026-1027), but the repo has no Ruff config: no `[tool.ruff]` in pyproject.toml and no ruff.toml. Linting runs through flake8 (.pre-commit-config.yaml:45, setup.cfg:86-109) with no unused-argument rule, and a mock side_effect stub has to accept that argument anyway, so no lint error is triggered.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08310640000000001
+   }
+  },
+  {
+   "issue": "i14",
+   "path": "test_queue_consumer.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The identifier parameter of result_processor in test_queue_consumer.py is unused, which triggers the Ruff linter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`identifier` is unused in the second `result_processor` (test_queue_consumer.py, change.patch:714) but is used in the first one (change.patch:568-570). It can't be dropped, because `FixedQueuePool` calls the callback as `Callable[[str, T], None]`. The repo also has no Ruff config; it lints with flake8 (setup.cfg:86-95, .pre-commit-config.yaml:45) and doesn't enable an unused-argument rule, so no lint error is raised.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1056845
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "test_results_consumer.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The force parameter of the track_commits functions in test_results_consumer.py is unused, which triggers the Ruff linter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`force` is indeed unused in the new `track_commits` helpers (test_results_consumer.py, patch lines 1110, 1160, 1212), but the repo does not use Ruff. It lints with flake8 (setup.cfg:86-109, .pre-commit-config.yaml:45), and flake8 has no unused-argument rule, so nothing is triggered. The parameter is also needed so the helper matches the commit callback signature.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0858247
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The timeout parameter of the join method is unused, which triggers the Ruff linter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The parameter is indeed unused: `join(self, timeout: float | None = None)` only calls `self.close()` (queue_consumer.py, patch lines 372-373). But the repo has no Ruff config; linting is flake8 via setup.cfg:86 and .pre-commit-config.yaml:45, with no unused-argument rule, and the signature has to match arroyo's ProcessingStrategy.join interface, so no linter fails.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0689608
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The pytestmark class attribute is a mutable list, which triggers RUF012.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch does add `pytestmark = [requires_kafka]` as a mutable class attribute (tests/sentry/uptime/consumers/test_results_consumer.py, class ProcessResultThreadQueueParallelKafkaTest), but this repo doesn't run ruff. Linting is flake8 only (setup.cfg:86, .pre-commit-config.yaml:45), pyproject.toml has no ruff config, and RUF012 isn't a default ruff rule anyway, so nothing triggers it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0730382
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "FixedQueuePool.shutdown sets worker.shutdown=True before calling q.shutdown(immediate=False), so workers exit after the current item without draining queued work. Queued items are abandoned and their offsets stay uncommitted, causing reprocessing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In queue_consumer.py, `FixedQueuePool.shutdown` (patch lines 259-271) sets `worker.shutdown = True` before calling `q.shutdown(immediate=False)`, and `OrderedQueueWorker.run` (patch lines 155-161) checks `while not self.shutdown` before each `get()`, so a busy worker stops after its current item and leaves queued items unprocessed and their offsets uncommitted. The patch makes this worse: `close()` stops the commit thread before calling the pool's shutdown (patch lines 363-366), so even items that do finish are not committed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1235657
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SimpleQueueProcessingStrategy.close() stops/joins the commit thread before queue_pool.shutdown() and makes no final get_committable_offsets/commit call, so offsets completed afterwards are never committed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In queue_consumer.py (patch lines 363-366), close() sets shutdown_event and joins commit_thread before calling queue_pool.shutdown(). That shutdown uses q.shutdown(immediate=False) and joins the workers, so queued items are still processed. The commit loop's last pass (patch lines 302-317) runs before that drain, and nothing calls get_committable_offsets or commit_function afterwards, so offsets finished during the drain are never committed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0936553
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SimpleQueueProcessingStrategy.close() shuts down the FixedQueuePool that ResultsStrategyFactory creates once and shares with every strategy. After a Kafka rebalance, create_with_partitions hands the next strategy a dead pool, and submitted messages are never processed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The factory builds a single FixedQueuePool in __init__ (result_consumer.py:133) and hands that same pool to every strategy (result_consumer.py:255). SimpleQueueProcessingStrategy.close()/terminate() call queue_pool.shutdown() (queue_consumer.py:338,342), which shuts down every queue and stops the workers. After a rebalance, the next strategy's submit hits a ShutDown error on queue.put; the generic except catches it and marks the offset complete, so the messages are dropped and their offsets still get committed.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.2440691
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In submit(), work_queue.put() raising queue.ShutDown is caught by a broad except that logs it and calls add_offset/complete_offset, so the commit loop commits offsets of unprocessed messages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "FixedQueuePool.submit (queue_consumer.py:239-240) calls add_offset and then work_queue.put. On Python 3.13 queue.ShutDown subclasses Exception, so the error reaches the broad `except Exception` in SimpleQueueProcessingStrategy.submit (queue_consumer.py:345-353), which logs it and calls add_offset/complete_offset, and _commit_loop (306-317) then commits that offset as done. This is reachable: strategy close() shuts down the factory's shared queue_pool (364-366), which stays set on the factory (result_consumer.py), so a strategy created after a rebalance puts every message into a shut-down queue and commits it without processing.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.2433011
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "hash(group_key) % self.num_queues raises ZeroDivisionError when num_queues is 0, and __init__ does not guard against num_queues <= 0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In queue_consumer.py, `FixedQueuePool.__init__` (patch lines 199-224) stores `num_queues` without checking it, and `get_queue_for_group` (line 230) does `hash(group_key) % self.num_queues`, so `num_queues=0` raises ZeroDivisionError. That error is caught in `SimpleQueueProcessingStrategy.submit` (lines 345-353), which marks the offset complete, so the message is dropped without being processed. Through the CLI, result_consumer.py passes `max_workers or 20`, which turns 0 into 20, so only direct construction hits it; a negative `--max-workers` is also unguarded and fails differently, with IndexError on an empty queue list.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2203122
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Unit tests depend on probabilistic timing and distribution. test_different_groups_distributed asserts that 20 hashed group keys hit all 3 queues even though string hash() is randomized per process, and another test asserts queue depth > 0 right after enqueuing although workers may already have drained it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "test_queue_consumer.py:593-601 hashes 20 keys with `hash(group_key) % 3` (queue_consumer.py:230) and asserts all 3 queues are hit. String hashing is randomized per process and PYTHONHASHSEED is not set anywhere in the repo, so the test fails about 0.1% of the time (\u22483\u00b7(2/3)^20). test_stats_reporting (test_queue_consumer.py:694-695) asserts `total_items > 0` right after submitting, while the worker threads started in __init__ can already have emptied the queues with the trivial processor.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.12166629999999999
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Each result is wrapped in two nested Sentry transactions: the worker opens start_transaction(op='queue_worker.process') around result_processor, which opens its own transaction.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "OrderedQueueWorker.run wraps each `self.result_processor(...)` call in `sentry_sdk.start_transaction(op=\"queue_worker.process\")` (queue_consumer.py:164-168). `ResultProcessor.__call__` then opens its own `start_transaction(op=\"result_processor.handle_result\")` (result_consumer.py:48-51), so each result gets two nested transactions.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2312531
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no backpressure: each per-group queue is an unbounded queue.Queue() and submit() never raises MessageRejected, so memory grows without bound under consumer lag. The docstring's 'Natural backpressure when queues fill up' is false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In queue_consumer.py, each per-group queue is created as `queue.Queue()` with no maxsize (line 185). Neither `FixedQueuePool.submit` (lines 204-212) nor `SimpleQueueProcessingStrategy.submit` (lines 293-325) raises MessageRejected or checks queue depth, so Arroyo keeps feeding messages without limit and the 'Natural backpressure when queues fill up' docstring (line 253) is false.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2181759
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The --mode help text was not updated for the thread-queue-parallel choice and still says 'Parallel uses multithreading'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/consumers/__init__.py (~line 121), the patch adds \"thread-queue-parallel\" to the --mode click.Choice, but the next line's help text is unchanged: \"The mode to process results in. Parallel uses multithreading.\" The patch did update the --max-workers help nearby, but this one was left as it was.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0643087
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "test_concurrent_processing_across_groups and test_thread_queue_parallel_concurrent_subscriptions assert only that all items were processed, which serial execution also satisfies, so concurrency is never checked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "test_concurrent_processing_across_groups (patch lines 656-668) only checks that 6 items were processed and that 3 groups were seen, and test_thread_queue_parallel_concurrent_subscriptions (patch line 1100) only checks call_count == 2. A serial run would pass both, so neither test checks that work actually overlaps.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0403547
+   }
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The OffsetTracker gap logic does not block commits past a gap as it and its tests claim: after one commit cycle, start=max(last_committed+1, min_offset) jumps the gap.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Every submitted offset goes into all_offsets in add_offset (patch lines 84-88, 239, 330, 348), and mark_committed only drops offsets <= the committed one (line 133), so an unfinished offset stays in all_offsets and the outstanding check at line 118 stops the scan there on every commit cycle. Using min_offset at line 114 only skips offsets that were never submitted, such as Kafka offset gaps, and test_simple_tracking (lines 536-543) shows 101 still blocks 102 after 100 is committed.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.13044440000000002
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "get_stats builds a queue_depths list that production never reads; both production callers use only total_items.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/remote_subscriptions/consumers/queue_consumer.py:214-220, get_stats builds and returns queue_depths. Its only production callers, wait_until_empty (line 226) and SimpleQueueProcessingStrategy.poll (line 328), read only stats[\"total_items\"]. queue_depths is read only by test_stats_reporting in the new test file.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.22562500000000002
+   }
+  },
+  {
+   "issue": "i30",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "FixedQueuePool.wait_until_empty is dead code, referenced only in its definition and in tests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds wait_until_empty at src/sentry/remote_subscriptions/consumers/queue_consumer.py:222 (patch line 250), and a repo-wide search finds no caller anywhere else, so it is dead code. The claim is slightly off on one point: the new tests in tests/sentry/remote_subscriptions/consumers/test_queue_consumer.py don't call it either.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.042017799999999994
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The inner except queue.ShutDown around result_processor in OrderedQueueWorker.run is unreachable because result_processor never touches the queue.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Inside the inner try block in queue_consumer.py (patch lines 163-171), only `sentry_sdk.start_transaction` and `self.result_processor(identifier, result)` run, and neither touches `work_queue`. In production the processor is `ResultProcessor.__call__` (result_consumer.py:44-54), which catches every `Exception`, so `except queue.ShutDown: break` can never run and is dead code.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1078756
+   }
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "WorkItem.message is stored but never read, keeping the full arroyo Message alive for every queued item.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/remote_subscriptions/consumers/queue_consumer.py, WorkItem declares `message` (line 32) and submit() fills it with the whole arroyo Message (line 313), but the worker reads only `.result`, `.partition` and `.offset` (lines 141 and 150). A grep finds no read of `.message` anywhere under src/sentry/remote_subscriptions, so each queued item keeps the raw payload alive alongside the decoded result.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.22756110000000002
+   }
+  },
+  {
+   "issue": "i33",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "On revoke the commit thread is joined with only a 5s timeout, so a commit for a partition that is no longer owned can still happen.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Once close() sets shutdown_event (queue_consumer.py:364), the wait at queue_consumer.py:304 returns at once, so _commit_loop makes at most one more commit and exits. That last commit runs inside close() during the revoke, before the partitions are released. The 5s join at queue_consumer.py:365 only matters if commit_function blocks for more than 5s, which nothing in this code does. A separate real risk is that the shared pool's OffsetTracker keeps offsets for revoked partitions, but that has nothing to do with the join timeout.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2685051
+   }
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "queue.Queue.shutdown(immediate=False) and queue.ShutDown exist only in Python 3.13+, so the code fails on earlier Python versions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The patch does use `queue.ShutDown` and `q.shutdown(immediate=False)` (change.patch:160, 170, 266), but the repo only supports Python 3.13+: setup.cfg:24 sets `python_requires = >=3.13`, .python-version:1 is 3.13.1 and pyproject.toml:47 sets mypy's `python_version = \"3.13\"`. Earlier Python versions are not supported, so this can't fail in practice.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0500543
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

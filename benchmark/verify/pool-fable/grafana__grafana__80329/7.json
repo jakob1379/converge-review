@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/annotations/annotationsimpl/xorm_store.go:614-617 the non-SQLite branch builds one `?` per ID and passes them all as args through session.Exec (line 622) with no chunking, and `cleanupjob_batchsize` has no upper bound (pkg/setting/setting.go:710). No `interpolateParams` or similar is set anywhere, so MySQL/Postgres receive real bind parameters and hit their 65535 limit; strictly, only batches that actually fetch more than 65535 IDs fail, not literally every DELETE.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3776809
+}

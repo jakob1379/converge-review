@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts:24-26 throws `new Error(\"Credential not found or access denied\")` when the ownership lookup returns nothing. Nothing remaps it (authedProcedure.ts:26 only adds perf and auth middleware; errorFormatter.ts:25-38 only special-cases ZodError), so tRPC's default wrapping of a non-TRPCError as INTERNAL_SERVER_ERROR (500) applies.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2355731
+}

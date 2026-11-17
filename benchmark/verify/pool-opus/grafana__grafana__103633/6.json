@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Both keys do start with `<ns>.perm_<uid>_` (pkg/services/authz/rbac/cache.go:26-32), but they can't realistically collide. The mapper only produces actions without underscores (mapper.go:32-41), so a permission key has one segment after the uid while a denial key always adds `_<name>_<parent>`; a match would need a user UID containing an action string and a folder UID equal to an action such as `folders:read`, and even then cacheWrap's typed JSON unmarshal (cache.go:70-74) would turn it into a cache miss, not a wrong answer.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1589869
+}

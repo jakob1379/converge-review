@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds contextual_logger_middleware.go and grafanaInfraLogWrapper.FromContext (pkg/plugins/log/logger.go:103-111) but no test file for either: there is no contextual_logger_middleware_test.go or logger_middleware_test.go in clientmiddleware/, pkg/plugins/log has no tests, and no _test.go mentions instrumentContext or ContextualLogger. The \"endpoint\" labels in metrics_middleware_test.go:97,105 are Prometheus labels, not log fields.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1577355
+}

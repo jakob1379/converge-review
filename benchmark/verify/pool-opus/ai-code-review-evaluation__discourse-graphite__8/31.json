@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After the patch, members.hbs:1 guards on `{{#if model}}`, and the route now sets model to the Group object (group-members.js.es6:363), so the guard is always true. The loop at members.hbs:6 iterates `members`, which `findMembers()` fills asynchronously (group.js:267-271). The 'last seen' header therefore renders with no rows while loading or when the group has no members. Before the patch, model was the members array, so an empty list hid the table.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09730739999999999
+}

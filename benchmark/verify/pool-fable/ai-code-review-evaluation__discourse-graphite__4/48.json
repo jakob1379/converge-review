@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:36-37 discards the return value of `revisor.revise!` and unconditionally calls `embed.update_column(:content_sha1, content_sha1)`. However, `revise!` returns false only when `@post.raw == @new_raw` (lib/post_revisor.rb:13, 26-28), so the post already holds the new content and updating the hash is harmless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3941973999999999
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Non-API (non-synchronous) uploads run `create_upload` inside `Scheduler::Defer.later(\"Create Upload\")` at app/controllers/uploads_controller.rb:19-22, and that queue is drained serially by a single worker thread (lib/scheduler/defer.rb:55-58, 64-68). The patch adds up to five blocking ImageMagick downsize shell-outs to that deferred block (uploads_controller.rb:64-70) and raises the client-side limit to 10MB, so other deferred jobs wait behind large image uploads.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1502406
+}

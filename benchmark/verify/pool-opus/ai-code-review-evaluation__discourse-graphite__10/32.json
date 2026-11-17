@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In spec/fabricators/embeddable_host_fabricator.rb (patch lines 716-718), the after_build block calls cat.update!(read_restricted: true), which saves the record to the database even under Fabricate.build, and it calls transients[:group].id, which raises NoMethodError on nil when no group is passed. The patch did not write this code: the new file has the same blob (a37f5b4c8b) as the old category_fabricator.rb, so the code was copied over unchanged.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0471713
+}

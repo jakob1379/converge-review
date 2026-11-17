@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the same five-line ROLLING_UPDATES gate (isFeatureEnabled, printFeatureDisabled(), picocli.exit(FEATURE_DISABLED), return) to UpdateCompatibilityCheck.java:46-50 and UpdateCompatibilityMetadata.java:46-50. AbstractUpdatesCommand.java:83-85 holds only the printFeatureDisabled() message helper, not the gate itself. Both copies currently behave the same, so this is a duplication smell, not a bug, and it follows the existing pattern where each subclass calls printPreviewWarning() itself.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.07852100000000001
+}

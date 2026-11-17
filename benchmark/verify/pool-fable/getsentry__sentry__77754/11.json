@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the parameter (src/sentry/integrations/tasks/sync_assignee_outbound.py:34) and in the same change makes the caller always send the `assignment_source_dict` key, even when None (src/sentry/integrations/utils/sync.py:141), so a worker still on the old three-argument signature raises TypeError on every such task. \"Lost\" is overstated: the `retry` wrapper catches it and re-queues (src/sentry/tasks/base.py:170-172) with a 5-minute delay and 5 retries, so sync is dropped only if old workers outlast that window.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3404356
+}

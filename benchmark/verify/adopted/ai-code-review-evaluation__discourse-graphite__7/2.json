@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes mobile/topic-post.scss:182 from `scale-color($primary, $lightness: 20%)` to `dark-light-choose(scale-color($primary, $lightness: 50%), scale-color($secondary, $lightness: 50%))`, so the h3 gets lighter on the light theme. The desktop version at desktop/topic-post.scss:321 keeps 20% and uses 80% for the dark theme, so the mobile line looks copied from the h4 rule below it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.08665130000000001
+}

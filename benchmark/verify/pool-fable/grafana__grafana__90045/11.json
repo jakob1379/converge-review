@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/apiserver/rest/dualwriter_mode3.go:42 stores the unified-storage result in `created`, but the goroutine at :50-57 calls `d.Legacy.Create(ctx, obj, ...)` with the caller's original `obj`, with no DeepCopy, after Create has returned `created` at :59. Legacy therefore never sees anything set only on the returned object, and legacy code such as pkg/registry/apis/folders/legacy_storage.go:160-162 mutates that shared `obj` in the background; how much is actually lost depends on whether the Storage implementation also mutates `obj` in place, which I did not read.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6349196
+}

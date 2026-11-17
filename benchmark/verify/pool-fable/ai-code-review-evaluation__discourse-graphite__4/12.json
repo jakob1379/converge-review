@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:64-65 and :70-71 match any value starting with '/' and strip all leading slashes via sub(/^\\/+/, ''), so //cdn.example.com/x.png becomes \"#{prefix}/cdn.example.com/x.png\" (e.g. http://host/cdn.example.com/x.png) in both the a[href] and img[src] loops; there is no guard for protocol-relative URLs.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.326688
+}

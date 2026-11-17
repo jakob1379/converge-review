@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At PasskeysUsernamePasswordFormTest.java:291-296 and :312-317, `driver.findElement` either throws NoSuchElementException, which `catch (Exception)` swallows, or returns a non-null element. In the second case the `nullValue()` assertion throws AssertionError, which is an Error and not an Exception, so it escapes the catch; the inner assertion can never pass. The patch also removes the `Assert.assertThrows(NoSuchElementException.class, () -> driver.findElement(...))` lines from PasskeysOrganizationAuthenticationTest (patch lines 199 and 208), so that is the suite's existing convention.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.059250399999999995
+}

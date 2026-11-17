@@ -1,0 +1,49 @@
+{
+ "findings": [
+  {
+   "issue": "i3",
+   "path": "factories.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "_set_sample_rate_from_error_sampling in factories.py checks `if client_sample_rate:`. A valid client_sample_rate of 0 or 0.0 is therefore falsy and never set as sample_rate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": "organization_events_stats.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In OrganizationEventsStatsEndpoint._get_event_stats, upsampling eligibility is computed from the outer `dataset` and raw request query instead of `scoped_dataset` and the executed query. As a result, dashboard-split subqueries (e.g. discover when the outer dataset is metrics) are not upsampled or are upsampled incorrectly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test creates the organization with Organization.objects.create(name='test-org') instead of self.create_organization(), contrary to the repo's CLAUDE.md factory rule.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": "discover.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "upsampled_count in discover.py is not marked private=True. It is therefore exposed as a public Discover function that can bypass the allowlist and error-query checks and reference sample_weight on datasets without that column.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

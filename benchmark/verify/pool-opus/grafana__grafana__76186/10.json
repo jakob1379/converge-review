@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch moves the helper from instrumentation_middleware.go (change.patch:361-362, now metrics_middleware.go) into contextual_logger_middleware.go without renaming it. It is still `func instrumentContext(...)` at contextual_logger_middleware.go:26-27, and lines 40/45/50/55 call it under that name.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.043684
+}

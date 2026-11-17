@@ -1,0 +1,383 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "app/models/optimized_image.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`self.downsize` is defined twice in OptimizedImage. Ruby has no overloading, so the later (from, to, dimensions, opts) definition replaces the (from, to, max_width, max_height, opts) one, and existing 5-argument callers such as ResizeEmoji (app/jobs/regular/resize_emoji.rb:14) raise ArgumentError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a second `def self.downsize(from, to, dimensions, opts={})` at app/models/optimized_image.rb:149, which replaces the 5-argument version at :145. That leaves a method taking 3\u20134 arguments, so the 5-argument call `OptimizedImage.downsize(path, path, 100, 100, opts)` at app/jobs/regular/resize_emoji.rb:14 raises ArgumentError.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.05196540000000001
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "API URL-based uploads now call FileHelper.download with a hardcoded 10.megabytes cap instead of SiteSetting.max_image_size_kb. This ignores the configured limit: larger files are truncated or blocked on sites allowing more than 10 MB, and more than allowed is downloaded on sites with smaller limits.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/uploads_controller.rb:55 now calls FileHelper.download(url, 10.megabytes, ...) where it used to pass SiteSetting.max_image_size_kb.kilobytes, so the configured limit is ignored. FileHelper.download stops reading once the file passes the cap (lib/file_helper.rb:18), so URL uploads over about 10 MB end up truncated even on sites that allow more; downloading past a smaller limit seems intended, since the new downsize loop shrinks the file afterwards.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.065856
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Client-side upload validation hardcodes maxSizeKB = 10 * 1024 for all upload types instead of using Discourse.SiteSettings['max_' + type + '_size_kb']. Files the server will reject can pass the browser check, and files that sites configured above 10 MB allow are blocked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes app/assets/javascripts/discourse/lib/utilities.js:182 from Discourse.SiteSettings['max_' + type + '_size_kb'] to a fixed 10 * 1024 for every upload type, and line 246 gets the same change. The server still checks each type against its own SiteSetting in lib/validators/upload_validator.rb:81, so a file under 10 MB but over a smaller setting passes the browser check and is rejected by the server, and a file over 10 MB is blocked in the browser even when the site allows more.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0711494
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The same 10 MB constant is duplicated in several places, so the client and server limits can drift apart.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch hard-codes the 10 MB limit in three places: twice on the client (app/assets/javascripts/discourse/lib/utilities.js:182 `10 * 1024` and :246 `10 * 1024`) and once on the server (app/controllers/uploads_controller.rb:55 `10.megabytes`). Nothing shares a constant or setting, so changing one would not update the others.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0432072
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The HTTP 413 handler always reports a limit of 10240 KB, although the actual limit depends on the nginx/proxy client_max_body_size setting.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch hardcodes `var maxSizeKB = 10 * 1024; // 10 MB` in the 413 case of app/assets/javascripts/discourse/lib/utilities.js (~line 246), so the error message always shows 10240 KB. A 413 comes from the web server, and its limit is set by `client_max_body_size`: 10m in config/nginx.sample.conf:61 and 2m in docs/INSTALL-ubuntu.md:390, so the hardcoded value is wrong on some deployments.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0815292
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The error message in displayErrorForUpload (line 246) shows a hardcoded 10 MB instead of the actual configured limit when the server rejects a file for exceeding a smaller configured limit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes the 413 branch of displayErrorForUpload so it always reports 10 * 1024 KB (app/assets/javascripts/discourse/lib/utilities.js:246); before, it used Discourse.SiteSettings.max_image_size_kb. A 413 comes from the web server, whose limit an admin can set lower (docs/INSTALL-ubuntu.md:390 uses client_max_body_size 2m), so the message can state a wrong limit.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0988893
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the switch statement, `case 413` declares `maxSizeKB` without a surrounding block, so the declaration is visible to the other cases.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "At app/assets/javascripts/discourse/lib/utilities.js:246, `maxSizeKB` is declared with `var`, so it belongs to the whole `displayErrorForUpload` function, and adding a block would not change that. No other case reads it, and the case-declaration hazard only applies to `let`/`const`/`class`/`function`, so nothing is actually wrong.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0492919
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The downsize loop reads `tempfile.size`, which stays stale after the in-place downsize and ImageOptim rename. As a result, the loop may run all passes or fail to terminate correctly, and Upload.create_for receives a stale filesize, dimensions and a mismatched sha1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/uploads_controller.rb:63-69 rewrites `tempfile.path` in place, using convert and then `ImageOptim.optimize_image!`, which does an atomic rename (app/models/optimized_image.rb:160-165). `tempfile.size` checks the open file handle, which still points at the old file, so the size stays stale: the loop can run all 5 passes (it always stops after 5) and `Upload.create_for` gets a stale filesize. `FastImage.new(file)` may also read stale dimensions through that handle, while the sha1 is computed from the path at upload.rb:106 and so does not match them. I inferred the rename from memory of the image_optim gem source, which is not in this repository.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1371371
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Downsizing passes '80%' as the dimensions. For animated GIFs this goes to `gifsicle --resize-fit`, which accepts only WxH pixel geometry, so gifsicle fails and every retry attempt is used up.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "uploads_controller.rb:66 calls `OptimizedImage.downsize(tempfile.path, tempfile.path, \"80%\", allow_animation: SiteSetting.allow_animated_thumbnails)`. For a .gif path (API downloads keep the extension via lib/file_helper.rb:14), optimized_image.rb:155 routes this to downsize_instructions_animated \u2192 resize_instructions_animated, which builds `gifsicle --resize-fit 80%` (optimized_image.rb:120). gifsicle only accepts WxH there, so the command fails every time and the loop at uploads_controller.rb:64-67 spends all 5 attempts without shrinking the file.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.09561050000000001
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The allow_animation option is effectively dead code, because animated GIF downsizing fails through both upload paths.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The second `def self.downsize(from, to, dimensions, opts={})` (app/models/optimized_image.rb:149) replaces the 5-argument version at :145, so `OptimizedImage.downsize(path, path, 100, 100, opts)` in app/jobs/regular/resize_emoji.rb:14 raises ArgumentError even though it passes allow_animation: true. In app/controllers/uploads_controller.rb:67, the Rack 1.5 upload tempfile path most likely has no .gif extension (from memory; I couldn't open the gem), so the animated branch at optimized_image.rb:155 is skipped; if it were taken, gifsicle `--resize-fit 80%` (:120) would fail because it needs WxH (also from memory). Note: allow_animation still works for resize (upload.rb:98, create_for); it is dead only for downsizing.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1357645
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Each upload can trigger up to 5 sequential ImageMagick plus ImageOptim runs on files up to 10 MB.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In uploads_controller.rb:63-67 the patch adds a loop that runs at most 5 times, calling OptimizedImage.downsize(..., \"80%\") while the file is still over max_image_size_kb. Each call goes through optimize/convert_with (optimized_image.rb:153-165), which runs a `convert` shell command (gifsicle for animated GIFs) and then ImageOptim.optimize_image!. The upload size limit is now a hardcoded 10 MB in utilities.js:182/246 and in FileHelper.download at uploads_controller.rb:55.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0635347
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When OptimizedImage.downsize fails and returns false, the loop ignores the result, keeps retrying, and lets the oversized file continue.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The return value of the downsize call at app/controllers/uploads_controller.rb:67 is never checked, so a failed convert is retried until the 5 attempts run out, and the oversized tempfile is then passed to Upload.create_for (line 72). The file is not stored, though: lib/validators/upload_validator.rb:84-86 still rejects files over max_image_size_kb, so the cost is up to 5 wasted ImageMagick runs and no clear error about why it failed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.093228
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The downsize loop shrinks the image to only about 33% of the original after 5 iterations (0.8^5), so an image can still exceed max_image_size_kb and proceed to Upload.create_for.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The loop at app/controllers/uploads_controller.rb:64-70 stops after 5 tries of downsize \"80%\" and then calls Upload.create_for with whatever size the file has, so an oversized image does get there. The \"33%\" is off: 80% scales each side, so pixel area falls to about 0.64^5 \u2248 11%. The size check in lib/validators/upload_validator.rb:81-85 still rejects the file with a too_large error, so the limit is not bypassed.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08100829999999999
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Non-API uploads run in the shared Scheduler::Defer.later queue, so large uploads stall unrelated deferred work.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/controllers/uploads_controller.rb:19-22, any upload that isn't API-synchronous runs create_upload inside Scheduler::Defer.later, and lib/scheduler/defer.rb:5,55 serves that one shared Queue from a single thread. The patch adds up to five synchronous ImageMagick downsize passes on images of up to 10MB to that job (uploads_controller.rb:63-70), so a large upload holds up unrelated deferred work.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0700904
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover the new downsize loop, the changed OptimizedImage.downsize/optimize signatures, or the client validation change.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds no tests, and nothing in spec/ calls OptimizedImage.downsize/optimize or exercises the new loop in uploads_controller.rb:63-69 (spec/models/optimized_image_spec.rb only stubs :resize). One part of the claim is slightly off: test/javascripts/lib/utilities-test.js.es6:52-61 already exercises the client size check, but the patch does not update it, and with the limit hardcoded to 10MB that test (10KB file, max_image_size_kb=5) should now fail.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0931877
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Image processing uses the same path for input and output, so the original file is lost if the operation fails mid-write.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a call at app/controllers/uploads_controller.rb:67 that passes `tempfile.path` as both input and output to OptimizedImage.downsize. That path goes straight to convert/gifsicle and then ImageOptim in app/models/optimized_image.rb:126-164, which overwrite the file in place with no temp file or backup, and the `false` return on failure is ignored, so a partial write leaves a corrupted file that is still uploaded.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0722376
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "With allow_animated_thumbnails off, `convert file[0]` writes only the first frame back over the original GIF.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new loop in app/controllers/uploads_controller.rb:41-46 calls OptimizedImage.downsize(tempfile.path, tempfile.path, \"80%\", allow_animation: false). That uses the non-animated downsize_instructions at app/models/optimized_image.rb:126-134, which runs `convert #{from}[0] ... #{to}` with from == to, so only the first frame is written back over the uploaded GIF. The animated path also needs a .gif path (optimized_image.rb:155), and the temp upload path may not have one, so the animation may be lost even with the setting on.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0621758
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "For regular browser uploads, Rack tempfile paths lack a .gif extension, so the GIF detection regex in optimize() never matches and `convert` with [0] strips animation from GIFs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In uploads_controller.rb:41-44 the patch calls OptimizedImage.downsize(tempfile.path, ...), and optimize() only uses the animated (gifsicle) path when `from =~ /\\.GIF$/i` (optimized_image.rb:77). Gemfile.lock pins rack 1.5.5, which I recall names multipart tempfiles `Tempfile.new(\"RackMultipart\")` with no extension; I couldn't open the gem source here to check. So the regex fails and downsize_instructions runs `convert #{from}[0]` (optimized_image.rb:129), keeping only the first frame of an animated GIF.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0798932
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `tempfile &&` and `tempfile.size > 0` checks in the new guard are redundant with the loop condition and the later handling of a nil tempfile.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Only `tempfile.size > 0` is redundant: with a size of 0 the loop condition at app/controllers/uploads_controller.rb:66 is false anyway. The `tempfile &&` check is not covered by anything. The loop condition calls `tempfile.size` with no nil check, and nothing later handles a nil tempfile, because line 72 calls `tempfile.size` directly. So the claim's reason is wrong.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.069098
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "FileHelper.is_image? matches .svg, so oversized SVGs enter the downsize loop and ImageMagick rewrites the user's SVG in place.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In lib/file_helper.rb:31, the `images` set includes \"svg\", so `is_image?` (line 5) returns true for .svg files. The new loop in app/controllers/uploads_controller.rb (patch lines 41-46) therefore calls `OptimizedImage.downsize(tempfile.path, tempfile.path, \"80%\")` on oversized SVGs, and `downsize_instructions` (app/models/optimized_image.rb:126-134) runs ImageMagick `convert ... -resize`, which writes its output over the uploaded file.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0666921
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An inline `rescue nil` silently swallows all exceptions, including network errors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/uploads_controller.rb:55 still has `FileHelper.download(...) rescue nil`. It swallows every StandardError, network failures included, and leaves `tempfile` nil, so line 72 (`tempfile.size`) later fails with a NoMethodError that hides the real cause. Strictly, it catches StandardError rather than literally every exception.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0614817
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

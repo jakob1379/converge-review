@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/controllers/embed_controller_spec.rb:35-38 (new file) has an `after do` block that holds the assertions `response.should be_success` and `response.headers['X-Frame-Options'].should == \"ALLOWALL\"`. The 'success' examples rely on these instead of asserting in their own bodies.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1499856
+}

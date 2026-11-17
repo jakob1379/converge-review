@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The re-filter is part of the change, not outside it. The patch's new cached getForLogin (InfinispanIdentityProviderStorageProvider.java:214-255) caches IDP IDs from the raw delegate and returns models wrapped by createOrganizationAwareIdentityProviderModel, whose isEnabled() also checks whether the organization is enabled (lines 436-443). The cache does not account for that, so the isEnabled() checks at OrganizationAwareIdentityProviderBean.java:75/80 are needed, as their inline comment says.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1448281
+}

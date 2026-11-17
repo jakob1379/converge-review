@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The poll_feed_spec.rb tests always stub poll_feed with expects(:poll_feed). topic_retriever_spec.rb always mocks perform_retrieve, so fetch_http and TopicEmbed.import_remote (topic_embed.rb:364) never run, and the feed parsing at poll_feed.rb:270-284 is never tested. topic_embed_spec.rb only checks the basic case of turning a relative href/src into an absolute URL and a simple update, which leaves URL edge cases and the deleted-post update path uncovered, while CONTRIBUTING.md:42 says 'Include tests'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1191467
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/jobs/scheduled/poll_feed.rb:34 calls `CGI.unescapeHTML(i.content.scrub)` with no nil guard and no per-item rescue, and the job sets `retry: false` (line 11). In simple-rss 1.3.1 (Gemfile:211; the gem is not vendored, so this part rests on its known behaviour), `<content:encoded>` is exposed as `content_encoded` and a missing tag returns nil, so an RSS 2.0 item with only `<description>` makes `nil.scrub` raise NoMethodError, which escapes the `each` loop and aborts the whole poll.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0778765
+}

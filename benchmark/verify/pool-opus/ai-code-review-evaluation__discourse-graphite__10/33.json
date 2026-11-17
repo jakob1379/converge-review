@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The regex at app/models/embeddable_host.rb:2 requires a final `\\.[a-z]{2,5}` label, so `localhost`, `127.0.0.1` and `example.museum` all fail validation. The migration (db/migrate/20150818190757_create_embeddable_hosts.rb:558) inserts the old setting values with raw SQL and skips validation, so those rows can't be saved again through EmbeddableHostsController#save_host (app/controllers/admin/embeddable_hosts_controller.rb:276).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1772173
+}

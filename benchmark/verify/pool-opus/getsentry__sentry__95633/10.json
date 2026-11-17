@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In queue_consumer.py, join(self, timeout=None) at lines ~344-345 simply calls self.close() and never uses timeout. close() joins the commit thread with timeout=5.0, then FixedQueuePool.shutdown() joins each worker in turn with timeout=5.0 (lines ~242-243), so a call that arroyo makes after close() can block about 5s plus 5s per busy worker, past the deadline arroyo passed in.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2184837
+}

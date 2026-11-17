@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`from_dict` at src/sentry/integrations/services/assignment_source.py:31-35 catches `(ValueError, TypeError)` and returns None with no log or metric; src/sentry/integrations/tasks/sync_assignee_outbound.py:53-56 passes that None to `should_sync`, whose cycle check at src/sentry/integrations/mixins/issues.py:390 is skipped when `sync_source` is falsy, so the outbound sync proceeds. In practice the dict only comes from `to_dict()`, so this needs schema drift between deploys to trigger.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2386317
+}

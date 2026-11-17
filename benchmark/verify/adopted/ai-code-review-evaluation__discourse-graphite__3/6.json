@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both examples in spec/components/validators/email_validator_spec.rb (lines 12 and 18 in the patch) stub BlockedEmail.should_block?, a method this patch adds in app/models/blocked_email.rb:10. A grep of spec/ finds BlockedEmail only in the model's own spec and the fabricator, so no test runs EmailValidator against a real BlockedEmail row.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0808807
+}

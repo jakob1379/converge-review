@@ -1,0 +1,635 @@
+{
+ "pr_url": "https://github.com/calcom/cal.com/pull/14740",
+ "cost_usd": 0.11737070000000001,
+ "items": [
+  {
+   "id": "c1",
+   "source": "coderabbit",
+   "text": "sendAddGuestsEmails can leak hidden notes to attendees by not respecting hideCalendarNotes setting"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review-replay",
+   "text": "The server never checks that guest emails within one request are unique. A direct tRPC call with duplicate addresses creates duplicate attendee rows and sends duplicate emails."
+  },
+  {
+   "id": "c3",
+   "source": "cubic-v2",
+   "text": "Spread `props` before the fixed template props, otherwise callers can override this email's subject, title, and header."
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "New guests are saved with name '' and inherit the organizer's timeZone/locale, so emails and calendar entries show blank names"
+  },
+  {
+   "id": "c5",
+   "source": "coderabbit",
+   "text": "Duplicate guest emails are not removed from the input list"
+  },
+  {
+   "id": "c6",
+   "source": "qodo-extended-v2",
+   "text": "Line 168 passes the original unfiltered guests array to sendAddGuestsEmails instead of uniqueGuests, causing existing attendees to receive wrong email template (AttendeeScheduledEmail instead of AttendeeAddGuestsEmail)"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "Guest list has no server-side size cap and no server-side uniqueness check; a direct tRPC call can create duplicate attendee rows and send unbounded mail in the organizer's name"
+  },
+  {
+   "id": "c8",
+   "source": "golden",
+   "text": "The logic for checking team admin/owner permissions is incorrect. This condition uses AND (&&) which requires both isTeamAdmin AND isTeamOwner to be true, but it should use OR (||) since a user needs to be either an admin OR an owner to have permission."
+  },
+  {
+   "id": "c9",
+   "source": "golden",
+   "text": "The addGuests.handler.ts blacklist check uses blacklistedGuestEmails.includes(guest) after lowercasing the blacklist but not the input guest emails, allowing attackers to bypass BLACKLISTED_GUEST_EMAILS restrictions by submitting emails with uppercase characters."
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "Dialog state bugs: isInvalidEmail never reset on success or on overlay/Esc close; closing via onOpenChange keeps old emails; removing all fields makes Add a silent no-op; client uniqueness check is case-sensitive"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "Permission check isTeamAdmin(...) && isTeamOwner(...) collapses to owner-only; team ADMINs who are not organizer/attendee get FORBIDDEN despite the variable name isTeamAdminOrOwner"
+  },
+  {
+   "id": "c12",
+   "source": "cubic-v2",
+   "text": "The blacklist comparison lowercases the blacklisted emails but not the incoming `guest` email. A user can bypass the blacklist by submitting an email with different casing (e.g., `Blocked@example.com`)."
+  },
+  {
+   "id": "c13",
+   "source": "coderabbit",
+   "text": "Empty fragment <></> in MultiEmail can be simplified by restructuring the conditional"
+  },
+  {
+   "id": "c14",
+   "source": "claude-code",
+   "text": "No tests are included for the new handler or UI components"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "sendAddGuestsEmails ignores the event type's disable-host/attendee-email settings; handler does not pass booking.eventType?.metadata"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "BLACKLISTED_GUEST_EMAILS filter is bypassable by case change or +alias; existing-attendee de-dup is also case-sensitive, so A@x.com is added beside a@x.com"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Server never checks booking status or time: guests can be added to CANCELLED, REJECTED or past bookings, sending REQUEST/CONFIRMED ICS invites that revive dead meetings"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "MultiEmail is a near-verbatim copy of the multiemail factory in packages/features/form-builder/Components.tsx, creating code duplication that will drift"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "The isTeamAdminOrOwner check uses `isTeamAdmin(...) && isTeamOwner(...)` which reduces to owner-only, so team ADMINs who are not the organizer or an attendee get FORBIDDEN. The variable name is also misleading."
+  },
+  {
+   "id": "c20",
+   "source": "qodo-extended-v2",
+   "text": "No server-side deduplication of guest emails, allowing duplicate attendee rows to be created for the same booking since there's no unique constraint on (bookingId, email)"
+  },
+  {
+   "id": "c21",
+   "source": "coderabbit",
+   "text": "sendAddGuestsEmails ignores disableStandardEmails flags and forwards calendarEvent unchanged, which can send emails when they're disabled"
+  },
+  {
+   "id": "c22",
+   "source": "cubic-v2",
+   "text": "`uniqueGuests` only filters against existing booking attendees and the blacklist, but does not deduplicate the input `guests` array itself. Submitting the same email twice in the request will create duplicate attendee records."
+  },
+  {
+   "id": "c23",
+   "source": "augment",
+   "text": "uniqueGuests doesn't actually de-duplicate the guests input and compares emails case-sensitively, allowing duplicates or case-variant blacklist bypasses to be inserted/sent downstream"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review-replay",
+   "text": "The server never checks booking status or time. Guests can be added to CANCELLED, REJECTED or past bookings, which writes attendee rows and sends REQUEST/CONFIRMED ICS invites for a dead meeting."
+  },
+  {
+   "id": "c25",
+   "source": "augment",
+   "text": "In onError, message is always a non-empty string (often starting with undefined:), so the unable_to_add_guests fallback will never be used and the toast can be confusing"
+  },
+  {
+   "id": "c26",
+   "source": "coderabbit",
+   "text": "Invalid email banner remains visible even after user edits the email input to valid values - banner only clears when clicking Cancel or attempting to add again"
+  },
+  {
+   "id": "c27",
+   "source": "golden",
+   "text": "Starting with an array containing an empty string may cause validation issues. Consider starting with an empty array [] and handling the empty state in the MultiEmail component instead."
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "evt is built without team, so the team-member branch in sendAddGuestsEmails never runs and team hosts are never notified"
+  },
+  {
+   "id": "c29",
+   "source": "golden",
+   "text": "The `sendAddGuestsEmails` function does not check the `disableStandardEmails` flags in the `EventType` metadata, which may result in sending emails to hosts/attendees even when standard emails are disabled for the event type."
+  },
+  {
+   "id": "c30",
+   "source": "converge-review",
+   "text": "Handler passes raw guests instead of uniqueGuests to sendAddGuestsEmails, so a re-submitted existing attendee gets a fresh 'scheduled' email instead of the 'guests added' notice"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "showAttendees is never passed to AttendeeScheduledEmail, so seated events with seatsShowAttendees=true hide the attendee list in these emails"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review-replay",
+   "text": "There is no seated-event handling. Attendee rows are created without BookingSeat rows, which bypasses seatsPerTimeSlot. The full attendee list is then pushed to the organizer's calendar event, which can expose seat-holders to each other when seatsShowAttendees is false."
+  },
+  {
+   "id": "c33",
+   "source": "coderabbit",
+   "text": "Notifications use the unfiltered guests input instead of the filtered uniqueGuests list"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "findFirst include pulls user.credentials (full credential keys) that are never read, and trips @calcom/eslint/no-prisma-include-true"
+  },
+  {
+   "id": "c35",
+   "source": "augment",
+   "text": "onSuccess resets multiEmailValue but not isInvalidEmail, so reopening the dialog after a previous validation failure can immediately show the error state again"
+  },
+  {
+   "id": "c36",
+   "source": "cubic-v2",
+   "text": "The permission check uses `&&` (AND) instead of `||` (OR). This requires the user to be both a team admin and a team owner simultaneously, which is almost never true. A team admin or team owner should each independently have permission to add guests."
+  },
+  {
+   "id": "c37",
+   "source": "converge-review",
+   "text": "addGuests uses plain authedProcedure with a custom check instead of bookingsProcedure: any logged-in attendee may add guests, while COLLECTIVE co-hosts are refused"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "Seated events (seatsPerTimeSlot): attendees are created without BookingSeat rows, bypassing the seat limit, and any single seat-holder can add guests exposing seat-holders to each other even with seatsShowAttendees=false"
+  },
+  {
+   "id": "c39",
+   "source": "claude-code",
+   "text": "Authorization logic bug in addGuests.handler.ts:47 - isTeamAdminOrOwner uses && instead of ||, so only team owners pass the check while team admins are incorrectly denied access despite isTeamAdmin already covering both ADMIN and OWNER roles"
+  },
+  {
+   "id": "c40",
+   "source": "augment",
+   "text": "isTeamAdminOrOwner uses && between isTeamAdmin and isTeamOwner, which requires user to be OWNER and blocks ADMIN users from adding guests"
+  },
+  {
+   "id": "c41",
+   "source": "claude-code",
+   "text": "sendAddGuestsEmails function does not check eventTypeMetadata.disableStandardEmails, which is inconsistent with other email-sending functions and could result in unwanted emails for event types that have explicitly disabled standard emails"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review",
+   "text": "~40 lines of CalendarEvent building duplicated from editLocation.handler.ts"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review",
+   "text": "New authenticated mutation that writes to the DB, calls external calendars and sends email ships with zero tests"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review",
+   "text": "Second prisma.user.findFirstOrThrow refetches the organizer already loaded via booking.user"
+  },
+  {
+   "id": "c45",
+   "source": "coderabbit",
+   "text": "Email uniqueness check in ZAddGuestsInputSchema is case-sensitive, so User@x.com and user@x.com pass as unique"
+  },
+  {
+   "id": "c46",
+   "source": "coderabbit",
+   "text": "Authorization check uses && requiring both admin AND owner roles, which blocks legitimate admins or owners who only have one role - should use || instead"
+  },
+  {
+   "id": "c47",
+   "source": "cubic-v2",
+   "text": "Seat bookings need seat-level scoping, but this new action updates by `bookingId` only. On seats events it can add guests to the shared booking instead of the current seat."
+  },
+  {
+   "id": "c48",
+   "source": "converge-review-replay",
+   "text": "sendAddGuestsEmails receives the raw guests input instead of the filtered uniqueGuests, so an existing attendee re-submitted alongside a real new guest gets a fresh 'scheduled' email instead of the 'guests added' update."
+  },
+  {
+   "id": "c49",
+   "source": "cubic-v2",
+   "text": "`sendAddGuestsEmails` is called with the raw `guests` input instead of `uniqueGuests`. This means notification emails may be sent for guests who were already attendees or were filtered out by the blacklist."
+  },
+  {
+   "id": "c50",
+   "source": "qodo-extended-v2",
+   "text": "Guest emails are not normalized (case/base-email) before blacklist comparison, allowing bypass of BLACKLISTED_GUEST_EMAILS with different casing or plus-addressing"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "Handler throws FORBIDDEN with message key you_do_not_have_permission, which is not defined in en/common.json; users see the raw key"
+  },
+  {
+   "id": "c52",
+   "source": "converge-review-replay",
+   "text": "The error-toast fallback can never trigger because the template string `${code}: ${t(msg)}` is never falsy, so unable_to_add_guests is dead code and users see raw error codes."
+  },
+  {
+   "id": "c53",
+   "source": "converge-review",
+   "text": "No transaction/compensation: attendees are written before updateCalendarAttendees, which is not wrapped; if it throws, DB has the guests, no emails go out, and retry fails with emails_must_be_unique_valid"
+  },
+  {
+   "id": "c54",
+   "source": "qodo-extended-v2",
+   "text": "addGuestsHandler requires user to be BOTH team admin AND team owner (using && instead of ||), blocking team admins who are not owners from adding guests to team bookings"
+  },
+  {
+   "id": "c55",
+   "source": "converge-review",
+   "text": "onError message is a template string that is never falsy, so the unable_to_add_guests fallback never shows and users see raw 'CODE: key' strings"
+  },
+  {
+   "id": "c56",
+   "source": "coderabbit",
+   "text": "Using array index as key in MultiEmail can cause issues when items are removed from the middle of the list"
+  },
+  {
+   "id": "c57",
+   "source": "augment",
+   "text": "sendAddGuestsEmails(evt, guests) uses the raw input rather than the filtered list that was actually added, which can misclassify new vs existing attendees and send the wrong email type"
+  },
+  {
+   "id": "c58",
+   "source": "augment",
+   "text": "MultiEmail.tsx imports primitives from @calcom/ui while living inside packages/ui, which risks circular imports now that @calcom/ui also exports MultiEmail"
+  },
+  {
+   "id": "c59",
+   "source": "converge-review-replay",
+   "text": "De-duplication against existing attendees is case-sensitive, so `A@x.com` can be added next to an existing `a@x.com`."
+  },
+  {
+   "id": "c60",
+   "source": "converge-review-replay",
+   "text": "The BLACKLISTED_GUEST_EMAILS filter can be bypassed by changing the case of an email or adding a plus-alias, because the raw guest is checked without applying extractBaseEmail or toLowerCase normalization."
+  },
+  {
+   "id": "c61",
+   "source": "coderabbit",
+   "text": "Reassigning function parameter 'value' in MultiEmail component is a code smell"
+  },
+  {
+   "id": "c62",
+   "source": "golden",
+   "text": "The sendAddGuestsEmails function in email-manager.ts passes the full calendarEvent.attendees array when determining which attendees receive AttendeeScheduledEmail vs AttendeeAddGuestsEmail, but checks if newGuests.includes(attendee.email) where newGuests is the input guests array."
+  },
+  {
+   "id": "c63",
+   "source": "qodo-extended-v2",
+   "text": "MultiEmail component uses useLocale() hook but is missing the 'use client' directive, which can break Next.js App Router usage when rendered from a Server Component"
+  },
+  {
+   "id": "c64",
+   "source": "converge-review",
+   "text": "EventManager is built from ctx.user's credentials, not the organizer's; references without credentialId are matched against the caller's calendars when an attendee or owner adds guests"
+  },
+  {
+   "id": "c65",
+   "source": "coderabbit",
+   "text": "Guest email comparisons are case-sensitive, allowing blacklisted/existing guests to slip through with different casing"
+  },
+  {
+   "id": "c66",
+   "source": "golden",
+   "text": "uniqueGuests filters out existing attendees and blacklisted emails but does not deduplicate duplicates within the input; createMany can insert duplicate attendee rows if the client submits repeated emails."
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In addGuests.handler.ts, the team permission check uses `isTeamAdmin(...) && isTeamOwner(...)` where `||` is intended. This reduces it to an owner-only check, so team ADMINs who are not the organizer or an attendee get FORBIDDEN even though the variable is named isTeamAdminOrOwner.",
+   "path": "addGuests.handler.ts",
+   "members": [
+    "c8",
+    "c11",
+    "c19",
+    "c36",
+    "c39",
+    "c40",
+    "c46",
+    "c54"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The BLACKLISTED_GUEST_EMAILS check lowercases the blacklist but compares it against the raw guest email, with no toLowerCase or extractBaseEmail normalization. Blacklisted addresses therefore pass when submitted with different casing or a plus-alias.",
+   "path": "addGuests.handler.ts",
+   "members": [
+    "c9",
+    "c12",
+    "c16",
+    "c50",
+    "c60",
+    "c65"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "De-duplication against existing booking attendees is case-sensitive, so `A@x.com` can be added next to an existing `a@x.com`.",
+   "path": null,
+   "members": [
+    "c59"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The server does not de-duplicate the input guests array (uniqueGuests only filters existing attendees and the blacklist). A direct tRPC call with repeated emails creates duplicate attendee rows and sends duplicate emails, and there is no unique constraint on (bookingId, email) and no server-side cap on list size.",
+   "path": null,
+   "members": [
+    "c2",
+    "c5",
+    "c7",
+    "c20",
+    "c22",
+    "c23",
+    "c66"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The handler passes the raw `guests` input to sendAddGuestsEmails instead of `uniqueGuests`. As a result, existing or filtered attendees are classified as new and receive the wrong email (AttendeeScheduledEmail instead of AttendeeAddGuestsEmail), and notifications go to guests who were not actually added.",
+   "path": null,
+   "members": [
+    "c6",
+    "c30",
+    "c33",
+    "c48",
+    "c49",
+    "c57",
+    "c62"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "sendAddGuestsEmails does not check the event type's disableStandardEmails settings, and the handler does not pass booking.eventType?.metadata. Emails are therefore sent even when standard host/attendee emails are disabled.",
+   "path": null,
+   "members": [
+    "c15",
+    "c21",
+    "c29",
+    "c41"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "sendAddGuestsEmails does not respect the hideCalendarNotes setting, so hidden notes can be sent to attendees.",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "`props` is spread after the fixed template props, so callers can override the email's subject, title and header.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "New guests are saved with an empty name and inherit the organizer's timeZone/locale, so emails and calendar entries show blank names.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "In the add-guests dialog, isInvalidEmail is not reset on success or on overlay/Esc close, so the error state can reappear when the dialog is reopened. Closing via onOpenChange also keeps the old emails, removing all fields makes Add a silent no-op, and the client uniqueness check is case-sensitive.",
+   "path": null,
+   "members": [
+    "c10",
+    "c35"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The invalid-email banner stays visible after the user edits the input to valid values. It clears only on Cancel or on another add attempt.",
+   "path": null,
+   "members": [
+    "c26"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "MultiEmail contains an empty fragment `<></>` in a conditional.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "No tests are included for the new addGuests handler/mutation or the new UI components.",
+   "path": null,
+   "members": [
+    "c14",
+    "c43"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The server does not check booking status or time. Guests can be added to CANCELLED, REJECTED or past bookings, which writes attendee rows and sends REQUEST/CONFIRMED ICS invites.",
+   "path": null,
+   "members": [
+    "c17",
+    "c24"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "MultiEmail is a near-verbatim copy of the multiemail factory in packages/features/form-builder/Components.tsx.",
+   "path": "packages/features/form-builder/Components.tsx",
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "In onError, the toast message is the template string `${code}: ${t(msg)}`, which is never falsy. The unable_to_add_guests fallback is therefore never used, and users see raw 'CODE: key' strings.",
+   "path": null,
+   "members": [
+    "c25",
+    "c52",
+    "c55"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The email list state starts as an array containing an empty string rather than an empty array.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "evt is built without `team`, so the team-member branch in sendAddGuestsEmails never runs and team hosts are not notified.",
+   "path": null,
+   "members": [
+    "c28"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "showAttendees is not passed to AttendeeScheduledEmail, so seated events with seatsShowAttendees=true hide the attendee list in these emails.",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "There is no seated-event handling: attendee rows are created without BookingSeat rows, which bypasses seatsPerTimeSlot. The full attendee list is pushed to the calendar event, and any seat-holder can add guests, exposing seat-holders to each other even when seatsShowAttendees is false.",
+   "path": null,
+   "members": [
+    "c32",
+    "c38"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The new action updates by bookingId only, without seat-level scoping, so on seats events guests are added to the shared booking instead of the current seat.",
+   "path": null,
+   "members": [
+    "c47"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The booking findFirst include pulls user.credentials (full credential keys), which are never read, and trips @calcom/eslint/no-prisma-include-true.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "addGuests uses plain authedProcedure with a custom check instead of bookingsProcedure. Any logged-in attendee can add guests, while COLLECTIVE co-hosts are refused.",
+   "path": null,
+   "members": [
+    "c37"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "About 40 lines of CalendarEvent construction are duplicated from editLocation.handler.ts.",
+   "path": "editLocation.handler.ts",
+   "members": [
+    "c42"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "A second prisma.user.findFirstOrThrow refetches the organizer that is already loaded via booking.user.",
+   "path": null,
+   "members": [
+    "c44"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The email uniqueness check in ZAddGuestsInputSchema is case-sensitive, so User@x.com and user@x.com pass as unique.",
+   "path": null,
+   "members": [
+    "c45"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "The handler throws FORBIDDEN with message key you_do_not_have_permission, which is not defined in en/common.json, so users see the raw key.",
+   "path": "en/common.json",
+   "members": [
+    "c51"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "There is no transaction or compensation: attendees are written before updateCalendarAttendees, which is not wrapped. If it throws, the DB keeps the guests, no emails are sent, and a retry fails with emails_must_be_unique_valid.",
+   "path": null,
+   "members": [
+    "c53"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "MultiEmail uses the array index as the React key, which misbehaves when items are removed from the middle of the list.",
+   "path": null,
+   "members": [
+    "c56"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "MultiEmail.tsx lives inside packages/ui but imports primitives from @calcom/ui, which also exports MultiEmail, creating a circular import risk.",
+   "path": "MultiEmail.tsx",
+   "members": [
+    "c58"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "The MultiEmail component reassigns its function parameter `value`.",
+   "path": null,
+   "members": [
+    "c61"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "The MultiEmail component uses the useLocale() hook but lacks the 'use client' directive.",
+   "path": null,
+   "members": [
+    "c63"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "EventManager is built from ctx.user's credentials rather than the organizer's. References without a credentialId are matched against the caller's calendars when an attendee or owner adds guests.",
+   "path": null,
+   "members": [
+    "c64"
+   ]
+  }
+ ]
+}

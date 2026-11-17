@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "submit() loops over self.buffers at flusher.py:269-270 and 299-301. Each SpansBuffer's get_memory_info() is iter_cluster_memory_usage(self.client) on the same SENTRY_SPAN_BUFFER_CLUSTER (buffer.py:117-118, 375-376), so the cluster-wide INFO runs N times with duplicate results and the used/available ratio does not change. record_stored_segments (buffer.py:357-364) is split across disjoint shard subsets rather than duplicated, but it still makes N pipeline round trips where one used to do.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.181678
+}

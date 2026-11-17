@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/workflow_engine/processors/test_detector.py:177 sets group_2 to 10 in the data packet, but line 190-192 builds the expected occurrence with value 6; build_mock_occurrence_and_event (lines 244-275) never reads its `value` parameter, so the mismatch cannot affect the comparison.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1641596
+}

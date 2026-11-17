@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`sendAddGuestsEmails` constructs `new AttendeeScheduledEmail(calendarEvent, attendee)` and `new AttendeeAddGuestsEmail(calendarEvent, attendee)` with no third argument (packages/emails/email-manager.ts:542-544), and the constructor trims attendees to `[attendee]` whenever `!showAttendees && calEvent.seatsPerTimeSlot` (packages/emails/templates/attendee-scheduled-email.ts:21-23). The handler sets `seatsPerTimeSlot` and `seatsShowAttendees` on the event (addGuests.handler.ts:145-146 of the new file), but nothing in packages/emails reads `seatsShowAttendees`, so seated events always hide the other attendees in these emails.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4289499
+}

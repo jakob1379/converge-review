@@ -1,0 +1,82 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In EventManager (around line 118-119), mainHostDestinationCalendar is destructured from `evt.destinationCalendar ?? []`, then `.integration` is read without a guard. When evt.destinationCalendar is null or empty this throws a TypeError, which breaks the Google Meet to Daily fallback.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Several places destructure the first element of an array (`[first] = array`) and access its properties without guarding against undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": "GoogleCalendarService",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In GoogleCalendarService updateEvent (line ~256) and deleteEvent (line ~317), the fallback `destinationCalendar.find(cal => cal.externalId === externalCalendarId)` runs only when externalCalendarId is falsy, so it never matches. As a result, updateEvent sends an undefined calendarId, and deleteEvent falls back to 'primary' instead of the booking's destination calendar.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": "organizations/create.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The organization slug condition in organizations/create.handler.ts (line ~151) is inverted from `!IS_TEAM_BILLING_ENABLED && { slug }` to `IS_TEAM_BILLING_ENABLED ? { slug } : {}`. With billing on, the org gets a slug before payment; with billing off, neither slug nor requestedSlug is set, causing NoOrganizationSlugError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Calendar interface now requires createEvent(event, credentialId), but some implementations (Lark, Office365, packages/lib CalendarService) still declare createEvent(event) without credentialId. packages/lib CalendarService also selects only the first destination calendar at line 156.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In EventManager updateAllCalendarEvents (lines ~511-542), credential can remain undefined when reference.credentialId points to a missing credential and the DB fallback finds nothing. updateEvent(credential, ...) is then called and throws, which turns the update into a failure result for every calendar in the booking.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": "handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When cancelling a recurring booking, the series-delete block sits inside the per-reference loop but does not depend on the reference. It deletes the series N times using only the first calendar reference, so other hosts' copies are never deleted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

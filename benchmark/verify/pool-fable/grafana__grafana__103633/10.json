@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds exported `NoopCache` at pkg/services/authz/rbac.go:239-251, and its only reference in the repository is the in-package call at pkg/services/authz/rbac.go:103, so it could be unexported. The hedged \"may duplicate authlib\" part could not be checked because the authlib source is not in the repository.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.17949110000000001
+}

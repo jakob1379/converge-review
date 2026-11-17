@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "scripts/test-gcal-webhooks.sh:68 (patch line 601) runs `sed -i '' -E \"s|...|\" \"$ENV_FILE\"`; GNU sed takes the separate `''` as an empty script and the `s|...|` expression as a filename, so it errors and leaves .env unchanged. The script has no `set -e` or exit-status check, so line 73 (patch line 606) still prints \"\u2705 Updated GOOGLE_WEBHOOK_URL\". Determined by reading the code, not by running it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1261354
+}

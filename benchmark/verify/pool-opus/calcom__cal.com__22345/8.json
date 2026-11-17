@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch hand-writes the same `conditions.reduce((acc, condition, index) => index === 0 ? condition : Prisma.sql`(${acc}) AND/OR (${condition})`)` fold three times: once with AND in buildFilterConditions (change.patch:406-409) and twice with OR in buildOrgAuthorizationCondition (change.patch:486-489) and buildTeamAuthorizationCondition (change.patch:534-537). In the latter two the list has at most two items, so a direct expression or Prisma.join would be simpler.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0740249
+}

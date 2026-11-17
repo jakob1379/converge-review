@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/helpers/error_upsampling.py:59, the `[]` in options.get(..., []) lands in the `silent` parameter, because the signature is `get(self, key: str, silent=False)` (src/sentry/options/manager.py:285). It has no effect because `[]` is falsy and the option already defaults to [] (src/sentry/options/defaults.py:3464-3467). The other points also hold: `if not allowlist: return False` (lines 60-61) is redundant because `all()` over non-empty project_ids already returns False, `result` (lines 64-65) is needless, and `_should_apply_sample_weight_transform` types `dataset` as Any (line 104) while the module types it as ModuleType elsewhere.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1362477
+}

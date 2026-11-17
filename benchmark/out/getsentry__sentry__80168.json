@@ -1,0 +1,85 @@
+{
+  "findings": [
+    {
+      "path": "src/sentry/incidents/grouptype.py",
+      "line": 11,
+      "severity": "Important",
+      "claim": "MetricAlertDetectorHandler now subclasses StatefulDetectorHandler with only `pass`, leaving abstract members counter_names, get_dedupe_value, get_group_key_values and the new build_occurrence_and_event_data unimplemented; it is still registered as MetricAlertFire.detector_handler, so Detector.detector_handler / process_detectors raise TypeError (Can't instantiate abstract class) for any metric_alert_fire detector, where base returned a working no-op handler. One such detector aborts the whole process_detectors batch.",
+      "evidence": "Abstract members at src/sentry/workflow_engine/processors/detector.py:142-170; grouptype.py:27 `detector_handler = MetricAlertDetectorHandler`; models/detector.py:86 calls group_type.detector_handler(self). Standard ABC instantiation semantics. Latent today: no production caller of process_detectors/detector_handler in src/. Reasoned repro (not run): `self.create_detector(type=MetricAlertFire.slug).detector_handler` raises TypeError on head, returns handler on base.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review", "ponytail:ponytail-review"],
+      "verdict": "fix",
+      "reason": "Three correctness/spec seats rate it Important with a concrete source-traced path; ponytail rated Minor only because it is latent. Regression from a working stub to an uninstantiable registered handler. Not made red (benchmark mode stops after merge)."
+    },
+    {
+      "path": "tests/sentry/workflow_engine/processors/test_detector.py",
+      "line": 244,
+      "severity": "Important",
+      "claim": "build_mock_occurrence_and_event hard-codes the occurrence id and ignores its `value` argument, and IssueOccurrence.__eq__ compares only id, so every mock occurrence compares equal; the new tests cannot detect wrong group_key, value or priority passed to build_occurrence_and_event_data. Expected occurrences are already built with mismatched args (value 6 vs evaluated 100/8/10, group key 'val1' vs 'group_key') and still pass; assert_has_calls(any_order=True) in test_state_results_multi_group cannot distinguish the two groups.",
+      "evidence": "src/sentry/issues/issue_occurrence.py:181-184 (__eq__ returns self.id == other.id); fixed id 'eb4b0acffadb4d098d48cb14165ab578' in the helper at test_detector.py:244-275; the only hook call site is processors/detector.py:299-301. Reasoned mutation check (not run): change detector.py:300 args to `None, 0, PriorityLevel.LOW` and the test file stays green.",
+      "seats": ["superpowers:requesting-code-review", "mattpocock-skills:code-review", "ponytail:ponytail-review"],
+      "verdict": "fix",
+      "reason": "Source-cited: the equality semantics make the new hook's contract untested. superpowers rated Important; mattpocock and ponytail (the ignored-`value`/hard-coded-6 angle) rated Minor. Kept at Important since the new feature's only behavioural check is vacuous."
+    },
+    {
+      "path": "src/sentry/incidents/grouptype.py",
+      "line": 10,
+      "severity": "Minor",
+      "claim": "Comment 'TODO: This will be a stateful detector when we build that abstraction' is stale; the class directly below now subclasses StatefulDetectorHandler.",
+      "evidence": "grouptype.py:10-11.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review", "ponytail:ponytail-review"],
+      "verdict": "fix",
+      "reason": "Trivially true from source; resolve together with the abstract-handler finding."
+    },
+    {
+      "path": "src/sentry/workflow_engine/processors/detector.py",
+      "line": 230,
+      "severity": "Minor",
+      "claim": "StatefulDetectorHandler.evaluate docstring still says it returns a list of DetectorEvaluationResult; the return type is now dict[DetectorGroupKey, DetectorEvaluationResult].",
+      "evidence": "detector.py:230 docstring vs return annotation and body at 226-244.",
+      "seats": ["open-code-review:delegate-review", "superpowers:requesting-code-review", "mattpocock-skills:code-review", "ponytail:ponytail-review"],
+      "verdict": "fix",
+      "reason": "Verified at detector.py:230; one-line docstring fix."
+    },
+    {
+      "path": "src/sentry/workflow_engine/processors/detector.py",
+      "line": 167,
+      "severity": "Minor",
+      "claim": "The new public abstract hook build_occurrence_and_event_data has no docstring, unlike sibling abstract members; undocumented: it is called only on transitions to non-OK status, new_status arrives as PriorityLevel (not DetectorPriorityLevel), and event_data goes unchanged to produce_occurrence_to_kafka.",
+      "evidence": "detector.py:166-170 vs documented siblings counter_names/get_dedupe_value/get_group_key_values; call site detector.py:299-301.",
+      "seats": ["superpowers:requesting-code-review"],
+      "verdict": "fix",
+      "reason": "Consistency with the class's existing documented-abstract-method convention; cheap and clarifies the contract for implementers."
+    },
+    {
+      "path": "tests/sentry/workflow_engine/processors/test_detector.py",
+      "line": 125,
+      "severity": "Minor",
+      "claim": "TestProcessDetectors.setUp only calls super().setUp() and is a no-op override.",
+      "evidence": "test_detector.py:124-126.",
+      "seats": ["ponytail:ponytail-review"],
+      "verdict": "fix",
+      "reason": "Advisory; pure deletion, no behaviour change."
+    },
+    {
+      "path": "tests/sentry/workflow_engine/processors/test_detector.py",
+      "line": 101,
+      "severity": "Minor",
+      "claim": "BaseDetectorHandlerTest.build_handler's detector_type parameter is never passed by any caller, and create_detector_and_conditions(type=None) then replaces None with 'handler_with_state' instead of using a plain default.",
+      "evidence": "test_detector.py:86-88 and 101-105; no build_handler(detector_type=...) call in the file.",
+      "seats": ["ponytail:ponytail-review"],
+      "verdict": "defer",
+      "reason": "ponytail: advisory test-helper tidy-up with no correctness impact; non-blocking, leave for a cleanup pass."
+    },
+    {
+      "path": "src/sentry/workflow_engine/processors/detector.py",
+      "line": 49,
+      "severity": "Minor",
+      "claim": "DetectorHandler.evaluate and process_detectors changed from list to dict keyed by group key, and the duplicate-group-key error log (and its test) was removed; this public contract change goes beyond the commit message and breaks any DetectorHandler subclass returning a list.",
+      "evidence": "Removed lines in the process_detectors hunk (detector.py:47-65) and abstract signature at 126-128; removed test_state_results_multi_group_dupe.",
+      "seats": ["open-code-review:delegate-review", "mattpocock-skills:code-review"],
+      "verdict": "reject",
+      "reason": "Both raising seats state it is not a defect: a dict keyed by group key makes duplicates impossible by construction, so the removed log is dead; the only in-tree implementers are MetricAlertDetectorHandler (tracked separately) and the test mocks, which the patch updates. Out-of-tree subclasses (e.g. getsentry) were not checked."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode): no dependency install, pytest, mypy or pre-commit; every finding is reasoned from source, none executed. No spec: spec axis judged against commit messages only. No in-repo documented coding standards beyond tooling config (.pre-commit-config.yaml, pyproject mypy lists); .github/CONTRIBUTING.md points to external docs.sentry.io, which no seat read. Files skipped: open-code-review:delegate-review excluded tests/sentry/workflow_engine/processors/test_detector.py from line-by-line review (OCR default_path filter; read only lines 20-120); the other three seats reviewed all 4 files. Untracked root dotfiles (.bashrc, .claude/, .mcp.json, etc.) are environment artifacts and were excluded from the pinned patch. Not checked by any seat: out-of-repo DetectorHandler subclasses affected by the list-to-dict change. Rounds 2+, fixes and red tests not run (benchmark mode stops after merge)."
+}

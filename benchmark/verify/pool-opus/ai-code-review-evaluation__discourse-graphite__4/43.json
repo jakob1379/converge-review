@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/jobs/scheduled/poll_feed.rb:24-38, `open(SiteSetting.feed_polling_url)`, `SimpleRSS.parse` and the per-item loop (`i.content.scrub`, `TopicEmbed.import`) have no begin/rescue, so a network, parse or nil-content error fails the whole job and skips the remaining items. The job runs hourly and Sidekiq records the exception, so the damage is limited.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.057760900000000004
+}

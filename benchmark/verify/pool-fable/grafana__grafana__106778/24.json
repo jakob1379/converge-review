@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "For a non-Grafana promRule, AlertRuleMenu.tsx:73 passes skipToken, which useAbilities.ts:401 turns into undefined; useIsGrafanaPromRuleEditable then returns loading:false (useAbilities.ts:354-355), so MaybeSupported is AlwaysSupported (useAbilities.ts:309) and Duplicate becomes [true, hasPermission(AlertingRuleCreate)] (useAbilities.ts:313-318), ORed into canDuplicate at AlertRuleMenu.tsx:91-92. This bypasses the ruler-availability and external-write checks that previously gated Duplicate for datasource rules; the other four abilities stay false on the skip path.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.9557938000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/integrations/source_code_management/commit_context.py, MERGED_PR_SINGLE_ISSUE_TEMPLATE is now \"* \u203c\ufe0f [**{title}**]({url}){environment}\\n\". get_merged_pr_single_issue_template only shortens the title with _truncate_title and fills it in with .format, without escaping ']' or other markdown characters. Before the patch the title was only bold text (\"**{title}**\") and sat outside any link, so a ']' in it could not break a link.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0698548
+}

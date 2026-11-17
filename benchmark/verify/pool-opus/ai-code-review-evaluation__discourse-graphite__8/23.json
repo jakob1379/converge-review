@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/javascripts/discourse/models/group.js:59, the return statement in addMembers ends with '})' and no semicolon. .jshintrc does not set asi, and its 'lastsemic: true' only allows a missing semicolon when the closing brace is on the same line, which it is not here (line 60), so jshint raises W033 'Missing semicolon'.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0651253
+}

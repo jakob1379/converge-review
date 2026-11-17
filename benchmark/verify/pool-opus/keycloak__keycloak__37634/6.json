@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At AuthorizationTokenService.java:350-358 the ClientSessionContext is created and passed straight to responseBuilder().generateAccessToken(), and Constants.GRANT_TYPE is never set on it. TokenManager.initToken (TokenManager.java:1052-1054) then calls DefaultTokenContextEncoderProvider, which falls back to UNKNOWN \"na\" when the attribute is null, so the \"pg\" shortcut added in PermissionGrantTypeFactory is never used for UMA tokens.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21491280000000004
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In ASN1Decoder.java:133-134, readLength() returns -1 for 0x80 and no caller checks for it. readSequence's `while (length > 0)` loop (line 57) never runs, so it returns an empty list. readInteger passes -1 straight to read() (line 72), whose `new byte[length]` (line 170) throws NegativeArraySizeException, not IOException; readNext (lines 80-82) also adds -1 to the header size and reads too few bytes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.07762730000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes `public Context(Context context)` from `OAuth2GrantType.Context` in server-spi-private/src/main/java/org/keycloak/protocol/oidc/grants/OAuth2GrantType.java (patch lines 39-52) and puts the new `grantType` assignment in the main constructor instead. Nothing left in the repo calls it: the only remaining `new OAuth2GrantType.Context(...)` is the full constructor at services/.../TokenEndpoint.java:149.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0912261
+}

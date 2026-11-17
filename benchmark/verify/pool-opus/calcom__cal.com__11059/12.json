@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In sync mode, parseRefreshTokenResponse.ts:13-14 (patch lines 199-200) parses with minimumTokenResponseSchema instead of salesforceTokenSchema. That schema is a plain z.object, which strips unknown keys, and both of its computed keys collapse to the literal '[object Object]', so only access_token survives. CalendarService.ts:90-98 then writes {access_token, refresh_token} back over credential.key, which removes instance_url (and id, scope, etc.) for later getClient calls that read instanceUrl at line 105.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0954078
+}

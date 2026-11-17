@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/server/service/insightsBooking.ts:157-162 only calls MembershipRepository.findAllByTeamIds when teamsFromOrg.length > 0, although teamIds at line 154 already contains options.orgId; with no child teams userIdsFromOrg is [] and the `isTeamBooking = false` branch at lines 166-169 is skipped, so org members' personal bookings are left out. The guard sits in unchanged context lines of the patch hunk (@@ -159,31 +161,22), which only rewrote the return into raw SQL.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1885791
+}

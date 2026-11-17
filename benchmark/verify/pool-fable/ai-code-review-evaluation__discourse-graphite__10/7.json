@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20150818190757_create_embeddable_hosts.rb:5 declares `category_id` as a plain NOT NULL integer with no foreign key, and app/controllers/admin/embeddable_hosts_controller.rb:24-25 assigns the param without checking the category exists. app/models/embeddable_host.rb:3 has only `belongs_to :category` with no presence validation, and app/models/category.rb has no `has_many :embeddable_hosts`/dependent or destroy hook, so deleting a category leaves host rows pointing at a missing id (later passed to PostCreator at app/models/topic_embed.rb:43).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2479987
+}

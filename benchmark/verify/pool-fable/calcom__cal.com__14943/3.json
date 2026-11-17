@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/ee/workflows/api/scheduleSMSReminders.ts:56-60 spreads the shared `select`, adds `retryCount: true` and casts to `(PartialWorkflowReminder & { retryCount: number })[]`. In packages/features/ee/workflows/lib/getWorkflowReminders.ts, `PartialWorkflowReminder` (lines 35-40) and the exported `select` (line 112 onward) have no `retryCount` and the patch does not touch that file.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1235908
+}

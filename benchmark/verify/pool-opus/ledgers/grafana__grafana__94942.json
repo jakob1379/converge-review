@@ -1,0 +1,275 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "pkg/expr/reader.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "enableSqlExpressions in reader.go (lines 194-200) returns false on both branches, so the sqlExpressions feature flag check is dead code and the toggle has no effect.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/expr/reader.go:194-200, enableSqlExpressions works out `enabled := !IsEnabledGlobally(FlagSqlExpressions)` but returns false on both branches, so ReadQuery (reader.go:129-131) always fails with \"sqlExpressions is not implemented\" whether or not the flag is set. The same patch also strips SQL dependencies from go.mod and adds pkg/expr/sql/db.go, so turning the feature off may be deliberate, but the flag check is still dead, misleading code.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0581455
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "pkg/expr/reader.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In enableSqlExpressions, the local variable 'enabled' is assigned !IsEnabledGlobally(...), so it holds the opposite of what its name says.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/expr/reader.go:195 sets `enabled := !h.features.IsEnabledGlobally(featuremgmt.FlagSqlExpressions)`, so `enabled` is true when the flag is off. The variable name means the opposite of what it holds. Both branches (lines 196-199) return false, so the function always returns false whatever the flag is set to.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.036545
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "pkg/expr/nodes.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The SQL-expression rejection gate exists only on the ReadQuery path, which is used when FlagExpressionParser is on. In the default legacy path, buildCMDNode in nodes.go calls UnmarshalSQLCommand directly for TypeSQL, so the gate is bypassed and the disable is enforced in two ways with different errors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the SQL rejection only in ReadQuery (pkg/expr/reader.go, QueryTypeSQL case), and nodes.go only calls that when FlagExpressionParser is on (nodes.go:123-140). On the default path, nodes.go:159-160 calls UnmarshalSQLCommand \u2192 NewSQLCommand \u2192 sql.TablesList, which now hits the stub DB and fails with a 'sql-invalid-sql' BadRequest (sql_command.go:30-35). That is a different error from the gate's \"sqlExpressions is not implemented\".",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.16631369999999998
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "TablesList now uses the stub NewInMemoryDB(), whose RunCommands returns a generic 'not implemented' error. Upstream code reports this as 'invalid SQL' / sql-invalid-sql, so valid SQL expressions fail with a validation error instead of an explicit 'disabled' error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch rewires pkg/expr/sql/parser.go:23 to call the stub NewInMemoryDB(). That stub's RunCommands always returns errors.New(\"not implemented\") (pkg/expr/sql/db.go:16-17), and NewSQLCommand turns any TablesList error into errutil.BadRequest(\"sql-invalid-sql\", \"error reading SQL command\") (pkg/expr/sql_command.go:30-35). Valid SQL that comes in through nodes.go:160 (UnmarshalSQLCommand), which has no feature-flag check, therefore fails as invalid SQL instead of with a clear 'disabled' error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.23800289999999996
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The DB methods NewInMemoryDB().RunCommands, DB.QueryFramesInto and DB.TablesList in db.go return hardcoded 'not implemented' errors after the go-duck dependency was removed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new pkg/expr/sql/db.go:12-22 has TablesList, RunCommands and QueryFramesInto each return errors.New(\"not implemented\"). The patch also switches parser.go:23 and sql_command.go:96-100 from go-duck to these stubs, so SQL expressions always fail; this looks deliberate, since reader.go now rejects QueryTypeSQL up front.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1425763
+   }
+  },
+  {
+   "issue": "i6",
+   "path": "pkg/expr/sql/parser.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "On the legacy path, parser.go logs raw user SQL with logger.Error('error serializing sql') and Warn('invalid sql query') on every request.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a stub at pkg/expr/sql/db.go:16 whose RunCommands always fails. On the legacy path, nodes.go:160 calls UnmarshalSQLCommand with no feature-flag check, then NewSQLCommand, then TablesList. So every request logs logger.Error(\"error serializing sql\") with the raw SQL at pkg/expr/sql/parser.go:28, followed by Warn(\"invalid sql query\") with the raw SQL. That Warn is in pkg/expr/sql_command.go:32, not in parser.go as the claim says.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.20963469999999998
+   }
+  },
+  {
+   "issue": "i7",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "DB.TablesList in db.go (lines 12-14) has no callers, because parser.go calls the package-level sql.TablesList instead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The method DB.TablesList at pkg/expr/sql/db.go:12 has no callers in pkg/. All calls go to the package-level TablesList that parser.go:22 defines: sql_command.go:30 calls it as sql.TablesList, and parser_test.go calls it as TablesList. That package-level function only uses NewInMemoryDB().RunCommands, never the method. The claim is slightly off in saying parser.go calls TablesList, since parser.go defines it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1457348
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "pkg/expr/sql_command.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "SQLCommand.Execute and its db.QueryFramesInto call (sql_command.go:96-104) are unreachable, because NewSQLCommand always fails first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only way to build a SQLCommand is `NewSQLCommand` (sql_command.go:43; the reader.go:137, nodes.go:160 and test callers all go through it). It calls `sql.TablesList` (sql_command.go:30), which calls `DB.RunCommands`; the patch's stub always returns an error there (pkg/expr/sql/db.go:16-17, parser.go:26-29), so `NewSQLCommand` always fails and `Execute` / `db.QueryFramesInto` at sql_command.go:96-104 can never run.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1828598
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The exported stub type DB and its methods in db.go have no doc comments.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/expr/sql/db.go is a new file added by this patch. The exported type `DB` (line 9), its methods `TablesList` (line 12), `RunCommands` (line 16) and `QueryFramesInto` (line 20), and `NewInMemoryDB` (line 24) have no doc comments. Nothing marks them as stubs that return \"not implemented\".",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0452633
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Docstring coverage is 25.00%, below the required 80.00% threshold.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Of the 8 functions the patch adds or changes, only parser.go TablesList and sql_command.go:77-79 Execute have doc comments. The new enableSqlExpressions (reader.go:194), all four functions in the new pkg/expr/sql/db.go (DB.TablesList, RunCommands, QueryFramesInto, NewInMemoryDB) and ReadQuery (reader.go:45, which has only a nolint comment) have none, giving 2/8 = 25%.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.15699010000000002
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers the new rejection of SQL expressions on either the ReadQuery path or the legacy path, and all existing SQL tests are skipped with t.Skip().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "No test calls ReadQuery with a SQL query: pkg/expr/reader_test.go only tests reduce modes (lines 15-162), so the new rejection at reader.go:128-132 is never exercised, and the legacy path (UnmarshalSQLCommand at nodes.go:159-160) has no rejection or test of its own. Every existing SQL test starts with t.Skip() (sql_command_test.go:9 and all 16 tests in sql/parser_test.go); query_test.go:84 only builds a schema example.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.24789970000000003
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The rejection uses a plain fmt.Errorf('sqlExpressions is not implemented') instead of an errutil error with a messageID, so it carries no status code or public message.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/expr/reader.go:131 (added by the patch) returns `fmt.Errorf(\"sqlExpressions is not implemented\")` with no errutil messageID, status code or public message. Every other rejection in ReadQuery (lines 56, 83, 87, 100, 149, 181) also uses plain fmt.Errorf, so this matches the file's existing style.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.16654059999999998
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The schema and docs still advertise SQL expressions, including 'SQL query via DuckDB', the sql type in query.types.json and the toggle description, although the feature always fails.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/expr/query.go:30-31 still says 'SQL query via DuckDB' for QueryTypeSQL = \"sql\", pkg/expr/query.types.json:542-550 still defines the sql type, and pkg/services/featuremgmt/registry.go:1084 still says 'Enables using SQL and DuckDB functions as Expressions.' Yet after the patch, enableSqlExpressions always returns false (pkg/expr/reader.go), so ReadQuery always fails, and the new stub pkg/expr/sql/db.go returns \"not implemented\" for every call.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1558358
+   }
+  },
+  {
+   "issue": "i14",
+   "path": "pkg/expr/sql/parser.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In parser.go the variable holding the stub DB is named 'duckDB', while sql_command.go:96 uses 'db' for the same thing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/expr/sql/parser.go:23 still names the variable `duckDB := NewInMemoryDB()`, but the patch renamed the same stub DB to `db := sql.NewInMemoryDB()` at pkg/expr/sql_command.go:96. The two names no longer match, and `duckDB` is now misleading because the stub is no longer DuckDB.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1395602
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "types.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The frontend still offers the SQL expression type when the flag is on (types.ts:73), but the backend rejects all such requests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "public/app/features/expressions/types.ts:73 still shows the SQL expression type whenever `config.featureToggles.sqlExpressions` is on. On the backend, the patch's `enableSqlExpressions` (pkg/expr/reader.go:213-219) returns false in every branch, so `ReadQuery` always fails with \"sqlExpressions is not implemented\". The other path also fails: `UnmarshalSQLCommand` \u2192 `NewSQLCommand` \u2192 `sql.TablesList` calls the new stub `DB.RunCommands`, which always returns \"not implemented\" (pkg/expr/sql/db.go:16; pkg/expr/sql_command.go:30-35).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.18452609999999997
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,274 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/6",
+ "cost_usd": 0.06424749999999999,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "Preferences controller's .then (controllers/preferences.js.es6:117-123) refreshes only name and bio_cooked, missing website_name"
+  },
+  {
+   "id": "c2",
+   "source": "coderabbit",
+   "text": "include_website_name is missing the trailing question mark (?) required by ActiveModelSerializers, so the predicate won't be invoked and website_name will serialize even when user fields are restricted (e.g., TL0/anonymous users viewing other profiles), leaking private data"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review-replay",
+   "text": "Sibling-subdomain branch over-matches across shared or public suffixes - hosts with same label count (>2) and equal labels after first are treated as same site (e.g., evil.co.uk vs forum.co.uk, a.github.io vs forum.github.io)"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "Missing test coverage for sibling-subdomain branch, nil/blank website, unparseable URI rescue path, www-vs-apex case, and TL0/anonymous restriction on website_name"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "Sibling-subdomain branch treats hosts sharing labels after first as same site across public suffixes (attacker.co.uk vs forum.co.uk, a.github.io vs forum.github.io), showing full path for unrelated sites"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "No spec for nil or blank website, including that website_name is absent or nil - would have caught dead include_website_name filter"
+  },
+  {
+   "id": "c7",
+   "source": "qodo-extended-v2",
+   "text": "UserSerializer emits website_name whenever website is present, but does not honor Guardian#restrict_user_fields? like the website attribute does, causing TL0 users viewed by anonymous to leak website host/path via website_name"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review",
+   "text": "Host comparison is case-sensitive: http://Example.com/u does not match instance example.com due to missing downcase"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "include_website_name is missing its trailing '?' so active_model_serializers 0.8.3 never calls it, making the method dead and website_name always sent (as null when no website)"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "Same-domain URL with path '/' renders as 'example.com/' and port is dropped silently ('example.com:8080/u' shows as 'example.com/u')"
+  },
+  {
+   "id": "c11",
+   "source": "cubic-v2",
+   "text": "Method `include_website_name` is missing the `?` suffix - the serializer uses `include_<attribute>?` as its predicate convention, so without the trailing `?` this method is never called and `website_name` will be included unconditionally"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review-replay",
+   "text": "Regression: profile's website text becomes stale or missing after user edits website in preferences until full page reload - the removed client-side computed websiteName tracked model.website live, but new server-computed model.website_name is set once and nothing refreshes it"
+  },
+  {
+   "id": "c13",
+   "source": "converge-review-replay",
+   "text": "Same-domain matching is asymmetric - with website http://www.example.com/u on instance example.com, the else branch checks wrong direction ('example.com'.ends_with?('.www.example.com')), showing only host without path"
+  },
+  {
+   "id": "c14",
+   "source": "augment",
+   "text": "The conditional serializer helper is named include_website_name (missing ?) instead of include_website_name? like all other helpers, which means it won't gate serialization as expected and may cause website_name to be emitted unconditionally."
+  },
+  {
+   "id": "c15",
+   "source": "converge-review-replay",
+   "text": "Host comparison is case-sensitive - URI#host preserves case so http://Example.com/u does not match instance example.com"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review-replay",
+   "text": "User#save (models/user.js.es6 ~166-215, 206-213) copies back only bio_excerpt from PUT response and ignores website_name, though users_controller#update returns full UserSerializer"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "website_name is not in untrusted_attributes, so TL0 user profile fields are exposed to anonymous visitors, undoing the anti-spam restriction on TL0 profile fields"
+  },
+  {
+   "id": "c18",
+   "source": "qodo-extended-v2",
+   "text": "Profile template may render a link/title using missing model.website (broken href) because the UI gates rendering on model.website_name but still uses model.website for the href/title, so when website is omitted the UI can display leaked text and/or create an empty/broken link"
+  },
+  {
+   "id": "c19",
+   "source": "augment",
+   "text": "In website_name, the logic doesn't cover the case where the instance host is the apex domain (e.g. example.com) but the user website is a subdomain (e.g. www.example.com/user); in that case this branch returns only www.example.com without the path. Subdomains of the instance domain may need to include the path as well."
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "include_website_name is dead code - missing trailing '?' so active_model_serializers never calls it, causing website_name to always be serialized (as null when no website)"
+  },
+  {
+   "id": "c21",
+   "source": "golden",
+   "text": "The include_website_name method is missing the required ? suffix. Rails serializers expect include_ methods to end with ? for conditional attribute inclusion, a convention followed by other methods in this serializer. Without it, the website_name attribute may not be conditionally included as intended. Additionally, the '.' << website_host string concatenation should be replaced with '.' + website_host or '.#{website_host}' to avoid mutating string literals, which can lead to issues."
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "website_name is over-built: parses URI(website) three times, calls discourse_host.split('.') four times, with nested ternaries that could be simplified to about 8 lines"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review-replay",
+   "text": "No spec for sibling-subdomain branch (www.example.com vs forum.example.com) - the most complex branch with the over-match bug"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "Regression: website_name is now a static server value instead of a client computed property, causing the profile to show stale website name after user edits until full page reload"
+  },
+  {
+   "id": "c25",
+   "source": "claude-code",
+   "text": "`include_website_name` method (line 153) is missing the trailing `?` - ActiveModel::Serializer requires the method to be named `include_website_name?` for conditional attribute inclusion, causing `website_name` to always be serialized instead of being conditionally omitted"
+  },
+  {
+   "id": "c26",
+   "source": "cubic-v2",
+   "text": "The `include_website_name` method needs to apply the same `restrict_user_fields?` guard as `website`, otherwise the derived URL label can bypass the existing hidden-profile-field check"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "Asymmetric matching: website www.example.com on instance example.com shows host only, while reverse case shows path, missing the most common 'same domain' case"
+  },
+  {
+   "id": "c28",
+   "source": "claude-code",
+   "text": "The `website_name` attribute is not included in `untrusted_attributes`, so it remains visible to anonymous users viewing TL0 profiles even though `website` is correctly hidden, leaking website information that should be restricted"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The serializer method `include_website_name` lacks the trailing `?` that ActiveModel::Serializer requires for `include_<attr>?` predicates. As a result it is never called and `website_name` is always serialized, as null when there is no website.",
+   "path": null,
+   "members": [
+    "c2",
+    "c9",
+    "c11",
+    "c14",
+    "c20",
+    "c21",
+    "c25"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "UserSerializer's `website_name` does not honor `Guardian#restrict_user_fields?` and is not in `untrusted_attributes`, unlike `website`. This exposes the website host/path of TL0 users to anonymous viewers.",
+   "path": null,
+   "members": [
+    "c7",
+    "c17",
+    "c26",
+    "c28"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The sibling-subdomain branch of `website_name` treats any hosts with the same label count (>2) and equal labels after the first as the same site, even across public suffixes. For example, `evil.co.uk` matches `forum.co.uk` and `a.github.io` matches `forum.github.io`, so the full path is shown for unrelated sites.",
+   "path": null,
+   "members": [
+    "c3",
+    "c5"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "Tests are missing for the sibling-subdomain branch, nil/blank website, the unparseable-URI rescue path, the www-vs-apex case, and the TL0/anonymous restriction on `website_name`.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "No spec covers a nil or blank website, including checking that `website_name` is absent or nil.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "No spec covers the sibling-subdomain branch (e.g. `www.example.com` vs `forum.example.com`).",
+   "path": null,
+   "members": [
+    "c23"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The host comparison in `website_name` is case-sensitive because URI#host preserves case and nothing downcases it. So `http://Example.com/u` does not match instance `example.com`.",
+   "path": null,
+   "members": [
+    "c8",
+    "c15"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "For a same-domain URL with path `/`, `website_name` renders `example.com/`. The port is also silently dropped, so `example.com:8080/u` shows as `example.com/u`.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "Same-domain matching in `website_name` is asymmetric. With website `http://www.example.com/u` on instance `example.com`, the check runs in the wrong direction (`'example.com'.ends_with?('.www.example.com')`) and shows only the host without the path, while the reverse case shows the path.",
+   "path": null,
+   "members": [
+    "c13",
+    "c19",
+    "c27"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The client-side computed websiteName that tracked `model.website` was replaced by a server-computed `model.website_name` that is set once. After a user edits their website in preferences, the profile shows a stale or missing website name until a full page reload.",
+   "path": null,
+   "members": [
+    "c12",
+    "c24"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The preferences controller's `.then` refreshes only `name` and `bio_cooked` after saving, not `website_name`.",
+   "path": "controllers/preferences.js.es6",
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "`User#save` copies back only `bio_excerpt` from the PUT response and ignores `website_name`, even though `users_controller#update` returns the full UserSerializer.",
+   "path": "models/user.js.es6",
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The profile template gates rendering on `model.website_name` but uses `model.website` for the href/title. When `website` is omitted, it can render text with an empty or broken link.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "`website_name` parses `URI(website)` three times and calls `discourse_host.split('.')` four times, using nested ternaries.",
+   "path": null,
+   "members": [
+    "c22"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removed the only callers of `format_comment_subtitle`, leaving just the definitions at src/sentry/integrations/github/integration.py:394 and src/sentry/integrations/gitlab/integration.py:240 with no references anywhere in the repo, tests included. `_truncate_title` (src/sentry/integrations/source_code_management/commit_context.py:578) has one call site, at line 601, which passes only `title`, so `max_length` always takes its default.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1301495
+}

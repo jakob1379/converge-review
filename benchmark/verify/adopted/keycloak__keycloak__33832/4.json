@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds org.hamcrest:hamcrest at test scope in authz/client/pom.xml:68-71, but the only test file it adds (ECDSAAlgorithmTest.java) imports only org.junit.Assert and org.junit.Test and uses Assert.assertArrayEquals. A search for hamcrest under authz/client finds only the pom entry, and the root pom's junit entry (pom.xml:563-568) has no exclusion, so JUnit's own hamcrest-core still arrives with it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.209734
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:55 still has `FileHelper.download(...) rescue nil`. It swallows every StandardError, network failures included, and leaves `tempfile` nil, so line 72 (`tempfile.size`) later fails with a NoMethodError that hides the real cause. Strictly, it catches StandardError rather than literally every exception.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0614817
+}

@@ -1,0 +1,491 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In admin-ui, error-invalid-multivalued-size was rewritten from i18next {{0}}/{{1}}/{{2}} placeholders to Java MessageFormat {0}..{2,choice,...} syntax. The Admin UI loads it with plain i18next and no ICU plugin, so the raw template text is shown instead of interpolated values.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes js/apps/admin-ui/maven-resources/theme/keycloak.v2/admin/messages/messages_en.properties:3138 from `{{0}}/{{1}}/{{2}}` to `{0} \u2026 {2,choice,0#values|1#value|1<values}`. The Admin UI uses plain i18next with default `{{ }}` interpolation and no ICU plugin (js/apps/admin-ui/src/i18n/i18n.ts:13-37), ThemeResource.java:153 serves the values unconverted, and the key is rendered via t(key, params) in js/libs/ui-shared/src/user-profile/utils.ts:79, so the raw template is displayed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.7577156
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In account-ui, error-invalid-multivalued-size was changed from i18next {{N}} placeholders to MessageFormat {N}/choice syntax. account-ui uses default i18next interpolation without i18next-icu, so the string renders with raw placeholders.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes js/apps/account-ui/maven-resources/theme/keycloak.v3/account/messages/messages_en.properties:188 from `{{0}}/{{1}}/{{2}}` to `{0} \u2026 {2,choice,\u2026}`, while js/apps/account-ui/src/i18n.ts:25-47 builds a plain i18next instance (default `{{ }}` interpolation, no ICU plugin; none in package.json). The key is translated client-side with positional params in js/libs/ui-shared/src/user-profile/utils.ts:74-86 and the server serves the raw property value (ThemeResource.java:153), so the placeholders and choice block show up literally.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.8509666
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "messages_zh_CN.properties",
+   "line": null,
+   "severity": "Minor",
+   "claim": "totpStep1 in the Simplified Chinese locale file messages_zh_CN.properties uses Traditional Chinese characters (\u624b\u6a5f, \u5b89\u88dd, \u61c9\u7528\u7a0b\u5f0f) instead of Simplified forms (\u624b\u673a, \u5b89\u88c5, \u5e94\u7528\u7a0b\u5e8f).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "themes/src/main/resources-community/theme/base/account/messages/messages_zh_CN.properties:112 reads `totpStep1=\u5728\u60a8\u7684\u624b\u6a5f\u4e0a\u5b89\u88dd\u4ee5\u4e0b\u61c9\u7528\u7a0b\u5f0f\u4e4b\u4e00\uff1a`, which uses Traditional characters (\u624b\u6a5f, \u5b89\u88dd, \u61c9\u7528\u7a0b\u5f0f) in the Simplified Chinese locale; the patch (change.patch:436-437) replaced a Simplified-script line with this one.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0752374
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "messages_lt.properties",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the Lithuanian bundles messages_lt.properties (account totpStep1 and login loginTotpStep1), the value was replaced with the Italian text 'Installa una delle seguenti applicazioni sul tuo cellulare:' instead of Lithuanian.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch replaces the Lithuanian text with the Italian string 'Installa una delle seguenti applicazioni sul tuo cellulare:' at themes/src/main/resources-community/theme/base/account/messages/messages_lt.properties:101 (totpStep1) and themes/src/main/resources-community/theme/base/login/messages/messages_lt.properties:71 (loginTotpStep1).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0738124
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "normalizeValue has special cases for specific keys (templateHelp, optimizeLookupHelp, linkExpirationFormatter, error-invalid-multivalued-size, email RTL styles) that bypass parts of sanitization.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:117-136 hard-codes exceptions that strip `CLAIM.<NAME>` (templateHelp), `<Extensions>` (optimizeLookupHelp), whole `{n,choice,...}` blocks (linkExpirationFormatter.timePeriodUnit*, error-invalid-multivalued-size) and ` style=\"direction: rtl;\"` in email files before the policy check at line 92, so that content is never sanitized. The exceptions are narrow, commented and deliberate, in a build-time verifier.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2131974
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In verifySafeHtml, failures reading the file or its derived _en counterpart are rethrown as raw RuntimeException instead of MojoExecutionException, which is inconsistent with the rest of verify().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:69-71 and :78-80 catch IOException for the file and the derived _en file and rethrow as RuntimeException, while verify() at :52-53 wraps IOException in MojoExecutionException; the RuntimeException is not caught by that handler and escapes unwrapped.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.48491189999999995
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Anchors are matched by position against the English string, so a valid translation that reorders links is flagged. In addition, ANCHOR_PATTERN </?a[^>]*> also matches <abbr>, <area> and <audio>.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:153-158, `santizeAnchors` advances the translation and English matchers in lockstep and requires the i-th tags to be equal, so a translation that reorders two different links gets \"Didn't find anchor tag\". ANCHOR_PATTERN at line 145 is `</?a[^>]*>` with no boundary after `a`, so it also matches `<abbr>`, `<area>` and `<audio>`.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.500807
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The method name 'santizeAnchors' is misspelled; it should be 'sanitizeAnchors'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a private method spelled `santizeAnchors` at misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:150 and calls it at line 88; the intended word is 'sanitize'. Both lines are added by the patch (change.patch:130, 192), and the name is used consistently so it compiles and behaves correctly.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0553424
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "pom.xml",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new dependencies, including owasp-java-html-sanitizer 20240325.1, have hard-coded versions in the module pom.xml. This duplicates the root pom.xml owasp.html.sanitizer.version property instead of being managed centrally, which allows version drift.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/pom.xml:78 hard-codes owasp-java-html-sanitizer 20240325.1 (and commons-text 1.13.0 at :83), duplicating the root property at pom.xml:119, so the two can drift. However, the module declares no <parent> (misc/theme-verifier/pom.xml:23-25), so it cannot inherit the root property as written, and every existing dependency there is already hard-coded the same way (e.g. :61, :66, :72).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1987195
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The check compares the value to the sanitizer's re-serialized output instead of checking that nothing was removed. As a result, equivalent markup such as <br/>, </ b> or < p> fails the build.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:92-99 sanitizes the value and requires string equality with the sanitizer's re-serialized output, and any mismatch becomes a MojoFailureException at ThemeVerifierMojo.java:54-55. The patch itself had to rewrite `<br/>` to `<br />`, `</ b>` to `</b>` and `< p>` to `<p>` across the translation files to pass, though `< p>` and `</ b>` are arguably malformed rather than equivalent markup.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.529799
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "POLICY_SOME_HTML, POLICY_NO_HTML and HTML_TAGS use constant naming but are non-static instance fields rebuilt per instance. This is inconsistent with the private static final ANCHOR_PATTERN.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In `misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java`, `POLICY_SOME_HTML` (line 58), `POLICY_NO_HTML` (line 63) and `HTML_TAGS` (line 139) are package-private, non-static, non-final instance fields of a class, so they are rebuilt per instance, while `ANCHOR_PATTERN` (line 145) is `private static final`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1299519
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "messages_ka.properties",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In messages_ka.properties, lines 172, 174, 451 and 452 use '<br />{0}' without a space, while other locales use '<br /> {0}'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "themes/src/main/resources-community/theme/base/login/messages/messages_ka.properties:172, 174, 451 and 452 all end in `<br />{0}` with no space, while most other locales in the patch (en, de, fr, cs, etc.) use `<br /> {0}`; messages_ca has the same no-space form on two keys. The missing space was already there before the patch (`<br/>{0}`), which only rewrote `<br/>` to `<br />`, and whitespace after a `<br>` has no effect on rendered HTML.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.20056580000000002
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The common prefix/suffix trimming that builds the 'Illegal HTML' message does not cap start+end at the shorter string length. Overlapping indices make substring throw StringIndexOutOfBoundsException and abort the Mojo.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:102-109 bounds `start` and `end` only by each string's length, never by `length - start`, so line 111 can call `sanitized.substring(start, sanitized.length() - end)` with begin > end. For example, value `<b>x</b></b>` against sanitized `<b>x</b>` gives start=8, end=4 and `substring(8, 4)` (assuming the sanitizer drops the stray closing tag; not executed). `verify()` (lines 46-56) catches only IOException, so the exception escapes through ThemeVerifierMojo.java:51.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4500502
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Anchor sanitization consumes English matcher groups without validating counts, so a translation with more anchor tags than the English text can produce incorrect validation results.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:154 guards `englishMatcher.group()` behind `englishMatcher.find() &&`, so when the translation has more anchors than the English text the short-circuit falls to the else branch at line 157, which records \"Didn't find anchor tag ...\" and breaks. That is the correct validation outcome, and no group is consumed without a successful find.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.5050557
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'Didn't find anchor tag \u2026 in original string' error message omits the message key and file, unlike the 'Illegal HTML' message.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:157 emits \"Didn't find anchor tag \u2026 in original string\" without the key or file (the `key` parameter of santizeAnchors is unused), whereas line 111 emits \"Illegal HTML in key <key> for file <file>\".",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.20072459999999998
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commons-text dependency version 1.13.0 is outdated compared with 1.15.0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "The patch does pin commons-text to 1.13.0 at misc/theme-verifier/pom.xml:83, and it is used only for `StringEscapeUtils.unescapeHtml4`. Whether a 1.15.0 release exists and supersedes it cannot be settled from the repository (nothing here references 1.15.0); that needs Maven Central.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1753135
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "All tests are positive detections, and no test asserts that a valid bundle yields zero messages. The duplicate-keys assertion was loosened from contains to hasItem.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/test/java/org/keycloak/themeverifier/VerifyMessagePropertiesTest.java:30-52 holds only four tests, each asserting `hasItem(containsString(...))` on an error message; none asserts an empty result for a valid bundle, and no valid-bundle fixture is exercised. Line 33 changes the duplicate-keys assertion from `Matchers.contains` to `Matchers.hasItem` (change.patch:228-230).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5336697
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The theme verifier anchor check does not fail when a translation drops an anchor present in the source, so translations can lose links and still pass.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`santizeAnchors` at misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:150-162 loops only over anchors found in the translation (`while (matcher.find())`) and never checks for English anchors left unmatched. A translation with fewer or no anchors adds no message, and the sanitizer comparison at lines 91-99 also passes since the value simply has no anchor tags.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5442077
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "For allowlisted keys, the whole {N,choice,...} block is replaced with '...' before sanitizing, so HTML inside a translator-supplied choice branch passes the check.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`normalizeValue` at misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:124-126 replaces the whole `\\{[0-9]+,choice,[^}]*}` block with \"...\" for `linkExpirationFormatter.timePeriodUnit*` and `error-invalid-multivalued-size`, and it is applied to the translated value at line 84 before `policy.sanitize(value)` at line 92. Any markup without a `}` inside a choice branch (e.g. `1#<img src=x onerror=...>`) is therefore removed before the comparison and never reported.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5390713
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The owasp-java-html-sanitizer dependency version 20240325.1 is outdated compared with 20260313.1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "The patch does pin 20240325.1 at misc/theme-verifier/pom.xml:78, which matches the repo-wide managed version at pom.xml:119, but whether a 20260313.1 release exists is a fact about Maven Central that nothing in the repository can settle.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0899461
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Email bundle detection uses file.getAbsolutePath().contains('email'), and English path derivation uses replaceAll over the absolute path. A checkout directory containing 'email' or 'resources-community' therefore changes behaviour for every file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:74 derives the English file with file.getAbsolutePath().replaceAll(\"resources-community\", \"resources\"), and line 132 gates the RTL-style stripping on file.getAbsolutePath().contains(\"email\"). Both match against the whole absolute path, so a parent/checkout directory containing either string either points every file at a wrong English path (RuntimeException) or applies the email-only leniency to every bundle.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.44872
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The sanitize/unescape/strip-comment/trim-diff pipeline and the commons-text dependency duplicate functionality available through OWASP's HtmlChangeListener.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The pipeline at misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:92-112 compares the full sanitizer output with the input, so it also flags unbalanced or malformed markup (the patch's own fixes: missing `</p>` in email messages_da, stray `</strong>` in login messages_sk, `</p<p>` in email messages_nl). OWASP's HtmlChangeListener only reports discarded tags and attributes \u2014 stated from knowledge of the library API, whose source is not in this repo \u2014 so it is a narrower check, not a duplicate.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 1.0200624999999999
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test fixture value 'Some <div>tag</div' has a malformed closing tag missing '>'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds misc/theme-verifier/src/test/resources/illegalHtmlTag_en.properties:17 as `key=Some <div>tag</div` with no closing `>` (change.patch:326). The only consumer, VerifyMessagePropertiesTest.java:38-39, just asserts an \"Illegal HTML\" message, so the test probably still passes (not run), but may not isolate the illegal-tag case.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1758077
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getEnglishValue uses MissingResourceException for control flow instead of checking bundleEnglish.containsKey(key).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:164-172 calls bundleEnglish.getString(key) and catches MissingResourceException to fall back to \"\", rather than checking containsKey(key) first. Behaviour is correct; this is only a style point in a build-time verifier.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1262287
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new translator-facing HTML rules (HTML only where English has HTML; only br/p/strong/b; anchors identical to English) are not documented.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the enforcement in misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java (verifySafeHtml, POLICY_SOME_HTML with br/p/strong/b, santizeAnchors) but touches no documentation file; docs/translation.md:28-35 (the translator guidelines) says nothing about HTML or anchors, and no other .md/.adoc in the repo describes these rules.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.6121017
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "santizeAnchors modifies value via replaceFirst while iterating matches, which can misbehave with repeated identical anchors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:151-155 the Matcher is bound to the original immutable String, so reassigning `value` does not disturb iteration. Matches are visited left to right and every earlier identical anchor has already been removed, so `replaceFirst` always removes exactly the currently matched occurrence; repeated identical anchors are handled correctly.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.5502824000000001
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "santizeAnchors and getEnglishValue take an unused key parameter, and 'numberic' is misspelled at L94.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Two of the three parts hold: `santizeAnchors(String key, ...)` never uses `key` (misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:150-162), and the comment at line 94 misspells 'numberic'. The third part is wrong: `getEnglishValue` does use `key`, in `bundleEnglish.getString(key)` at line 167.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1363721
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

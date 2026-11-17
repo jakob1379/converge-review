@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupTest.java:139-149 starts a reader with a bare `new Thread(...).start()` and keeps no reference to it. Lines 155-157 set `deletedAll` and then assert on `caughtExceptions` without a join, so an exception from a request still running can arrive after the assertion. If `remove()` at line 153 throws, `deletedAll` is never set and the thread keeps polling past the end of the test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0659495
+}

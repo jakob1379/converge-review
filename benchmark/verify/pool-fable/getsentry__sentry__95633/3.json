@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `SimpleQueueProcessingStrategy.submit()`, the `add_offset`/`complete_offset` pair appears at src/sentry/remote_subscriptions/consumers/queue_consumer.py:302-303 (the `result is None` path) and again at :320-325 (the `except Exception` path). It is a pure code repetition with no behavioural defect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.45500419999999997
+}

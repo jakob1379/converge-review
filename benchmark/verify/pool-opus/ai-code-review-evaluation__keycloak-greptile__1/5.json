@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `try { MatcherAssert.assertThat(driver.findElement(By.xpath(\"//form[@id='webauth']\")), nullValue()); fail(...); } catch (Exception nsee) {}` at PasskeysUsernamePasswordFormTest (patch lines 542-547 and 563-568). `findElement` never returns null, so `nullValue()` can never pass, and `catch (Exception)` would also swallow unrelated WebDriver failures. One correction: the assertion is not fully dead code \u2014 if the form exists it throws an AssertionError, which `catch (Exception)` does not catch, so the presence case is still detected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0577892
+}

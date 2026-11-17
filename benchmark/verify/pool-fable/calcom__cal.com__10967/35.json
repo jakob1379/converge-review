@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/googlecalendar/lib/CalendarService.ts:100-124 always sets the organizer attendee's email to the first destinationCalendar entry's externalId, while the insert targets the calendar matching the current credentialId (lines 147-154). packages/core/EventManager.ts createAllCalendarEvents now calls createEvent once per destination calendar, and handleNewBooking.ts:1078 pushes the other collective hosts' calendars into that array, so every host's event carries the main host's calendar id as organizer email.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2712035
+}

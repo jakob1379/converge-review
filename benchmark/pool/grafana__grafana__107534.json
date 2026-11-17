@@ -1,0 +1,178 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/107534",
+ "cost_usd": 0.050467500000000005,
+ "items": [
+  {
+   "id": "c1",
+   "source": "qodo-extended-v2",
+   "text": "Ad-hoc filters are applied multiple times because applyTemplateVariables is called in runSplitQuery and runShardSplitQuery, and then again inside DataSourceWithBackend.query() via super.query(). Since addAdHocFilters unconditionally appends each filter label without deduplication, filters get duplicated. For shard splitting, applyTemplateVariables is called 3 times total: in runShardSplitQuery, then runSplitQuery, then super.query(). The tests don't catch this because they mock datasource.runQuery, bypassing super.query() entirely."
+  },
+  {
+   "id": "c2",
+   "source": "coderabbit",
+   "text": "Call-count expectation in test at line 112 expects 5 calls to datasource.applyTemplateVariables, but runShardSplitQuery only calls applyTemplateVariables once per initial target (this test has one target), so the expectation should be changed to 1"
+  },
+  {
+   "id": "c3",
+   "source": "claude-code",
+   "text": "Tests don't catch this bug because they mock datasource.runQuery so super.query() and its applyTemplateVariables call never execute, and the mock applyTemplateVariables does an idempotent string replace that hides the duplication"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "Running templateSrv.replace on already-interpolated text is not idempotent - variable values containing literal $name matching another defined variable get expanded again on each pass (twice on split path, three times on shard path)"
+  },
+  {
+   "id": "c5",
+   "source": "cubic-v2",
+   "text": "Test assertion expects template interpolation once per shard, but the code now interpolates each target only once before splitting - assertion count should be 1 instead of 5"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "Test assertion expect(applyTemplateVariables).toHaveBeenCalledTimes(5) pins an internal call count that locks in redundant re-interpolation and will break on any behaviour-preserving refactor"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review-replay",
+   "text": "Running templateSrv.replace over already-interpolated text is not idempotent - a variable value containing a literal `$name` of another defined variable gets expanded again on each extra pass (2 passes in split path, 3 in shard path at shardQuerySplitting.ts:52)"
+  },
+  {
+   "id": "c8",
+   "source": "cubic-v2",
+   "text": "`request.filters` is passed to `applyTemplateVariables` but never populated in the test setup (`createRequest` in querySplitting.test.ts omits `filters`), so ad-hoc filter interpolation is untested - need test case that supplies `filters` and asserts they are forwarded correctly"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "Filtering empty expr before interpolation causes targets with variables resolving to empty strings (e.g. '$query' with empty textbox) to survive into shard path, resulting in Math.max(...[]) and undefined property access that throws an unhandled rejection - Observable never emits/completes, panel spins forever, and valid sharded queries never run"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "No test covers request.filters (ad-hoc filters) or the $__range no-split guard on the new interpolation path - both new tests pass no filters and use plain string-replace mocks"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "Tests for 'Interpolates queries before execution' mock templateSrv.replace to expand $__auto to 5m, but production applyTemplateVariables strips __auto from scopedVars so $__auto reaches backend unexpanded - tests verify mock behavior not real behavior"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review-replay",
+   "text": "Ad hoc filters and template variables are applied multiple times per query: twice in time-split path (runSplitQuery, then DataSourceWithBackend.query) and three times in shard path (runShardSplitQuery, runSplitQuery per sub-request, then super.query), causing bloated LogQL with duplicate filters like `level=`error` | level=`error` | level=`error``"
+  },
+  {
+   "id": "c13",
+   "source": "claude-code",
+   "text": "The fix should remove the applyTemplateVariables call from runSplitQuery and runShardSplitQuery, relying solely on the existing call in DataSourceWithBackend.query()"
+  },
+  {
+   "id": "c14",
+   "source": "claude-code",
+   "text": "For shard-split queries, applyTemplateVariables is called three times (runShardSplitQuery + runSplitQuery + DataSourceWithBackend.query), tripling the ad-hoc filters"
+  },
+  {
+   "id": "c15",
+   "source": "cubic-v2",
+   "text": "Interpolate before filtering `query.expr`, otherwise template-only queries that resolve to an empty expression can reach the shard-splitting path and crash `runSplitQuery()`"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "Ad-hoc filters and template interpolation are applied multiple times per query (twice on time-split path, three times on shard path) causing LogQL to grow with duplicate filters like '| k=`v` | k=`v` | k=`v`' since addFilterAsLabelFilter always appends without duplicate check"
+  },
+  {
+   "id": "c17",
+   "source": "golden",
+   "text": "The applyTemplateVariables method is called with request.filters as the third parameter, but this parameter is not used in the corresponding test setup."
+  },
+  {
+   "id": "c18",
+   "source": "claude-code",
+   "text": "The new applyTemplateVariables call in runSplitQuery (line 298) causes ad-hoc filters to be duplicated on every split query, because DataSourceWithBackend.query() also calls applyTemplateVariables downstream, and addAdHocFilters unconditionally appends filter clauses without deduplication"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "Test assertion `expect(datasource.applyTemplateVariables).toHaveBeenCalledTimes(5)` at shardQuerySplitting.test.ts:112 pins an internal call count instead of testing the actual query sent, violating project testing guidance to test contracts not implementation"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "Ad-hoc filters and template variables are applied more than once per query. applyTemplateVariables is called in runSplitQuery and runShardSplitQuery, and again in DataSourceWithBackend.query() via super.query(). That is twice on the time-split path and three times on the shard path. Because addAdHocFilters/addFilterAsLabelFilter appends filter clauses without deduplication, the filters are duplicated in the LogQL.",
+   "path": null,
+   "members": [
+    "c1",
+    "c12",
+    "c14",
+    "c16",
+    "c18",
+    "c13"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The tests do not detect the duplicate interpolation. They mock datasource.runQuery, so super.query() and its applyTemplateVariables call never run, and the mocked applyTemplateVariables is an idempotent string replace.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "templateSrv.replace is run again over already-interpolated text, which is not idempotent. A variable value containing a literal `$name` of another defined variable is expanded again on each extra pass: twice on the split path and three times on the shard path.",
+   "path": "shardQuerySplitting.ts",
+   "members": [
+    "c4",
+    "c7"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The test assertion at line 112 expects applyTemplateVariables to be called 5 times. runShardSplitQuery interpolates each initial target only once before splitting, and the test has one target, so the expected count should be 1.",
+   "path": "shardQuerySplitting.test.ts",
+   "members": [
+    "c2",
+    "c5"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The test assertion `expect(datasource.applyTemplateVariables).toHaveBeenCalledTimes(5)` pins an internal call count instead of checking the query actually sent. This locks in the redundant re-interpolation.",
+   "path": "shardQuerySplitting.test.ts",
+   "members": [
+    "c6",
+    "c19"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "`request.filters` is passed to applyTemplateVariables but is never set in the test setup (createRequest omits `filters`), so ad-hoc filter forwarding on the new interpolation path is untested. The $__range no-split guard is also not covered.",
+   "path": "querySplitting.test.ts",
+   "members": [
+    "c8",
+    "c10",
+    "c17"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "Targets with an empty expr are filtered out before interpolation. A target whose variables resolve to an empty string (e.g. '$query' with an empty textbox) therefore reaches the shard-splitting path. There, Math.max(...[]) and access to undefined properties throw an unhandled rejection in runSplitQuery, and the Observable never emits or completes.",
+   "path": null,
+   "members": [
+    "c9",
+    "c15"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The 'Interpolates queries before execution' tests mock templateSrv.replace to expand $__auto to 5m. The production applyTemplateVariables strips __auto from scopedVars, so in real use $__auto reaches the backend unexpanded.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  }
+ ]
+}

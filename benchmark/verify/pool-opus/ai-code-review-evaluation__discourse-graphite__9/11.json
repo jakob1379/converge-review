@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new config/initializers/i18n.rb:8-24 adds I18n::Backend::Fallbacks and sets I18n.fallbacks in every environment, replacing the per-environment `config.i18n.fallbacks = true` lines that the patch removes from production.rb, profile.rb and cloud66. The spec-breakage part is speculative: the chain always ends in :en, and the only 'translation missing' checks (spec/integrity/i18n_spec.rb:7,14,21) use not_to match, so none of them expect missing-translation output.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.07792740000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`identifier` is unused in the second `result_processor` (test_queue_consumer.py, change.patch:714) but is used in the first one (change.patch:568-570). It can't be dropped, because `FixedQueuePool` calls the callback as `Callable[[str, T], None]`. The repo also has no Ruff config; it lints with flake8 (setup.cfg:86-95, .pre-commit-config.yaml:45) and doesn't enable an unused-argument rule, so no lint error is raised.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1056845
+}

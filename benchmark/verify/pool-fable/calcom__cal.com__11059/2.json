@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:8 and :10 use `[z.string().toString()]` and `[z.string().optional().toString()]` as computed keys; Zod v3 schemas do not override `toString`, so both become the literal key \"[object Object]\" and the second overwrites the first. The schema is effectively `{access_token: string, \"[object Object]\"?: unknown}`, so in the credential-sync branch (line 16) payloads still validate but default `z.object` stripping drops expiry and every other field (the 'fail validation' alternative does not occur). Not executed; zod is not installed in this checkout.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.26181200000000004
+}

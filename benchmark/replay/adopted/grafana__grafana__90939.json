@@ -1,0 +1,104 @@
+{
+ "findings": [
+  {
+   "path": "pkg/api/webassets/webassets.go",
+   "line": 48,
+   "severity": "Minor",
+   "claim": "The code does not re-check the cache after taking the write lock. On a cold or nil cache, every concurrent caller that saw ret == nil waits for the exclusive lock in turn and re-reads and re-parses assets-manifest.json. With the CDN path enabled, each of these would be a network fetch. So the write lock queues the duplicate loads instead of removing them.",
+   "evidence": "All four seats reasoned this from lines 41-49 and 69-70; none ran it. All four agree the result is still correct and race-free, so there is no failing test. The fix all four propose: after Lock(), add `if cfg.Env != setting.Dev && entryPointAssetsCache != nil { return entryPointAssetsCache, nil }`. ponytail also offers atomic.Pointer[dtos.EntryPointAssets] as an alternative, but notes no file in pkg/ uses it yet. superpowers set atomic.Pointer aside as needing the same structure.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "All four seats agree, and the fix is the smallest one: the 3-line re-check, which keeps the codebase's existing RWMutex pattern. The atomic.Pointer rewrite would be new to the codebase and is not needed. The finding is Minor, so no red test is required; it is a performance issue with no failing behaviour.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/api/webassets/webassets.go",
+   "line": 48,
+   "severity": "Minor",
+   "claim": "In setting.Dev, every call skips the cache and holds the exclusive lock while it does file I/O. Index, frontend-settings and recovery-page requests are therefore now served one at a time in dev, where before they ran in parallel (racily).",
+   "evidence": "Reasoned from lines 45-49 and 48-70 by open-code-review (Minor #2), superpowers (Minor #2) and mattpocock (a sub-point of its spec (c) finding). All three say it affects dev only and has no production impact. The re-check in the first finding does not help here, because it is gated on cfg.Env != setting.Dev.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "The cost is dev-only latency, with no production or correctness impact. Fixing it would mean moving the file I/O out of the lock scope, which is a larger restructure than the race fix needs. Defer with `// ponytail: dev-mode GetWebAssets serializes on file I/O under the write lock; move the load outside the lock if dev latency matters`.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/api/webassets/webassets_test.go",
+   "line": null,
+   "severity": "Important",
+   "claim": "The bug fix adds no regression test. Nothing calls GetWebAssets from more than one goroutine, so the race fix has no guard. The repo's documented standard requires bug-fix PRs to include a test that reproduces the bug.",
+   "evidence": "mattpocock cites contribute/create-pull-request.md:28: \"To avoid regressions, the pull request should include tests that replicate the fixed bug.\" It also cites line 22. The existing tests, TestReadWebassets and TestReadWebassetsFromCDN, are single-goroutine. All three seats propose the same test: call GetWebAssets from N goroutines against a temp StaticRootPath/build/assets-manifest.json copied from testdata/sample-assets-manifest.json, then run `go test -race ./pkg/api/webassets/`. It should report a race on base cca9dee702 and pass on b1613e320a. None of the seats ran it. superpowers also notes the package-global cache leaks between tests because nothing resets it, so the test must reset entryPointAssetsCache. ponytail also observed the missing test, outside its lens.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Severity is normalised to Important because a documented repo standard requires this test (create-pull-request.md:28). mattpocock rated it Important; open-code-review and superpowers rated it Minor. The fix is the test itself, kept in the suite. Its red is that `go test -race` fails on base cca9dee702; that is unverified, because nothing has been run yet. The finding comes mainly from the standards axis, which is advisory, so it must not block convergence on its own.",
+   "list": "main"
+  },
+  {
+   "path": "pkg/api/webassets/webassets.go",
+   "line": 35,
+   "severity": "Minor",
+   "claim": "The patch keeps the package-level cache global and adds a second global, the mutex, which goes against the documented guidance to avoid global state. The added `// TODO: get rid of global state` admits the problem without fixing it.",
+   "evidence": "mattpocock cites contribute/backend/style-guide.md:185-189 and recommended-practices.md:46-54. superpowers cites contribute/backend/services.md:5 (\"explicit initialization instead of global variables\") and notes the global existed before the patch, so this is not a regression. Both call it a judgement call and say it is out of scope for a narrow race fix.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (2 seats), not fixed. The global state existed before the patch, and moving the cache onto a DI-wired service is outside the scope of the race fix. The TODO at line 37 already records it.",
+   "list": "appendix"
+  },
+  {
+   "path": "(commit b1613e320a message)",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit subject \"fix data race in GetWebAssets\" has no Area prefix.",
+   "evidence": "contribute/create-pull-request.md:94 says \"Subject line must begin with the _area_ of the commit\", and line 125 sets the PR title format as <Area>: <Summary>. mattpocock notes that Grafana squashes on merge and uses the PR title as the subject.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat), not fixed. It only matters if this commit subject becomes the PR title, and Grafana squash-merges using the PR title.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/api/webassets/webassets.go",
+   "line": 48,
+   "severity": "Minor",
+   "claim": "In production, a missing or broken manifest leaves the cache nil after each failed load. Every later request then retries the failed read under the exclusive lock, one at a time.",
+   "evidence": "superpowers reasoned this from lines 48-70 and called it acceptable as is. open-code-review notes the error path at line 69 stores a nil result, but says the patch did not change that and does not report it.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat), not fixed. The retry-on-failure behaviour is the same as before the patch; only the serialization is new. It is a latency cost, not wrong output.",
+   "list": "appendix"
+  },
+  {
+   "path": "pkg/api/webassets/webassets.go",
+   "line": 54,
+   "severity": "Minor",
+   "claim": "The write lock would be held across an HTTP call in readWebAssetsFromCDN.",
+   "evidence": "superpowers raised this and noted the path is currently dead because `cdn := \"\"` at line 54. open-code-review independently confirms the CDN branch is dead code (webassets.go:99 is never reached) and says the risk is not real until that branch is enabled.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix (1 seat), not fixed. The risk is latent: both reports agree the branch cannot currently be reached. Revisit if the CDN path is enabled.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. Every seat reviewed the only file in the patch, pkg/api/webassets/webassets.go, plus its callers pkg/api/index.go:82, pkg/api/frontendsettings.go:62 and pkg/middleware/recovery.go:141. open-code-review did not analyse the dead CDN branch in depth. Axes that did not run: (1) The gate was not run (benchmark mode), so the review is unanchored and no finding has executed ground truth. No seat ran a build, test or `go test -race`, so every finding is reasoned. (2) There was no spec; seats used the commit message \"fix data race in GetWebAssets\" as the requirement. Standards docs were found and used: CONTRIBUTING.md, contribute/create-pull-request.md, contribute/backend/style-guide.md, recommended-practices.md and services.md. (3) ponytail reviewed for over-engineering only. mattpocock and superpowers reviewed directly without their skills' usual sub-agents, as the override block requires. (4) No reviewer from another model family took a correctness seat. Rejections: none. Nothing was rejected, so no verifier was needed. No seat raised a Critical finding, and no correctness seat raised an Important one."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/monitors/logic/incident_occurrence.py:3 imports logging and :25 defines `logger = logging.getLogger(__name__)`; a search of the file finds no other reference to `logger` or `logging`, so it is unused. Both lines are added by the patch (change.patch lines 9 and 31).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0695605
+}

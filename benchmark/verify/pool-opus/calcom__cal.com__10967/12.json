@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/types/Calendar.d.ts now declares createEvent(event, credentialId), and only Google uses the id to find the matching destination (googlecalendar/lib/CalendarService.ts:147-149). Lark (larkcalendar/lib/CalendarService.ts:125), Office365 (office365calendar/lib/CalendarService.ts:72) and packages/lib/CalendarService.ts:125 still take only the event, and packages/lib/CalendarService.ts:156 takes the first destination calendar. The short signatures still compile in TypeScript, but EventManager.ts now calls createEvent once per destination, so for any host after the first these services look up the main host's calendar id and either create nothing (CalDAV filter) or call the wrong calendar.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15858139999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new packages/ui/form/MultiEmail.tsx calls useLocale() (line 1 import, used inside the component) and has no 'use client' directive, while sibling form components such as packages/ui/form/PhoneInput.tsx have one. Its only consumer is the client-side AddGuestsDialog, which loads it through the next/dynamic wrapper in MultiEmailLazy.tsx, so nothing breaks today.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.05123280000000001
+}

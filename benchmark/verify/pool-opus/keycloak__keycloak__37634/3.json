@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds isAccessTokenId to AssertEvents.java (patch lines 1118-1134). It returns false when items[0].substring(3, 5) equals expectedGrantShortcut, which is the opposite of what a matcher should do. The offset is also wrong: encodeTokenId (patch 349-352) builds the ID as session (2 chars) + token type (2) + grant (2), so the grant is at index 4-6. For example, \"onrtac\" gives \"ta\", which never matches, so in practice the matcher accepts any grant with a UUID suffix and does not reject correct tokens.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1155969
+}

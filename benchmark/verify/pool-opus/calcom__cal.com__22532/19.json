@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In CredentialActionsDropdown.tsx:68-70, `hasCache = isGoogleCalendar && cacheUpdatedAt` does not check disableConnectionModification, and the dropdown renders whenever `canDisconnect || hasCache`. EventAdvancedTab.tsx:375 passes disableConnectionModification={true} into SelectedCalendarsSettingsWebWrapper, which used to hide the actions for connected calendars entirely. Now a Google calendar with cache shows the destructive 'Delete cached data' item (patch lines 132-159, 351-360).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16588460000000002
+}

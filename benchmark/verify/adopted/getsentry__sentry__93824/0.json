@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At flusher.py:254 the patch kills only when `isinstance(process, multiprocessing.Process)`, but processes come from `get_context('spawn').Process` (flusher.py:53, 105). In CPython that class is SpawnProcess, which subclasses BaseProcess and not the default-context `multiprocessing.Process`, so a hung process is never killed. flusher.py:259 then starts a replacement on the same shards and overwrites `self.processes[process_index]`, so the old process is no longer tracked and `join` never terminates it (flusher.py:346); the old code called `self.process.kill()` unconditionally.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1525223
+}

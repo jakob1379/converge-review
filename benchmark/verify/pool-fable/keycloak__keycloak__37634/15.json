@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "server-spi-private/src/main/java/org/keycloak/protocol/oidc/grants/OAuth2GrantTypeFactory.java:33 adds `String getShortcut();` with no default, and DefaultTokenContextEncoderProviderFactory.java:70-74 calls `gtf.getShortcut()` on every registered grant factory in postInit, so a factory compiled against the old interface would hit AbstractMethodError at startup by JVM linkage rules (not run here). All 9 in-repo implementers were updated, so only external extensions of this private SPI are affected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23502680000000004
+}

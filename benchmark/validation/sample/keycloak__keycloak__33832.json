@@ -1,0 +1,38 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "AuthzClientCryptoProvider.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In concatenatedRSToASN1DER, lines 114-115 call ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) and discard the results. The return statement at lines 117-121 repeats the encoding with new encoders, so lines 114-115 are dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "CryptoIntegration.detectProvider() no longer throws the fail-fast 'Multiple crypto providers loaded' IllegalStateException; it picks the highest order() instead. The Default, Elytron and FIPS1402 providers all return 200, so a tie is decided by ServiceLoader/classpath order. For example, a FIPS deployment with a stray crypto-default jar can run on non-FIPS BouncyCastle without failing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "concatenatedRSToASN1DER() assumes signature.length == signLength without validating it. A malformed signature can throw ArrayIndexOutOfBoundsException instead of IOException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

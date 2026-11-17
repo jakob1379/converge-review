@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/post.rb:133 returns `raw` unsanitised for raw_html posts, and the before_save at app/models/post.rb:321 re-cooks the same way on every later edit. app/jobs/scheduled/poll_feed.rb:35 only applies CGI.unescapeHTML, and app/models/topic_embed.rb:22 and :48-52 store that content with no protocol filtering (Readability whitelists tags and href/src only; the gem source is not in the repo, so the javascript: href detail rests on its known behaviour); it is then rendered unescaped at app/views/embed/best.html.erb:19.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.4086261
+}

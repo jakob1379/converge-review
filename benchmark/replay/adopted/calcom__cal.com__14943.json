@@ -1,0 +1,194 @@
+{
+ "findings": [
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 38,
+   "severity": "Minor",
+   "claim": "The new deleteMany OR branch `{ retryCount: { gt: 1 } }` (lines 38-42) has no `method: WorkflowMethods.SMS` filter. The SMS cron would therefore delete EMAIL and WHATSAPP WorkflowReminder rows whose retryCount > 1.",
+   "evidence": "The Prisma `where` in the patch has the method filter on the date branch only. Sibling crons filter by method (scheduleWhatsappReminders.ts:23-30). All seats agree this is latent: grep finds no other writer of retryCount, so nothing is hit today. It becomes a bug once the email or WhatsApp crons start counting retries.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Severity normalised to Minor: both correctness seats and ponytail rate it Minor; mattpocock rated it Important (latent). Red test: seed an EMAIL reminder with retryCount 2, run the SMS handler, assert the row still exists. This fails on the pinned code. Smallest fix: move `method: WorkflowMethods.SMS` to the top level of the `where`, next to the OR.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 178,
+   "severity": "Important",
+   "claim": "Reminders for SMS-locked or rate-limited users and teams are now counted as failures and permanently deleted after two cron runs. Before the patch they stayed queued until scheduledDate and could still send once the lock was lifted or the limit reset.",
+   "evidence": "`twilio.scheduleSMS` returns undefined when `isLockedForSMSSending` is true (twilioProvider.ts:90-95), which hits the new else branch at :178-187. That branch increments retryCount and does not log. `checkSMSRateLimit` throws at the monthly limit (twilioProvider.ts:97-102), which hits the catch at :189-197. It also sets the lock state to REVIEW_NEEDED (checkRateLimitAndThrowError.ts:40-44). The deleteMany at :38-42 then removes rows with retryCount > 1. Reasoned by all seats, not executed.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Raised by all four seats; open-code-review and mattpocock rate it Important. With no spec, treating an admin lock as a delivery failure is an undocumented policy change that silently loses reminders. Red test, not yet run: mock the Twilio provider so scheduleSMS returns undefined (locked), run the handler 3 times, assert the reminder still exists. If this cannot be made red, the finding stays Important and is marked unverified. Open question from mattpocock: whether REVIEW_NEEDED counts as locked in isLockedForSMSSending.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 189,
+   "severity": "Minor",
+   "claim": "The catch block now awaits an unguarded `prisma.workflowReminder.update`. If that update throws, the error escapes the for loop: the remaining reminders in the run are skipped, the original error's console.log is skipped, and the handler fails.",
+   "evidence": "Lines 189-198. Before the patch the catch only logged. The update can throw P2025 if the row was deleted after findMany, for example on booking cancellation via smsReminderManager.ts:251. It can also throw on a DB or connection error, which may be the same failure that triggered the catch. Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "All four seats agree; all rate it Minor. Red check: mock the update to reject with P2025 on the first reminder, assert the second reminder is still processed. This fails on the pinned code.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 178,
+   "severity": "Minor",
+   "claim": "The same `prisma.workflowReminder.update({ where: { id }, data: { retryCount: reminder.retryCount + 1 } })` block is duplicated in the else branch (:178-187) and the catch (:189-197).",
+   "evidence": "Both blocks appear verbatim in the patch.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree; all rate it Minor. Smallest fix, per ponytail: throw in the else branch so a single catch handles both failure paths. This should be applied together with the atomic-increment and catch-guard fixes.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 184,
+   "severity": "Minor",
+   "claim": "retryCount is read, modified and written back from a stale in-memory value (`reminder.retryCount + 1`, :184 and :195). If two cron runs overlap, increments are lost. Prisma's atomic `{ increment: 1 }` avoids this.",
+   "evidence": "The patch writes `retryCount: reminder.retryCount + 1`. The repo already uses `attempts: { increment: 1 }` in packages/features/tasker/repository.ts:110,122. Overlapping runs are possible with a manual trigger plus the `*/15` schedule.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree; all rate it Minor. One-line change to `retryCount: { increment: 1 }`.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 60,
+   "severity": "Minor",
+   "claim": "retryCount is added by spreading the shared select and widening an ad-hoc cast to `(PartialWorkflowReminder & { retryCount: number })[]` at the call site, instead of extending the type and select in getWorkflowReminders.ts. The cast exists only to support the read-then-write increment.",
+   "evidence": "Lines 56-60 of the patch. superpowers judged the cast consistent with the existing pattern, which is a contrary opinion, not a disproof.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree; Minor. This falls out of the atomic-increment fix: revert to plain `select` and `as PartialWorkflowReminder[]`. No new abstraction is needed.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers the new branches: increment on a falsy result, increment on throw, delete at the threshold, and no increment on success.",
+   "evidence": "Grep finds no test for this handler. The only reference is the cron route apps/web/pages/api/cron/workflows/scheduleSMSReminders.ts. ponytail notes the missing test as outside its over-engineering scope.",
+   "seats": [
+    "mattpocock",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree; Minor. This is addressed by keeping the red tests written for the main-list fixes in the suite. Add one integration test of the handler with a mocked Twilio provider.",
+   "list": "main"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 38,
+   "severity": "Important",
+   "claim": "The counter counts failed cron runs, not failures of one reminder, and does not distinguish transient from permanent errors. A Twilio outage or network error of about 30 minutes permanently deletes every unscheduled SMS reminder in the 7-day window.",
+   "evidence": "The cron runs `*/15 * * * *` (.github/workflows/cron-scheduleSMSReminders.yml). Each run tries every unscheduled reminder within 7 days (:48-60). Errors from `twilio.messages.create` (twilioProvider.ts:104) or missing env (:88) increment the count in the catch. A failure at T+0 and T+15 gives retryCount 2, and the run at T+30 deletes the rows (:38-42). Before the patch they were retried until scheduledDate. superpowers adds an unchecked question: whether Twilio's roughly 15-minute minimum lead time on sendAt causes such failures. Reasoned, not executed.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: only 2 seats, below the 3-seat threshold, so it is not fixed or reported as a review comment under step 4. Flagged for attention: both correctness seats rate it Important. Check that would settle it: call the handler 3 times with scheduleSMS rejecting, then assert `prisma.workflowReminder.count({ where: { method: 'SMS' } })` is unchanged.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 28,
+   "severity": "Minor",
+   "claim": "The comment \"delete all scheduled sms reminders where scheduled date is past current date\" no longer describes the query, which now also deletes any reminder with retryCount > 1 regardless of method.",
+   "evidence": "Line 28 compared with the deleteMany at :38-42.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats, below threshold; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Retry handling covers SMS only. scheduleWhatsappReminders.ts uses the same `twilio.scheduleSMS` path and loop shape and has the same retry-forever problem, yet the column now exists on every WorkflowReminder.",
+   "evidence": "scheduleWhatsappReminders.ts:90 is unchanged. The branch name says \"workflow-reminder\", not SMS. There is no spec, so this is a consistency note.",
+   "seats": [
+    "mattpocock",
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats, below threshold; not fixed. Scope depends on intent that no spec states.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 38,
+   "severity": "Minor",
+   "claim": "The new delete branch is also not scoped to `scheduled: false`, so it could delete already-scheduled reminders with retryCount > 1.",
+   "evidence": "The `where` at :38-42 has no scheduled filter.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 68,
+   "severity": "Minor",
+   "claim": "Reminders that `continue` because workflowStep or booking is missing (:68-70), or that lack a message or sendTo (:158), are never counted. They are re-fetched every run until scheduledDate passes, so the retry cap does not cover every path where a reminder never gets scheduled.",
+   "evidence": "Pre-existing behaviour; it costs no Twilio calls.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat; not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/ee/workflows/api/scheduleSMSReminders.ts",
+   "line": 38,
+   "severity": "Minor",
+   "claim": "`gt: 1` is an unnamed magic number: a reminder is deleted after its second failure, so the column counts failures rather than retries.",
+   "evidence": "The threshold literal in the deleteMany at :38-42.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat; not fixed.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats reviewed all 3 files in the patch: scheduleSMSReminders.ts, schema.prisma, and migration 20240508134359_add_retry_count_to_workflow_reminder/migration.sql. Three seats explicitly checked the schema and migration and found them fine: NOT NULL DEFAULT 0, ordering after 20240502213807, matches the WebhookScheduledTriggers.retryCount convention. Axes that did not run: (1) The gate was not run (benchmark mode), so the review is unanchored and every finding is reasoned from source; no seat executed lint, typecheck, tests or a DB. (2) No spec: mattpocock inferred intent from the branch name, so there are no spec-gap findings with a ground truth. (3) No standards documents beyond CONTRIBUTING.md's `yarn lint`, so the standards axis fell back to a smell baseline. (4) No reviewer from another model family took a correctness seat. Open checks the seats named: whether REVIEW_NEEDED counts as locked in isLockedForSMSSending; Prisma and Twilio SDK error behaviour and versions; DB confirmation of the OR deleteMany semantics; whether Twilio's roughly 15-minute sendAt lead time causes the motivating failures. No findings were rejected, because no seat's report disproves another's claim, so no verifier dispatch was needed. Two-seat Important appendix item: the outage-deletion finding is below the agreement threshold despite both correctness seats rating it Important."
+}

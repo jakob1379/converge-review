@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "All 8 files in the patch are Java and none touches docs/, release notes or upgrade notes. The only new javadoc (CredentialHelper.java:112-114) does not say that the provider's updateCredential gets a plaintext JSON code list (CredentialHelper.java:54-60). It also does not say that getFederatedCredentialsStream is read first and its result is fed to createFromCredentialModel (RecoveryAuthnCodesUtils.java:101-106, RecoveryAuthnCodesFormAuthenticator.java:80-84), or that marking a code as used is left to the provider's isValid.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1874768
+}

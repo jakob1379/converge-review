@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/models/user.js.es6:209-210 copies only `data.user.bio_excerpt` from the PUT response, though users_controller.rb:100 returns the full UserSerializer (now including `website_name`); since the patch replaced the client-side `websiteName` computed with server-supplied `model.website_name` (user.hbs:66-71), the profile header shows a stale website name after saving preferences until the user is reloaded.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.33573790000000003
+}

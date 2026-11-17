@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`BlockedEmail.should_block?` at app/models/blocked_email.rb:11-19 increments `match_count`, sets `last_match_at` and calls `record.save` whenever a matching row exists (not literally every call), and it is invoked during validation from lib/validators/email_validator.rb:13 via `validates :email, email: true` in app/models/user.rb. Any `valid?` call or repeated validation on a changed email therefore writes to the database and inflates the stats; the spec shows the counting is intentional.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1570012
+}

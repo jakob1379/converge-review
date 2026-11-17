@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The limit check counts devices in a window anchored on time.Now().UTC() (pkg/services/anonymous/anonimpl/anonstore/database.go:110), while the fallback updateDevice anchors its BETWEEN bounds on device.UpdatedAt.UTC() (database.go:80-81; upper bound is actually UpdatedAt+1min, and it is the plain UPDATE, not the upsert). The only production caller sets UpdatedAt to time.Now() (pkg/services/anonymous/anonimpl/impl.go:141), so the two windows differ by a negligible amount in practice.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.29138719999999996
+}

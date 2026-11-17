@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.java:144-147 passes the result of getResourceTypeResource straight to policyStore.findByResource with no null check, and that method returns null (AdminPermissionsSchema.java:134-135) whenever the realm's adminPermissionsEnabled is false while the admin-permissions client and resource server still exist (e.g. enabled then disabled, or imported via RealmManager.java:567-570); findByResource then dereferences resource.getId() (StoreFactoryCacheSession.java:938, JPAPolicyStore.java:215). The NPE is limited to that state and to admins lacking the short-circuiting roles, not every group check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.3623201999999999
+}

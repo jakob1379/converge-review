@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/layouts/embed.html.erb:11 puts `'<%= request.referer %>'` inside an inline `<script>` string literal. It only gets ERB's HTML escaping, not `escape_javascript` or `to_json`. HTML escaping blocks quotes and `</script>`, but backslashes still pass through, and the controller (embed_controller.rb:202) only checks that the referer's host matches.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15433470000000002
+}

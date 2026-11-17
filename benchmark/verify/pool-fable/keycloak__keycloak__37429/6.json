@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:153-158, `santizeAnchors` advances the translation and English matchers in lockstep and requires the i-th tags to be equal, so a translation that reorders two different links gets \"Didn't find anchor tag\". ANCHOR_PATTERN at line 145 is `</?a[^>]*>` with no boundary after `a`, so it also matches `<abbr>`, `<area>` and `<audio>`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.500807
+}

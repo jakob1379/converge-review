@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py, fetch_error_details reads `data.get(\"timestamp\")` from nodestore, which is a float in seconds. gen_request_data then checks it with `< event.get(\"timestamp\", 0)` against rrweb event timestamps, which are in milliseconds, so the check is always true and every error is emitted before the first rrweb event; the new test passes only because it puts both in the same made-up units (patch lines 5831-5873).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.27249389999999996
+}

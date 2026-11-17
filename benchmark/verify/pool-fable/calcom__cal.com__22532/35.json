@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/apps/components/CredentialActionsDropdown.tsx:53-65 and :143-154 re-implement the credentials.delete mutation, toasts, invalidations and confirm dialog from DisconnectIntegration.tsx:26-40 instead of reusing it, and :149 calls mutate({ id: credentialId }) with no teamId and no isDelegationCredential({credentialId}) check (original: DisconnectIntegration.tsx:43,46). The only call site never passed teamId and the copy gates on the delegationCredentialId prop (:68), so this is duplication rather than a visible behaviour change there.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3990756
+}

@@ -1,0 +1,904 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4",
+ "cost_usd": 0.1496058,
+ "items": [
+  {
+   "id": "c1",
+   "source": "coderabbit",
+   "text": "Embed URL not escaped before interpolating into raw HTML anchor tag, allowing HTML/JS injection"
+  },
+  {
+   "id": "c2",
+   "source": "cubic-v2",
+   "text": "URL format validation should be added before fetching, rather than relying on the check inside `import`"
+  },
+  {
+   "id": "c3",
+   "source": "coderabbit",
+   "text": "Adding column with default + null: false in single migration step can cause long-running locks on large tables"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "absolutize_urls mangles protocol-relative URLs: //cdn.example.com/x.png starts with '/' and is rewritten to http://host/cdn.example.com/x.png"
+  },
+  {
+   "id": "c5",
+   "source": "coderabbit",
+   "text": "Missing guard against missing #discourse-comments container - appendChild will throw if the container doesn't exist"
+  },
+  {
+   "id": "c6",
+   "source": "coderabbit",
+   "text": "Deprecated RSpec matcher be_true should be be true (with space)"
+  },
+  {
+   "id": "c7",
+   "source": "qodo-extended-v2",
+   "text": "Wrong postMessage origin: The embed iframe sends resize messages using request.referer (a full URL) as postMessage's targetOrigin, but targetOrigin must be an origin (scheme://host[:port]), preventing the parent page from receiving resize events"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review",
+   "text": "X-Frame-Options: ALLOWALL is not a valid header value; it works only because browsers ignore invalid values"
+  },
+  {
+   "id": "c9",
+   "source": "coderabbit",
+   "text": "postMessage height value should be parsed and validated before use to prevent invalid values"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "raw_html cook method bypasses sanitization for all remote content: RSS item HTML (CGI.unescapeHTML only) and Readability output (keeps javascript: hrefs) are stored as cooked HTML verbatim; later edits of such posts are also cooked raw"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "Stored XSS vulnerability: 'Imported from' footer interpolates url unescaped into <a href='#{url}'>, and post is created with cook_method raw_html bypassing sanitizer, allowing anonymous requests with quote-bearing embed_url to plant script in forum origin"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review-replay",
+   "text": "<%- end if %> is a typo for <%- end %>. It compiles so that the next buffer append becomes the condition of the whole if/else, rendering correctly only because that append returns a truthy value"
+  },
+  {
+   "id": "c13",
+   "source": "coderabbit",
+   "text": "Syntax error: end if is invalid ERB syntax in embed/best.html.erb"
+  },
+  {
+   "id": "c14",
+   "source": "claude-code",
+   "text": "XSS vulnerability: the `url` parameter on line 13 is interpolated directly into HTML without escaping. Since the href uses single quotes, a URL like `http://evil.com/'><script>alert(1)</script>` breaks out of the attribute and injects script tags. Combined with `cook_method: raw_html` (bypassing sanitization) and `raw post.cooked` in the embed view, this allows arbitrary JavaScript execution. The URL should be HTML-escaped with `ERB::Util.html_escape` or `CGI.escapeHTML` before interpolation."
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "Unused require of email/sender"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "'<%- end if %>' typo: the if/else becomes conditional on the next buffer append and only renders because that expression is truthy"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Disqus import regressions: --category option removed, created_at no longer preserved, each thread does live HTTP fetch with no rescue so one 404 aborts whole import, open-uri not required, re-runs duplicate comments because import returns existing post"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review",
+   "text": "Header branch duplicates link_to differing only by i18n key"
+  },
+  {
+   "id": "c19",
+   "source": "golden",
+   "text": "The current origin validation using indexOf is insufficient and can be bypassed. An attacker could use a malicious domain like evil-discourseUrl.com to pass this check."
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "add_column on posts with default: 1, null: false rewrites the whole table under an exclusive lock on PostgreSQL < 11; downtime on large forums"
+  },
+  {
+   "id": "c21",
+   "source": "coderabbit",
+   "text": "Unused feed_key method should be removed or connected to intended functionality"
+  },
+  {
+   "id": "c22",
+   "source": "cubic-v2",
+   "text": "`url` is interpolated directly into HTML without escaping, risking HTML injection - should use `ERB::Util.html_escape` or `CGI.escapeHTML` on the URL before interpolating"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "opts=nil followed by opts = opts || {} instead of opts={}; also lacks spaces around '=' per CONTRIBUTING section 4"
+  },
+  {
+   "id": "c24",
+   "source": "coderabbit",
+   "text": "SSRF vulnerability: unsafe use of open() with URL from site settings allows fetching internal services, file:// URLs, or cloud metadata endpoints"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "Unrelated whitespace churn in a shipped migration and removed blank line in lib/post_revisor.rb:11"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review-replay",
+   "text": "When polling is enabled, perform_retrieve runs a full Jobs::PollFeed#execute synchronously for every unknown embed_url. Each anonymous request with a new URL re-fetches and re-processes the whole feed, amplifying work"
+  },
+  {
+   "id": "c27",
+   "source": "coderabbit",
+   "text": "import_remote missing URL scheme validation before fetching"
+  },
+  {
+   "id": "c28",
+   "source": "coderabbit",
+   "text": "Destructive force: true in create_table migration will drop existing top_topics table and data"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "Specs stub private methods (perform_retrieve, retrieved_recently?) and controller spec mocks TopicRetriever.new which controller never calls directly; redis throttle itself is never tested"
+  },
+  {
+   "id": "c30",
+   "source": "golden",
+   "text": "The code sets X-Frame-Options: ALLOWALL which completely disables clickjacking protection. The referer validation can be bypassed (referer headers are easily spoofed), and the fallback to empty string for nil referer masks validation failures."
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "'is 404 without an embed_url' passes because ensure_embeddable raises InvalidAccess (403) first; the missing-param path is never exercised"
+  },
+  {
+   "id": "c32",
+   "source": "golden",
+   "text": "The PollFeed job calls open(SiteSetting.feed_polling_url) without validating the URL, allowing an attacker who controls the feed_polling_url site setting to make the server fetch arbitrary internal or external URLs."
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "absolutize_urls duplicates the a[href]/img[src] loop, so fixes must be made twice"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "PollFeed requires PostCreator/PostRevisor it never uses, while TopicEmbed (which uses them and open-uri) has no requires and works only by load order; lib/ is not autoloaded"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review-replay",
+   "text": "The 'Imported from' footer puts url into <a href='#{url}'> without escaping. Since imported posts use cook_method raw_html, the sanitizer never runs, allowing stored XSS via a crafted embed_url containing single quotes (e.g., onmouseover attribute injection)"
+  },
+  {
+   "id": "c36",
+   "source": "converge-review-replay",
+   "text": "The new feed-import and remote-fetch paths have no tests, breaching CONTRIBUTING.md \u00a73. PollFeed#poll_feed is always stubbed, TopicEmbed.import_remote is never called, and TopicRetriever#perform_retrieve and #fetch_http are always mocked"
+  },
+  {
+   "id": "c37",
+   "source": "coderabbit",
+   "text": "raw and cooked both set to p[:cooked] in disqus importer - raw should contain source text not HTML"
+  },
+  {
+   "id": "c38",
+   "source": "golden",
+   "text": "The TopicEmbed.import method is susceptible to a NoMethodError if the contents parameter is nil when attempting to append a string, and an XSS vulnerability due to unescaped url interpolation in the generated HTML."
+  },
+  {
+   "id": "c39",
+   "source": "claude-code",
+   "text": "On line 35, `i.content` returns `nil` for RSS 2.0 feeds that use `<description>` instead of `<content>`, causing `NoMethodError` when `.scrub` is called on `nil`. Since the job has `sidekiq_options retry: false`, this crashes the entire feed polling job with no retry. Should fall back to `i.description` and guard against nil."
+  },
+  {
+   "id": "c40",
+   "source": "claude-code",
+   "text": "ERB syntax error on line 6: `<%- end if %>` should be `<%- end %>`. In Ruby, `end if` is a postfix conditional modifier that requires a condition expression, but none is provided here. This will raise a `SyntaxError` when rendering the embed view, completely breaking the embeddable comments feature for any topic with posts."
+  },
+  {
+   "id": "c41",
+   "source": "converge-review",
+   "text": "New feed-import and remote-fetch paths have no tests: PollFeed#poll_feed is always stubbed, TopicEmbed.import_remote and absolutize_urls are never exercised, TopicRetriever#perform_retrieve/fetch_http are always mocked"
+  },
+  {
+   "id": "c42",
+   "source": "coderabbit",
+   "text": "Potential NoMethodError if feed item content is nil when calling .scrub"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review-replay",
+   "text": "The patch edits a migration that already shipped by adding force: true. On databases that already ran it, the edit does nothing. On fresh install or re-run, it silently drops an existing top_topics table"
+  },
+  {
+   "id": "c44",
+   "source": "golden",
+   "text": "The ERB block closes with end if, which is invalid Ruby/ERB and will raise at render; it should just be end to close the if block."
+  },
+  {
+   "id": "c45",
+   "source": "coderabbit",
+   "text": "postMessage origin validation uses substring matching on discourseUrl which can be spoofed if URL contains origin in path/query"
+  },
+  {
+   "id": "c46",
+   "source": "golden",
+   "text": "An unescaped request header (request.referer) is interpolated into JavaScript without proper escaping, which can lead to XSS vulnerabilities if the referer contains malicious content. This issue can allow attackers to execute arbitrary scripts in the context of the application."
+  },
+  {
+   "id": "c47",
+   "source": "converge-review",
+   "text": "open(SiteSetting.feed_polling_url) uses Kernel#open, so a setting value starting with '|' runs a shell command on the server (admin -> RCE)"
+  },
+  {
+   "id": "c48",
+   "source": "augment",
+   "text": "`url` is interpolated directly into an `<a href='...'>` inside a raw HTML string, so quotes or unexpected characters in the URL can break markup and potentially create an injection/XSS vector. Need to escape/sanitize the URL before embedding it into HTML."
+  },
+  {
+   "id": "c49",
+   "source": "coderabbit",
+   "text": "Assertions in after block is anti-pattern - if test body fails, after block still executes causing confusing errors"
+  },
+  {
+   "id": "c50",
+   "source": "coderabbit",
+   "text": "import_remote missing timeout protection - open(url).read can hang indefinitely"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "'requires feed_polling_url' and 'requires embed_by_username' specs pass vacuously because feed_polling_enabled defaults to false, so execute short-circuits on first guard"
+  },
+  {
+   "id": "c52",
+   "source": "qodo-extended-v2",
+   "text": "ERB template has stray 'if' keyword: In best.html.erb line 6, '<%- end if %>' contains a stray 'if' keyword that makes the block's closing 'end' accidentally conditional due to Ruby's postfix conditional modifier"
+  },
+  {
+   "id": "c53",
+   "source": "converge-review",
+   "text": "Anonymous requests can force unlimited outbound fetches and topic creation: every distinct embed_url on embeddable host passes host check, enqueues RetrieveTopic, runs full synchronous PollFeed, and creates new topic; throttle key is per exact URL"
+  },
+  {
+   "id": "c54",
+   "source": "qodo-extended-v2",
+   "text": "Stored XSS vulnerability via imports: TopicEmbed.import persists remote/RSS HTML as raw_html and interpolates url into an anchor tag without escaping, enabling stored XSS through crafted feed/page URLs"
+  },
+  {
+   "id": "c55",
+   "source": "converge-review-replay",
+   "text": "i.content.scrub raises NoMethodError on nil for RSS 2.0 items that carry only <description>. SimpleRSS exposes content:encoded as content_encoded, not content. The job has retry: false and no per-item rescue, so one such item aborts the whole hourly import"
+  },
+  {
+   "id": "c56",
+   "source": "converge-review",
+   "text": "Deleting an imported post or topic breaks the embed permanently: TopicEmbed rows are never cleaned up; missing post makes embed.post nil causing PostRevisor.new(nil).revise! to raise; trashed topic keeps returning its id so comments 404 forever"
+  },
+  {
+   "id": "c57",
+   "source": "converge-review-replay",
+   "text": "The raw_html cook method returns raw unchanged and skips sanitisation. Feed content processed only with CGI.unescapeHTML and Readability output (which keeps javascript: scheme hrefs) are stored as cooked HTML, allowing script injection by anyone who controls the feed or can MITM an http:// feed"
+  },
+  {
+   "id": "c58",
+   "source": "converge-review",
+   "text": "New gems (simple-rss, ruby-readability) added only to Gemfile_rails4.lock; Gemfile.lock and Gemfile_rails_master.lock not updated, so bundle install --deployment fails in those modes"
+  },
+  {
+   "id": "c59",
+   "source": "augment",
+   "text": "When `cook_method` is `:raw_html`, `cook` returns `raw` and bypasses the normal cooking/sanitization pipeline. If any imported content isn't strictly sanitized upstream (RSS or remote fetch), this can become an XSS vector on Discourse-rendered pages."
+  },
+  {
+   "id": "c60",
+   "source": "converge-review",
+   "text": "contents << mutates the caller's string argument"
+  },
+  {
+   "id": "c61",
+   "source": "coderabbit",
+   "text": "Consider using image_tag for safer avatar rendering instead of direct URL interpolation"
+  },
+  {
+   "id": "c62",
+   "source": "cubic-v2",
+   "text": "`contents` is used without a nil check - `contents <<` will crash if nil"
+  },
+  {
+   "id": "c63",
+   "source": "converge-review",
+   "text": "feed_key method and require 'digest/sha1' are dead code"
+  },
+  {
+   "id": "c64",
+   "source": "coderabbit",
+   "text": "Missing blank guard for SiteSetting.embed_by_username before calling downcase"
+  },
+  {
+   "id": "c65",
+   "source": "coderabbit",
+   "text": "Missing error handling for network and parsing failures in poll_feed method"
+  },
+  {
+   "id": "c66",
+   "source": "coderabbit",
+   "text": "cook_method option not validated before persisting, risking invalid enum values"
+  },
+  {
+   "id": "c67",
+   "source": "qodo-extended-v2",
+   "text": "Embed spec expects retriever but controller enqueues job: embed_controller_spec expects EmbedController#best to instantiate TopicRetriever and call retrieve, but the controller now enqueues the :retrieve_topic job instead, causing spec failure"
+  },
+  {
+   "id": "c68",
+   "source": "augment",
+   "text": "The origin check `discourseUrl.indexOf(e.origin)` can be bypassed by attacker-controlled origins that contain the Discourse URL as a substring (e.g., `https://discourse.example.com.evil.com`). Need stricter origin validation before trusting resize messages."
+  },
+  {
+   "id": "c69",
+   "source": "converge-review",
+   "text": "i.content.scrub assumes every item has <content>; SimpleRSS RSS 2.0 items normally expose only description, so i.content is nil and NoMethodError aborts the whole hourly run with no per-item rescue"
+  },
+  {
+   "id": "c70",
+   "source": "golden",
+   "text": "Calling `i.content.scrub` assumes that `i.content` is always populated. However, many RSS feeds do not provide a `content` field, leading to a potential nil pointer exception when `i.content` is nil. A fallback to `description` should be implemented to prevent crashes."
+  },
+  {
+   "id": "c71",
+   "source": "converge-review",
+   "text": "discourse_expires_in caches via Middleware::AnonymousCache keyed only on HTTP_HOST + REQUEST_URI, so cached response is served to any Referer without ensure_embeddable running, and first requester's referer is baked into cached layout"
+  },
+  {
+   "id": "c72",
+   "source": "converge-review",
+   "text": "postMessage origin check is a substring/prefix match (discourseUrl.indexOf(e.origin)), accepting e.g. http://forum.example.co for http://forum.example.com/"
+  },
+  {
+   "id": "c73",
+   "source": "augment",
+   "text": "Some feeds don't provide `content` for items; `i.content.scrub` will raise if `i.content` is `nil`, which would break polling. Need to guard/fallback to another field (e.g., description) before scrubbing/unescaping."
+  },
+  {
+   "id": "c74",
+   "source": "claude-code",
+   "text": "The origin check `discourseUrl.indexOf(e.origin) === -1` on line 17 uses substring matching, which allows any origin that is a prefix/substring of `discourseUrl` to pass validation. Should use strict origin comparison: `new URL(discourseUrl).origin === e.origin`."
+  },
+  {
+   "id": "c75",
+   "source": "cubic-v2",
+   "text": "Sanitize `raw_html` posts before returning them - the early return turns imported embed HTML into stored, unsanitized output"
+  },
+  {
+   "id": "c76",
+   "source": "coderabbit",
+   "text": "Date.parse loses time information - should use DateTime.parse or Time.parse to preserve full timestamp"
+  },
+  {
+   "id": "c77",
+   "source": "converge-review",
+   "text": "request.referer is written into a JS string in the layout without JS-context escaping"
+  },
+  {
+   "id": "c78",
+   "source": "converge-review-replay",
+   "text": "absolutize_urls treats protocol-relative URLs (//cdn.example.com/x.png) as root-relative because they start with '/'. It rewrites them to http://host/cdn.example.com/x.png, breaking images and links in both a[href] and img[src] blocks"
+  },
+  {
+   "id": "c79",
+   "source": "converge-review",
+   "text": "Throttle uses setnx then expire as two calls; a crash between them leaves a non-expiring key and the URL is throttled forever"
+  },
+  {
+   "id": "c80",
+   "source": "converge-review",
+   "text": "Patch edits already-shipped migration to add force: true; new create_topic_embeds migration also uses force: true and has older timestamp (20131217) than merged migrations (20131223), so it runs out of order"
+  },
+  {
+   "id": "c81",
+   "source": "augment",
+   "text": "`postMessage`'s `targetOrigin` is set to `request.referer`, but browsers expect an origin (`scheme://host[:port]`), not a full URL with path/query. Passing the full referer can throw and break the iframe resize handshake."
+  },
+  {
+   "id": "c82",
+   "source": "converge-review",
+   "text": "embed.permalink locale key is unused"
+  },
+  {
+   "id": "c83",
+   "source": "coderabbit",
+   "text": "Nil contents will raise on << operator when appending to contents"
+  },
+  {
+   "id": "c84",
+   "source": "coderabbit",
+   "text": "content_sha1 updated unconditionally even if PostRevisor#revise! returns false, causing state desync"
+  },
+  {
+   "id": "c85",
+   "source": "coderabbit",
+   "text": "XSS vulnerability: raw_html cook_method bypasses sanitizer, allowing untrusted HTML to become stored XSS"
+  },
+  {
+   "id": "c86",
+   "source": "converge-review",
+   "text": "{best: 5} lacks spaces inside braces per CONTRIBUTING section 4"
+  },
+  {
+   "id": "c87",
+   "source": "cubic-v2",
+   "text": "Security: `Kernel#open(url)` with user-supplied input is a command injection risk - when `open-uri` is loaded, `open` still supports the `|command` pipe syntax. Should use `URI.open(url)` or `Net::HTTP`/`OpenURI.open_uri` to restrict to HTTP(S) fetching"
+  },
+  {
+   "id": "c88",
+   "source": "qodo-extended-v2",
+   "text": "Weak postMessage origin validation: The origin check discourseUrl.indexOf(e.origin) === -1 uses substring matching instead of proper origin comparison, allowing malicious origins that are substrings of discourseUrl to bypass validation"
+  },
+  {
+   "id": "c89",
+   "source": "coderabbit",
+   "text": "Destructive force: true in create_table migration will drop existing topic_embeds table and data"
+  },
+  {
+   "id": "c90",
+   "source": "golden",
+   "text": "postMessage targetOrigin should be the origin (scheme+host+port), not the full referrer URL; using the full URL will cause the message to be dropped and prevent resizing."
+  },
+  {
+   "id": "c91",
+   "source": "coderabbit",
+   "text": "Non-atomic Redis setnx + expire pattern can leave key without TTL permanently blocking retrieval"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In TopicEmbed.import, the 'Imported from' footer interpolates url unescaped into a single-quoted <a href='#{url}'> in raw HTML. Because the post uses cook_method raw_html, the sanitizer never runs, so a crafted embed_url allows HTML/JS injection (stored XSS).",
+   "path": null,
+   "members": [
+    "c1",
+    "c11",
+    "c14",
+    "c22",
+    "c35",
+    "c48",
+    "c54"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The raw_html cook method returns raw unchanged and skips sanitization. Remote content is stored as cooked HTML verbatim: RSS HTML that is only CGI.unescapeHTML'd, and Readability output that keeps javascript: hrefs. Later edits of such posts are also cooked raw.",
+   "path": null,
+   "members": [
+    "c10",
+    "c57",
+    "c59",
+    "c75",
+    "c85"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "embed/best.html.erb uses '<%- end if %>' instead of '<%- end %>'. The stray postfix 'if' makes the block's closing conditional on the next buffer append, or is invalid syntax.",
+   "path": "embed/best.html.erb",
+   "members": [
+    "c12",
+    "c13",
+    "c16",
+    "c40",
+    "c44",
+    "c52"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The embed iframe passes request.referer, a full URL, as postMessage's targetOrigin instead of an origin (scheme://host[:port]). The parent page therefore does not receive the resize messages.",
+   "path": null,
+   "members": [
+    "c7",
+    "c81",
+    "c90"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The parent page's postMessage origin check uses substring matching (discourseUrl.indexOf(e.origin) === -1) instead of strict origin comparison. Origins that are substrings or prefixes of discourseUrl pass validation.",
+   "path": null,
+   "members": [
+    "c19",
+    "c45",
+    "c68",
+    "c72",
+    "c74",
+    "c88"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The postMessage height value is used without being parsed or validated.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "X-Frame-Options: ALLOWALL is not a valid header value and only works because browsers ignore invalid values.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "Setting X-Frame-Options: ALLOWALL disables clickjacking protection. The referer check relies on a spoofable header, and it falls back to an empty string when the referer is nil.",
+   "path": null,
+   "members": [
+    "c30"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "request.referer is written into a JavaScript string in the embed layout without JS-context escaping.",
+   "path": null,
+   "members": [
+    "c46",
+    "c77"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The migration adds a column to posts with default: 1, null: false in a single step. On PostgreSQL < 11 this rewrites the table under an exclusive lock, which takes a long time on large tables.",
+   "path": null,
+   "members": [
+    "c3",
+    "c20"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The patch edits an already-shipped top_topics create_table migration to add force: true. This has no effect where the migration already ran, and drops an existing top_topics table on a fresh run.",
+   "path": null,
+   "members": [
+    "c28",
+    "c43",
+    "c80"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The create_topic_embeds migration uses force: true, which drops an existing topic_embeds table and its data.",
+   "path": null,
+   "members": [
+    "c89"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "absolutize_urls treats protocol-relative URLs (//cdn.example.com/x.png) as root-relative because they start with '/'. It rewrites them to http://host/cdn.example.com/x.png in both the a[href] and img[src] loops.",
+   "path": null,
+   "members": [
+    "c4",
+    "c78"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "absolutize_urls duplicates the a[href]/img[src] rewriting loop.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "open(SiteSetting.feed_polling_url) in PollFeed fetches an unvalidated URL. This allows SSRF to internal services, file:// URLs, or cloud metadata endpoints.",
+   "path": null,
+   "members": [
+    "c24",
+    "c32"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "Kernel#open is used on URLs, so a value starting with '|' executes a shell command on the server.",
+   "path": null,
+   "members": [
+    "c47",
+    "c87"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "import_remote fetches the URL without validating its format or scheme first.",
+   "path": null,
+   "members": [
+    "c2",
+    "c27"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "import_remote calls open(url).read with no timeout, so it can hang indefinitely.",
+   "path": null,
+   "members": [
+    "c50"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "PollFeed calls i.content.scrub, but RSS 2.0 items with only <description> have nil content (SimpleRSS exposes content:encoded as content_encoded). This raises NoMethodError, and with retry: false and no per-item rescue it aborts the whole feed poll.",
+   "path": null,
+   "members": [
+    "c39",
+    "c42",
+    "c55",
+    "c69",
+    "c70",
+    "c73"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "TopicEmbed.import appends to contents with << without a nil check, so it raises NoMethodError when contents is nil.",
+   "path": null,
+   "members": [
+    "c62",
+    "c83",
+    "c38"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "contents << mutates the caller's string argument.",
+   "path": null,
+   "members": [
+    "c60"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The new feed-import and remote-fetch paths have no tests. PollFeed#poll_feed is always stubbed, TopicEmbed.import_remote and absolutize_urls are never exercised, and TopicRetriever#perform_retrieve/fetch_http are always mocked.",
+   "path": null,
+   "members": [
+    "c36",
+    "c41"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "The specs stub private methods (perform_retrieve, retrieved_recently?), and the controller spec mocks TopicRetriever.new, which the controller never calls directly. The redis throttle is never tested.",
+   "path": null,
+   "members": [
+    "c29"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "The 'is 404 without an embed_url' spec passes only because ensure_embeddable raises InvalidAccess (403) first, so the missing-param path is never exercised.",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "The 'requires feed_polling_url' and 'requires embed_by_username' specs pass vacuously, because feed_polling_enabled defaults to false and execute returns at the first guard.",
+   "path": null,
+   "members": [
+    "c51"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "Assertions are placed in an after block.",
+   "path": null,
+   "members": [
+    "c49"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "embed_controller_spec expects EmbedController#best to instantiate TopicRetriever and call retrieve, but the controller enqueues the :retrieve_topic job instead.",
+   "path": null,
+   "members": [
+    "c67"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "require of email/sender is unused.",
+   "path": null,
+   "members": [
+    "c15"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "The feed_key method and require 'digest/sha1' are unused dead code.",
+   "path": null,
+   "members": [
+    "c21",
+    "c63"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "PollFeed requires PostCreator/PostRevisor, which it does not use. TopicEmbed uses them and open-uri but has no requires, and works only because of load order.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "The embed.permalink locale key is unused.",
+   "path": null,
+   "members": [
+    "c82"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "The throttle calls setnx and then expire as two separate calls. A failure between them leaves a key with no TTL, so retrieval of that URL is blocked permanently.",
+   "path": null,
+   "members": [
+    "c79",
+    "c91"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "Each anonymous request with a distinct embed_url on an embeddable host enqueues RetrieveTopic. That job runs a full synchronous PollFeed#execute and can create a new topic. The throttle is keyed per exact URL, so outbound fetches and feed processing are unbounded.",
+   "path": null,
+   "members": [
+    "c26",
+    "c53"
+   ]
+  },
+  {
+   "id": "i34",
+   "claim": "There is no guard for a missing #discourse-comments container, so appendChild throws when it does not exist.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i35",
+   "claim": "The spec uses the deprecated RSpec matcher be_true instead of be true.",
+   "path": null,
+   "members": [
+    "c6"
+   ]
+  },
+  {
+   "id": "i36",
+   "claim": "The Disqus import regresses in several ways: the --category option is removed, created_at is not preserved, and each thread does a live HTTP fetch with no rescue. Also, open-uri is not required, and re-runs duplicate comments because import returns the existing post.",
+   "path": null,
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i37",
+   "claim": "The header branch duplicates link_to calls that differ only by i18n key.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i38",
+   "claim": "opts=nil is followed by opts = opts || {} instead of using opts={}, and there are no spaces around '='.",
+   "path": null,
+   "members": [
+    "c23"
+   ]
+  },
+  {
+   "id": "i39",
+   "claim": "The patch contains unrelated whitespace changes in a shipped migration and removes a blank line in lib/post_revisor.rb:11.",
+   "path": "lib/post_revisor.rb",
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i40",
+   "claim": "The Disqus importer sets both raw and cooked to p[:cooked], so raw contains HTML instead of source text.",
+   "path": null,
+   "members": [
+    "c37"
+   ]
+  },
+  {
+   "id": "i41",
+   "claim": "Deleting an imported post or topic breaks the embed permanently because TopicEmbed rows are never cleaned up. A missing post makes PostRevisor.new(nil).revise! raise, and a trashed topic keeps returning its id, so comments return 404.",
+   "path": null,
+   "members": [
+    "c56"
+   ]
+  },
+  {
+   "id": "i42",
+   "claim": "The new gems (simple-rss, ruby-readability) are added only to Gemfile_rails4.lock, not to Gemfile.lock or Gemfile_rails_master.lock.",
+   "path": null,
+   "members": [
+    "c58"
+   ]
+  },
+  {
+   "id": "i43",
+   "claim": "SiteSetting.embed_by_username has .downcase called on it without a blank guard.",
+   "path": null,
+   "members": [
+    "c64"
+   ]
+  },
+  {
+   "id": "i44",
+   "claim": "poll_feed has no error handling for network or parsing failures.",
+   "path": null,
+   "members": [
+    "c65"
+   ]
+  },
+  {
+   "id": "i45",
+   "claim": "The cook_method option is persisted without validation.",
+   "path": null,
+   "members": [
+    "c66"
+   ]
+  },
+  {
+   "id": "i46",
+   "claim": "Avatar rendering interpolates the URL directly instead of using image_tag.",
+   "path": null,
+   "members": [
+    "c61"
+   ]
+  },
+  {
+   "id": "i47",
+   "claim": "discourse_expires_in caches via Middleware::AnonymousCache keyed only on HTTP_HOST + REQUEST_URI. The cached response is served to any Referer without running ensure_embeddable, and the first requester's referer is baked into the cached layout.",
+   "path": null,
+   "members": [
+    "c71"
+   ]
+  },
+  {
+   "id": "i48",
+   "claim": "Date.parse discards the time component of the feed item timestamp.",
+   "path": null,
+   "members": [
+    "c76"
+   ]
+  },
+  {
+   "id": "i49",
+   "claim": "content_sha1 is updated even when PostRevisor#revise! returns false.",
+   "path": null,
+   "members": [
+    "c84"
+   ]
+  },
+  {
+   "id": "i50",
+   "claim": "{best: 5} lacks spaces inside the braces.",
+   "path": null,
+   "members": [
+    "c86"
+   ]
+  }
+ ]
+}

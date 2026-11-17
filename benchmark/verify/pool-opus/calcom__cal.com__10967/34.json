@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "handleNewBooking.ts (patch lines 861-865) now sets evt.destinationCalendar to an array, or to `null` when no calendar is configured, and sends it in the BOOKING_CREATED webhook through `...evt` (handleNewBooking.ts:2297). handleCancelBooking.ts (patch 577-581) and the other handlers fall back to `[]` instead, and webhook.e2e.ts (patch line 32) changes BOOKING_REJECTED's expected value from null to [].",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1195365
+}

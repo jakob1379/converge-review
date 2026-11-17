@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The route does call `this.store.find('embedding')` with no id (app/assets/javascripts/admin/routes/admin-embedding.js.es6:3), but `store.find` only builds a result set when `typeof findArgs === \"object\"`; with `undefined` it takes the else branch and hydrates the single `result.embedding` record (app/assets/javascripts/discourse/models/store.js.es6:64-72), which the server returns under root 'embedding' with id 'default'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2842629
+}

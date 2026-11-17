@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After the patch removed the only cacheHit:true case, TestService_getUserPermissions has only cacheHit:false cases (pkg/services/authz/rbac/service_test.go:341-356), so the field at :337 and the branches at :367 and :388 are dead; no test covers the anonymous cache path either. The coverage half is overstated for users: \"Fallback to the database on outdated cache\" in TestService_CacheCheck (added by the patch) does indirectly assert that the store is consulted despite a populated cache.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.38243989999999994
+}

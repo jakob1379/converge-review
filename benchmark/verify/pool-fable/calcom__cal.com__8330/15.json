@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Date overrides are stored as the organizer's wall-clock time stamped as UTC (packages/core/getUserAvailability.ts:221-222), and the patch treats that Date as a real instant when looking up the zone offset (packages/trpc/server/routers/viewer/slots.ts:107 `dayjs.tz(date.start, organizerTimeZone).utcOffset()`; packages/lib/slots.ts:212-213 `dayjs(override.start.toString()).tz(...).utcOffset()`). The offset is therefore sampled up to |offset| hours away from the true local instant, giving the pre- or post-transition offset wrongly for overrides near a DST switch (e.g. 03:00 local in New York on spring-forward day yields -300 instead of -240); dayjs is not installed here, so the Date-input behaviour of `dayjs.tz` is from knowledge of the library rather than read from source.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2717833
+}

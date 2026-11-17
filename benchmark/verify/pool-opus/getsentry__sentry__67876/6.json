@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The pipeline signature is a deterministic md5 of the view names (src/sentry/pipeline/base.py:133). The other tests show it is 9cae5e88803f35ed7970fc131e6e65d3 (test_integration.py:235), but test_installation_not_found sends state ddd023d87a913d5226e2a882c4c4cc05 (test_integration.py:392). OAuthLoginView therefore returns the generic 'Invalid installation request.' error at the state check (integration.py, `request.GET.get(\"state\") != pipeline.signature`), the test asserts exactly that message, and build_integration and its 404 path never run.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14348760000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/GroupAdapter.java:256, 262 and 268 dereference modelSupplier.get() with no null check, while the delegate lookup returns null for a deleted group (model/jpa/src/main/java/org/keycloak/models/jpa/JpaRealmProvider.java:513). The children endpoint calls the four-argument overload directly at services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java:180, so a cached adapter whose group is deleted concurrently throws a NullPointerException; the patch only guarded getSubGroupsCount at GroupAdapter.java:274-275.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.40511820000000004
+}

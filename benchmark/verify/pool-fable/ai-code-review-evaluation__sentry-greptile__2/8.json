@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a comment at src/sentry/utils/cursors.py:26-27 claiming a 'performance optimization' that allows negative offsets for efficient reverse pagination, but the line it annotates (`self.offset = int(offset)`, cursors.py:28) is unchanged. The Cursor class has no negative-offset logic anywhere (cursors.py:17-61); it only stores the integer as it always did.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.340206
+}

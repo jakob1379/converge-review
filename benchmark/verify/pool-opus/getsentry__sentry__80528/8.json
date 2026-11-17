@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/monitors/logic/incident_occurrence.py:146 reads `return SINGULAR_HUMAN_FAILURE_MAP[list(status_counts.keys())[0]]`, so the claim is accurate. This is only a style nit: Counter is non-empty when the sum is 1, so it works correctly and `next(iter(...))` would just avoid building a list.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.10357699999999999
+}

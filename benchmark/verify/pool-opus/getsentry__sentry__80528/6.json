@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/monitors/logic/incident_occurrence.py:145-162, statuses outside HUMAN_FAILURE_STATUS_MAP are filtered out. If none are left, the sum is 0, so the singular branch is skipped, get_text_list([]) returns '', and the result is ' check-ins detected'. The docstring's 'A failed check-in was detected' fallback is never implemented. The patch moved this code unchanged from mark_failed.py, and in practice the triggering failed check-in (error, missed or timeout) is always in the list, so this is hard to reach.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1072428
+}

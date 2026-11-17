@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The handler in apps/web/pages/api/webhook/app-credential.ts:17-93 never checks req.method. It goes straight from the sharing-enabled and webhook-secret checks (lines 19-29) to parsing the body and creating or updating credentials (lines 31-92), so any HTTP verb with a valid secret can write credentials.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2271347
+}

@@ -1,0 +1,568 @@
+{
+ "findings": [
+  {
+   "path": "static/app/views/dashboards/widgetCard/chart.tsx",
+   "line": 164,
+   "severity": "Important",
+   "claim": "The new branch is gated on flag `use-table-widget-visualization`, which is not registered in src/sentry/features/temporary.py. The branch is dead code. If the flag were enabled it would render TableWidgetVisualization with columns={[]} and empty data, ignore tableResults and loading, and show an empty table. This breaches CLAUDE.md 'Feature Flags: Always add for new features'.",
+   "evidence": "`grep -rn \"use-table-widget-visualization\" src/` returns nothing, while the patch's other flags are at temporary.py:441 and :278. `grep -rn \"table-widget-visualization\" src/ static/` matches only chart.tsx:164. Failing check: `grep -q \"use-table-widget-visualization\" src/sentry/features/temporary.py || echo MISSING` prints MISSING. Severity was Important from mattpocock and ponytail, Minor from open-code-review and superpowers; normalised to Important.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. The red check is the grep command above, which fails on the pinned code. Fix options: register the flag and feed tableResults to the component, or drop the branch (with the :141/:152 organization destructure and rename) until the component has real data. Caveat: whether getsentry registers the flag was not checked (ponytail).",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "static/app/views/dashboards/widgetCard/chart.tsx:164-174 checks for 'use-table-widget-visualization' and renders TableWidgetVisualization with columns={[]} and empty tableData, ignoring result.data, result.meta and loading. The flag string appears nowhere else in the repo and the patch does not touch src/sentry/features/temporary.py, so no organization gets the flag and the branch never runs.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1003045
+   }
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 118,
+   "severity": "Important",
+   "claim": "fetch_error_details pairs error_ids with events.values() using zip. It assumes nodestore get_multi returns values in input order with no gaps, so error IDs can be attached to the wrong event's title, message and timestamp.",
+   "evidence": "nodestore/base.py get_multi dedupes IDs. On a partial cache hit it returns fetched items first and then cached items (items.update(cache_items), base.py:184,199-205). Some backends omit missing IDs. Proposed failing test (open-code-review): store events A and B, warm the cache for A only, call fetch_error_details(project.id,[A,B]), and A's entry gets B's title. open-code-review rated it Important; superpowers rated it Minor and said the ID is not used in log text today, so the impact is latent; mattpocock raised it outside its axis.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree. The highest correctness-seat severity, Important, is kept: superpowers' latent-impact remark is reasoning, not a source citation that disproves it. Red test: open-code-review's partial-cache test. Fix: look up events.get(node_id) for each node_id/event_id pair instead of zipping.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "project_replay_summarize_breadcrumbs.py:118 pairs `error_ids` with `events.values()` using zip. nodestore/base.py:184 removes duplicate IDs, and on a partial cache hit base.py:199-205 puts the fetched items first and the cached ones after them (`items.update(cache_items)`), so the values can come back in a different order from `error_ids` and an ErrorEvent can get another event's ID.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0625058
+   }
+  },
+  {
+   "path": "src/sentry/issues/endpoints/browser_reporting_collector.py",
+   "line": 52,
+   "severity": "Minor",
+   "claim": "The checks that age and timestamp are mutually exclusive test truthiness (self.initial_data.get(\"age\")). A report with age: 0 (the usual value for a fresh report) together with timestamp passes validation.",
+   "evidence": "Lines 52 and 58 use .get() truthiness. Ponytail notes that a single validate(attrs) checking `\"age\" in attrs and \"timestamp\" in attrs` fixes it. Reasoned in all seats; no seat ran it.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Four seats agree. Red test: POST a report with age: 0 and timestamp and expect a validation error. It passes on the pinned code.",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "DRF runs both field validators. With age: 0 and a real non-zero timestamp, validate_timestamp lets it through (line 52, because 0 is falsy), but validate_age raises (line 58, because the timestamp is truthy), so the report fails validation. The only report that gets through is the unrealistic case where timestamp is also 0.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.055954199999999996
+   }
+  },
+  {
+   "path": "src/sentry/issues/endpoints/browser_reporting_collector.py",
+   "line": 50,
+   "severity": "Minor",
+   "claim": "age and timestamp are both required=False, so a report with neither field is accepted, although the validators' docstrings say one must be present.",
+   "evidence": "Reasoned from the serializer field definitions and validator docstrings (mattpocock #8, open-code-review #7, superpowers #6).",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree. Red test: POST a report with neither age nor timestamp and expect 422. It is accepted on the pinned code.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At browser_reporting_collector.py:47-48 both `age` and `timestamp` are `required=False`. The only checks are the per-field validators at :50-60, and DRF runs those only when the field is present. There is no object-level `validate()`, so a report with neither field is accepted, even though the docstrings say one of them must be present.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.04957469999999999
+   }
+  },
+  {
+   "path": "static/app/components/feedback/list/useFeedbackSummary.tsx",
+   "line": 37,
+   "severity": "Minor",
+   "claim": "`enabled: Boolean(normalizedDateRange)` is always true because normalizeDateTimeParams returns an object, so it gates nothing.",
+   "evidence": "normalizeDateTimeParams returns an object and an object is always truthy (open-code-review #12, ponytail #8, superpowers #12, which cites line 36).",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats agree. Minor. Fix: gate on the intended condition or drop the option.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "normalizeDateTimeParams always returns an object built with Object.fromEntries (parse.tsx:272), so Boolean(normalizedDateRange) at useFeedbackSummary.tsx:37 is always true. The query is gated only by the 'user-feedback-ai-summaries' feature flag check (line 38).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0658811
+   }
+  },
+  {
+   "path": "src/sentry/integrations/source_code_management/commit_context.py",
+   "line": 584,
+   "severity": "Minor",
+   "claim": "get_environment_info calls issue.get_recommended_event() for each issue in the PR-comment task: a Snuba query plus a nodestore/DB fetch per issue, which is the N+1 anti-pattern in CLAUDE.md.",
+   "evidence": "Called per issue from github/integration.py:409 and gitlab/integration.py:257. The list is capped by set_limit(5) at commit_context.py:572 and runs inside a task.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Three seats agree, but all rate it Minor and the cost is bounded at 5 issues in an async task. Defer with `ponytail: bounded N+1 (<=5 issues, in task); batch if the limit grows`.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds get_environment_info (commit_context.py:584-597). It calls issue.get_recommended_event(), which runs a Snuba get_events_snql query (group.py:305), falls back to get_latest_event (group.py:887-891) and then does a get_environment lookup. The GitHub (integration.py:409) and GitLab comment builders call it once per issue inside a list comprehension, so this is a real N+1, though the list is capped at 5 issues (commit_context.py:572) and runs in a background task.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.28044
+   }
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 153,
+   "severity": "Important",
+   "claim": "Errors are interleaved with breadcrumbs by comparing nodestore error timestamps (seconds) with rrweb event timestamps (milliseconds). error_ts < event_ts is always true, so every error is emitted before the first breadcrumb and the order is never chronological.",
+   "evidence": "rrweb fixtures use ms (tests/sentry/replays/unit/test_event_parser.py:329: 1674291701348). The new tests at test_project_replay_summarize_breadcrumbs.py:188 use seconds, which hides the bug. Superpowers EXECUTED a repro, `python3 -I .scratch/repro_replay_ts.py ...`, that fails on HEAD: breadcrumbs at 1700000000000 and 1700000005000 ms with an error at 1700000002.0 s come out with the error first.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by two seats, so under the agreement split it is not reported or fixed. Flagged for the user: this is the best-evidenced finding in the merge (an executed failing repro from a correctness seat, corroborated by a second correctness seat), and the three-seat threshold excludes it.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/issues/endpoints/browser_reporting_collector.py",
+   "line": 43,
+   "severity": "Important",
+   "claim": "destination and attempts are required serializer fields, but per the W3C Reporting spec they are internal to the user agent and absent from real browser POSTs. Real Chrome payloads would get 422 for the whole batch.",
+   "evidence": "Reasoned from the W3C 'serialize reports' algorithm; no captured payload was checked. Both fixtures (DEPRECATION_REPORT, INTERVENTION_REPORT) invent these fields. Failing test: POST [{\"age\":0,\"type\":\"deprecation\",\"url\":\"https://x.com/\",\"user_agent\":\"UA\",\"body\":{}}] with the option enabled and expect 200; it gets 422. Superpowers notes the old dataclass had the same assumption, so this is not a regression.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats, so not fixed per the agreement split. Unverified: the spec reading has not been checked against a captured browser request.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/performance/newTraceDetails/traceDrawer/details/span/eapSections/attributes.tsx",
+   "line": 61,
+   "severity": "Important",
+   "claim": "The HIDDEN_ATTRIBUTES filter (is_segment, project_id, received) runs only after the early `if (!searchQuery.trim()) return sorted;`. In the default no-search view the attributes are still shown; they are hidden only while the user searches.",
+   "evidence": "Reasoned from code order at :61-69. Failing test: render Attributes with an attribute named project_id or is_segment and no search; it is rendered.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats, so not fixed per the agreement split.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/issues/endpoints/browser_reporting_collector.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "One invalid report in a batch causes the whole batch to be rejected.",
+   "evidence": "Reasoned (open-code-review #3, superpowers #2/#6).",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/issues/endpoints/browser_reporting_collector.py",
+   "line": 50,
+   "severity": "Minor",
+   "claim": "validate_timestamp and validate_age mirror each other; one validate(attrs) would replace both. Also, str(browser_report[\"type\"]) at :126 is redundant because ChoiceField already returns a string.",
+   "evidence": "Code duplication at :50-60 and :126 (ponytail #7).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/api/endpoints/test_browser_reporting_collector.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The rewritten tests no longer post content_type=\"application/reports+json\", so the custom BrowserReportsJSONParser has no coverage of a passing request, only the 415 negative test.",
+   "evidence": "`grep -n \"reports+json\"` on the test file returns nothing (mattpocock #8).",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 100,
+   "severity": "Minor",
+   "claim": "Under pagination every page gets the replay's full error list via functools.partial(..., error_events). Errors not yet emitted are appended at the end of each page, so they repeat across pages and land in the wrong context.",
+   "evidence": "Reasoned from :67-100 (open-code-review #5, superpowers #5).",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 107,
+   "severity": "Minor",
+   "claim": "Node IDs are built with the replay's project_id, so errors from other projects in the replay's error_ids (e.g. a backend project) are silently dropped.",
+   "evidence": "Reasoned (open-code-review #6, superpowers #5).",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 67,
+   "severity": "Minor",
+   "claim": "The Snuba replay query runs even when enable_error_context=false.",
+   "evidence": "Reasoned from :67-100 (superpowers #5).",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 37,
+   "severity": "Minor",
+   "claim": "ErrorEvent.category is always set to \"error\" and never read; generate_error_log_message uses only title, message and timestamp.",
+   "evidence": "Written at :112 and unread (ponytail #9).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/components/feedback/feedbackSummary.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new feedbackSummary.tsx and useFeedbackSummary.tsx have no colocated .spec.tsx, breaching CLAUDE.md Frontend Rule #5. The hook's tooFewFeedbacks logic and the component's hide/placeholder states are untested.",
+   "evidence": "`ls static/app/components/feedback/feedbackSummary.spec.tsx` fails (mattpocock #2, superpowers #12).",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/components/feedback/list/useFeedbackSummary.tsx",
+   "line": 43,
+   "severity": "Minor",
+   "claim": "The pending, error and success branches each build the same return object; one expression would do. The feature flag is checked both here and in feedbackSummary.tsx.",
+   "evidence": "Code at :43-66 (ponytail #8).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new hook has no colocated spec. It is exercised only through useTraceItemAttributeKeys.spec.tsx without queryString, so the substringMatch path is untested.",
+   "evidence": "mattpocock #3, citing CLAUDE.md Frontend Rule #5.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx",
+   "line": 34,
+   "severity": "Minor",
+   "claim": "The search/queryString parameter is speculative: the only caller never passes it.",
+   "evidence": "Lines :34,40,65,71 (ponytail #5).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx",
+   "line": 76,
+   "severity": "Minor",
+   "claim": "try/catch rethrows as `new Error(`...${e}`)`, which turns the ApiError into a plain string and discards responseJSON.",
+   "evidence": "Ponytail #5 cites the rethrow at :76-86; superpowers #15 makes the same claim under the useTraceItemAttributeKeys refactor.",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/explore/hooks/useTraceItemAttributeKeys.tsx",
+   "line": 26,
+   "severity": "Minor",
+   "claim": "When projects is passed, projectIds is a new array every render, so both useMemos recompute every time. Options are also built twice (for queryKey and inside getTraceItemAttributeKeys).",
+   "evidence": "Code at :26-43 (ponytail #5).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/explore/hooks/useTraceItemAttributeKeys.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The attribute-keys request no longer sends environment, a behaviour change. A code comment at useGetTraceItemAttributeKeys.tsx:50 says this is intentional.",
+   "evidence": "mattpocock (outside-axis note), superpowers #15.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. Marked intentional in the code; needs author confirmation.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/explore/hooks/useTraceItemAttributeKeys.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The refactor drops staleTime: 0 and retry: false in favour of queryClient defaults, and isLoading now reflects isFetching, so it is true during background refetches.",
+   "evidence": "Reasoned (superpowers #15).",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/explore/utils.tsx",
+   "line": 439,
+   "severity": "Minor",
+   "claim": "After the single-yAxis refactor, `const dedupedYAxes = [visualize.yAxis]` plus .flatMap/.map over one element remains in several places, and the name is misleading. Visualize.stack is always 'all' but is still optional and still computed.",
+   "evidence": "utils.tsx:439, spans/spansTab.tsx:349, hooks/useExploreTimeseries.tsx:179, hooks/useAnalytics.tsx:475,496, toolbar/toolbarSaveAs.tsx:153, charts/index.tsx:154, contexts/pageParamsContext/visualizes.tsx:41,49 (ponytail #4).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/dashboards/widgets/tableWidget/tableWidgetVisualization.tsx",
+   "line": 31,
+   "severity": "Minor",
+   "claim": "The fit, frameless and scrollable props (and FRAMELESS_STYLES) have no caller. The required tableData is read with dead optional chaining at :94, :98 and :103.",
+   "evidence": "No callers in stories or spec (ponytail #2).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/feedback/feedbackListPage.tsx",
+   "line": 88,
+   "severity": "Minor",
+   "claim": "The new styled SummaryListContainer gets an inline style={{gridArea: 'list'}}, against the CLAUDE.md rule to use Emotion styled rather than inline styles.",
+   "evidence": "mattpocock #4.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/source_code_management/commit_context.py",
+   "line": 578,
+   "severity": "Minor",
+   "claim": "There is no test for _truncate_title or ISSUE_TITLE_MAX_LENGTH (titles over 50 characters), and the get_environment_info exception branch is untested.",
+   "evidence": "`grep -rn \"_truncate_title\\|ISSUE_TITLE_MAX_LENGTH\" tests/` returns nothing. Test titles are 'issue 1'\u2013'issue 3' (mattpocock #6, superpowers #10).",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/source_code_management/commit_context.py",
+   "line": 143,
+   "severity": "Minor",
+   "claim": "The issue title is placed unescaped in markdown link text ([**{title}**]({url})), so titles containing ']' break the link.",
+   "evidence": "Reasoned (open-code-review #9, superpowers #10). Superpowers notes the risk existed before the patch.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/source_code_management/commit_context.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Commit fd4ab7b535 changes the customer-visible PR/MR comment format (drops the culprit, changes the link style, adds environment) without a feature flag, against CLAUDE.md Common Gotchas #2.",
+   "evidence": "mattpocock #6.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/github/integration.py",
+   "line": 394,
+   "severity": "Minor",
+   "claim": "format_comment_subtitle in github (:394) and gitlab (:240) lost its only caller and is dead. _truncate_title repeats the same truncation, and its max_length parameter is never passed.",
+   "evidence": "`grep -rn \"format_comment_subtitle(\" src tests` shows only the two definitions (ponytail #3).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/preprod/api/endpoints/organization_preprod_artifact_assemble.py",
+   "line": 81,
+   "severity": "Minor",
+   "claim": "analytics.record(\"preprod_artifact.api.assemble\") runs before the organizations:preprod-artifact-assemble check at :88, so orgs without the feature get a 404 but still emit the event. No test covers the event.",
+   "evidence": "Code order :81 vs :88. The test file never mentions analytics (mattpocock #7, superpowers #9).",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/grouping/parameterization.py",
+   "line": 335,
+   "severity": "Minor",
+   "claim": "_handle_regex_match inside parametrize_w_experiments is dead code after its only caller (the ParameterizationRegexExperiment branch) was removed.",
+   "evidence": "open-code-review #8.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/views/replays/detail/ai/index.tsx",
+   "line": 90,
+   "severity": "Minor",
+   "claim": "useProjectFromId returns undefined while the projects store loads, or when the project is not in the user's store, so 'Project not found. Unable to load AI summary.' shows instead of a loading state.",
+   "evidence": "Reasoned (open-code-review #10, superpowers #13).",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/workflow_engine/endpoints/validators/error_detector.py",
+   "line": 45,
+   "severity": "Minor",
+   "claim": "ErrorDetectorValidator inherits the new owner field, but its create() override never persists it, so the owner is silently ignored on create. No test covers owner on error detectors.",
+   "evidence": "Reasoned (superpowers #7). Other seats checked only that the base ActorField validation and update() are fine, which does not cover this override.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/workflow_engine/endpoints/validators/base/detector.py",
+   "line": 66,
+   "severity": "Minor",
+   "claim": "The owner-to-owner_user_id/owner_team_id mapping is written twice, in create (:66-79) and update (:120-128).",
+   "evidence": "ponytail #6.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one advisory seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/replays/tasks/test_delete_replays_bulk.py",
+   "line": 97,
+   "severity": "Minor",
+   "claim": "The test sets max_segment_id: None but mocks delete_matched_rows, so the new None guard in src/sentry/replays/usecases/delete.py:89 is never exercised. The 0 case was also removed from the fixture.",
+   "evidence": "superpowers #8.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "static/app/components/events/eventAttachments.tsx",
+   "line": 143,
+   "severity": "Minor",
+   "claim": "Replacing FlexCenter with plain <Flex> drops overflowEllipsis, so long attachment names may widen the 1fr column instead of truncating.",
+   "evidence": "Reasoned; not checked visually (superpowers #14).",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Axes that did not run: the gate was not run (benchmark mode), so the review is unanchored and nothing has ground truth from executed checks. No project tests, TypeScript compile or lint were run by any seat; the only executed evidence is superpowers' standalone repro for the timestamp-unit finding (appendix). There was no spec, so the spec axis did not run (superpowers judged plan alignment against the 32 commit subjects). The only standards source is the root CLAUDE.md; .github/CONTRIBUTING.md links externally. Not verified: getsentry registration of use-table-widget-visualization, and the W3C browser payload shape (spec reading only). Files skipped: open-code-review did not review tableWidgetVisualization.stories.tsx and path-filtered all tests and fixtures (23 files, two read partially for evidence). Ponytail only skimmed tests, specs and fixtures, read the tableWidget spec/stories/fixtures and tests/js/fixtures/tabularColumn(s).ts only as far as finding 1 needed, and read devservices/config.yml partly. Superpowers skimmed tableWidgetVisualization.stories.tsx, devservices/config.yml and tests/snuba/api/endpoints/test_organization_events_stats.py, and diff-read Flex/CSS styling refactors without rendering them. Mattpocock read all 106 files but only skimmed the mechanical explore spec updates and the autofix test asserts. Rejections: none; no seat report disproves another seat's finding."
+}

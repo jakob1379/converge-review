@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's only spec change is passing `unsubscribe_url` into an existing fixture at spec/components/email/message_builder_spec.rb:172, with no new assertion; spec/controllers/topics_controller_spec.rb and spec/models/topic_spec.rb contain no reference to `unsubscribe`, so the new action (app/controllers/topics_controller.rb, patch line 197) and `Topic#unsubscribe_url` are untested, despite CONTRIBUTING.md:44 'Include tests, and ensure they pass'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.28097269999999996
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/slots.ts:114 compares two freshly created Dayjs objects with `===` (the actual line adds `.add(utcOffset, \"minutes\")` to both sides), so the comparison is always false and the `return true` at line 115 is dead code. The fallthrough checks at lines 117-125 still reject most slots on a zero-length override, but a slot starting exactly at, or straddling, the override instant is treated as available (line 133).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.200003
+}

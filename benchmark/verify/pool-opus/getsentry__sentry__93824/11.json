@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In flusher.py, submit() loops over self.buffers.values(), which holds one SpansBuffer per process (patch lines 320-321 and 346-347). It calls record_stored_segments() and get_memory_info() on each one, and every buffer uses the same cluster through get_redis_client() (buffer.py:117-118, 162-163). So the main thread runs iter_cluster_memory_usage (buffer.py:375-376) N times over the same nodes and opens N separate ZCARD pipelines.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1176848
+}

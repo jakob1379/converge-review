@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/salesforce/lib/CalendarService.ts, getClient refreshes the token and saves `accessTokenParsed.data` to the database (lines 75-99), then builds the jsforce.Connection from the original `credentialKey.instance_url` and `credentialKey.access_token` (lines 105-106), so the refreshed values are never used for the connection. The practical effect is limited because the connection also receives the refresh token and client credentials (lines 102-107), which normally lets jsforce refresh on its own.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16467569999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new TopicsController#unsubscribe (patch lines 204-212) sets tu.notification_level and calls tu.save!, so it skips TopicUser.change, which is the code that sets notifications_changed_at/notifications_reason_id and publishes notification_level_change (app/models/topic_user.rb:87-90, 112-114); TopicUser has no save callbacks that would set them. Because notifications_reason_id stays null, the CASE in update_last_read (topic_user.rb:160-164) can switch the user back to tracking on a later read, overriding the unsubscribe.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11168120000000001
+}

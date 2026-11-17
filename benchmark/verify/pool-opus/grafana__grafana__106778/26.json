@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "useAllGrafanaPromRuleAbilities (useAbilities.ts, patch lines 472-506) gates ModifyExport, Pause, Restore and DeletePermanently on prometheusRuleType.grafana.alertingRule, which accepts only Grafana alerting rules (rules.ts:103-104,134). The old ruler path used rulerRuleType.grafana.rule (rules.ts:58-59,113), which also accepts Grafana recording rules. The list view no longer loads the ruler rule, so the ruler-side fallback in AlertRuleMenu.tsx:57-100 gives nothing, and recording rules lose Pause and Export there.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13797840000000003
+}

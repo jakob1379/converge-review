@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`cleanup()` in scripts/test-gcal-webhooks.sh:11-18 ends with an unconditional `exit 0`, and it is called on both error paths: the rate-limit hit (line 49) and the failure to extract the Tunnelmole URL (line 58). The script therefore reports success after printing a failure message.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2985901
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The GitHub and GitLab integrations now always build comments with get_merged_pr_single_issue_template and get_environment_info, with no feature flag check (github/integration.py ~L406-410, gitlab/integration.py ~L254-258; template at commit_context.py:254). The updated tests in tests/sentry/integrations/{github,gitlab}/tasks/test_pr_comment.py only use short titles like \"issue 1\" and never make get_recommended_event raise, so the >50-char branch of _truncate_title (commit_context.py:265-269) and the except branch (commit_context.py:278-283) are never run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.31789509999999993
+}

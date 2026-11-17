@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch leaves spec/models/user_spec.rb untouched, but the rewritten validations at app/models/user.rb:45-46 are still exercised by the existing specs at spec/models/user_spec.rb:22 and :488-566 (presence, whitelist/blacklist, email_changed? condition). The only new behaviour, blocked emails, is covered by the added spec/components/validators/email_validator_spec.rb:9-21 and spec/models/blocked_email_spec.rb.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.30523490000000003
+}

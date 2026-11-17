@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "At app/assets/javascripts/discourse/lib/utilities.js:246, `maxSizeKB` is declared with `var`, so it belongs to the whole `displayErrorForUpload` function, and adding a block would not change that. No other case reads it, and the case-declaration hazard only applies to `let`/`const`/`class`/`function`, so nothing is actually wrong.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0492919
+}

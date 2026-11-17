@@ -1,0 +1,170 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "pkg/expr/reader.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "enableSqlExpressions in reader.go (lines 194-200) returns false on both branches, so the sqlExpressions feature flag check is dead code and the toggle has no effect.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": "pkg/expr/reader.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In enableSqlExpressions, the local variable 'enabled' is assigned !IsEnabledGlobally(...), so it holds the opposite of what its name says.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "pkg/expr/nodes.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The SQL-expression rejection gate exists only on the ReadQuery path, which is used when FlagExpressionParser is on. In the default legacy path, buildCMDNode in nodes.go calls UnmarshalSQLCommand directly for TypeSQL, so the gate is bypassed and the disable is enforced in two ways with different errors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "TablesList now uses the stub NewInMemoryDB(), whose RunCommands returns a generic 'not implemented' error. Upstream code reports this as 'invalid SQL' / sql-invalid-sql, so valid SQL expressions fail with a validation error instead of an explicit 'disabled' error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The DB methods NewInMemoryDB().RunCommands, DB.QueryFramesInto and DB.TablesList in db.go return hardcoded 'not implemented' errors after the go-duck dependency was removed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": "pkg/expr/sql/parser.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "On the legacy path, parser.go logs raw user SQL with logger.Error('error serializing sql') and Warn('invalid sql query') on every request.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "DB.TablesList in db.go (lines 12-14) has no callers, because parser.go calls the package-level sql.TablesList instead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": "pkg/expr/sql_command.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "SQLCommand.Execute and its db.QueryFramesInto call (sql_command.go:96-104) are unreachable, because NewSQLCommand always fails first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The exported stub type DB and its methods in db.go have no doc comments.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Docstring coverage is 25.00%, below the required 80.00% threshold.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers the new rejection of SQL expressions on either the ReadQuery path or the legacy path, and all existing SQL tests are skipped with t.Skip().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The rejection uses a plain fmt.Errorf('sqlExpressions is not implemented') instead of an errutil error with a messageID, so it carries no status code or public message.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The schema and docs still advertise SQL expressions, including 'SQL query via DuckDB', the sql type in query.types.json and the toggle description, although the feature always fails.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": "pkg/expr/sql/parser.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In parser.go the variable holding the stub DB is named 'duckDB', while sql_command.go:96 uses 'db' for the same thing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": "types.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The frontend still offers the SQL expression type when the flag is on (types.ts:73), but the backend rejects all such requests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

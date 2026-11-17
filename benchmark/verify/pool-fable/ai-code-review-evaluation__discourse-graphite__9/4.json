@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/initializers/i18n.rb:17 calls `SiteSetting.default_locale.to_sym` before `.compact`, so a nil value raises NoMethodError. Nil is only reachable through misconfiguration: the setting defaults to 'en' with enum validation (config/site_settings.yml:59-63), but a blank global override resolves to nil (app/models/global_setting.rb:62-69), and lib/search.rb:29 already makes the same unguarded call.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3992614
+}

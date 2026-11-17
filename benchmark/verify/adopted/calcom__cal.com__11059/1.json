@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In salesforce/lib/CalendarService.ts, line 96 (`await prisma.credential.update`) is the only place `prisma` appears and the file never imports it. It type-checks only because of the `declare global var prisma` in packages/prisma/index.ts:6-9, and `globalThis.prisma` is set only when NODE_ENV !== 'production' (index.ts:58-60). In production, getClient therefore throws a ReferenceError and `this.conn` rejects.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2561039
+}

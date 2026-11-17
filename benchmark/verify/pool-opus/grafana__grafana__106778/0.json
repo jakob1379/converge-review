@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At FilterView.tsx:157-162, inside rules.map, the 'grafana' branch renders <GrafanaRuleListItem> without key={key}. The datasource branch (line 165) and the default UnknownRuleListItem branch (line 169) both pass key={key}, and the patch removed `key={key}` along with the old <GrafanaRuleLoader>.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.042693999999999996
+}

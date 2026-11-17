@@ -1,0 +1,170 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The user-match check reads integration.metadata[\"sender\"][\"login\"] without a guard. Integrations whose metadata lacks a 'sender' key (build_integration only adds it conditionally, and older or pre-existing integrations may not have it) raise a KeyError, which produces an HTTP 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The OAuth authorize redirect URL is built with an f-string or string interpolation and does not URL-encode client_id, state or redirect_uri. Parameters containing characters such as &, ? or # produce a malformed URL or unintended query parsing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OAuthLoginView uses pipeline.signature as the OAuth state. This is a deterministic MD5 of pipeline view class names, identical for every user and session, so it is guessable. As a result the state check gives no CSRF protection, and an attacker can forge a setup callback that binds the attacker's GitHub login and installation into a victim's pipeline.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OAuthLoginView.dispatch() accepts installation_id from GET params unconditionally, including during the OAuth callback phase. A crafted callback URL with an attacker's installation_id, code and the predictable state can therefore overwrite both sides of the sender comparison.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "safe_urlopen() and get_user_info() (which calls raise_for_status()) are outside exception handling. Network errors or non-2xx responses during the token exchange or user fetch cause an unhandled 500 instead of the error() page.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The token-response parsing is wrapped in a broad 'except Exception', which masks unexpected failures. Also, parse_qsl() with default parameters does not raise ValueError as expected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "test_installation_not_found sends an OAuth state that does not match the pipeline signature. OAuthLoginView rejects it at the state check before build_integration runs, so the 404 installation-not-found path is never exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The authenticated-user vs installer check is skipped when no Integration row exists yet. build_integration then resolves any installation_id via the app JWT, so anyone who knows an installation id can claim it into their org before the installation webhook is processed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "pipeline.fetch_state(\"github_authenticated_user\") can return None if the OAuth step was skipped or the state was lost. The comparison has no explicit None check.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Integration is fetched twice with inconsistent filters: first without a status filter, then with status=ACTIVE. This adds a query, and a non-active Integration without an OrganizationIntegration now gets the generic error instead of proceeding to next_step/ensure_integration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The token exchange request omits redirect_uri even though the authorize URL includes it. RFC 6749 Section 4.1.3 requires the same redirect_uri in the token request.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OAuthLoginView hand-rolls an OAuth2 flow that already exists as OAuth2LoginView/OAuth2CallbackView via NestedPipelineView and IdentityProviderPipeline. The copy lost the random state, urlencode and error logging.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "error() calls _(error_short) on a variable, while call sites pass plain literals. makemessages therefore no longer extracts these strings, and their translations will be dropped on the next catalog rebuild.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the tests, the setup_path + urlencode({code, state=<md5>}) block is duplicated six times, with the magic state hash hardcoded each time.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The identity check compares GitHub login strings, which can change, rather than the stable user id. A user who renamed their account between install and link is wrongly rejected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

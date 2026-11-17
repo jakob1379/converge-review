@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The traceID is still logged, by a different route. LoggerMiddleware now logs through `m.logger.FromContext(ctx)` (logger_middleware.go, patch line 243), and the wrapper passes this to `ConcreteLogger.FromContext` (pkg/plugins/log/logger.go FromContext \u2192 pkg/infra/log/log.go:203-217), which runs every registered context provider, including the one at pkg/infra/tracing/tracing.go:91-97 that adds \"traceID\" from `TraceIDFromContext`.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1882939
+}

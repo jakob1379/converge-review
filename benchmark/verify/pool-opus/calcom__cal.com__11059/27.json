@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The webhook only handles user credentials, and that is deliberate: the request schema accepts only `userId` (apps/web/pages/api/webhook/app-credential.ts:46-52), and `refreshOAuthTokens` only goes to the sync endpoint when the credential has a `userId` (packages/app-store/_utils/oauth/refreshOAuthTokens.ts:226-227). Team credentials are never part of this sync, so leaving them out of the `findFirst` at app-credential.ts:99-107 is consistent, not a defect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.21570680000000003
+}

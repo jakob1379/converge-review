@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:170 now sets `credentialId: isCalendarType ? result.credentialId : undefined`, so video references created by `create()` are stored without the credentialId that `createMeeting` returns (packages/core/videoClient.ts:78). Cancellation only calls `deleteMeeting` when `bookingVideoReference.credentialId` is set (packages/features/bookings/lib/handleCancelBooking.ts:491-500) and has no fallback, so the video meeting is left undeleted.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.78543
+}

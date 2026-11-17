@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "When the permission cache denies, Check falls through to the database (service.go, patch lines 114-128). But Check first returns a denial from permDenialCache (patch lines 107-112), and every database denial is stored there (lines 137-139) with shortCacheTTL = 30s (service.go:32). So a permission granted after a denial stays blocked for up to 30s. Before the patch, a stale permCache entry caused a similar 30s delay, so the window is bounded and no longer than before.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1184837
+}

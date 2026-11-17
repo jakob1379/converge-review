@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "static/app/components/feedback/list/useFeedbackSummary.tsx:43-66 returns the same four-field object shape in three separate pending/error/success branches, and the 'user-feedback-ai-summaries' flag is checked at useFeedbackSummary.tsx:38 (query `enabled`) and again at static/app/components/feedback/feedbackSummary.tsx:16. This is duplication only, not a behavioural bug; the component-side check also stops a disabled query's pending state from showing the placeholder.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5625898
+}

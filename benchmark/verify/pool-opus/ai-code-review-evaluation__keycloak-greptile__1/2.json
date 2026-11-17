@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The two methods share only about 30 lines of common setup and event-assertion code; their core logic differs. webauthnLoginWithExternalKey_reauthentication (PasskeysUsernamePasswordFormTest.java, patch lines 462-521) uses DEFAULT_RESIDENT_KEY, the setPasswordlessPolicyForExternalKey() helper, clickAuthenticate() and the re-authenticate message check, while webauthnLoginWithDiscoverableKey_reauthentication (PasskeysOrganizationAuthenticationTest.java patch lines 220-271 and PasskeysUsernameFormTest.java patch lines 292-352) uses the PASSKEYS authenticator, an inline policy and automatic login, so 'about 60 duplicated lines' overstates it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1463748
+}

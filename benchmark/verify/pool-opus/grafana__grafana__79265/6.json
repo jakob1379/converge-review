@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In impl.go:83-95, tagDeviceUI returns nil when the device's key is already in localCache. It calls SetDefault(key) at line 87, before CreateOrUpdateDevice runs at line 93, and does not remove the key when the store returns ErrDeviceLimitReached (database.go updateDevice). So for the rest of the 29-minute cache window, TagDevice (impl.go:144-150) returns nil and client.go's ErrDeviceLimitReached check never fires.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1138439
+}

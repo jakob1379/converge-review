@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.java:130-165 repeats the same evaluator body as UserPermissionsV2.java:94-133 and ClientPermissionsV2.java:207-235. The copies differ: only the user version filters on `permission.getResourceId().equals(resource.getId())` (UserPermissionsV2.java:123) and takes an EvaluationContext, while the client version uses a three-argument `findByName` and fetches the policy store via `authz.getStoreFactory()` (ClientPermissionsV2.java:214,219).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.31763849999999993
+}

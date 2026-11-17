@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds an inline `dateOverrides?: { start: Date; end: Date }[]` type in packages/trpc/server/routers/viewer/slots.ts:86-89. That shape is already part of `TimeRange` in packages/types/schedule.d.ts:1-6, which only adds optional fields, and the same patch imports `WorkingHours` from that module (slots.ts:22), so `TimeRange[]` could have been used.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.07861699999999999
+}

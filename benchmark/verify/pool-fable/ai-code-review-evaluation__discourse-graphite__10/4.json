@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The unguarded `[0]` is present at db/migrate/20150818190757_create_embeddable_hosts.rb:15, but it does not fail on a fresh database: db/migrate/20131022045114_add_uncategorized_category.rb:17-18 unconditionally inserts the `uncategorized_category_id` row and no later migration deletes it. Line 15 is also only reached if the unguarded lookup at line 11 returns a row with id 0, so on a fresh database the failure is at line 11, not here.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.20905649999999998
+}

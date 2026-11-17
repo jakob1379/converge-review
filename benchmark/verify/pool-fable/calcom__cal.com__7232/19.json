@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The button that calls `sendVerificationCodeMutation.mutate` (the \"send_code\" button, not the \"Verify\" button the claim names) is disabled only by `numberVerified` at packages/features/ee/workflows/components/WorkflowStepContainer.tsx:410-416, with no `isLoading` guard, so repeated clicks can fire multiple sends; the patch only re-indented this block and the old code had the same `disabled={numberVerified || false}`.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.20201550000000001
+}

@@ -1,0 +1,473 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The unsubscribe endpoint is a GET route whose action changes and saves TopicUser.notification_level without CSRF protection or a signed token, so a third-party page (e.g. via <img src=.../unsubscribe>) can change a logged-in user's notification level for any topic they can see.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "config/routes.rb:440-441 maps GET `t/:slug/:topic_id/unsubscribe` to `topics#unsubscribe`, and app/controllers/topics_controller.rb:98-113 changes and saves `tu.notification_level` with no token or key; `protect_from_forgery` (application_controller.rb:21) does not cover GET and `check_xhr` is skipped for this action (topics_controller.rb:32), so a cross-site GET with the session cookie triggers it. The only limit is that the user must already have a TopicUser row for the topic (otherwise `tu` is nil and the action errors).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3463111
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Because the unsubscribe endpoint is a GET, email client link prefetchers can trigger it and change users' notification settings without the user acting.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The new GET `unsubscribe` action does mutate state (app/controllers/topics_controller.rb:98-116, config/routes.rb `get \"t/:slug/:topic_id/unsubscribe\"`), but it is behind `ensure_logged_in` (topics_controller.rb:8-28; application_controller.rb:408-410, 97-103) and the emailed URL carries no token (app/models/topic.rb:719), so a mail client or scanner prefetching without the user's session cookie is redirected to \"/\" and changes nothing. The state-changing GET is still triggerable by any request carrying the session cookie (e.g. a cross-site embed), but that is not the prefetcher scenario claimed.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3906189
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The unsubscribe action requires ensure_logged_in, but its URL is sent in notification emails. A logged-out recipient who clicks the link is redirected to / with no message and no return path, and nothing is unsubscribed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `:unsubscribe` to `ensure_logged_in` (app/controllers/topics_controller.rb:28) and puts `post.topic.unsubscribe_url` in notification emails (app/mailers/user_notifications.rb:295); for an anonymous HTML GET, `NotLoggedIn` is rescued with a bare `redirect_to path(\"/\")` (app/controllers/application_controller.rb:97-104), so nothing is unsubscribed and no message is shown. The `destination_url` cookie is set (application_controller.rb:420) but only honoured after login when `loginRequired` is on (app/assets/javascripts/discourse/controllers/login.js.es6:84), so on a default site there is no return path.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.46419150000000003
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "controllers/topic-unsubscribe.js.es6",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The property name stopNotificiationsText is misspelled; it should be stopNotificationsText.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6:5 defines `stopNotificiationsText` (extra 'i'), added by the patch; the template app/assets/javascripts/discourse/templates/topic/unsubscribe.hbs:3 uses the same misspelling, so it still works and is only a naming typo.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0540713
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In TopicsController#unsubscribe, TopicUser.find_by can return nil when the user has no topic_users row for the topic. The next line calls tu.notification_level without a nil check, which raises and returns a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/topics_controller.rb:105 assigns `tu = TopicUser.find_by(user_id: current_user.id, topic_id: params[:topic_id])`, which returns nil when no row exists, and line 107 calls `tu.notification_level` with no nil guard. `TopicView.new` at line 99 only reads topic_users (lib/topic_view.rb:238-241) and application_controller.rb has no rescue_from for NoMethodError, so a logged-in user who has never visited the topic gets a 500.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1698596
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The unsubscribe action steps the notification level down instead of setting a target level, so it is not idempotent. Watching/tracking goes to regular on the first visit and to muted on a reload or prefetch.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/topics_controller.rb:107-111 sets the level to regular if it is above regular and otherwise to muted, so a second request to the GET route (config/routes.rb:440-441) moves a watching/tracking user from regular to muted. The action requires login, so only an authenticated reload or prefetch triggers the second step.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1860927
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "After a watching/tracking user's first click, the confirmation says 'You will stop receiving notifications', but the level was only lowered to regular, which still notifies on replies, mentions and quotes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/topics_controller.rb:107-111 only lowers a watching/tracking user to :regular on the first visit, yet app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6:5-7 always shows \"You will stop receiving notifications\" (config/locales/client.en.yml:985). The repo's own description of regular (client.en.yml:1099-1101) says the user is still notified on @mentions and replies.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2943539
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test for the List-Unsubscribe header only checks that the header is present, not that its value uses the provided unsubscribe_url.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `unsubscribe_url: \"/t/1234/unsubscribe\"` to the builder at spec/components/email/message_builder_spec.rb:172, but the header test at :174-176 still only asserts `be_present`, and no test asserts the URL appears anywhere. The header itself is built from `user_preferences_url`, not `unsubscribe_url` (lib/email/message_builder.rb:107), so a value assertion on the provided URL would fail as the code stands.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1904711
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The List-Unsubscribe header still points to the user preferences page rather than the per-topic unsubscribe URL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "lib/email/message_builder.rb:107 still sets `List-Unsubscribe` to `template_args[:user_preferences_url]`; the new `unsubscribe_url` passed from app/mailers/user_notifications.rb:295 is only used in the body text via config/locales/server.en.yml:1855.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.29182800000000003
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "On line 10, the header's class attribute contains '.previous-discussion' with a leading dot, which prevents CSS from targeting it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/views/email/notification.html.erb:10 has `<h4 class='.previous-discussion'>`, so the Nokogiri selector `.previous-discussion` in lib/email/styles.rb:75 (which matches class token `previous-discussion`) never matches and the heading's inline style is not applied. The dot was already present in the pre-patch line (change.patch:352); the patch only re-indented it (change.patch:360).",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2021487
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Adding render :show inside perform_show_response renders the template before topics#show sets canonical_url, so server-rendered topic pages lose their <link rel=\"canonical\"> tag.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds an explicit `render :show` in the html branch of `perform_show_response` (app/controllers/topics_controller.rb:500), so the template and layout render before `show` reaches `canonical_url ...` at topics_controller.rb:87. With `@canonical_url` still nil at render time, `canonical_link_tag` returns '' (lib/canonical_url.rb:15, used in app/views/layouts/_head.html.erb:9); before the patch the implicit render ran after line 87.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3724507
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The view exists only to add a CSS class that the template's wrapper div could carry directly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/javascripts/discourse/views/topic-unsubscribe.js.es6:1-3 defines nothing but `classNames: [\"topic-unsubscribe\"]`, and that class is used only as a descendant selector at app/assets/stylesheets/common/base/topic.scss:67-68. The wrapper `<div class=\"container\">` at app/assets/javascripts/discourse/templates/topic/unsubscribe.hbs:1 could carry the class with the same styling effect.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.345295
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "About 100 of the 225 changed lines are formatting-only edits unrelated to the feature, contrary to CONTRIBUTING.md's one-feature-per-branch guidance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch has exactly 225 added/removed lines, and roughly 110\u2013120 are behaviour-neutral reformatting unrelated to the unsubscribe feature: app/assets/javascripts/discourse/routes/topic-from-params.js.es6 (25), app/models/topic_user.rb (21), app/views/email/notification.html.erb (40), lib/email/message_builder.rb (23), plus a few in app/mailers/user_notifications.rb:309-311 and config/routes.rb. CONTRIBUTING.md:40 asks for one feature or bug-fix per branch, though it does not name formatting clean-ups explicitly.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.32968530000000007
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "On the unsubscribe page, {{title}} is interpolated into an HTML translation and inserted with triple-stash without escaping, which allows XSS.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The interpolated value is `model.fancyTitle` (app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6:6), which comes from the server's `fancy_title`, already HTML-escaped with `ERB::Util.html_escape(title)` at app/models/topic.rb:264. The triple-stash in templates/topic/unsubscribe.hbs therefore renders escaped text, the same pattern as the existing `{{{model.fancyTitle}}}` in templates/topic.hbs:38.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.340504
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The slug-mismatch redirect for the unsubscribe URL, which has side effects, uses status 301, so browsers cache it permanently.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/topics_controller.rb:101-102 redirects a slug mismatch (or missing slug) on the GET `unsubscribe` action with `status: 301`, and that action changes `notification_level` at lines 105-112. The practical harm is small: the redirect returns before the mutation, so a cached 301 only skips a round trip and the canonical URL still reaches the server, the same pattern `show` uses at line 459.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2763916
+   }
+  },
+  {
+   "issue": "i16",
+   "path": "templates/topic/unsubscribe.hbs",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The template is at templates/topic/unsubscribe.hbs, which resolves to a nested topic.unsubscribe route. The router, controller and view use the top-level topicUnsubscribe route, so Ember will not pick up the template.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Discourse's custom resolver maps the top-level route name to the nested template path: `findTemplate` tries `templates[decamelized.replace(/\\_/, '/')]` (app/assets/javascripts/discourse/ember/resolver.js.es6:158), so `topicUnsubscribe` becomes `topic_unsubscribe` and then `topic/unsubscribe`, which is the key templates/topic/unsubscribe.hbs is registered under given `templates_root = 'discourse/templates'` (config/application.rb:147). The existing `userActivity` resource with templates/user/activity.hbs relies on the same mapping; traced by reading the code, not run.",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0.5085234000000001
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The post_number: /\\d+/ constraint was dropped from both summary routes, and moderator-liked was reordered, inside a feature commit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes `post_number: /\\d+/` from both summary routes and moves the moderator-liked route below `t/:topic_id/wordpress` while adding the unsubscribe routes (config/routes.rb:438-442). Neither summary path has a `:post_number` segment, so the dropped constraint was a no-op and the reorder does not change matching; this is unrelated churn only.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.09010569999999998
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The multiline array passed to skip_before_filter has no trailing comma after :unsubscribe.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The array passed to `skip_before_filter` is single-line and has a comma after `:unsubscribe` (app/controllers/topics_controller.rb:32: `only: [:show, :unsubscribe, :feed]`). The multiline array ending in `:unsubscribe]` belongs to `before_filter :ensure_logged_in` (lines 8-28); its missing trailing comma is valid Ruby and matches the pre-patch style (`:bookmark]`), so there is no defect.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2950889
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There are no tests for the new state-changing TopicsController#unsubscribe endpoint, Topic#unsubscribe_url, or the email footer change, contrary to CONTRIBUTING.md's 'Include tests' guidance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's only spec change is passing `unsubscribe_url` into an existing fixture at spec/components/email/message_builder_spec.rb:172, with no new assertion; spec/controllers/topics_controller_spec.rb and spec/models/topic_spec.rb contain no reference to `unsubscribe`, so the new action (app/controllers/topics_controller.rb, patch line 197) and `Topic#unsubscribe_url` are untested, despite CONTRIBUTING.md:44 'Include tests, and ensure they pass'.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.28097269999999996
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TopicsController#unsubscribe calls tu.save! directly instead of TopicUser.change. As a result, notifications_reason_id/notifications_changed_at are not set and the MessageBus notification_level_change publish is skipped, so update_last_read auto-tracking can later overwrite the user's choice.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/controllers/topics_controller.rb:105-113 sets tu.notification_level and calls tu.save! directly, bypassing TopicUser.change (app/models/topic_user.rb:87-90, 112-114), which is the only place that defaults notifications_changed_at/notifications_reason_id and publishes notification_level_change; no model callback or observer does it instead. With notifications_reason_id left NULL, the update_last_read CASE at app/models/topic_user.rb:161-164 can flip the row back to tracking once view time passes the auto-track threshold.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.29513819999999996
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The shared unsubscribe_link i18n string now requires %{unsubscribe_url}, but Email::MessageBuilder gives it no default. Any build_email caller passing add_unsubscribe_link: true without unsubscribe_url hits a missing-interpolation error, and non-English locales keep the old string.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The claim is correct but only as a latent hazard: config/locales/server.en.yml:1852-1855 now interpolates %{unsubscribe_url}, and lib/email/message_builder.rb:24-28 defaults only site_name, base_url and user_preferences_url, so the I18n.t calls at :67 and :90 would raise under i18n 0.7.0 if the key were absent. The sole in-repo caller with add_unsubscribe_link: true (app/mailers/user_notifications.rb:294-295) does pass unsubscribe_url, so nothing breaks today; other locales (e.g. config/locales/server.de.yml:1343) do keep the old string.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5010693
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An in-app Ember transition to topicUnsubscribe only loads the topic JSON and never calls the server action, yet still shows the 'stop receiving notifications' confirmation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The route's model hook (app/assets/javascripts/discourse/routes/topic-unsubscribe.js.es6:6) calls PostStream.loadTopicView, which without preloaded data fetches /t/<id>.json (post-stream.js.es6:821-822), and config/routes.rb:412 maps that to topics#show, not topics#unsubscribe. The template (templates/topic/unsubscribe.hbs:3) still renders the 'You will stop receiving notifications' text; only a full page load hits the server action, and in-app routing is reachable via lib/click-track.js.es6:100 or back/forward.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5490151999999999
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "On line 6, the email template repeats the respond instructions that already appear on line 19 when context_posts are present.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/views/email/notification.html.erb:6 emits `%{respond_instructions}` inside the `context_posts.present?` block and line 19 emits it again unconditionally, so emails with context posts carry the instructions twice. The pre-patch template had the same two placements, so this looks like deliberate, pre-existing layout that the patch only re-indented.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.2346715
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The controller exists only to format one i18n string, which the i18n helper with named params could do directly in the template.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6:5-7 defines only `stopNotificiationsText`, a single `I18n.t` call with `title: model.fancyTitle`. The `i18n` helper resolves named hash params against the template context (helpers/register-unbound.js.es6:9-15), and templates/topic.hbs:94 already uses the triple-stash form `{{{i18n \"...\" count=model.pending_posts_count}}}`, so `{{{i18n \"topic.unsubscribe.stop_notifications\" title=model.fancyTitle}}}` would work in the template (unbound, but the route resolves the model before render).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3879318
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The rewritten tracking scope uses 3-space and 5-space continuation indents, unlike the file's 2-space convention.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/models/topic_user.rb:10 indents the chained `.where` with 3 spaces and lines 11-12 indent its arguments with 5 spaces; these are the only odd-indented lines in the file, which otherwise uses 2-space steps (line 9 `where(topic_id: topic_id)` sits at 4).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.15341470000000001
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The module ends in }) without a semicolon, unlike its sibling .js.es6 controllers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6:9 ends the module with `})` and no semicolon; it is the only file in that controllers directory to do so, while about 70 sibling controllers (e.g. topic.js.es6, topic-progress.js.es6) end with `});`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.21487079999999997
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

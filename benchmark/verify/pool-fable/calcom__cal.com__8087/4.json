@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/features/bookings/lib/handleCancelBooking.ts:460-470 the `forEach(async ...)` callback is never awaited, and lines 466-467 await `deleteEvent` and then push its resolved value, so `Promise.all(prismaPromises.concat(apiDeletes))` at line 652 does not wait for those recurring-event deletions. Lines 466-467 are unchanged context in the patch, which only added `await getCalendar` at line 461.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1713446
+}

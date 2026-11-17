@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/slots.ts:109-111 compares `dayjs(date.start).add(utcOffset,\"minutes\").format(\"YYYY MM DD\")` (a local-mode dayjs, so server-zone date of the real start instant; no default tz is set anywhere) against `slotStartTime.format(...)`, which is UTC (line 100), never the host's local date. E.g. a UTC-8 host's 17:00\u201320:00 override on day D starts at D+1 01:00Z, so it matches every slot dated D+1 in UTC and lines 117-125 reject the host's normal D+1 working-hours slots as outside the override.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2845846
+}

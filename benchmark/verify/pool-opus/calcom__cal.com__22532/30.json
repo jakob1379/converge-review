@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The migration at packages/prisma/migrations/20250715160635_add_calendar_cache_updated_at/migration.sql:6 runs `ADD COLUMN \"updatedAt\" TIMESTAMP(3) NOT NULL DEFAULT NOW()`, which stamps every existing CalendarCache row with the time the migration ran. The 'Last updated' label shows the newest of those stamps for each credential (repository `_max.updatedAt`, mapped via cacheStatusMap), so old rows show the migration time until their next write.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0446203
+}

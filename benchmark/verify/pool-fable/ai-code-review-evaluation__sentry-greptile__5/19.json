@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The claim misnames the hook: the new file is static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx, which has no colocated spec (the existing useTraceItemAttributeKeys.spec.tsx only covers it indirectly, without a search string). Its queryString\u2192substringMatch path (useGetTraceItemAttributeKeys.tsx:46,65-71) is never exercised, since the only caller invokes it with no argument (useTraceItemAttributeKeys.tsx:53) and no keys spec asserts substringMatch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.48579949999999994
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.get_result (patch lines 101-167) repeats BasePaginator.get_result (paginator.py:136-215) almost line for line, and its only new part is a negative-offset branch that Django querysets reject, so it optimizes nothing. Its get_item_key and value_from_cursor (patch lines 94-99) are copied from Paginator (paginator.py:221-227), which calls math.floor/ceil on a number, but the audit-log endpoint uses it with order_by=\"-datetime\" (patch lines 33-39), so it should use the DateTimePaginator logic (paginator.py:230-241) and will raise a TypeError on datetime values.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1489763
+}

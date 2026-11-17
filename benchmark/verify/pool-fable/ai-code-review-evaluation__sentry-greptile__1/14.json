@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 gates on raw `request.user.is_superuser` rather than `is_active_superuser(request)` (which the endpoint's own permission class uses, src/sentry/api/bases/organization.py:124), and ORs it with `organization_context.member.has_global_access`, which defaults to True (src/sentry/models/organizationmember.py:216) and is copied into the RPC member (src/sentry/organizations/services/organization/serial.py:47). The gate is therefore effectively a no-op for ordinary members, though the endpoint is still limited by `OrganizationAuditPermission` (org:write or active superuser).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2066656
+}

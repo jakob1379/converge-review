@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In app/controllers/topics_controller.rb (patch lines 188-189) the skip_before_filter array is the single-line `only: [:show, :unsubscribe, :feed]`, not a multiline array. The multiline array that ends in `:unsubscribe]` belongs to the earlier `before_filter ... except:` list (patch lines 180-184), and leaving out a trailing comma there is valid Ruby that matches the original code's style.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.030118600000000002
+}

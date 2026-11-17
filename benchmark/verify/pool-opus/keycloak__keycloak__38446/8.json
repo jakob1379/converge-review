@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In BackwardsCompatibilityUserStorage.java:232-235 the new getCredentials assigns `getMyUser(user)` (a plain `users.get(...)` at line 227) and reads `myUser.recoveryCodes` with no null check, so an unknown user throws a NullPointerException. The neighbouring methods do guard against null (lines 259, 271, 286). In practice the provider only returns users that are in its map (line 89), so this is hard to reach.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1262871
+}

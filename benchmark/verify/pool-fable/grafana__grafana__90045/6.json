@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:126-131, when d.Storage.Update returns an error the code calls d.recordLegacyDuration(true, mode3Str, options.Kind, method, startStorage) at line 129, while the success path at line 132 uses recordStorageDuration. The failed storage update is therefore recorded under the legacy metric.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1988129
+}

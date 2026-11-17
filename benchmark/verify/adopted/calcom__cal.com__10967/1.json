@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes create.handler.ts:151 from `...(!IS_TEAM_BILLING_ENABLED && { slug })` to `...(IS_TEAM_BILLING_ENABLED ? { slug } : {})`, so the condition is now inverted. With billing off, the org gets neither a slug nor a requestedSlug (line 153), so createTeams.handler.ts:67-68 throws NoOrganizationSlugError. With billing on, the slug is set before payment.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0483504
+}

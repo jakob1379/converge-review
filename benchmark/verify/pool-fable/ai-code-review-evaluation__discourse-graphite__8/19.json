@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/groups_controller.rb:71-75 loops `group.add(user)` with no membership check or transaction; `Group#add` (app/models/group.rb:272-274) is `self.users.push(user)` on a persisted has_many :through, which inserts each join row immediately, and GroupUser has no uniqueness validation while db/migrate/20130416004933_group_users.rb:9 puts a unique index on (group_id,user_id). The resulting RecordNotUnique is only logged and re-raised (app/controllers/application_controller.rb:62-74), so the request 500s after earlier users are already committed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4401201
+}

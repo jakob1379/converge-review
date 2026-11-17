@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts (patch lines 115-123), a slot is rejected only when slotEndTime <= override start or slotStartTime.isAfter(override end). A slot that starts inside the override and ends after it passes both tests, sets dateOverrideExist = true and returns true (patch lines 131-133). A slot starting exactly at the override end also passes, because isAfter is strict.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0635265
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `s.Init(ctx)` to `NewResourceServer` (pkg/storage/unified/resource/server.go:258-262). That ctx comes from `context.WithCancel(context.Background())` with no deadline (server.go:229). Init is reached from `ProvideUnifiedStorageClient` in the wire graph (pkg/server/wire.go:212; client.go:101, the default/legacy storage path). So backend DB init and ping (sql/backend.go:93-106) and, when the search flag is on, a full search index build (resource/search.go:181-198) now run during startup. Any error from these makes the provider fail, and a hang stalls startup with no timeout.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2069449
+}

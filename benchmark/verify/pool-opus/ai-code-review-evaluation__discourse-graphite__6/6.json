@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/serializers/user_serializer.rb:137-149 (added by the patch), `URI(website.to_s).host` keeps the host's case as typed, and it is compared with `==` / `ends_with?` against `Discourse.current_hostname` (lib/discourse.rb:178) with no downcasing. UserProfile (app/models/user_profile.rb) does not normalise the website either, so `http://Example.com/u` falls through and shows only the host.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.057371500000000006
+}

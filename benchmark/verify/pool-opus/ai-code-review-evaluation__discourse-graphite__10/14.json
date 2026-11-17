@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/admin/embeddable_hosts_controller.rb, lines 10 and 15 look up the host with `EmbeddableHost.where(id: params[:id]).first`, which returns nil for an unknown id. Neither method checks for nil: line 16 calls `host.destroy`, and line 23 (in save_host) calls `host.host=`, so both raise NoMethodError (a 500) instead of returning 404.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0354337
+}

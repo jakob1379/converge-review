@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The CLI default is `--flusher-processes=1` (consumers/__init__.py), and flusher.py computes `num_processes = min(max_processes, len(assigned_shards))`, so by default every shard runs in one process, not 'one process per shard'. The comment at flusher.py:235 says 'any shard' is checked, but the code checks a single per-process `process_healthy_since` value; the comment at :178 likewise suggests per-shard updates when there is only one value per process.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1112489
+}

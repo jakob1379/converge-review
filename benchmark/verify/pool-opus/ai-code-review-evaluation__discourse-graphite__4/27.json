@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new file app/jobs/regular/retrieve_topic.rb:1 loads 'email/sender', but the job only uses User and TopicRetriever (lines 9-18). lib/topic_retriever.rb doesn't use Email either, so the require does nothing.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0397611
+}

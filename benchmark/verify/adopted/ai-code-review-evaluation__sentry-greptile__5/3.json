@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At browser_reporting_collector.py:47-48 both `age` and `timestamp` are `required=False`. The only checks are the per-field validators at :50-60, and DRF runs those only when the field is present. There is no object-level `validate()`, so a report with neither field is accepted, even though the docstrings say one of them must be present.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.04957469999999999
+}

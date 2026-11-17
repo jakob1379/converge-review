@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the only two posts that used content_type=\"application/reports+json\" (change.patch:5146 and :5209). test_basic and test_handles_multiple_reports_both_specs now post without it, and no file under tests/ uses that media type anymore, so the parser at src/sentry/issues/endpoints/browser_reporting_collector.py:69 is never tested on a successful request.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3118569
+}

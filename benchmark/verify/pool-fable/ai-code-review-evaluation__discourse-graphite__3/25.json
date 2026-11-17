@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only client use of `values` is `result.values.email` at app/assets/javascripts/discourse/controllers/create_account_controller.js:275, where the submitted `email` is already in closure scope (line 263); `name` and `username` are never read. `User.new_from_params` assigns `params[:email]` verbatim (app/models/user.rb:84-91) and User has no email setter or before_validation that alters it, so the echoed value at app/controllers/users_controller.rb:199 equals what was sent.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.36558870000000004
+}

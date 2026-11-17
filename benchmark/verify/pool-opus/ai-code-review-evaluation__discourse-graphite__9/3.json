@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Only config/initializers/i18n.rb:1 contains the '# order: after 02-freedom_patches.rb' comment, and no code in the repo reads it. Rails loads config/initializers/* in alphabetical order, and 'i18n.rb' happens to sort after '02-freedom_patches.rb', so the comment describes the order but does not control it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0425136
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only test file the patch touches is apps/web/playwright/login.2fa.e2e.ts. Its new steps just click backup-codes-download (checking only the filename), backup-codes-copy and backup-codes-close, and it leaves TODOs for 'login + disabling 2fa with backup', file content and clipboard content. No test covers the new backup-code paths in next-auth-options.ts or totp/disable.ts: login, a used code, a wrong code, missing codes, or disabling 2FA.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.056767700000000004
+}

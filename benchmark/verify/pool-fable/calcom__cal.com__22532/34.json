@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts:28 calls prisma.calendarCache.deleteMany directly, while packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts:28-29 reads cache status through CalendarCacheRepository.getCacheStatusByCredentialIds. Both files are added or changed by the patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.127739
+}

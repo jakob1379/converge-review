@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's fetch_error_details pairs IDs and data with `zip(error_ids, events.values())` (patch line ~729). It does not look up each event by its node_id key. In src/sentry/nodestore/base.py:184-210, get_multi removes duplicate ids, adds cached items after the fetched ones (`items.update(cache_items)`), and leaves out entries the backend does not return, so the values can come back in a different order or count than error_ids and get matched to the wrong IDs.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.047247700000000004
+}

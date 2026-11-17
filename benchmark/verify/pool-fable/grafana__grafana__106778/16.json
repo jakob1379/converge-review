@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/hooks/useAbilities.ts:301 carries the comment 'All GrafanaPromRuleDTO rules are Grafana-managed by definition', but line 302 computes `isAlertingRule = prometheusRuleType.grafana.alertingRule(rule)`, which (utils/rules.ts:103-105) tests `rule.type === PromRuleType.Alerting`, i.e. alerting vs recording. The comment explains why the old `isGrafanaManagedAlertRule` check was dropped, not what the line beneath does; behaviour is unaffected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1704843
+}

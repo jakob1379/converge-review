@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The cleanup in the test's `finally` block calls `admin_client.delete_topics([test_topic])` inside `try/except Exception: pass`, which hides every cleanup error (tests/sentry/uptime/consumers/test_results_consumer.py:2143-2146). The patch adds this code; it is not in the code being tested.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.05039400000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The controller does call Jobs.enqueue(:retrieve_topic) (app/controllers/embed_controller.rb:191), but queue_jobs is false in tests (config/site_settings.yml:348-350). So Jobs.enqueue runs the job right away (app/jobs/base.rb:168-172, 85-89), and Jobs::RetrieveTopic#execute calls TopicRetriever.new(...).retrieve (app/jobs/regular/retrieve_topic.rb:233 in the patch). That satisfies the expectations at spec/controllers/embed_controller_spec.rb:844-850, so the spec and the controller don't conflict.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.25843059999999995
+}

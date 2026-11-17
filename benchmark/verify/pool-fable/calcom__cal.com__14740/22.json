@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "addGuests does use authedProcedure with a custom check that admits attendees by email (packages/trpc/server/routers/viewer/bookings/_router.tsx:79, addGuests.handler.ts:52-54), but COLLECTIVE co-hosts are not refused: they are written as Attendee rows at booking creation (packages/features/bookings/lib/handleNewBooking/createBooking.ts:153-161, handleNewBooking.ts:782-807, 1024-1029), so they pass the isAttendee check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4320653
+}

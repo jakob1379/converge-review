@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch touches only utilities.js, uploads_controller.rb and optimized_image.rb and adds no tests; nothing under spec/ references `downsize` or `OptimizedImage.optimize`, and spec/controllers/uploads_controller_spec.rb has no case for an image over `max_image_size_kb`. The one existing client test (test/javascripts/lib/utilities-test.js.es6:52-61) still asserts the old `max_image_size_kb = 5` limit and was not updated, so it contradicts the new hardcoded 10MB check at utilities.js:182 instead of covering it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2802335
+}

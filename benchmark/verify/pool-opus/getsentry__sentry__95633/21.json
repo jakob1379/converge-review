@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In queue_consumer.py, `FixedQueuePool.__init__` (patch lines 199-224) stores `num_queues` without checking it, and `get_queue_for_group` (line 230) does `hash(group_key) % self.num_queues`, so `num_queues=0` raises ZeroDivisionError. That error is caught in `SimpleQueueProcessingStrategy.submit` (lines 345-353), which marks the offset complete, so the message is dropped without being processed. Through the CLI, result_consumer.py passes `max_workers or 20`, which turns 0 into 20, so only direct construction hits it; a negative `--max-workers` is also unguarded and fails differently, with IndexError on an empty queue list.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2203122
+}

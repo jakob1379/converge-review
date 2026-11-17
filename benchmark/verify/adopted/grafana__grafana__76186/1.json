@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At pkg/plugins/log/fake.go:46-48, TestLogger.FromContext returns a new, empty NewTestLogger() instead of f, so calls are not recorded on the injected fake. The patched LoggerMiddleware.logRequest now logs only through m.logger.FromContext(ctx).Info (logger_middleware.go, patch line 243), so a test that injects a TestLogger would always see InfoLogs.Calls == 0.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1323957
+}

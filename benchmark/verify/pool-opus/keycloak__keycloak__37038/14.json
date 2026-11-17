@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "MgmtPermissions.hasOneAdminRole (MgmtPermissions.java:163-173) only checks roles on the realm's admin client, and 'admin' is a master-realm role, not a client role, so the removed ADMIN argument never matched. Users with the umbrella 'admin' role still pass the MANAGE_USERS/VIEW_USERS checks because that role includes every per-realm admin-client role (RealmManager.java:362-366).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.32174660000000005
+}

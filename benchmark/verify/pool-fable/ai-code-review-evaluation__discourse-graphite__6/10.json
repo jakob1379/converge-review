@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The save `.then` at app/assets/javascripts/discourse/controllers/preferences.js.es6:117-123 only sets the current user's `name` and `model.bio_cooked`, and `User#save` (models/user.js.es6:209-214) copies only `bio_excerpt` from the response, so `model.website_name` (now rendered in templates/user/user.hbs:66-71) stays stale after the website is edited. The patch removed the client-side `websiteName` computed property on `model.website` that previously updated automatically.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.26044429999999996
+}

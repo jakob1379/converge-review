@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only test the patch adds, authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java, instantiates AuthzClientCryptoProvider directly and exercises only ECDSA encoding. No test in the repository references order() or checks which provider wins when several are found by the new sort at common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:57 (common/src/test has no CryptoIntegration test).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.47987579999999996
+}

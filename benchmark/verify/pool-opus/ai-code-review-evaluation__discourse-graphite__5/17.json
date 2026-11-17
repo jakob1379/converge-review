@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/stylesheets/common/foundation/mixins.scss (patch lines 120-143), flexbox() emits `display: -moz-box`, but align-items() emits only -webkit-box-align, -webkit-align-items, -ms-flex-align, -ms-align-items and align-items, with no -moz-box-align. Old-box-model Firefox would therefore fall back to the default box-align of stretch. Only very old Firefox (before 22/28) is affected, because later versions use the `display: flex` declared after it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0412246
+}

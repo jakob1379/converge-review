@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/expr/reader.go:194-200, `enableSqlExpressions` sets `enabled := !IsEnabledGlobally(FlagSqlExpressions)` and returns false on both branches, so the check at reader.go:129-132 rejects every 'sql' query with \"sqlExpressions is not implemented\". The frontend still offers the SQL type when the flag is on (public/app/features/expressions/types.ts:73). This looks deliberate: the patch also replaces go-duck with a stub DB that returns \"not implemented\" (pkg/expr/sql/db.go), but the toggle and UI option are left in place and the inverted, dead-branch code is misleading.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1691825
+}

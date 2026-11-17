@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {})` in packages/app-store/googlecalendar/lib/CalendarService.ts (around line 1024). The call passes empty data, so changing the timestamp depends only on `updatedAt DateTime? @updatedAt` (packages/prisma/schema.prisma:860). The comment above the call names the goal but not how it works, and Prisma may not refresh `@updatedAt` at all when the data is empty, so setting `updatedAt: new Date()` explicitly would be clearer and safer.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.054968600000000006
+}

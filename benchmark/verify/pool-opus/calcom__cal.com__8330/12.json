@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/slots.ts:211-212 (patch lines 44-45) call dayjs(override.start.toString()) even though override.start is a Date (TimeRange.start: Date in packages/types/schedule.d.ts). Date#toString gives a non-ISO string that dayjs passes on to the engine's Date parser, and it drops milliseconds, while dayjs(override.start) on lines 51-55 shows the Date can be used directly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0722777
+}

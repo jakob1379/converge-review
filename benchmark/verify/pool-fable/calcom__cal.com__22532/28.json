@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The mock at packages/features/calendar-cache/calendar-cache.repository.mock.ts:27 does omit `credentialIds`, but TypeScript accepts a method with fewer parameters as implementing the interface method at calendar-cache.repository.interface.ts:30-32, so there is no signature mismatch. Every other mock method (mock.ts:8-25) omits its arguments the same way; I did not run the type checker.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1511755
+}

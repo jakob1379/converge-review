@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "create_account_controller.js:274-276 checks only result.errors.email and result.values, then pushes result.values.email without a null check, so a nil or blank email would be added. In practice the server always sends the email key (users_controller.rb:199, attributes.slice), the client blocks blank-email submits, and emailValidation's blank check (create_account_controller.js:61) runs before the rejectedEmails lookup, so the effect is harmless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0972339
+}

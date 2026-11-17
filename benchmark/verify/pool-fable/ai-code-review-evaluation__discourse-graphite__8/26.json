@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the only production callers of `group.usernames =` (the old `update_put` and `create` in app/controllers/admin/groups_controller.rb); the remaining callers are spec/models/group_spec.rb:149,153 and spec/models/user_spec.rb:1011,1022. `@deletions` is set only in that setter (app/models/group.rb:257), so the `after_save :destroy_deletions` hook (group.rb:10, 287-295) still fires on every save but never does anything in production.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.6003693
+}

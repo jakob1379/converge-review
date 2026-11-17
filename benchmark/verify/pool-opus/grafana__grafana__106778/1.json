@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new GrafanaRuleListItem.tsx builds the link as `createRelativeUrl(`/alerting/grafana/${uid}/view`)` (patch line 1066), with no returnTo. The deleted GrafanaRuleLoader called createReturnTo() and passed `{ returnTo }` (patch lines 1209, 1222), and DataSourceRuleListItem.tsx:36-42,83 still does the same, so going back from Grafana rule details no longer returns to the filtered list.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2956923
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/initializers/i18n.rb:12-23 defines `FallbackLocaleList < Hash` overriding only `[]` and adding `ensure_loaded!`, and nothing ever stores into the hash, so `keys`/`each`/`to_h` are empty and `fetch` raises. No caller in the repo uses those methods (only `I18n.fallbacks.ensure_loaded!` at app/controllers/application_controller.rb:159, and the i18n 0.7.0 fallbacks backend is expected to read only `I18n.fallbacks[locale]`, though the gem source is not in the repo), so the inconsistency is latent.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1649081
+}

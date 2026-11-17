@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/models/group.js:82 reads `if (!this.get('id')) { return };`, added by the patch in the new `destroy` method; the semicolon after the closing brace is an empty statement (jshint W032), and .jshintrc does not suppress it (only `lastsemic` is set, at .jshintrc:81). I did not run jshint.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09559070000000001
+}

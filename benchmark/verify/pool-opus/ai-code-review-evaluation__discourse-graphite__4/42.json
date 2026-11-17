@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/topic_retriever.rb:49 (fetch_http) calls SiteSetting.embed_by_username.downcase with no present?/blank? guard, unlike app/jobs/scheduled/poll_feed.rb:17. In practice it is harmless: the setting defaults to '' (config/site_settings.yml:357), ''.downcase is safe, and line 50 returns early when no user is found, so only a nil value (which a string setting should not hold) would crash.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0631743
+}

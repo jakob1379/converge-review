@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "DRF runs both field validators. With age: 0 and a real non-zero timestamp, validate_timestamp lets it through (line 52, because 0 is falsy), but validate_age raises (line 58, because the timestamp is truthy), so the report fails validation. The only report that gets through is the unrealistic case where timestamp is also 0.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.055954199999999996
+}

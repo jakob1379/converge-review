@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's test changes only add `end_timestamp_precise` to existing fixtures (tests/sentry/spans/test_buffer.py, test_flusher.py, test_consumer.py); no test references `OptimizedCursorPaginator`, `optimized_pagination` or `zpopmin`/more than 1000 spans, and the only negative-offset test (tests/sentry/api/test_paginator.py:143) exercises the separate `OffsetPaginator` (src/sentry/api/paginator.py:247), not `BasePaginator` (line 58).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3678217
+}

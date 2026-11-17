@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the same prisma.credential.findUnique (include app.slug) \u2192 CredentialWithAppName fallback twice, in EventManager.ts createAllCalendarEvents (~342-365) and updateAllCalendarEvents (~515-538). handleCancelBooking.ts (~431-441) has a third version with no app include, no appName mapping and no app.slug guard, so the copies already behave differently.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2094234
+}

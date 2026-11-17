@@ -1,0 +1,82 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the AccessTokenContext constructor, the requireNonNull call with the message 'Null rawTokenId not allowed' checks grantType a second time instead of rawTokenId. A null rawTokenId is therefore accepted and gets encoded as '<prefix>:null', or causes a later NPE.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher throws StringIndexOutOfBoundsException for prefixes shorter than 5 characters instead of returning false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher extracts the grant shortcut with substring(3, 5). The grant shortcut sits at positions 4-5 of the 2+2+2 prefix, so the correct call is substring(4, 6).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isAccessTokenId matcher has inverted logic: it returns false when the extracted value equals the expected grant shortcut, so it rejects correct tokens and accepts wrong grant shortcuts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Dependabot label 'area/dependencies' does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The lazy/hot-deploy refresh paths in getGrantTypeByShortcut (lines 106-137) add entries without the duplicate-shortcut check that postInit performs, so a custom grant can overwrite an existing shortcut mapping.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Constants.GRANT_TYPE is a pure alias of OAuth2Constants.GRANT_TYPE, and the patch uses both inconsistently: OAuth2GrantType.Context reads OAuth2Constants.GRANT_TYPE, while grants and TokenManager write Constants.GRANT_TYPE.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

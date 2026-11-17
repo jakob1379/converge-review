@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/office365calendar/lib/CalendarService.ts, `updateEvent(uid, event)` (line 94) and `deleteEvent(uid)` (line 111) take no externalCalendarId, and both always call the default-calendar URL `/me/calendar/events/${uid}` (lines 96, 113). Only createEvent (lines 75-77) uses the destination calendar. One correction: the interface marks externalCalendarId as optional (packages/types/Calendar.d.ts:226,229), so leaving it out compiles fine and is not strictly 'required'.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.08774219999999999
+}

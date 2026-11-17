@@ -1,0 +1,313 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "FilterView.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In FilterView.tsx, inside rules.map(...), the 'grafana' branch renders <GrafanaRuleListItem> without key={key>. The sibling branches (DataSourceRuleLoader, UnknownRuleListItem) and the removed GrafanaRuleLoader pass the key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GrafanaRuleListItem builds the rule view URL without the { returnTo } parameter. The deleted GrafanaRuleLoader and the sibling DataSourceRuleListItem both pass it, so navigating back from rule details loses the list's filters and position.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllAlertRuleAbilities now delegates to useAllRulerRuleAbilities, which hardcodes isFederated = false instead of checking isFederatedRuleGroup(rule.group). As a result, federated Mimir rule groups are no longer treated as immutable, and Update/Delete/Pause/Restore become allowed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GrafanaGroupLoader calls promResponse.data.groups.at(0)?.rules.map(...) without optional chaining on .map. An empty groups array therefore causes undefined.map(...) to throw.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": "RuleActionsButtons.V2.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the list view, GrafanaRuleListItem passes only promRule to RuleActionsButtons. The 'Silence notifications' menu item is shown based on Prom abilities, but the SilenceGrafanaRuleDrawer and click handler require a Ruler rule (rulerRuleType.grafana.alertingRule(rule)). Clicking Silence therefore sets state but never renders the drawer.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Delete and Pause menu items are still gated on rulerRule presence, even though their abilities are ORed from ruler and Grafana Prom sources. In the promRule-only list view, Delete and Pause never appear for Grafana rules.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllAlertRuleAbilities now calls groupIdentifier.fromCombinedRule, which calls getDatasourceAPIUid. That function throws 'Datasource not found' during render for unregistered rule sources, whereas the old getRulesSourceName path never threw.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useCanSilence invokes hooks before its early return when rule is undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useIsRuleEditable calls featureDiscoveryApi.endpoints.discoverDsFeatures.useQuery() before checking whether rule is undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Leftover optional chaining (rule?.health, rule?.lastError, rule?.isPaused) and a redundant promAlertingRule recomputation remain inside the alerting branch, even though rule is no longer optional.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A custom skipToken Symbol is introduced only to be converted back to undefined. It shadows RTK Query's skipToken, which is already imported in the folder, and it is a module constant that is not ALL-CAPS.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": "RulesTable.test.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "RulesTable.test.tsx mocks every useAbilities hook, including the new prom path. The OR-merge in AlertRuleMenu/RuleActionsButtons.V2, useAllGrafanaPromRuleAbilities, and useIsGrafanaPromRuleEditable are therefore never exercised unmocked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A stray '// duplicate' comment carries no information.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "isProvisionedPromRule accesses promRule.provenance without type narrowing. PromRuleDTO has no provenance property, and prometheusRuleType.grafana.rule() is not a type predicate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The @deprecated TSDoc on useAllAlertRuleAbilities gives no reason. It points to useAllRulerRuleAbilities, which is not equivalent because it hardcodes isFederated=false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The component-level doc comment says the loader fetches from Prometheus and Ruler endpoints, but the implementation only calls the Prometheus API.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The comment 'All GrafanaPromRuleDTO rules are Grafana-managed by definition' does not match the code beneath it. That code checks prometheusRuleType.grafana.alertingRule (alerting vs recording).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useIsGrafanaPromRuleEditable duplicates the Grafana branch of useIsRuleEditable (useFolder -> getRulesPermissions -> hasPermissionInMetadata).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": "GrafanaGroupLoader.test.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ui.menuItems.delete is defined but never used in GrafanaGroupLoader.test.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The five-item action list is written twice, and each ability is destructured from both sources and ORed by hand. The inline arrays are recreated every render, which defeats the useMemo inside both hooks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "handleDelete's type signature expects RulerRuleDTO, but its call sites pass EditableRuleIdentifier.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getIsProvisioned uses 11 lines for a one-line expression, and the logWarning + return undefined fallback in getEditableIdentifier is unreachable for current callers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i23",
+   "path": "useAbilities.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllGrafanaPromRuleAbilities is exported but used only inside useAbilities.ts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The RulerRuleLoadingError export is orphaned because its only user was the deleted GrafanaRuleLoader.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Duplicate is enabled for non-Grafana rules. AlertRuleMenu passes skipToken, so useAllGrafanaPromRuleAbilities(undefined) sets loading=false and yields Duplicate=[true, hasPermission(AlertingRuleCreate)], which is ORed into canDuplicate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllGrafanaPromRuleAbilities rebuilds the same 10-entry ability map as useAllRulerRuleAbilities, so the immutability, plugin and admin logic exists in two places.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useAllGrafanaPromRuleAbilities gates ModifyExport, Pause, Restore and DeletePermanently on prometheusRuleType.grafana.alertingRule. The ruler path also covered Grafana recording rules, so those rules lose these abilities in the new list.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i28",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The operation prop on GrafanaRuleListItem is unused because neither caller passes it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

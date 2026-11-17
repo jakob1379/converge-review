@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`feed_polling_enabled` defaults to false (config/site_settings.yml:551), and the 'requires feed_polling_url' and 'requires embed_by_username' specs (spec/jobs/poll_feed_spec.rb:886-896) never stub it to true. So `execute` stops at the first `SiteSetting.feed_polling_enabled?` check (app/jobs/scheduled/poll_feed.rb:261), and the specs pass whatever the url and username checks do.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15167519999999998
+}

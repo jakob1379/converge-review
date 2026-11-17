@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds GET routes for unsubscribe (config/routes.rb:444-445), and TopicsController#unsubscribe saves a lower notification level on every request (topics_controller.rb, new unsubscribe action) with no confirmation step or CSRF token. A fetch that carries the user's session can change the setting without the user acting, and repeat fetches lower it further. The impact is limited because the action requires login (topics_controller.rb:8-28), so a link scanner without the session cookie only hits the login check.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1422261
+}

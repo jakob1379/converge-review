@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20131217174004_create_topic_embeds.rb:3 calls `create_table :topic_embeds, force: true`, which in Rails drops any existing table of that name before creating it. No earlier migration creates topic_embeds and the same `force: true` idiom is used across the repo (e.g. db/migrate/20131223171005_create_top_topics.rb:3), so real data loss is unlikely in a normal migration run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1029051
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch's only test change is one extra `getSchedule` call with invitee timezone +6:00 inside the existing \"Check for Date overrides\" test (apps/web/test/lib/getSchedule.test.ts:788-804). Its scenario (lines 746-766, schedule at 107-129) has one user, no scheduling type, no bookings and a single IST override range with non-split hours that do not cross UTC midnight; every asserted slot falls on the override day, so `checkIfIsAvailable` returns at packages/trpc/server/routers/viewer/slots.ts:131-133 before the new working-hours branch at 136-149.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.291977
+}

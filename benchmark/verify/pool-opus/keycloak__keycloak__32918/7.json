@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds getForLogin (InfinispanIdentityProviderStorageProvider.java:213-255), which repeats the caching logic of getByOrganization (167-211) almost line for line. The two have drifted: getByOrganization skips the cache when `isInvalid(cacheKey) || isInvalid(orgId)` (line 173), while getForLogin only checks `isInvalid(cacheKey)` (line 217). The gap looks harmless because removing or unlinking an organization still goes through identityProviders().update (JpaOrganizationProvider.java:342,371), which clears the login caches.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.20271860000000003
+}

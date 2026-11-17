@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch hard-codes the 10 MB limit in three places: twice on the client (app/assets/javascripts/discourse/lib/utilities.js:182 `10 * 1024` and :246 `10 * 1024`) and once on the server (app/controllers/uploads_controller.rb:55 `10.megabytes`). Nothing shares a constant or setting, so changing one would not update the others.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0432072
+}

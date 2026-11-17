@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:55 now passes a hardcoded `10.megabytes` to `FileHelper.download` where it used `SiteSetting.max_image_size_kb.kilobytes`, and lib/file_helper.rb:18 stops writing once that cap is passed, so URL uploads are truncated at about 10 MB on sites configured higher and up to 10 MB is fetched on sites configured lower. The lower-limit case is softened because images are downsized afterwards (uploads_controller.rb:64-69) and lib/validators/upload_validator.rb:81-85 still enforces the configured size before storing.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2188607
+}

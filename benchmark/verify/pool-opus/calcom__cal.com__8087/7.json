@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In handleCancelBooking.ts:589-596, `await appStore[...]` and `new PaymentService(paymentAppCredential)` both sit before the `try` at line 597, which only wraps `paymentInstance.refund()`, so a rejected import or a throwing constructor skips handleRefundError (lines 600-604) and propagates out of the handler. The patch only adds the `await`; the instantiation was already outside the try, and before the patch a failed static import would also have escaped the handler.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.128338
+}

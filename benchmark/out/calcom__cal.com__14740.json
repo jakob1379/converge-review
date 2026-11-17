@@ -1,0 +1,320 @@
+{
+  "findings": [
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 46,
+      "severity": "Important",
+      "claim": "Permission check isTeamAdmin(...) && isTeamOwner(...) collapses to owner-only; team ADMINs who are not organizer/attendee get FORBIDDEN despite the variable name isTeamAdminOrOwner.",
+      "evidence": "isTeamAdmin (packages/lib/server/queries/teams/index.ts:264-284) already matches ADMIN or OWNER; isTeamOwner (:286-295) matches OWNER only. Repo convention is role === OWNER || role === ADMIN (confirm.handler.ts:127-128, get.handler.ts:405-406). Reasoned; repro: ADMIN member of the event type's team calls addGuests and gets FORBIDDEN.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Raised by all four seats with consistent source citations; use isTeamAdmin alone (also drops one DB query)."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 74,
+      "severity": "Important",
+      "claim": "BLACKLISTED_GUEST_EMAILS filter is bypassable by case change or +alias; existing-attendee de-dup is also case-sensitive, so A@x.com is added beside a@x.com.",
+      "evidence": "Blacklist entries are lowercased but the raw guest is compared with includes(guest); extractBaseEmail never applied. handleNewBooking.ts:741-745 and checkIfBookerEmailIsBlocked.ts:17-18 normalise with extractBaseEmail(guest).toLowerCase(). Reasoned; repro: BLACKLISTED_GUEST_EMAILS=bad@x.com, guests: ['Bad@x.com'] or ['bad+1@x.com'] is inserted and emailed.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Abuse-control bypass against an established codebase convention; three correctness/spec seats concur."
+    },
+    {
+      "path": "packages/emails/email-manager.ts",
+      "line": 525,
+      "severity": "Important",
+      "claim": "sendAddGuestsEmails ignores the event type's disable-host/attendee-email settings; handler does not pass booking.eventType?.metadata.",
+      "evidence": "Sibling senders gate on eventTypeDisableHostEmail / eventTypeDisableAttendeeEmail (sendLocationChangeEmails email-manager.ts:495-523, sendScheduledSeatsEmails :248/:260). The new function takes no metadata; handler line 168 passes none. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Breaks a documented sibling convention; event types that disabled standard emails (e.g. platform/workflows) still get Cal.com emails."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts",
+      "line": 5,
+      "severity": "Important",
+      "claim": "Guest list has no server-side size cap and no server-side uniqueness check; only the client dialog refines uniqueness, so a direct tRPC call can create duplicate attendee rows and send unbounded mail in the organizer's name.",
+      "evidence": "ZAddGuestsInputSchema has no .max() and no uniqueness refine; createMany at handler:83-91 inserts duplicates; emails go out with from: organizer name / replyTo organizer email. Reasoned; repro: guests: ['a@x.com','a@x.com'] via tRPC creates two attendee rows.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Spam/abuse path at a trust boundary; add .max(N) and a case-insensitive uniqueness refine."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 22,
+      "severity": "Important",
+      "claim": "Server never checks booking status or time: guests can be added to CANCELLED, REJECTED or past bookings, sending REQUEST/CONFIRMED ICS invites that revive dead meetings on recipients' calendars.",
+      "evidence": "UI gates the action on isUpcoming && !isCancelled (BookingListItem.tsx:544-554), but the handler accepts any booking id; attendee-add-guests-email.ts:10-17 and organizer-add-guests-email.ts:14-20 emit method REQUEST, status CONFIRMED. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Server must enforce what the UI assumes; reject non-active / past bookings."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 72,
+      "severity": "Important",
+      "claim": "Seated events (seatsPerTimeSlot): attendees are created without BookingSeat rows, bypassing the seat limit, and any single seat-holder (isAttendee) can add guests and push the full attendee list to the organizer's calendar, exposing seat-holders to each other even with seatsShowAttendees=false.",
+      "evidence": "Handler creates Attendee rows via createMany with no seat handling; isAttendee check at :52-54 admits any seat holder; updateCalendarAttendees pushes evt.attendees. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Privacy and capacity breach on seated events; smallest fix is to refuse addGuests for seated bookings server-side."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/_router.tsx",
+      "line": 79,
+      "severity": "Important",
+      "claim": "addGuests uses plain authedProcedure with a custom check instead of bookingsProcedure: any logged-in attendee may add guests, while COLLECTIVE co-hosts (allowed by bookingsProcedure/editLocation) are now refused.",
+      "evidence": "bookingsProcedure (bookings/util.ts:19-63) admits organizer or COLLECTIVE host; addGuests.handler.ts:46-56 admits organizer, attendee by email match, or team owner. Reasoned; no spec states the intended model.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Who may add guests (attendees? collective hosts?) is a product decision with no spec; the abuse impact is bounded by the accepted size-cap/blacklist/status fixes. Settle with the PR author; check: collective co-host calls addGuests and gets FORBIDDEN."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 168,
+      "severity": "Minor",
+      "claim": "Handler passes raw guests instead of uniqueGuests to sendAddGuestsEmails, so a re-submitted existing attendee gets a fresh 'scheduled' email instead of the 'guests added' notice.",
+      "evidence": "email-manager.ts:541-545 sends AttendeeScheduledEmail to every attendee whose email is in newGuests. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "One-token fix; all four seats noted it."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 124,
+      "severity": "Minor",
+      "claim": "evt is built without team, so the team-member branch in sendAddGuestsEmails never runs and team hosts are never notified.",
+      "evidence": "calendarEvent.team?.members at email-manager.ts:531-537 is always undefined because evt (handler:124-147) sets no team. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Dead branch means a missing notification; populate team or drop the branch."
+    },
+    {
+      "path": "apps/web/components/dialog/AddGuestsDialog.tsx",
+      "line": 43,
+      "severity": "Minor",
+      "claim": "onError message is a template string that is never falsy, so the unable_to_add_guests fallback never shows and users see raw 'CODE: key' strings.",
+      "evidence": "`${err.data?.code}: ${t(err.message)}` || t('unable_to_add_guests') \u2014 left side always truthy. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Dead fallback plus user-visible raw error codes."
+    },
+    {
+      "path": "apps/web/public/static/locales/en/common.json",
+      "line": null,
+      "severity": "Minor",
+      "claim": "Handler throws FORBIDDEN with message key you_do_not_have_permission, which is not defined in en/common.json; users see the raw key.",
+      "evidence": "grep '\"you_do_not_have_permission\"' apps/web/public/static/locales/en/common.json returns nothing at the patch head (orchestrator check); thrown at addGuests.handler.ts:55.",
+      "seats": [
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Confirmed by grep."
+    },
+    {
+      "path": "apps/web/components/dialog/AddGuestsDialog.tsx",
+      "line": 48,
+      "severity": "Minor",
+      "claim": "Dialog state bugs: isInvalidEmail never reset on success or on overlay/Esc close; closing via onOpenChange keeps old emails; removing all fields makes Add a silent no-op; client uniqueness check is case-sensitive.",
+      "evidence": "Only the Cancel button resets state (AddGuestsDialog.tsx:88-93,114); handleAdd returns early with no feedback when list is empty (:48-58). Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Cheap UX correctness fixes in new code."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 91,
+      "severity": "Minor",
+      "claim": "No transaction/compensation: attendees are written before updateCalendarAttendees, which is not wrapped; if it throws, DB has the guests, no emails go out, and a retry fails with emails_must_be_unique_valid. Concurrent requests can both pass de-dup. Email-send catch drops err.",
+      "evidence": "createMany at :83-91 precedes updateCalendarAttendees at :163-165 with no try; catch at :170 logs a fixed string. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: partial-failure handling matches editLocation's existing pattern; revisit if calendar-provider failures are observed. Check: make updateCalendarAttendees throw and retry the same request."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 158,
+      "severity": "Minor",
+      "claim": "EventManager is built from ctx.user's credentials, not the organizer's; references without credentialId (and other_calendar refs) are matched against the caller's calendars when an attendee or owner adds guests.",
+      "evidence": "getUsersCredentials(ctx.user) at :160; EventManager.ts:872-878 matches by caller credentials when reference.credentialId is absent. The OCR seat examined this and declined to report it because updateAllCalendarEvents falls back to reference.credentialId. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Seats disagree on impact; settle with a test where a non-organizer adds guests to a booking whose reference has no credentialId and assert the organizer's calendar event is updated."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 83,
+      "severity": "Minor",
+      "claim": "New guests are saved with name '' and inherit the organizer's timeZone/locale, so emails and calendar entries show blank names.",
+      "evidence": "createMany data at :83-88. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: defensible default with no spec; revisit if blank names are reported."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": null,
+      "severity": "Important",
+      "claim": "New authenticated mutation that writes to the DB, calls external calendars and sends email ships with zero tests (no handler integration test for permissions/blacklist/de-dup, no E2E for the dialog); data-testid='add_members' is added but unused.",
+      "evidence": "No test files in the patch; apps/web/playwright/bookings-list.e2e.ts is the natural home. CONTRIBUTING.md does not mandate tests (mattpocock seat).",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Each accepted fix above lands with a red-then-green guard test in the fix rounds, which covers the handler's permission/blacklist/de-dup matrix."
+    },
+    {
+      "path": "packages/emails/templates/attendee-add-guests-email.ts",
+      "line": null,
+      "severity": "Minor",
+      "claim": "showAttendees is never passed to AttendeeScheduledEmail, so seated events with seatsShowAttendees=true hide the attendee list in these emails.",
+      "evidence": "Constructor inherited from attendee-scheduled-email.ts:19-26; email-manager.ts:542/544 omit the argument. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "defer",
+      "reason": "Moot once seated bookings are refused by the accepted seated-event fix; revisit if addGuests is later enabled for seated events."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 30,
+      "severity": "Minor",
+      "claim": "findFirst include pulls user.credentials (full credential keys) that are never read, and include: {x: true} trips @calcom/eslint/no-prisma-include-true.",
+      "evidence": "Credentials actually come from getUsersCredentials(ctx.user) at :160; include block copied from bookingsProcedure util.ts:48-58. Reasoned.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Drop credentials: true \u2014 stops loading secrets that are never used."
+    },
+    {
+      "path": "packages/ui/form/MultiEmail.tsx",
+      "line": 1,
+      "severity": "Minor",
+      "claim": "MultiEmail is a near-verbatim copy of the multiemail factory in packages/features/form-builder/Components.tsx:231-308 (which carries //TODO: Make it a ui component); the original was not switched over, so two copies already drift (array mutation, data-testids, htmlFor).",
+      "evidence": "Side-by-side comparison by two seats. Reasoned. Normalised from Important (ponytail) to Minor: duplication, no behaviour defect; advisory seats.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: switching form-builder to the ui component changes e2e test IDs (add-another-guest) outside this PR's scope; do it as a follow-up."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 58,
+      "severity": "Minor",
+      "claim": "Second prisma.user.findFirstOrThrow refetches the organizer already loaded via booking.user.",
+      "evidence": "include user at :36-41 vs findFirstOrThrow at :58-68; same habit exists in editLocation.handler.ts:32. Reasoned.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: one redundant query, copies an existing pattern; fold into a later cleanup."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 103,
+      "severity": "Minor",
+      "claim": "~40 lines of CalendarEvent building duplicated from editLocation.handler.ts:57-95.",
+      "evidence": "Only location and conferenceCredentialId differ. Reasoned.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: no shared helper exists; extracting one now is speculative abstraction."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+      "line": 162,
+      "severity": "Minor",
+      "claim": "credentials: [...credentials] copies an array for no reason.",
+      "evidence": "Spread of an array that is not mutated afterwards. Reasoned.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Cosmetic; no behaviour or measurable cost, not worth a diff line in the review surface."
+    },
+    {
+      "path": "apps/web/components/dialog/AddGuestsDialog.tsx",
+      "line": 26,
+      "severity": "Minor",
+      "claim": "Zod validation schema is rebuilt on every render.",
+      "evidence": "Schema with refine declared inside the component body. Reasoned.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Negligible cost in a dialog, no behaviour change; not worth review surface."
+    },
+    {
+      "path": "packages/ui/form/MultiEmailLazy.tsx",
+      "line": 1,
+      "severity": "Minor",
+      "claim": "Lazy wrapper is unnecessary and its '40kb' comment is copied from PhoneInputLazy/AddressInputLazy where it is true.",
+      "evidence": "MultiEmail only uses components @calcom/ui already ships. Reasoned.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Follows the house pattern for form inputs exported from @calcom/ui (PhoneInputLazy, AddressInputLazy); removing it needs import rewiring to avoid a barrel cycle (per the seat itself) for no user-visible defect."
+    }
+  ],
+  "coverage": "Files skipped: none \u2014 all 15 patch files reviewed by all four seats; en/common.json, packages/ui/index.tsx, MultiEmailLazy.tsx and the emails/src/templates wrappers were only skimmed by some seats; other locales not assessed (Crowdin-managed). Untracked harness dotfiles in the checkout (.bashrc, .claude/, .mcp.json, etc.) were excluded from the pinned patch as not part of the PR. Axes that did not run: gate not run (benchmark mode) \u2014 no build, lint, typecheck or tests, so every finding is reasoned, none executed; no spec \u2014 spec axis inferred from the patch only; no cross-family correctness seat (all seats same model family); no fix rounds or re-review (benchmark stops after merge). Not checked by any seat: recurring bookings (only one occurrence updated?), whether updateAllCalendarEvents swallows provider errors, provider invite behaviour for seated events."
+}

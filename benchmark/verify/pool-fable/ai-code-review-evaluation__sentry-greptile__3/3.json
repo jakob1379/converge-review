@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/testutils/factories.py:344-357 copies any truthy client_sample_rate into sample_rate via float() with no allowlist, isinstance or 0<x<=1 check and swallows errors with `except Exception: pass` (not a literal bare except), unlike production's src/sentry/event_manager.py:776-786. The mutated data is then saved by store_event (factories.py:1049, 1065), but this is a test-only helper, so only test-supplied values are affected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.34729540000000003
+}

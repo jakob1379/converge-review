@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.getGroupIdsWithViewPermission (patch lines 633-655) only scans resources typed 'Groups'. Per-group resources get no type (AdminPermissionsSchema.java:121), and it calls hasPermission(resource.getId()), whose findByName needs a group id. So with only per-group VIEW_MEMBERS it falls back to the all-groups resource and returns an empty set. getUsersCount(realm, emptySet) then returns 0 (JpaUserProvider.java:600-601), while /users fetches an unfiltered page first (UsersResource.java:453) and only then applies the canView post-filter (UsersResource.java:460), which grants members through canViewMembers, so pages come back short.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.42454109999999995
+}

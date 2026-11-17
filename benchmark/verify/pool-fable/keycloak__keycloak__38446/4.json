@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodesFormAuthenticator.java:80-87 now takes the credential from RecoveryAuthnCodesUtils.getCredential() (federated-first, RecoveryAuthnCodesUtils.java:57-63), checks allCodesUsed on it and calls removeStoredCredentialById, which only reaches the local/federated-storage UserCredentialStore (UserCredentialManager.java:114-117, 298-305), never the user storage provider. Validation can instead succeed against the locally stored credential (UserCredentialManager.java:66-77; RecoveryAuthnCodesCredentialProvider.java:101), so when both exist the inspected/removed credential can differ from the one that validated.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6438008
+}

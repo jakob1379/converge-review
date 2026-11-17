@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The same POST to /v3/user/scheduled_sends with {batch_id, status: \"cancel\"} appears in the cron at packages/features/ee/workflows/api/scheduleEmailReminders.ts:57-64 and in packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:214-221; the patch adds the cron copy instead of reusing a shared helper.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2807108
+}

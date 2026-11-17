@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/pluginsintegration/clientmiddleware/ has no logger_middleware_test.go, and no _test.go file anywhere references NewLoggerMiddleware or builds a LoggerMiddleware. The patch changes logger_middleware.go:243 to log through m.logger.FromContext(ctx) but adds no test for that. Its TestLogger.FromContext (pkg/plugins/log/fake.go:46-48) returns a fresh logger, so a test using it could not see the log calls anyway.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.134079
+}

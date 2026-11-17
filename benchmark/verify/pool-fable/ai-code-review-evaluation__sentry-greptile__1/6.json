@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "src/sentry/api/paginator.py:182 clamps only when `not cursor.is_prev`, while the trim check at line 192 sits inside `if cursor.is_prev and cursor.value:` (line 186), where `start_offset == offset` exactly, so the two never diverge where the check runs. The `len(results) == offset + limit + extra` comparison itself is unchanged pre-patch code.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1577315
+}

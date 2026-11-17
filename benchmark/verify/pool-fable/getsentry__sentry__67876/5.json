@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/github/integration.py:425-429 wraps `safe_urlread(req).decode(\"utf-8\")` and `dict(parse_qsl(body))` in a bare `except Exception: payload = {}` with no logging, so any failure silently becomes the generic \"Invalid installation request\" page at line 431-432. `parse_qsl` with default `strict_parsing=False` indeed does not raise on malformed input, though the code never relies on a ValueError, so the effect is only lost diagnostics and it fails closed.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2750397
+}

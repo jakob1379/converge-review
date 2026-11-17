@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts one try (line 74) wraps both `twilio.scheduleSMS` (line 159) and the `prisma.workflowReminder.update` that sets `scheduled: true` (lines 169-177); if that update throws after Twilio accepted, the catch (lines 189-198) only bumps `retryCount`, so the reminder stays `scheduled: false` and the next cron run (query at lines 48-55) schedules a second SMS. The shared try-catch and the duplicate-on-retry predate the patch, which only adds the `retryCount` bookkeeping and caps the retries.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2028996
+}

@@ -1,0 +1,202 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/40940",
+ "cost_usd": 0.046820900000000006,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "Variable name groupUuuids is misspelled (three u's instead of two)"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "Create loop duplicates status check, try-with-resources and fail() logic that ApiUtil.getCreatedId already performs, could remove ~9 lines"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "getSubGroupsCount() returns null when group is deleted from DB, breaking the documented never-null GroupModel contract and causing NPEs downstream instead of returning zero/empty fallback like other codebase precedents"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "Test can pass vacuously - no assertion that reader completed any reads during deletes, timing-dependent reproduction may pass on unpatched code"
+  },
+  {
+   "id": "c5",
+   "source": "qodo-extended-v2",
+   "text": "GroupAdapter.getSubGroupsCount() returns null when modelSupplier.get() returns null, violating the GroupModel contract that it never returns null, which can trigger NullPointerException via autounboxing in downstream callers that assume a numeric value"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review-replay",
+   "text": "The three paginated getSubGroupsStream(...) overloads (lines 256, 262, 268) still call modelSupplier.get().getSubGroupsStream(...) without a null check, causing NPE when the group is deleted concurrently. Reachable from REST via GroupResource.java:179-180 GET /admin/realms/{realm}/groups/{id}/children endpoint."
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "Variable name typo: groupUuuids has three u's instead of two"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review-replay",
+   "text": "The regression test is racy - the reader thread is never joined, so exceptions from in-flight requests can be missed after assertThat. The thread can outlive the test and run during cleanup or the next test. If remove() throws, deletedAll is never set and the thread runs indefinitely. Need to keep Thread reference, use try/finally for deletes, and join() with timeout before asserting."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "Three getSubGroupsStream() overloads (lines 256, 262, 268) still call modelSupplier.get().getSubGroupsStream() unguarded and will NPE under concurrent-delete race conditions"
+  },
+  {
+   "id": "c10",
+   "source": "cubic-v2",
+   "text": "Set the stop flag from a `finally` block; otherwise a failed delete leaves the polling thread running indefinitely."
+  },
+  {
+   "id": "c11",
+   "source": "claude-code",
+   "text": "getSubGroupsStream(...) overloads at lines 256/262/268 use modelSupplier.get() without null checks and are susceptible to the same race condition NPE"
+  },
+  {
+   "id": "c12",
+   "source": "golden",
+   "text": "The reader thread isn\u2019t waited for; flipping deletedAll to true and asserting immediately can race and miss exceptions added just after the flag change, making this test flaky."
+  },
+  {
+   "id": "c13",
+   "source": "golden",
+   "text": "Returning null from getSubGroupsCount() violates the GroupModel contract (Javadoc says it never returns null) and may lead to NPEs in callers that expect a non-null count."
+  },
+  {
+   "id": "c14",
+   "source": "qodo-extended-v2",
+   "text": "The concurrency test starts a background reader thread without synchronizing its start and without joining it before asserting, so the test can pass without ever running concurrent reads during deletions and can miss exceptions thrown after the assertion"
+  },
+  {
+   "id": "c15",
+   "source": "augment",
+   "text": "Background reader thread is never joined and deletedAll isn't set in a finally block, so a failure during deletion could leave a non-daemon thread running and potentially hang/flake the test suite"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review-replay",
+   "text": "getSubGroupsCount() now returns null when the cached group has been deleted from the database, breaking the documented GroupModel SPI contract that states the method never returns null. This causes the admin UI to incorrectly show deleted groups as having subgroups, and any SPI caller that unboxes the Long gets an NPE. Should return 0L instead."
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Regression test never joins the reader thread - assertion runs immediately after deletedAll.set(true), allowing exceptions from in-flight requests to land after assert, and thread can outlive test hitting realm during cleanup"
+  },
+  {
+   "id": "c18",
+   "source": "augment",
+   "text": "Returning null in GroupAdapter#getSubGroupsCount() violates the GroupModel#getSubGroupsCount() contract which states it never returns null, potentially moving the NPE to callers"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "Test only exercises top-level brief group listing but doesn't cover the children endpoint path (GroupResource.getSubGroups) which has the same race condition"
+  },
+  {
+   "id": "c20",
+   "source": "cubic-v2",
+   "text": "Synchronize with the reader thread before asserting; as written the test can pass without ever performing a concurrent read and can miss late failures."
+  },
+  {
+   "id": "c21",
+   "source": "cubic-v2",
+   "text": "Returning `null` violates the `GroupModel.getSubGroupsCount()` contract which specifies 'Never returns `null`'. Callers that unbox the `Long` return value will get an NPE. Should throw an `IllegalStateException` when the model is missing, or return `0L` as a safe default."
+  },
+  {
+   "id": "c22",
+   "source": "claude-code",
+   "text": "getSubGroupsCount() returns null when the model is concurrently deleted, which violates the interface contract that states 'Never returns {@code null}' \u2014 should return 0L instead"
+  },
+  {
+   "id": "c23",
+   "source": "coderabbit",
+   "text": "Missing thread join causes potential test flakiness - the reader thread is never joined before asserting on caughtExceptions, creating a race condition where the reader thread might still be mid-iteration catching an exception and adding it to caughtExceptions after the assertion completes, which could cause intermittent test failures or false passes"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The variable name groupUuuids is misspelled with three u's instead of two.",
+   "path": null,
+   "members": [
+    "c1",
+    "c7"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The create loop duplicates the status check, try-with-resources and fail() logic that ApiUtil.getCreatedId already performs.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "GroupAdapter.getSubGroupsCount() returns null when modelSupplier.get() returns null because the group was deleted. This violates the GroupModel contract that the method never returns null, and callers that unbox the Long can get a NullPointerException.",
+   "path": null,
+   "members": [
+    "c3",
+    "c5",
+    "c13",
+    "c16",
+    "c18",
+    "c21",
+    "c22"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The three paginated getSubGroupsStream(...) overloads in GroupAdapter (lines 256, 262, 268) still call modelSupplier.get().getSubGroupsStream(...) without a null check. They throw a NullPointerException when the group is deleted concurrently, which is reachable through the GET /admin/realms/{realm}/groups/{id}/children endpoint.",
+   "path": null,
+   "members": [
+    "c6",
+    "c9",
+    "c11"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The regression test never joins the background reader thread before asserting on caughtExceptions. The assertion runs immediately after deletedAll.set(true), so exceptions from in-flight reads can be missed and the thread can outlive the test.",
+   "path": null,
+   "members": [
+    "c8",
+    "c12",
+    "c14",
+    "c15",
+    "c17",
+    "c20",
+    "c23"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The test has no assertion that the reader thread completed any reads during the deletes, so it can pass vacuously, including on unpatched code.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The stop flag deletedAll is not set in a finally block, so a failed delete leaves the polling reader thread running indefinitely.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The test only exercises the top-level brief group listing and does not cover the children endpoint path (GroupResource.getSubGroups), which has the same race condition.",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  }
+ ]
+}

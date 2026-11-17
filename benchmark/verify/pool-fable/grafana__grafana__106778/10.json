@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/hooks/useAbilities.ts:380 adds `export const skipToken = Symbol('ability-skip-token')`, a lower-camel module constant whose only uses (lines 387 and 401) are `rule === skipToken ? undefined : rule`. The same name is imported from RTK Query in the same folder (hooks/useFolder.ts:1, hooks/useCombinedRule.ts:1), so it is a name collision across files rather than lexical shadowing in one file.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2325648
+}

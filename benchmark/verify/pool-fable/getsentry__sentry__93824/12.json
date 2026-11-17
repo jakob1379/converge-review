@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/spans/consumers/process/flusher.py:199 tags `spans.buffer.flusher.wait_produce` with `{\"shards\": shard_tag}`, while lines 185 and 195 in the same loop use `{\"shard\": shard_tag}` and line 244 (in `_ensure_processes_alive`, not the flush loop) also uses `\"shard\"`. All four tag additions are `+` lines in the patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.12073829999999999
+}

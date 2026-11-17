@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts:131-133 the patch adds `if (dateOverrideExist) return true;` before the `busy.every(...)` check at line 151, so a slot inside an override window is never compared against busy times. The fixed-host check (lines 488-493) and the round-robin check (513-518) pass the user's `busy` and `dateOverrides` together, so booked or calendar-busy slots on override days are offered as available.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.11187630000000001
+}

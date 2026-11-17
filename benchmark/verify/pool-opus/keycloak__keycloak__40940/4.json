@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In GroupTest.java (change.patch lines 102-120), the reader thread is started anonymously with `new Thread(...).start()` and nothing keeps a reference to it, so it is never joined. `assertThat(caughtExceptions, Matchers.empty())` runs right after `deletedAll.set(true)`, so an exception from a read still in progress can land after the assertion and be missed, and the thread can keep running after the test ends.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.04658760000000001
+}

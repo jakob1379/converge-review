@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "organization_auditlogs.py:71 checks the raw `request.user.is_superuser` flag instead of `is_active_superuser(request)`. It also ORs in `member.has_global_access`, which defaults to True for members (organizationmember.py:216, passed through by serial.py:47), so ordinary members also pass the gate that turns on the negative-offset advanced pagination.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0750802
+}

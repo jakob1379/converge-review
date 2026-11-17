@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/anonymous/anonimpl/anonstore/database.go:109-117 the limit check calls CountDevices (its own WithDbSession, lines 158-166), and the upsert then runs in a separate WithDbSession at lines 149-153 with no transaction, mutex or server lock around the pair. Concurrent requests or HA instances can each read count < limit and each insert a new device, overshooting the limit.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3002434
+}

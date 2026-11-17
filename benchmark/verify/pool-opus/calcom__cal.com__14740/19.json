@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "addGuests.handler.ts:516-530 uses createMany to add attendees with no bookingSeat. createNewSeat.ts:52 only counts attendees that have a bookingSeat, so these guests sidestep seatsPerTimeSlot. The isAttendee check at handler:476 lets any seat-holder add guests, and the full attendee list goes to updateCalendarAttendees (handler:589). The exposure part is overstated: the emails cut the list down to the recipient (attendee-scheduled-email.ts:21), and Google applies seatsShowAttendees (googlecalendar CalendarService.ts:413), so only other calendar providers could leak the list.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2618602
+}

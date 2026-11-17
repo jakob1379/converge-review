@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AdminPermissionsSchema.init (AdminPermissionsSchema.java:222-228) returns early when the realm already has an admin-permissions client, and it is the only place that creates scopes and type resources (lines 237-254). No migration in model/storage-private/.../migration touches AdminPermissionsSchema. So existing realms never get the Clients resource or the configure/map-roles-client-scope/map-roles-composite scopes: getResourceTypeResource returns null (line 133), getScope throws 'Scope [configure] does not exist.' (line 210), and getOrCreateResource throws 'No scopes found.' (line 108).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2818794
+}

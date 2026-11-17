@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`readLength()` returns -1 for 0x80 (ASN1Decoder.java:133-135) and no caller checks it: `readSequence` skips its `while (length > 0)` loop and returns an empty list (:55-62), `readNext` does `length += reset()` on -1 (:80-82), and `readInteger` passes it to `read(length)` where `new byte[-1]` throws NegativeArraySizeException (:71-72, :170). Through the only production caller (AuthzClientCryptoProvider.java:128-134) a 0x80 length surfaces as an IOException instead, so the unchecked exception needs a direct `readInteger` call on such input.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.18882870000000002
+}

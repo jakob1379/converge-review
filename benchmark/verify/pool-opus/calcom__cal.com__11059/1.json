@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In zoho-bigin/lib/CalendarService.ts:93, the patch passes `credentialId` (set from `credential.id` at line 53) as the third argument to `refreshOAuthTokens`. That parameter is `userId` (_utils/oauth/refreshOAuthTokens.ts:3), and it is sent to the sync endpoint as `calcomUserId` (line 11). The Google Calendar adapter correctly passes `credential.userId` instead (googlecalendar/lib/CalendarService.ts:92).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.12009959999999999
+}

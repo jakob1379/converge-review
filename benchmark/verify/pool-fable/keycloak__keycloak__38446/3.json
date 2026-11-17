@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:119-125 serialises the raw generatedCodes to JSON and passes them as the challengeResponse of a UserCredentialModel to updateCredential, whereas the local-store model is built by RecoveryAuthnCodesCredentialModel.createFromValues, which hashes each code via hashRawCode (server-spi/src/main/java/org/keycloak/models/credential/RecoveryAuthnCodesCredentialModel.java:65-67). This mirrors how raw passwords are handed to user storage, so hashing is left to the federated provider.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.43099449999999995
+}

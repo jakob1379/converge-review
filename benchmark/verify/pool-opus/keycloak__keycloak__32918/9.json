@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In InfinispanIdentityProviderStorageProvider, change.patch lines 134-161 add a 28-line method, 12 lines of it Javadoc (134-145), which repeats the FetchMode loop from registerIDPLoginInvalidation (158-160 vs 128-130). The four getLoginPredicate().test calls (148, 152) amount to one condition, invalidate only when the result changes or the org ID changes. Short-circuiting means at most three of the four calls actually run, not four.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0827541
+}

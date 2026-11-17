@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "TestIntegrationBeyondDeviceLimit (pkg/services/anonymous/anonimpl/anonstore/database_test.go:51-52) goes straight to db.InitTestDB(t) with no testing.Short() skip. The other integration tests in the same file (lines 14 and 72) don't have the guard either, so the new test follows the file's existing style.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0458122
+}

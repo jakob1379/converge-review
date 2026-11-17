@@ -1,0 +1,221 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new `user != null` term in `isConditionalPasskeysEnabled(UserModel user)` reverses the old `context.getUser() == null` condition. As a result, `webauthnAuth.fillContextForm(context)` no longer runs on the initial login page, where no user is set yet. Conditional passkey UI (`enableWebAuthnConditionalUI`) is therefore not set up for unidentified, first-time passkey login in `UsernamePasswordForm` and `UsernameForm`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`isConditionalPasskeysEnabled` at UsernamePasswordForm.java:160-162 requires `user != null`, so the `fillContextForm` calls at lines 115-117 and 137-140 are skipped when no user is set, whereas the pre-patch code ran them exactly when `context.getUser() == null`. `enableWebAuthnConditionalUI` is only set inside that path (WebAuthnConditionalUIAuthenticator.java:43), and `UsernameForm` inherits it through `super.authenticate` (UsernameForm.java:54), so the initial login page gets no passkey UI.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.5147842
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "UsernameForm.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`UsernameForm.authenticate` (line 47) calls `isConditionalPasskeysEnabled()` with no arguments. The only declaration in `UsernamePasswordForm` now requires a `UserModel` parameter and has no zero-argument overload, so the call does not compile.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "UsernameForm.java:47 calls `isConditionalPasskeysEnabled()` with no arguments, but the only declaration in the repository is `isConditionalPasskeysEnabled(UserModel user)` at UsernamePasswordForm.java:160; a repo-wide search finds no zero-argument overload in any class, so the call cannot compile.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.323952
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test methods `webauthnLoginWithExternalKey_reauthentication` and `webauthnLoginWithDiscoverableKey_reauthentication` duplicate about 60 lines of code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `webauthnLoginWithDiscoverableKey_reauthentication` twice, at PasskeysUsernameFormTest.java:261-321 and PasskeysOrganizationAuthenticationTest.java:270-321, identical except for the password-removal block at PasskeysUsernameFormTest.java:281-287 (about 50 shared lines). `webauthnLoginWithExternalKey_reauthentication` (PasskeysUsernamePasswordFormTest.java:215-274) copies `passwordLoginWithExternalKey` (173-207) nearly verbatim and shares about 30 of its 60 lines with the Discoverable variant, so \"about 60\" is somewhat overstated for that pair.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3802662
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The change enables passkeys during re-authentication (`prompt=login`) and changes the identity-first organization flow, but no documentation was updated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch touches only six files under services/src/main/java and three test files; nothing under docs/ is changed. It does change behaviour: the tests add `prompt=login` passkey re-authentication cases and the organization test now expects the webauthn form to stay present after username entry (change.patch:196-200), while docs/documentation/server_admin/topics/authentication/passkeys.adoc:8 still says passkeys are available only \"in the forms in which the username input is displayed\".",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.45163869999999995
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`shouldShowWebAuthnAuthenticators` overrides `WebAuthnAuthenticator.shouldShowWebAuthnAuthenticators` without an `@Override` annotation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java:64-65 declares `protected boolean shouldShowWebAuthnAuthenticators(AuthenticationFlowContext)` with only a comment above it and no `@Override`, while the same-signature method is defined at WebAuthnAuthenticator.java:128. The class extends WebAuthnPasswordlessAuthenticator (per the patch hunk header); I did not open that class to confirm it extends WebAuthnAuthenticator, but it does in Keycloak.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1105037
+   }
+  },
+  {
+   "issue": "i6",
+   "path": "PasskeysUsernamePasswordFormTest",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The webauthn-form absence checks in `PasskeysUsernamePasswordFormTest` (around lines 289-295 and 310-317) use `try { assertThat(findElement(...), nullValue()); fail(...) } catch (Exception)`. The inner assertion is dead code because `findElement` throws `NoSuchElementException` rather than returning null. Catching the generic `Exception` treats unrelated WebDriver failures as expected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "PasskeysUsernamePasswordFormTest.java:291-296 and 312-317 wrap `assertThat(driver.findElement(By.xpath(\"//form[@id='webauth']\")), nullValue())` plus `fail(...)` in `catch (Exception nsee)`; Selenium's `findElement` throws `NoSuchElementException` and never returns null, so the `nullValue()` matcher can never pass and `fail` is unreachable, while the broad catch also swallows any other WebDriver runtime exception. The assertion is not strictly dead (it still fails the test with an uncaught AssertionError if the form is present), so the test works but is misleading and over-broad.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1618836
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new `user` parameter is only null-checked; the user's passkey credentials are never checked. During re-authentication, a user with no passkey is still shown the passkey form.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`isConditionalPasskeysEnabled(UserModel user)` at services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java:160-162 only tests `user != null` plus the realm passkeys flag, so on re-authentication `fillContextForm` (lines 115-116, 137-139) always sets `enableWebAuthnConditionalUI`, which is what makes passkeys.ftl:2 render the passkey form. Nothing else checks the user's credentials, because WebAuthnConditionalUIAuthenticator.java:65-67 makes `shouldShowWebAuthnAuthenticators` return false, skipping the lookup in WebAuthnAuthenticator.java:101-107.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.6198436
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `reauthenticationOfUserWithoutPasskey` test disables passkeys for the whole realm via `setWebAuthnPolicyPasskeysEnabled(FALSE)` instead of testing a user without a passkey while passkeys are enabled.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The test at testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java:279-283 configures the realm only with `setWebAuthnPolicyPasskeysEnabled(Boolean.FALSE)`, yet its name and the inline comment at line 304 say passkeys are hidden because \"this user does not have passkey\". The case of a passkey-less user re-authenticating with passkeys enabled is therefore never exercised.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3890556
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The change has two unsquashed commits. The second commit lacks a Signed-off-by trailer and a 'Closes #' link. The first commit uses lowercase 'closes' and links two issues.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "change.patch is a plain `git diff` (starts at change.patch:1 with `diff --git`, and has no `From`/`Subject:` headers, `Signed-off-by` or `Closes #` lines anywhere), so it carries no commit count or commit messages. The git metadata directory that `.git` points to lies outside the readable directories, so the commit history could not be inspected.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1630237
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Line 413 contains the typo 'Succesful' instead of 'Successful'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java:413 reads `// Succesful event - password login`, a misspelling of 'Successful' in a comment on a line the patch adds (change.patch:658).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1482543
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`setupReauthenticationInUsernamePasswordFormError` re-implements the auth-note parsing in `AbstractUsernameFormAuthenticator.isUserAlreadySetBeforeUsernamePasswordAuth`. It also widens `USER_SET_BEFORE_USERNAME_PASSWORD_AUTH` from protected to public.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AuthenticatorUtils.java:126-128 repeats the `getAuthNote(USER_SET_BEFORE_USERNAME_PASSWORD_AUTH)` + `Boolean.parseBoolean` logic that still lives in AbstractUsernameFormAuthenticator.java:257-260, and the patch changes the constant at AbstractUsernameFormAuthenticator.java:58 from `protected` to `public` so the utility can import it. Behaviour is identical; this is duplication and a wider visibility only.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3784221
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch adds an unused `PasswordCredentialModel` import.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `import org.keycloak.models.credential.PasswordCredentialModel;` at testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java:35, and that import line is the only occurrence of the name in the file, so it is unused.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.13364009999999998
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

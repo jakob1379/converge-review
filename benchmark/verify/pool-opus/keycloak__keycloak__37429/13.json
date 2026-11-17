@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In santizeAnchors (VerifyMessageProperties.java, patch lines 192-204), every translation anchor calls `englishMatcher.find()` in a short-circuit check. When the translation has more anchors than the English text, that call returns false, so the else branch logs \"Didn't find anchor tag\" and breaks. The extra anchor also stays in `value`, so the HTML sanitizer reports it as illegal too, which means the case is flagged rather than accepted wrongly.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2157871
+}

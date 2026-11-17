@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The second OR branch at packages/features/ee/workflows/api/scheduleSMSReminders.ts:38-42 filters only on retryCount > 1, with no method or scheduled condition, so the deleteMany matches any WorkflowReminder row of any method. The risk is latent for now: retryCount is only incremented at lines 184 and 195 of the same file, for unscheduled SMS reminders, so no EMAIL/WHATSAPP or scheduled rows can currently reach retryCount > 1.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.190285
+}

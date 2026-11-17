@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the first test, apps/web/playwright/login.2fa.e2e.ts:44-53 goes straight from fillOtp to the two-factor-switch check with no backup-codes-close click, while the patch moved onEnable() from handleEnable (EnableTwoFactorModal.tsx:134-136 now only sets DisplayBackupCodes) into that button's onClick. So viewer.me is never invalidated and the switch is not checked; the test only passes because `expect(promise).toBeTruthy()` at line 53 is vacuous, as the patch's own FIXME at lines 50-51 admits.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4365647000000001
+}

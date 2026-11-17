@@ -1,0 +1,266 @@
+{
+ "findings": [
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 335,
+   "severity": "Critical",
+   "claim": "After the first partition rebalance, thread-queue-parallel mode drops every message without processing it and still commits its offset. This is silent data loss. The factory builds one FixedQueuePool and one OffsetTracker in __init__ (result_consumer.py:131-133) and shares them with every strategy from create_with_partitions (result_consumer.py:254). Strategy close()/join() call queue_pool.shutdown() on that shared pool.",
+   "evidence": "On revoke, arroyo calls close() and join(), which shut down every queue and worker. factory.queue_pool is reset only in factory.shutdown(), so the assert at result_consumer.py:247 passes and the next strategy reuses the dead pool. In submit(), work_queue.put() (:212) raises queue.ShutDown. The broad except at :317 logs it and calls add_offset/complete_offset, and the commit loop then commits the offset. The shared OffsetTracker is never reset, so stale state for revoked partitions carries over. Three seats ran stub repros against the real module, each output processed ['a'], commits [{P0: 0}, {P0: 1}] and each failed: open-code-review rebalance_repro.py exits 1; ponytail rebalance_repro.py fails with an AssertionError; superpowers repro_rebalance.py fails with 'message b was never processed'. No test in the patch calls close() and then create_with_partitions() again (open-code-review).",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Already red on the pinned code via three independent stub repros. Turn the repro into a suite test, per mattpocock's sketch: MockFactory in thread-queue-parallel mode, close/join s1, create s2, submit, expect the processor to be called and no commit of an unprocessed offset. Seats proposed two fix directions: remove queue_pool.shutdown() from close/terminate and leave the pool lifecycle to factory.shutdown() (ponytail), or build the pool and OffsetTracker per strategy (superpowers). The smaller change wins.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 270,
+   "severity": "Important",
+   "claim": "The arroyo commit callable is called from the background _commit_loop thread instead of the consumer thread (submit/poll/join). It races with StreamProcessor's main loop and with rebalance callbacks.",
+   "evidence": "KafkaConsumer stage_offsets/commit state is unlocked shared state, and the main thread uses it in _run_once. The commit thread is joined with only a 5s timeout on revoke, so a commit for a partition that is no longer owned can still happen (mattpocock). stage_offsets raises ConsumerError for unassigned partitions, and the tracker is never pruned for revoked partitions. The whole dict goes into one commit_function call, so the error is swallowed at :290, mark_committed never runs, and every partition's commit stalls on retry (open-code-review). Every other strategy commits from the main thread via CommitOffsets. All three seats say this is reasoned only, because arroyo was not installed.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test first: record threading.current_thread() inside the commit callable and assert it equals the thread driving submit/poll. That fails on the pinned code by construction. The stall-after-revoke consequence is reasoned and not executed. It needs to be checked against arroyo 2.28.0 StreamProcessor/KafkaConsumer source or a live-Kafka run; if it cannot be made red, that sub-claim is deferred as unverified. Fix direction from the seats: compute committable offsets in the loop, call commit from poll(), and prune the tracker on revoke.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 185,
+   "severity": "Important",
+   "claim": "There is no backpressure. The docstring at :253 promises 'Natural backpressure when queues fill up', but each queue is an unbounded queue.Queue() and submit() never raises MessageRejected. Under consumer lag, memory grows without bound in the queues and in OffsetTracker all_offsets/outstanding.",
+   "evidence": "queue.Queue() is constructed without maxsize (:185). MessageRejected is not referenced anywhere in queue_consumer.py; superpowers grepped for it and contrasts spans/consumers/process/flusher.py:364, which does raise it. Each queued WorkItem holds the full Kafka Message. Reasoned directly from the constructor call and the grep.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test first: block the workers, submit more items than a bounded capacity, and assert submit raises MessageRejected. This fails on the pinned code. Fix by bounding the queues and raising MessageRejected when they are full, or by correcting the docstring if bounding is out of scope.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 344,
+   "severity": "Important",
+   "claim": "close()/join() do not drain queued work or perform a final commit, and join() ignores its timeout. Up to about 1s of completed-but-uncommitted offsets, plus everything still queued, is abandoned on every graceful shutdown or revoke and gets reprocessed by the next owner.",
+   "evidence": "FixedQueuePool.shutdown (:231-243) sets worker.shutdown = True before shutting the queues down. The while-not-shutdown loop then exits after the current item and defeats the immediate=False drain (ponytail, lines 125/129/233-234). The commit thread is stopped before the pool shuts down, and there is no final get_committable_offsets/commit. join(timeout) just calls close() again. That can block 5s for the commit thread plus 5s per busy worker, past the deadline arroyo passes (superpowers). The arroyo join contract is to finish submitted work and commit it (mattpocock). Reasoned. Seat severities ranged from Important (mattpocock, open-code-review) to Minor (superpowers, ponytail); normalised to Important.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test first: enqueue several items behind a slow processor, call close()/join(), and assert every item was processed and the final offset was committed. This fails on the pinned code because the shutdown flag exits workers early and there is no final commit. ponytail's suggested minimal change is to delete the shutdown flag so queue.shutdown(immediate=False) drains, and to add a final commit. That must be coordinated with the Critical fix to close() and with the consumer-thread commit fix.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 86,
+   "severity": "Important",
+   "claim": "Commits stall permanently for a partition with non-contiguous offsets. The scan from start to max_offset stops at the first missing offset, so highest_committable never passes the gap and all_offsets grows forever.",
+   "evidence": "Reasoned by open-code-review: with offsets {0, 2} both completed, the loop stops at 1 and commits only 0. Cites the head commit 'remove gap test'.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "reject",
+   "reason": "Disproved by executed repros in other seats' reports. ponytail's gap_claim.py and superpowers' repro_gap_commit.py both show commits [{..: 100}, {..: 103}]: the commit passes the gap at 101 on the next cycle. ponytail's gap_repro.py explicitly shows commits keep advancing. Mechanism, cited from the code by ponytail and superpowers: mark_committed prunes offsets up to the committed one, and the next tick computes start = max(last_committed + 1, min(all_offsets)), which skips the gap. The stall does not occur.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/remote_subscriptions/consumers/test_queue_consumer.py",
+   "line": 351,
+   "severity": "Minor",
+   "claim": "The OffsetTracker gap-tracking code (queue_consumer.py:44-105) and the tests test_offset_gaps_block_commits and test_results_consumer.py:1926-1985 (actual_offset == 101) claim a gap blocks commits. It only holds back one commit cycle. The tests pass only because they assert within about one 1s tick, so they are timing-dependent.",
+   "evidence": "ponytail gap_claim.py fails with 'gap at 101 did not block: committed past it on the next cycle'. superpowers repro_gap_commit.py fails with 'committed past the gap at 101' and shows [{..: 100}, {..: 103}]. superpowers notes that skipping the gap is correct for Kafka. ponytail proposes simplifying to outstanding plus the highest seen offset, which removes about 20 lines. ponytail rated it Important as over-engineering and superpowers rated it Minor; normalised to Minor because the runtime behaviour is acceptable and the defect is the misleading tests and code.",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by two seats, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 254,
+   "severity": "Minor",
+   "claim": "The docstring says offsets are committed only after successful processing, but complete_offset runs in finally (:148/:149), so failed items are committed too. test_thread_queue_parallel_error_handling (test_results_consumer.py:1874-1924, assert at 1922) asserts no commit and passes only because it finishes before the first 1s commit tick, so it is flaky.",
+   "evidence": "The behaviour matches the existing modes, because ResultProcessor.__call__ already swallows errors (result_consumer.py:53). superpowers repro_error_commit.py fails with 'failed message offset was committed', showing [{Partition(topic='t', index=1): 100}].",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by two seats, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 301,
+   "severity": "Minor",
+   "claim": "The add_offset/complete_offset pair is duplicated in submit, on both the skip path and the error path.",
+   "evidence": "queue_consumer.py:301-304 and :319-325. Judgement only (mattpocock smell baseline; ponytail suggests reading partition and offset before the try and saving about 6 lines).",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by two seats (both advisory), so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 136,
+   "severity": "Minor",
+   "claim": "Each result gets two nested Sentry transactions. The worker opens start_transaction(op='queue_worker.process') around result_processor, and ResultProcessor.__call__ (result_consumer.py:48) already opens one.",
+   "evidence": "Reasoned. Other modes do not add an outer transaction.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/consumers/__init__.py",
+   "line": 124,
+   "severity": "Minor",
+   "claim": "The --mode help text was not updated for the new mode. It still says 'Parallel uses multithreading', which misdescribes both parallel (multiprocessing) and thread-queue-parallel.",
+   "evidence": "Reasoned by mattpocock. ponytail reviewed this file and reported nothing, but noted the patch 'changes help text'. That does not show the quoted text was corrected.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/uptime/consumers/test_results_consumer.py",
+   "line": 1689,
+   "severity": "Minor",
+   "claim": "The thread-queue-parallel tests are added as methods on ProcessResultSerialTest instead of a per-mode ProcessResultTest subclass, so the full behavioural suite never runs in the new mode. The Literal['batched-parallel', 'parallel', 'serial'] annotation at :74 was not extended.",
+   "evidence": "Each existing mode has its own subclass (ProcessResultSerialTest, ProcessResultParallelTest).",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/remote_subscriptions/consumers/test_queue_consumer.py",
+   "line": 98,
+   "severity": "Minor",
+   "claim": "test_different_groups_distributed can fail at random because string hash() is randomized per process (PYTHONHASHSEED).",
+   "evidence": "The chance that 20 keys miss one of 3 queues is about 3*(2/3)^20, roughly 0.09% per run.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/remote_subscriptions/consumers/test_queue_consumer.py",
+   "line": 137,
+   "severity": "Minor",
+   "claim": "test_concurrent_processing_across_groups and test_thread_queue_parallel_concurrent_subscriptions promise concurrency but assert only that every item was processed, which serial execution would also pass.",
+   "evidence": "Breaks the stated rule to test contracts, not implementation: the asserted behaviour does not match the named one.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 145,
+   "severity": "Minor",
+   "claim": "The new log calls at :145, :291 and :318 use prose messages with no partition or offset in extra, contrary to CLAUDE.md's structured logging pattern (dotted event names plus extra).",
+   "evidence": "Judgement call. The existing result_consumer.py also uses prose, so the repo is inconsistent.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 222,
+   "severity": "Minor",
+   "claim": "FixedQueuePool.wait_until_empty is dead code.",
+   "evidence": "A grep for wait_until_empty across src/ and tests/ returns only its definition.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 31,
+   "severity": "Minor",
+   "claim": "WorkItem.message is stored (set at :312) but never read, so every queued item pins a full arroyo Message in unbounded queues.",
+   "evidence": "A grep for .message and work_item.message finds no readers; only partition, offset and result are used (:140, :149).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 142,
+   "severity": "Minor",
+   "claim": "The inner except queue.ShutDown in OrderedQueueWorker (:142-143) cannot fire, because result_processor never touches the queue.",
+   "evidence": "Reasoned by ponytail. The related claim, that the shutdown flag defeats the drain, is merged into the main-list close/join finding.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/remote_subscriptions/consumers/queue_consumer.py",
+   "line": 214,
+   "severity": "Minor",
+   "claim": "get_stats builds a queue_depths list that production code never reads.",
+   "evidence": "Both production callers (:226, :328) read only total_items. queue_depths is asserted only in test_queue_consumer.py:201-202.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/uptime/consumers/test_results_consumer.py",
+   "line": 2012,
+   "severity": "Minor",
+   "claim": "ProcessResultThreadQueueParallelKafkaTest drives arroyo's private StreamProcessor._run_once/_shutdown and monkeypatches the factory method under test. That breaks the CLAUDE.md testing rules (no private methods, implementation details or framework code), and an arroyo upgrade can break the test with no behaviour change.",
+   "evidence": "Reasoned by superpowers. The rule cited is from the global CLAUDE.md. The line is the class start as located by mattpocock.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat, so not reported and not fixed this loop.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Gate: not run (benchmark mode), so the review is unanchored and no finding has gate ground truth. Spec: none; seats judged the change against its own docstrings and the arroyo ProcessingStrategy contract. Standards: mattpocock used repo CLAUDE.md, .cursor/rules/python_tests.mdc, .github/CONTRIBUTING.md (external links only) and the mypy stronglist (remote_subscriptions is not on it, so the typing axis did not apply); superpowers also cited the global CLAUDE.md. Files skipped: tests/sentry/remote_subscriptions/__init__.py and tests/sentry/remote_subscriptions/consumers/__init__.py are empty package markers, skipped by mattpocock, open-code-review and ponytail (superpowers reviewed all 7 files). open-code-review read test_queue_consumer.py and test_results_consumer.py only for coverage gaps, not line by line (OCR excludes tests by default). ponytail read both test files only where relevant to its findings. mattpocock reviewed the live-Kafka test (test_results_consumer.py:2012+) for standards only and did not check its timing assumptions. Axes that did not run: no seat executed the project test suite; arroyo is not installed, so all repros (open-code-review, ponytail, superpowers) used stubbed arroyo, sentry_sdk and metrics, and every arroyo-contract claim (rebalance call order, join semantics, commit thread-safety, stage_offsets on unassigned partitions) is reasoned from knowledge of arroyo 2.28, not checked against its source. No cross-family correctness seat was used. superpowers reviewed directly without dispatching a reviewer. Benchmark constraints: no verifier agents could be dispatched; the one Important correctness-seat rejection (open-code-review gap stall) rests on executed repros reported by ponytail and superpowers, so it needed no verifier."
+}

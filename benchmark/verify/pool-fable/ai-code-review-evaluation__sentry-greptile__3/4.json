@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/helpers/error_upsampling.py:30 calls Django's `cache.get` (and `cache.set` at :38 on a miss) before `_should_apply_sample_weight_transform` at :32/:40, and it is called unconditionally at the top of `_get_event_stats` (src/sentry/api/endpoints/organization_events_stats.py:220). The lookup it fronts, `options.get`, already checks an in-process local cache first (src/sentry/options/store.py:132), so the layer adds a shared-cache round trip rather than saving one; a hit skips `options.get`, a miss pays for both.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3894761
+}

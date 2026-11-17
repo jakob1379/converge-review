@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The redundancy is real, though the claim's counts are slightly off: app/serializers/user_serializer.rb:138,143,146,149 call `URI(website.to_s)` four times (two per execution path) and lines 144 and 146 call `discourse_host.split('.')` three times. The ternaries at lines 146 and 149 sit inside if/elsif branches rather than being nested in each other; the effect is purely readability and minor wasted work, not behaviour.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1217589
+}

@@ -1,0 +1,254 @@
+{
+ "findings": [
+  {
+   "path": "src/sentry/api/paginator.py",
+   "line": 838,
+   "severity": "Critical",
+   "claim": "OptimizedCursorPaginator.get_item_key/value_from_cursor are copied from the integer Paginator, but the audit-log endpoint orders by -datetime: get_item_key calls math.floor/ceil on a datetime (TypeError) so every non-empty page with ?optimized_pagination=true returns 500; value_from_cursor passes a raw int into the datetime <= %s comparison so follow-up pages are also broken.",
+   "evidence": "AuditLogEntry.datetime is a DateTimeField (src/sentry/models/auditlogentry.py:69); build_cursor always calls key() on non-empty results; `python3 -c \"import math,datetime; math.floor(datetime.datetime.now())\"` raises TypeError: must be real number, not datetime.datetime (executed by 4 seats). DateTimePaginator (paginator.py:230-241) is the correct implementation. Proposed red test: owner creates one AuditLogEntry, get_success_response(org.slug, qs_params={'optimized_pagination':'true'}) -> 500.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "Root cause confirmed by executed stdlib repro; 4/4 seats. Fix by deleting the class and using DateTimePaginator (see OptimizedCursorPaginator removal finding)."
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_auditlogs.py",
+   "line": 71,
+   "severity": "Important",
+   "claim": "enable_advanced = request.user.is_superuser or organization_context.member.has_global_access is evaluated on every request (flag or not); organization_context.member is None for non-member callers (e.g. legacy org ApiKey / org token with AnonymousUser), so the plain audit-log listing raises AttributeError -> 500, a regression on a previously working endpoint.",
+   "evidence": "RpcUserOrganizationContext.member typed RpcOrganizationMember | None (src/sentry/organizations/services/organization/model.py:346); OrganizationPermission admits request.auth callers without membership and superusers via is_active_superuser. Reasoned, not executed.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "open-code-review:delegate-review",
+    "mattpocock-skills:code-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "Correctness seats differ on severity (superpowers Critical, OCR/mattpocock Important); normalised to Important because only non-member, non-superuser callers are affected. Source citation supports the None path."
+  },
+  {
+   "path": "src/sentry/api/endpoints/organization_auditlogs.py",
+   "line": 71,
+   "severity": "Important",
+   "claim": "The privilege gate for the 'advanced' path uses raw request.user.is_superuser instead of is_active_superuser(request), granting it without an active superuser session; has_global_access is also true for every member of open-membership orgs, so the gate is far wider than 'authorized administrators'.",
+   "evidence": "OrganizationAuditPermission (src/sentry/api/bases/organization.py:124) and ~9 other endpoints use is_active_superuser(request). Reasoned.",
+   "seats": [
+    "mattpocock-skills:code-review",
+    "superpowers:requesting-code-review",
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "fix",
+   "reason": "Breach of repo convention on a privilege check guarding code whose stated intent is to read beyond pagination bounds; moot if the branch is deleted, which is the recommended fix."
+  },
+  {
+   "path": "src/sentry/api/paginator.py",
+   "line": 877,
+   "severity": "Important",
+   "claim": "The 'advanced' negative-offset branch slices queryset[negative:...]; Django 5.2.1 raises ValueError('Negative indexing is not supported.'), which paginate() does not convert (only BadPaginationError), so cursor=0:-5:0 with optimized_pagination=true returns 500. Comments claim it enables access 'beyond normal pagination bounds' and that Django 'handles negative slicing' - both false; the stated intent is a pagination-bounds bypass.",
+   "evidence": "django==5.2.1 in requirements-frozen.txt:36; src/sentry/api/base.py:540 catches only BadPaginationError; Cursor.from_string accepts negative offsets. Reasoned (Django not installed). Red request: GET /api/0/organizations/{org}/audit-logs/?optimized_pagination=true&cursor=0:-10:0 as owner -> 500.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "4/4 seats; source citations. Remove branch and reject offset < 0 with BadPaginationError."
+  },
+  {
+   "path": "src/sentry/api/paginator.py",
+   "line": 821,
+   "severity": "Important",
+   "claim": "OptimizedCursorPaginator (~91 lines) is a near line-for-line copy of BasePaginator.get_result plus wrongly-copied Paginator key logic, with one caller; the endpoint adds a query flag, permission gate, duplicated paginate() call and an enable_advanced_features kwarg only ever passed True. Nothing in it is 'optimized'. Delete the class, its import, and the endpoint branch; revert to the single DateTimePaginator call.",
+   "evidence": "Diff comparison of paginator.py:844-911 vs 136-215; endpoint organization_auditlogs.py:68-90 two paginate() calls differ only in paginator_cls and one kwarg.",
+   "seats": [
+    "ponytail:ponytail-review",
+    "mattpocock-skills:code-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Advisory over-engineering finding that coincides with the correctness seats' 'revert the commit' verdict; deletion is the smallest change that fixes the Critical/Important pagination findings."
+  },
+  {
+   "path": "src/sentry/api/paginator.py",
+   "line": 182,
+   "severity": "Minor",
+   "claim": "Shared BasePaginator change (start_offset = max(0, offset) if not cursor.is_prev else offset) alters every paginated endpoint: non-prev negative offsets now silently clamp to 0 while cursor.offset stays negative for build_cursor (inconsistent next/prev cursors, line 192 still uses unclamped offset); is_prev negatives still 500. Comment claims queryset 'will handle boundary conditions' - false. No tests.",
+   "evidence": "paginator.py:179-192; tests/sentry/api/test_paginator.py has no coverage for it. Reasoned.",
+   "seats": [
+    "ponytail:ponytail-review",
+    "mattpocock-skills:code-review",
+    "superpowers:requesting-code-review",
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "fix",
+   "reason": "Raised Important by ponytail (advisory) and folded into Important findings by superpowers/OCR; normalised to Minor because the is_prev negative-offset 500 pre-exists on base (old code sliced the raw offset). Revert and reject negative offsets."
+  },
+  {
+   "path": "src/sentry/scripts/spans/add-buffer.lua",
+   "line": 46,
+   "severity": "Important",
+   "claim": "span-buf:s:* keys change type from Redis SET to ZSET with no key-prefix bump, migration or dual-read. During a rolling deploy new consumers run ZADD/ZCARD/ZUNIONSTORE/ZSCAN on old SET keys and old pods run SADD/SSCAN on new ZSETs -> WRONGTYPE, failing p.execute() in process_spans/flush_segments and crash-looping consumers until keys expire (redis_ttl up to 3600s); spans in old-type keys are lost.",
+   "evidence": "Redis type semantics; buffer.py:197,434; add-buffer.lua:46,52; redis_ttl default buffer.py:151. Reasoned. Red repro: SADD span-buf:s:{x}:y payload, then run add-buffer.lua against it -> WRONGTYPE.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "fix",
+   "reason": "3 correctness seats; reproducible with redis-cli. Fix: bump the key prefix, or document a drain-then-deploy rollout."
+  },
+  {
+   "path": "src/sentry/spans/buffer.py",
+   "line": 150,
+   "severity": "Important",
+   "claim": "max_segment_spans (default 1001) is still accepted and stored but never read: the flush-time check was removed and the cap is hard-coded as 1000 in add-buffer.lua:62-63, so tuning it silently does nothing and default disagrees with the real limit.",
+   "evidence": "grep finds no remaining reader of max_segment_spans; add-buffer.lua:62-63 literal 1000; removed check at old buffer.py:446-453.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "ponytail:ponytail-review",
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "fix",
+   "reason": "4/4 seats. superpowers rated Important (silent config ignore in production), others Minor; kept Important. Pass it to the script as an ARGV or delete it."
+  },
+  {
+   "path": "src/sentry/scripts/spans/add-buffer.lua",
+   "line": 61,
+   "severity": "Minor",
+   "claim": "zpopmin eviction is silent: the segment_span_count_exceeded metric was removed and nothing logs or meters dropped spans, so segment truncation is invisible.",
+   "evidence": "Removed metric in buffer.py diff (old ~446-453); add-buffer.lua:61-63 has no counter. Reasoned.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "Observability regression; add a returned eviction count/metric."
+  },
+  {
+   "path": "src/sentry/scripts/spans/add-buffer.lua",
+   "line": 63,
+   "severity": "Minor",
+   "claim": "zpopmin keeps the 1000 latest-ending spans, so a segment/root span that ends before its children (async work, remote segment) can be evicted while has_root_span stays true; segment flushes without its root.",
+   "evidence": "Score is end_timestamp_precise; eviction removes lowest scores. Reasoned.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Eviction policy is a product decision for the spans owners. Settling check: buffer test with 1001 spans where the segment span has the earliest end_timestamp_precise, assert it survives flush."
+  },
+  {
+   "path": "src/sentry/scripts/spans/add-buffer.lua",
+   "line": 47,
+   "severity": "Minor",
+   "claim": "zunionstore defaults to AGGREGATE SUM, so a payload present in both sets (Kafka redelivery) gets a doubled score and is effectively never evicted, distorting eviction order. Use AGGREGATE MAX.",
+   "evidence": "Redis ZUNIONSTORE default aggregate is SUM; add-buffer.lua:47,53. Reasoned.",
+   "seats": [
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "One-word change; single seat, reasoned from documented Redis semantics."
+  },
+  {
+   "path": "src/sentry/scripts/spans/add-buffer.lua",
+   "line": 30,
+   "severity": "Minor",
+   "claim": "Redirect-walk depth limit dropped from 10000 to 1000 and the comment explaining the limit was deleted; deeper segment trees will not be joined correctly, with no recorded rationale.",
+   "evidence": "Diff of add-buffer.lua:30.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "defer",
+   "reason": "Could be intentional alongside the 1000-span cap; author must confirm intent and restore the explanatory comment."
+  },
+  {
+   "path": "tests/sentry/spans/test_buffer.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover the new behaviour: span eviction beyond 1000 (which spans survive), OptimizedCursorPaginator, the endpoint's optimized_pagination branch, or the BasePaginator negative-offset change; test diffs only add end_timestamp_precise to fixtures.",
+   "evidence": "Test-file diffs add only the fixture field; no new tests in tests/sentry/api/.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "fix",
+   "reason": "Absence of tests is how the pagination Critical shipped; eviction test needed regardless."
+  },
+  {
+   "path": "src/sentry/api/paginator.py",
+   "line": 824,
+   "severity": "Minor",
+   "claim": "Pre-commit/lint failures: trailing whitespace at organization_auditlogs.py:72,89 and paginator.py:824,827,829; blank line at EOF in paginator.py (end-of-file-fixer); three blank lines before class OptimizedCursorPaginator (flake8 E303).",
+   "evidence": "`git diff 28e3db2520 HEAD --check` output (executed by seats); .pre-commit-config.yaml trailing-whitespace, end-of-file-fixer, flake8 hooks.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Executed check; tooling-enforced standard."
+  },
+  {
+   "path": "src/sentry/utils/cursors.py",
+   "line": 26,
+   "severity": "Minor",
+   "claim": "Comment-only hunk ('Allow negative offsets...') describes behaviour Cursor does not implement.",
+   "evidence": "cursors.py:26-27 diff adds two comment lines and no code.",
+   "seats": [
+    "ponytail:ponytail-review",
+    "mattpocock-skills:code-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Misleading comment; delete with the negative-offset feature."
+  },
+  {
+   "path": "src/sentry/spans/buffer.py",
+   "line": 37,
+   "severity": "Minor",
+   "claim": "Module docs still describe span-buf:s:* as 'set keys' after the switch to sorted sets.",
+   "evidence": "buffer.py:37-61 docstring vs zadd/zscan usage.",
+   "seats": [
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Stale doc; trivial update."
+  },
+  {
+   "path": "src/sentry/spans/consumers/process/factory.py",
+   "line": 141,
+   "severity": "Minor",
+   "claim": "factory.py now indexes val['end_timestamp_precise'] directly; if the field is optional in the ingest-spans schema, any span without it raises KeyError and fails the batch.",
+   "evidence": "Unverified: sentry_kafka_schemas not installed, so required-ness of the field could not be checked.",
+   "seats": [
+    "ponytail:ponytail-review",
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Unverified. Settling check: confirm end_timestamp_precise is required in sentry_kafka_schemas SpanEvent (ingest-spans v1)."
+  },
+  {
+   "path": "src/sentry/scripts/spans/add-buffer.lua",
+   "line": 43,
+   "severity": "Minor",
+   "claim": "span_count is tracked from zunionstore return values with a zcard fallback only to avoid one O(1) zcard; replace with a single zcard before the >1000 check.",
+   "evidence": "add-buffer.lua:43,47,53,58-60.",
+   "seats": [
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "reject",
+   "reason": "Advisory micro-simplification saving ~4 lines in a Lua script; no correctness impact, churn not worth it."
+  }
+ ],
+ "coverage": "Gate not run (benchmark mode): no tests, linters, type checker or builds executed; review is unanchored apart from seat-executed `math.floor(datetime)` stdlib repro and `git diff --check`. No spec: spec axis skipped (mattpocock seat). No CLAUDE.md/AGENTS.md/coding-standards doc in repo; standards limited to .pre-commit-config.yaml and .cursor/rules/python_tests.mdc. OCR seat excluded the 3 test files (tests/sentry/spans/consumers/process/test_consumer.py, test_flusher.py, tests/sentry/spans/test_buffer.py) via its default_path rule (read but not formally reviewed); ponytail seat did not review them in depth (fixture-only edits); other seats reviewed all 9 files. Django, Redis and sentry_kafka_schemas not installed, so all runtime claims beyond the stdlib repro are reasoned. All seats are the same model family; no cross-family reviewer available. Untracked harness dotfiles in the worktree were excluded from the pinned patch. Rounds 2+, fixes and red tests not run (benchmark mode)."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In webassets.go:45-49 the cache shortcut is skipped when cfg.Env == setting.Dev, and the function then takes the exclusive Lock and reads the manifest file (line 60) while holding it, so Dev requests run one at a time. On failure, line 69 stores a nil result, so in production every later request misses the cache at line 45 and retries the file read under the same lock, again one at a time.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.047119499999999995
+}

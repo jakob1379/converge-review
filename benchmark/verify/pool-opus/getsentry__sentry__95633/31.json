@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/remote_subscriptions/consumers/queue_consumer.py, WorkItem declares `message` (line 32) and submit() fills it with the whole arroyo Message (line 313), but the worker reads only `.result`, `.partition` and `.offset` (lines 141 and 150). A grep finds no read of `.message` anywhere under src/sentry/remote_subscriptions, so each queued item keeps the raw payload alive alongside the decoded result.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22756110000000002
+}

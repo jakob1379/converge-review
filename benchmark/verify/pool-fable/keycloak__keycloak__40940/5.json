@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:139-157 the reader thread only records exceptions; nothing counts successful reads and the thread is never joined. The sole assertion, `assertThat(caughtExceptions, Matchers.empty())` at line 157, therefore passes whenever the race is not hit or no read finishes, with or without the fix.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1249942
+}

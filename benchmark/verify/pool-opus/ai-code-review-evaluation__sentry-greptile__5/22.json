@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds static/app/components/feedback/feedbackSummary.tsx:1-64 and static/app/components/feedback/list/useFeedbackSummary.tsx:1-67 but no spec file, and no *.spec.* file under static/ mentions feedbackSummary, useFeedbackSummary or tooFewFeedbacks. That leaves untested the tooFewFeedbacks check (`numFeedbacksUsed === 0 && !success`, useFeedbackSummary.tsx:65) and the return-null and Placeholder branches (feedbackSummary.tsx:16-26).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1128608
+}

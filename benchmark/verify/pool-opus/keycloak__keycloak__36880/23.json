@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patch's testViewAllClients, the 'can't create a new client' check calls clients().create(null) (change.patch:1011) and no create call in that test sends a real ClientRepresentation. The 403 assertion is still meaningful because ClientsResource.createClient checks auth.clients().requireManage() before it reads the body (ClientsResource.java:186).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0501378
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/embed/best.html.erb:6 (new file in the patch) closes the header if/else with `<%- end if %>`, where line 22 uses a plain `<%- end %>`. Not executed, but with the locked erubis 2.7.0 this should compile to `end if ;`, a Ruby syntax error that fails every render of the embed view; spec/controllers/embed_controller_spec.rb has no `render_views`, so the specs would not catch it.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2311567
+}

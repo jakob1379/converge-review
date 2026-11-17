@@ -1,0 +1,607 @@
+{
+ "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8",
+ "cost_usd": 0.10549319999999998,
+ "items": [
+  {
+   "id": "c1",
+   "source": "golden",
+   "text": "Expected to return a value at the end of function - code paths without explicit returns will return undefined"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review-replay",
+   "text": "The public /groups/:name/members endpoint now defaults to limit=50 for every group, but the public route and template have no pagination controls, so members after the 50th cannot be reached"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review",
+   "text": "{{#unless automatic}} inside an itemView likely resolves against the member, not the group, in Ember 1.x, so the remove link shows on automatic groups"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review-replay",
+   "text": "group[usernames] parameter is now ignored in the API"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "'== 0' at lines 7 and 12 breaks .jshintrc eqeqeq rule"
+  },
+  {
+   "id": "c6",
+   "source": "golden",
+   "text": "The `totalPages` calculation using `Math.floor(user_count / limit) + 1` produces an extra page when `user_count` is an exact multiple of `limit`, leading to incorrect pagination. For example, with 100 users and a limit of 50, it reports 3 pages instead of 2, allowing navigation to an empty page."
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "GET /groups/:name/members defaults to limit 50 for all groups, but the public group members page has no pagination controls, so members after the 50th are unreachable"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review-replay",
+   "text": "remove_member using group.users.delete likely doesn't decrement groups.user_count counter_cache, while add_members uses group.add, making the two endpoints inconsistent"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "add_members does usernames.split(','), assuming a string; usernames[]=a&usernames[]=b yields an Array and NoMethodError -> 500"
+  },
+  {
+   "id": "c10",
+   "source": "cubic-v2",
+   "text": "Item-view template references `member`, but that alias is not available inside a separate `itemView` template. The row will render with missing member data, and clicking remove can throw when the controller calls `member.get(...)`."
+  },
+  {
+   "id": "c11",
+   "source": "converge-review-replay",
+   "text": "The 'cannot remove members from automatic groups' spec sends xhr :put, :remove_member but the route is DELETE; it passes only because controller specs skip routing, so it tests the wrong HTTP verb"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "limit/offset params on the public members endpoint are unvalidated: negative values reach SQL (PostgreSQL rejects -> 500) and there is no upper cap on limit"
+  },
+  {
+   "id": "c13",
+   "source": "augment",
+   "text": "Spec uses xhr :put for remove_member but the route is defined as DELETE /admin/groups/:group_id/members - using PUT can let the spec pass while the real route/verb would behave differently"
+  },
+  {
+   "id": "c14",
+   "source": "golden",
+   "text": " The findMembers() call is now asynchronous and unhandled. The controller may not have member data immediately available, creating a race condition."
+  },
+  {
+   "id": "c15",
+   "source": "coderabbit",
+   "text": "usernames input is not cleared after add operation, making it easy to accidentally re-add the same usernames"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "add_members calls group.add(user) with no existing-membership check; adding an existing member violates the unique index on group_users(group_id,user_id), raising RecordNotUnique -> 500, and earlier users in the list stay committed (no transaction)"
+  },
+  {
+   "id": "c17",
+   "source": "coderabbit",
+   "text": "totalPages calculation has off-by-one error when user_count is a multiple of limit - Math.floor(user_count / limit) + 1 yields an extra page for exact multiples, should use Math.ceil instead"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "Removing the last member on the last page leaves an empty page because findMembers keeps the old offset"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "The existing pending 'ensures that membership can be paginated' spec is still pending and parses the old array shape instead of the new {members, meta} response contract"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "group.save plus render_json_error after add/remove is a no-op: membership writes already hit the DB via has_many :through, so the error branch only fires on unrelated group validation failures"
+  },
+  {
+   "id": "c21",
+   "source": "augment",
+   "text": "The automatic variable may not be in scope for the item view template - if it resolves against the member context it may be undefined, causing the remove control to show even for automatic groups, which would allow clicking remove and likely surface a 422 without UI handling"
+  },
+  {
+   "id": "c22",
+   "source": "qodo-extended-v2",
+   "text": "The group member row template hides the remove link using {{#unless automatic}}, but row context is a member (Discourse.User), so automatic is undefined and the remove link is shown even for automatic groups. Clicking it triggers a 422 (server blocks automatic group membership changes) and the UI ignores the rejected promise"
+  },
+  {
+   "id": "c23",
+   "source": "cubic-v2",
+   "text": "`totalPages` is off by one when `user_count` is an exact multiple of `limit`, so the pager shows an extra page. Should use `Math.ceil(this.get(\"user_count\") / this.get(\"limit\"))` instead of `Math.floor(...) + 1`."
+  },
+  {
+   "id": "c24",
+   "source": "converge-review-replay",
+   "text": "GET /groups/:name/members now returns {members, meta} instead of an array, breaking backwards compatibility"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review-replay",
+   "text": "totalPages uses Math.floor(user_count / limit) + 1, which is off by one when user_count is an exact multiple of limit (e.g., 50 members with limit 50 shows 1/2 pages and Next loads an empty page); should use Math.ceil(user_count / limit)"
+  },
+  {
+   "id": "c26",
+   "source": "claude-code",
+   "text": "remove_member calls group.users.delete(user_id) which performs a direct SQL DELETE bypassing ActiveRecord callbacks including counter_cache, causing group.user_count to become stale after member removal. Should use group.remove(User.find(user_id)) instead which properly triggers counter cache updates."
+  },
+  {
+   "id": "c27",
+   "source": "augment",
+   "text": "offset = params[:offset].to_i can produce negative offsets and limit can be <= 0, which may raise or produce invalid queries in ActiveRecord - need to clamp/sanitize limit and offset before calling .limit(...).offset(...)"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "addMembers ends with '})' without a semicolon; jshint W033 'Missing semicolon' under .jshintrc, and CI runs 'jshint .' so CI should fail"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "Stray semicolon after block (if (!this.get('id')) { return };) -> jshint W032; spacing around return and DELETE object breaks CONTRIBUTING conventions"
+  },
+  {
+   "id": "c30",
+   "source": "coderabbit",
+   "text": "Route parameter mismatch - routes provide :id but controller expects :group_id, causing param is missing error"
+  },
+  {
+   "id": "c31",
+   "source": "claude-code",
+   "text": "totalPages is computed as Math.floor(user_count / limit) + 1 which produces an off-by-one error when user_count is an exact multiple of limit (e.g., 100/50 gives 3 instead of 2), allowing users to navigate to an empty page. Should use Math.ceil(user_count / limit) instead."
+  },
+  {
+   "id": "c32",
+   "source": "golden",
+   "text": "The remove_member test uses xhr :put to call the remove_member action, but the route defines delete 'members' => 'groups#remove_member' requiring DELETE method."
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "Group#usernames= setter, destroy_deletions and after_save :destroy_deletions are now dead code in production (only specs call the setter)"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "create never reads params[:alias_level] although the form shows and sends it; value is silently dropped on create"
+  },
+  {
+   "id": "c35",
+   "source": "coderabbit",
+   "text": "Usernames are not normalized before lookup in add_members - whitespace or blank entries will silently skip valid users"
+  },
+  {
+   "id": "c36",
+   "source": "coderabbit",
+   "text": "Pagination params limit and offset are not clamped - negative or very large values can trigger heavy queries or odd behavior"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review-replay",
+   "text": "remove_member calls group.users.delete(user_id) instead of the existing Group#remove helper, which skips per-row cleanup and leaves the removed user's primary_group_id not cleared, causing the group to still show as post flair"
+  },
+  {
+   "id": "c38",
+   "source": "golden",
+   "text": "The route provides the group's ID in params[:id], but the code attempts to read it from params[:group_id], causing the action to fail. This results in a broken feature when trying to access group memberships."
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "removeMember/addMembers have no rejection handler (422/500 gives admin no feedback); input not cleared after add; rapid next/previous can race findMembers responses"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "totalPages uses Math.floor(user_count/limit)+1, off by one when user_count is an exact multiple of limit (50 members -> '1/2', next loads an empty page)"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review",
+   "text": "Breaking admin/public API change without compatibility: create/update read top-level params instead of group[...], group[usernames] ignored, PATCH /admin/groups/:id changes[add|delete] removed (legacy PATCH now silently sets visible=false since params[:visible] is nil), and /groups/:name/members returns {members, meta} instead of an array with no documentation"
+  },
+  {
+   "id": "c42",
+   "source": "coderabbit",
+   "text": "Stray closing </div> tag with no matching opening tag in group/members.hbs template"
+  },
+  {
+   "id": "c43",
+   "source": "coderabbit",
+   "text": "Hardcoded colors #333 and #aaa in SCSS instead of SCSS variables may break theme consistency"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review",
+   "text": "remove_member uses group.users.delete(user_id) instead of Group#remove: the removed user's primary_group_id is not cleared and the counter_cache groups.user_count is not decremented because has_many :through delete uses delete_all without GroupUser callbacks"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "No spec for the new {members, meta} response; pending 'ensures that membership can be paginated' spec still parses the old array shape; no spec for duplicate add, removal cleanup, or nonexistent usernames in add_members; create and non-automatic update coverage removed without replacement"
+  },
+  {
+   "id": "c46",
+   "source": "coderabbit",
+   "text": "Test for automatic-group remove_member uses PUT instead of DELETE, which won't validate verb correctness"
+  },
+  {
+   "id": "c47",
+   "source": "coderabbit",
+   "text": "Guard condition in group/members.hbs checks model but loop iterates over members - if model is truthy but members is undefined/empty, table header renders with no rows"
+  },
+  {
+   "id": "c48",
+   "source": "converge-review",
+   "text": "findMembers builds the URL from the bound, possibly unsaved name; editing the name then paging/adding/removing requests /groups/<unsaved-name>/members.json -> 404"
+  },
+  {
+   "id": "c49",
+   "source": "augment",
+   "text": "totalPages uses Math.floor(user_count / limit) + 1, which over-counts when user_count is an exact multiple of limit (e.g. 50/50 -> 2 pages), allowing next to set offset to user_count, yielding an empty last page and incorrect currentPage/totalPages display"
+  },
+  {
+   "id": "c50",
+   "source": "golden",
+   "text": "In the next action, capping the next offset at user_count can produce an empty page (e.g., total equal to limit results in offset == total, showing 2/2 with no members). This can cause confusing UX on the last page."
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "'cannot remove members from automatic groups' spec sends xhr :put to remove_member but the route is DELETE; also hardcodes group id 1 instead of fabricating an automatic group"
+  },
+  {
+   "id": "c52",
+   "source": "converge-review-replay",
+   "text": "PATCH /admin/groups/:id with changes[add|delete] endpoint is removed without documentation"
+  },
+  {
+   "id": "c53",
+   "source": "cubic-v2",
+   "text": "`findMembers()` is called without awaiting its result, introducing a race condition. The template may render before members are available. Either return the promise from `setupController` or move the async call back to `afterModel`/`beforeModel` where the router will wait for it."
+  },
+  {
+   "id": "c54",
+   "source": "converge-review-replay",
+   "text": "The patch breaks the public and admin API with no compatibility path: create and update read top-level params instead of group[...], causing legacy create to get blank name/422 and legacy update to silently set visible=false"
+  },
+  {
+   "id": "c55",
+   "source": "qodo-extended-v2",
+   "text": "Admin group pagination computes totalPages with floor()+1 and Next can set offset==user_count, making an extra empty page reachable for exact multiples of limit (e.g. 100 users @ limit 50), causing the UI to show a bogus page count and render an empty members list on the last navigation step"
+  },
+  {
+   "id": "c56",
+   "source": "converge-review-replay",
+   "text": "The commit body is empty, violating CONTRIBUTING \u00a75's requirement for detailed description of breaking changes"
+  },
+  {
+   "id": "c57",
+   "source": "qodo-extended-v2",
+   "text": "The remove_member controller spec uses PUT for the automatic-group rejection case, but the route and client use DELETE. This test can pass while the real DELETE integration is broken"
+  },
+  {
+   "id": "c58",
+   "source": "converge-review",
+   "text": "Offset clamped redundantly in next/previous actions and again in findMembers"
+  },
+  {
+   "id": "c59",
+   "source": "coderabbit",
+   "text": "next() function allows navigating to an empty page by clamping offset to user_count instead of the last valid offset"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The public GET /groups/:name/members endpoint now defaults to limit=50 for every group, but the public route and template have no pagination controls, so members after the 50th cannot be reached.",
+   "path": null,
+   "members": [
+    "c2",
+    "c7"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "In the group member row itemView, {{#unless automatic}} resolves against the member (Discourse.User) rather than the group, so `automatic` is undefined and the remove link is shown for automatic groups.",
+   "path": null,
+   "members": [
+    "c3",
+    "c21",
+    "c22"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The item-view template references `member`, but that alias is not available inside a separate itemView template, so rows render without member data and remove can fail when the controller calls member.get(...).",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "A function has code paths that end without an explicit return and return undefined.",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The group[usernames] parameter is now ignored by the API.",
+   "path": null,
+   "members": [
+    "c4"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The admin group create and update actions read top-level params instead of group[...], with no compatibility path: legacy create gets a blank name (422) and legacy update silently sets visible=false.",
+   "path": null,
+   "members": [
+    "c41",
+    "c54"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "GET /groups/:name/members now returns {members, meta} instead of an array, which is not backwards compatible.",
+   "path": null,
+   "members": [
+    "c24"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The PATCH /admin/groups/:id endpoint with changes[add|delete] is removed without documentation.",
+   "path": null,
+   "members": [
+    "c52"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The '== 0' comparisons at lines 7 and 12 violate the .jshintrc eqeqeq rule.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "totalPages is computed as Math.floor(user_count / limit) + 1, which gives one extra page when user_count is an exact multiple of limit (e.g. 100/50 gives 3), so navigation can reach an empty page.",
+   "path": null,
+   "members": [
+    "c6",
+    "c17",
+    "c23",
+    "c25",
+    "c31",
+    "c40",
+    "c49",
+    "c55"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The next action clamps the offset to user_count instead of the last valid offset, so it can navigate to an empty page (e.g. total equal to limit gives offset == total).",
+   "path": null,
+   "members": [
+    "c50",
+    "c59"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "remove_member uses group.users.delete(user_id), which bypasses callbacks so the groups.user_count counter_cache is not decremented, unlike add_members which uses group.add.",
+   "path": null,
+   "members": [
+    "c8",
+    "c26"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "remove_member uses group.users.delete(user_id) instead of Group#remove, so the removed user's primary_group_id is not cleared and the group can still show as post flair.",
+   "path": null,
+   "members": [
+    "c37",
+    "c44"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "add_members calls usernames.split(','), assuming a string; usernames[]=a&usernames[]=b yields an Array and raises NoMethodError (500).",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The 'cannot remove members from automatic groups' controller spec sends xhr :put to remove_member, but the route is DELETE; it passes only because controller specs skip routing.",
+   "path": null,
+   "members": [
+    "c11",
+    "c13",
+    "c32",
+    "c46",
+    "c51",
+    "c57"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The limit and offset params on the members endpoint are not validated or clamped: negative values reach SQL and cause errors, and limit has no upper cap.",
+   "path": null,
+   "members": [
+    "c12",
+    "c27",
+    "c36"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "findMembers() is called asynchronously without its promise being returned or awaited from setupController, so the template may render before member data is available.",
+   "path": null,
+   "members": [
+    "c14",
+    "c53"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "removeMember and addMembers have no rejection handler, so 422/500 responses give the admin no feedback.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "The usernames input is not cleared after an add operation.",
+   "path": null,
+   "members": [
+    "c15"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "add_members calls group.add(user) without checking for existing membership, so adding an existing member violates the unique index on group_users(group_id,user_id) and raises RecordNotUnique (500), and earlier users stay committed because there is no transaction.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "Removing the last member on the last page leaves an empty page because findMembers keeps the old offset.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The pending 'ensures that membership can be paginated' spec still parses the old array shape, and no spec covers the new {members, meta} response contract.",
+   "path": null,
+   "members": [
+    "c19",
+    "c45"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "group.save with render_json_error after add/remove is effectively a no-op, because membership writes already hit the DB via has_many :through, so the error branch only fires on unrelated group validation failures.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "addMembers ends with '})' without a semicolon, which triggers jshint W033 under .jshintrc.",
+   "path": null,
+   "members": [
+    "c28"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "There is a stray semicolon after a block (if (!this.get('id')) { return };), which triggers jshint W032.",
+   "path": null,
+   "members": [
+    "c29"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The routes provide the group id in params[:id], but the controller reads params[:group_id], causing a param-missing failure.",
+   "path": null,
+   "members": [
+    "c30",
+    "c38"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "The Group#usernames= setter, destroy_deletions and after_save :destroy_deletions are now dead code in production; only specs call the setter.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The create action never reads params[:alias_level], although the form sends it, so the value is dropped on create.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "add_members does not normalize usernames before lookup, so whitespace or blank entries cause valid users to be skipped.",
+   "path": null,
+   "members": [
+    "c35"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "The group/members.hbs template contains a stray closing </div> tag with no matching opening tag.",
+   "path": "group/members.hbs",
+   "members": [
+    "c42"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "The SCSS hardcodes the colors #333 and #aaa instead of using SCSS variables.",
+   "path": null,
+   "members": [
+    "c43"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "The guard in group/members.hbs checks model, but the loop iterates over members, so the table header can render with no rows.",
+   "path": "group/members.hbs",
+   "members": [
+    "c47"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "findMembers builds its URL from the bound, possibly unsaved group name, so after the name is edited, paging/add/remove request /groups/<unsaved-name>/members.json and get a 404.",
+   "path": null,
+   "members": [
+    "c48"
+   ]
+  },
+  {
+   "id": "i34",
+   "claim": "The commit body is empty, contrary to CONTRIBUTING \u00a75's requirement to describe breaking changes.",
+   "path": null,
+   "members": [
+    "c56"
+   ]
+  },
+  {
+   "id": "i35",
+   "claim": "The offset is clamped in the next/previous actions and again in findMembers.",
+   "path": null,
+   "members": [
+    "c58"
+   ]
+  }
+ ]
+}

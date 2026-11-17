@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In static/app/views/dashboards/widgets/tableWidget/tableWidgetVisualization.tsx, `fit`, `frameless` and `scrollable` (lines 31, 35, 63) and `FRAMELESS_STYLES` (line 66, used only at line 122) are never passed by any caller: widgetCard/chart.tsx:165-174, the stories file and the spec file pass only `tableData`, `columns` and the two render props. `tableData` is declared required at line 21 yet read as `tableData?.meta.fields` / `tableData?.data` at lines 94, 98 and 103.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.7452696
+}

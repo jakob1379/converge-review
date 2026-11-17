@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At store.js.es6:197-200, `hydrated` comes straight from `obj[k].map(...)`. That always returns an array, which is truthy, or throws first if `obj[k]` is null, so `|| []` can never take effect. Lookups that miss leave `undefined` entries in the array, and nothing filters them out.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0388573
+}

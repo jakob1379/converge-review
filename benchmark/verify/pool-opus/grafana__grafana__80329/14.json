@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "cleanup_test.go:273-280 and 283-290 repeat the same 500-row sess.InsertMulti chunk loop, once for annotations and once for annotation tags. Each callback calls require.NoError(t, err) on the insert (lines 277 and 287) and then returns nil instead of passing the error back.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09102520000000001
+}

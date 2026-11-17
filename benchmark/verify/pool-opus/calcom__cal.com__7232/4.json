@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In workflows.tsx, `Prisma` is imported at line 9 but never used anywhere else in the file. The only other match is `PrismaPromise` at line 342. Its last use, `PrismaPromise<Prisma.BatchPayload>[]`, was deleted by the patch, which also turned the type-only import into a value import.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.07572999999999999
+}

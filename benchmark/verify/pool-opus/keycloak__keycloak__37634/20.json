@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Both maps are created as ConcurrentHashMap in DefaultTokenContextEncoderProviderFactory.postInit (patch lines 432-433), so the cache is not unsynchronised. It also does more than repeat getProviderFactory: it gives the shortcut-to-grant lookup that getProviderFactory cannot do (getGrantTypeByShortcut, lines 486-502). Entries are never removed on undeploy, but a leftover entry only maps a removed grant's id to its fixed shortcut, which is harmless.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0656467
+}

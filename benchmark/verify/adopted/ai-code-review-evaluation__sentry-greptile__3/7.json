@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/sentry/api/helpers/test_error_upsampling.py:21, which the patch adds, the organization is created with Organization.objects.create(name=\"test-org\") inside a TestCase subclass, even though self.create_organization is available. This goes against CLAUDE.md:627 ('Use `self.create_*` helpers, not direct model creation') and CLAUDE.md:322 ('Use factories for test data').",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0473428
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds GROUPS to the schema and to `getOrCreateResource` (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:79,109), but `getResourceName` at AdminPermissionsSchema.java:328-350 still only special-cases USERS, so group resources and the \"Groups\" type resource fall through to `resource.getDisplayName()`. That display name is never set for them (created at AdminPermissionsSchema.java:121 and :273), so PolicyResourceService.java:218 returns null and there is no \"All groups\" label.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.40333379999999996
+}

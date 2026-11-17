@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new spec files leave blank lines just inside their block bodies, for example spec/controllers/admin/embeddable_hosts_controller_spec.rb:4 and :8, spec/models/embeddable_host_spec.rb:4, :39 and :41, and spec/models/topic_spec.rb right after `describe \"expandable_first_post?\" do` and before its closing `end`. RuboCop's default Layout/EmptyLinesAroundBlockBody would flag these, but the repo has no .rubocop.yml and no rubocop in Gemfile, so nothing enforces the rule, and existing specs such as site_setting_spec.rb already use this style.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.19950400000000001
+}

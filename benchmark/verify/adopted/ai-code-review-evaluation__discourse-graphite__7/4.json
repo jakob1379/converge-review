@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes mobile/user.scss:497 (`.group-member-info .name`) from `scale-color($primary, $lightness: 30%)` to `dark-light-choose(... 50%, ... 50%)`. On the light theme the name is now lighter and the same colour as `.title` at line 503, which is also 50%. Every other conversion in the patch keeps the original light value and pairs it with its complement, such as 30%\u2192(30%,70%), so this should be (30%, 70%), as at desktop/user.scss:522.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11992920000000001
+}

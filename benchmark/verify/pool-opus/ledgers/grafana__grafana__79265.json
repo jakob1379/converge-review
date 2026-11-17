@@ -1,0 +1,365 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "pkg/server/wire.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "pkg/server/wire.go (lines 374-375) still registers anonstore.ProvideAnonDBStore and binds AnonStore. ProvideAnonDBStore now requires an int64 parameter that no Wire provider supplies, and ProvideAnonymousDeviceService builds its own store instead of receiving AnonStore, so wire generation fails or the binding is dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/server/wire.go:374-375 still registers anonstore.ProvideAnonDBStore and binds AnonStore, but the patch changed the provider to ProvideAnonDBStore(sqlStore db.DB, deviceLimit int64) (anonstore/database.go:52) and no Wire provider returns int64. ProvideAnonymousDeviceService now builds its own store from cfg.AnonymousDeviceLimit (impl.go:43), and wire_gen.go is not checked in, so Wire generation fails and the binding has no consumers.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.12827210000000003
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "updateDevice returns ErrDeviceLimitReached when rowsAffected == 0. Zero affected rows means the device does not exist or its updated_at falls outside the time window, not that the limit was reached.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The only caller of updateDevice is CreateOrUpdateDevice, and it calls it only when `count >= s.deviceLimit` (database.go, patch lines 122-130). In that case, zero affected rows (patch line 108) means the device is new or expired and has no active slot, so it cannot be added because the limit is reached. Returning ErrDeviceLimitReached is the intended behaviour, and the TestIntegrationBeyondDeviceLimit test checks for it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.10579000000000001
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Using RowsAffected()==0 to signal ErrDeviceLimitReached can misfire on MySQL. MySQL reports 0 rows affected when a row matches but its values are unchanged, for example the same updated_at after second-precision truncation, so existing devices at the limit can be denied.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Grafana opens its MySQL connection with clientFoundRows=true (pkg/services/sqlstore/sqlstore.go:287), so RowsAffected() counts rows the UPDATE matched, not only rows it changed. A matching device with unchanged values therefore returns 1, and updateDevice in pkg/services/anonymous/anonimpl/anonstore/database.go:108 does not wrongly return ErrDeviceLimitReached.",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1236346
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "grafana-data/src/types/config.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The anonymousDeviceLimit field on the GrafanaBootConfig class is initialized to undefined without a type annotation, so TypeScript infers type undefined instead of number | undefined. The value cannot be read as a number even though the backend sends an int64.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The claim names the wrong file: in grafana-data/src/types/config.ts:200 the interface field is correctly typed `number | undefined`. The real problem is in GrafanaBootConfig at packages/grafana-runtime/src/config.ts:97, where `anonymousDeviceLimit = undefined;` has no type annotation; with `strict: true` (tsconfig.json:8), TypeScript types it as just `undefined`, so `config.anonymousDeviceLimit` cannot be used as a number even though the backend sends an int64 (pkg/api/dtos/frontend_settings.go:195).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15705180000000002
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "conf/defaults.ini",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new [auth.anonymous] device_limit config key is not added to conf/defaults.ini, conf/sample.ini, or docs/sources/administration/configuration.md. Nothing documents that 0 means unlimited.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch reads the new `device_limit` key only at pkg/setting/setting.go:1654 (`MustInt64(0)`), and the key appears nowhere in conf/ or docs/. The patch doesn't touch conf/defaults.ini, conf/sample.ini or configuration.md, so nothing documents that 0 means unlimited (the `> 0` check is in anonstore/database.go).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.09979880000000001
+   }
+  },
+  {
+   "issue": "i6",
+   "path": "impl_test.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The device limit tests do not verify that an already-known device can still be updated or refreshed when the limit is reached. They also do not cover other limit cases or the service/cache path, and impl_test.go only uses limit 0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only device-limit test, database_test.go:51-70 (TestIntegrationBeyondDeviceLimit, limit 1), checks only that a second, new device gets ErrDeviceLimitReached. No test updates an already-known device at the limit or tries other limits, and impl_test.go:116 and :151 use setting.NewCfg(), so AnonymousDeviceLimit stays 0 and the limited path through the service, cache and client is never tested.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1095484
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "tagDeviceUI writes the device ID to localCache before calling CreateOrUpdateDevice and does not evict it on ErrDeviceLimitReached. Later requests from a rejected device hit the cache, TagDevice returns nil, and the device bypasses the limit until the cache entry expires.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In impl.go:83-95, tagDeviceUI returns nil when the device's key is already in localCache. It calls SetDefault(key) at line 87, before CreateOrUpdateDevice runs at line 93, and does not remove the key when the store returns ErrDeviceLimitReached (database.go updateDevice). So for the rest of the 29-minute cache window, TagDevice (impl.go:144-150) returns nil and client.go's ErrDeviceLimitReached check never fires.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1138439
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test device struct is missing the CreatedAt field.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new test's Device literal (pkg/services/anonymous/anonimpl/anonstore/database_test.go:55-60) sets DeviceID, ClientIP, UserAgent and UpdatedAt but not CreatedAt, so the row is stored with a zero created_at (database.go:121). The test still checks what it means to, because CountDevices and updateDevice filter only on updated_at (database.go:161), and the older tests in the same file leave CreatedAt out too.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1378383
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "anonymousDeviceLimit is added to the public GrafanaConfig interface and the frontend settings DTO, but nothing in public/ or packages/ reads it. Adding a required member to a published interface also affects implementers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the required member `anonymousDeviceLimit: number | undefined` to the published GrafanaConfig interface (packages/grafana-data/src/types/config.ts:200), and the frontend settings DTO now sends it (pkg/api/dtos/frontend_settings.go:195). The only other mention in the repo is the default in GrafanaBootConfig (packages/grafana-runtime/src/config.ts:97); nothing in public/ or packages/ reads it, and any outside code that implements GrafanaConfig would now fail to type-check until it adds the field.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.10737369999999999
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The device limit is exposed in frontend settings to all clients, including unauthenticated anonymous ones.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/api/frontendsettings.go:198 always sets AnonymousDeviceLimit from hs.Cfg.AnonymousDeviceLimit, with no check on who is asking. getFrontendSettings feeds setIndexViewData (pkg/api/index.go:29), which the unauthenticated LoginView uses (pkg/api/login.go:101), and anonymous sessions can also call /api/frontend/settings/ (pkg/api/api.go:417), so every client gets the value.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.11536650000000001
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "args = append([]interface{}{query}, args...) mutates the captured slice inside the WithDbSession callback. On a SQLite 'database locked' retry, the query is prepended twice and Exec fails.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At anonstore/database.go:84 the callback reassigns the captured `args` with `args = append([]interface{}{query}, args...)`. withDbSession (sqlstore/session.go:126-127) retries the callback through retryOnLocks (session.go:90-102) when SQLite returns ErrLocked/ErrBusy, so on a retry `query` is prepended a second time and Exec gets one argument too many, which fails.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.07237629999999999
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "CountDevices and the subsequent insert/update in CreateOrUpdateDevice run in separate sessions without a transaction or lock. Concurrent requests or HA instances can all observe count < limit and insert devices beyond the limit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In CreateOrUpdateDevice (database.go:~107-117), CountDevices runs a SELECT COUNT(*) in its own WithDbSession (database.go:160), and the upsert runs later in a separate WithDbSession (database.go:149). There is no transaction, lock or conditional insert, so concurrent requests or HA instances can all see count < limit and each insert a new device.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1093681
+   }
+  },
+  {
+   "issue": "i13",
+   "path": "anonstore/database.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 30-day device window is defined in three places: anonymousDeviceExpiration in anonstore/database.go and api/api.go, and thirtyDays in impl.go. If one drifts, the enforced count, device listing and usage stats will disagree.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The same 30-day constant is defined separately in anonstore/database.go:16 (anonymousDeviceExpiration, added by this patch for limit enforcement), api/api.go:18 (anonymousDeviceExpiration, renamed from thirtyDays, for device listing) and impl.go:25 (thirtyDays, for usage stats). pkg/api/admin.go:67 also has a local thirtyDays, so there are actually four copies.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0989625
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Device tagging moved from a background goroutine with a 2-minute timeout and panic recovery to a synchronous call on the anonymous auth path. This adds DB write latency to requests, removes panic recovery, and ties the write to the request context.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/anonymous/anonimpl/client.go:44-50 the patch removes the background goroutine, which had recover() and context.WithTimeout(context.Background(), 2*time.Minute), and replaces it with a direct call to TagDevice(ctx, ...) using the request ctx. When the local cache misses, the request now waits for the CountDevices and insert/update DB work (anonstore/database.go:121-131) and has no panic recovery.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1064465
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new TestIntegrationBeyondDeviceLimit lacks the testing.Short() skip guard.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "TestIntegrationBeyondDeviceLimit (pkg/services/anonymous/anonimpl/anonstore/database_test.go:51-52) goes straight to db.InitTestDB(t) with no testing.Short() skip. The other integration tests in the same file (lines 14 and 72) don't have the guard either, so the new test follows the file's existing style.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0458122
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The device-limit time window is computed inconsistently. CountDevices uses time.Now().UTC(), while the upsert uses device.UpdatedAt and device.UpdatedAt.Add(-anonymousDeviceExpiration) as its bounds.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patched database.go, CreateOrUpdateDevice calls CountDevices with time.Now().UTC() minus/plus the window (patch line 123), while updateDevice uses device.UpdatedAt.UTC().Add(-anonymousDeviceExpiration) and device.UpdatedAt.UTC().Add(time.Minute) (patch line 94). The mismatch is harmless in practice because the only production caller sets UpdatedAt to time.Now() (pkg/services/anonymous/anonimpl/impl.go:141).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.10322
+   }
+  },
+  {
+   "issue": "i17",
+   "path": "client.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When TagDevice returns ErrDeviceLimitReached, Authenticate in client.go fails, so anonymous authentication is blocked entirely rather than only device tracking being capped.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "client.go:44-47 does return the error when TagDevice reports ErrDeviceLimitReached, but the patch adds that branch on purpose to enforce the new limit, and it is not a total block. Only a new device that arrives once the limit is reached is refused: database.go's updateDevice still succeeds for devices already tracked, requests with no device-id header return nil (impl.go:119-121), and tagDeviceUI caches the key before the database write (impl.go:83-87), so a repeat request soon after a refusal skips the check and gets in.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1455453
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ErrDeviceLimitReached is a plain fmt.Errorf value rather than an errutil error. It is logged at Warn on every rejected request, and the client gets a generic 401 with no device-limit message.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `ErrDeviceLimitReached = fmt.Errorf(\"device limit reached\")` (anonstore/database.go:18), not an errutil error, and anonimpl/client.go now returns it from Authenticate. errorLogFunc in authnimpl/service.go:356-365 logs any non-errutil error at Warn, and the API path's notAuthorized (middleware/auth.go:37-39) goes through WriteErrOrFallback (model.go:104-120), which returns a generic 'Unauthorized' 401 with no device-limit message. Non-API requests are redirected to login instead of getting a 401.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1786486
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The doc comment says 'updated between the given times', but the function takes no time arguments; the window is derived from device.UpdatedAt.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At pkg/services/anonymous/anonimpl/anonstore/database.go:72 the comment says 'updated between the given times', but updateDevice(ctx, device) takes no time arguments. The BETWEEN bounds come from device.UpdatedAt minus anonymousDeviceExpiration and device.UpdatedAt plus one minute (lines ~80-81).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0963939
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Clients that omit X-Grafana-Device-Id or send an unparsable IP are never counted but still authenticate as anonymous, so the limit can be bypassed by dropping the header.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In TagDevice (pkg/services/anonymous/anonimpl/impl.go:119-129), an empty X-Grafana-Device-Id or an IP that fails to parse returns nil before CreateOrUpdateDevice is reached. Anonymous.Authenticate in client.go only fails on ErrDeviceLimitReached, so these clients are never counted and still get an anonymous identity even when the device limit is full.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.11367179999999999
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

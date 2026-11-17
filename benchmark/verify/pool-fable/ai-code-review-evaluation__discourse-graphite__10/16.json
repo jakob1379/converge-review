@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/fabricators/category_fabricator.rb:1-4 now defines only `Fabricator(:embeddable_host)`, while the new spec/fabricators/embeddable_host_fabricator.rb:1-27 holds the `:category`, `:diff_category`, `:happy_category` and `:private_category` fabricators that the patch removed from the category file. Runtime effect was not tested; Fabrication normally loads every file in the directory, so this is likely a file-naming mix-up only.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0962456
+}

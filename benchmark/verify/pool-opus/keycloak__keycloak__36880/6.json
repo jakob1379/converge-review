@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.hasPermission(ClientModel, String), added at change.patch lines 493-521, goes through every evaluated Permission and returns true on any matching scope without checking permission.getResourceId().equals(resource.getId()). UserPermissionsV2.java:135 does make that check. The hasGrantedPermission helper (change.patch lines 560-572) also leaves it out.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1181751
+}

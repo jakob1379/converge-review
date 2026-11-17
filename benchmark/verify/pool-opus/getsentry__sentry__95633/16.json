@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch does add `pytestmark = [requires_kafka]` as a mutable class attribute (tests/sentry/uptime/consumers/test_results_consumer.py, class ProcessResultThreadQueueParallelKafkaTest), but this repo doesn't run ruff. Linting is flake8 only (setup.cfg:86, .pre-commit-config.yaml:45), pyproject.toml has no ruff config, and RUF012 isn't a default ruff rule anyway, so nothing triggers it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0730382
+}

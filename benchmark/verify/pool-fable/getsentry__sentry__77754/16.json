@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The guard at src/sentry/integrations/mixins/issues.py:390 returns False whenever `sync_source.integration_id` equals the installation's integration ID, and src/sentry/integrations/utils/sync.py:135-145 passes that same source to every external issue linked to the group. A sibling external issue on the same integration is therefore skipped at src/sentry/integrations/tasks/sync_assignee_outbound.py:56, where before the patch it was synced; src/sentry/models/grouplink.py:82 allows several such links per group.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.32973739999999996
+}

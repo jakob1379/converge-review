@@ -1,0 +1,159 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The serializer method `include_website_name` lacks the trailing `?` that ActiveModel::Serializer requires for `include_<attr>?` predicates. As a result it is never called and `website_name` is always serialized, as null when there is no website.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "UserSerializer's `website_name` does not honor `Guardian#restrict_user_fields?` and is not in `untrusted_attributes`, unlike `website`. This exposes the website host/path of TL0 users to anonymous viewers.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The sibling-subdomain branch of `website_name` treats any hosts with the same label count (>2) and equal labels after the first as the same site, even across public suffixes. For example, `evil.co.uk` matches `forum.co.uk` and `a.github.io` matches `forum.github.io`, so the full path is shown for unrelated sites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Tests are missing for the sibling-subdomain branch, nil/blank website, the unparseable-URI rescue path, the www-vs-apex case, and the TL0/anonymous restriction on `website_name`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No spec covers a nil or blank website, including checking that `website_name` is absent or nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No spec covers the sibling-subdomain branch (e.g. `www.example.com` vs `forum.example.com`).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The host comparison in `website_name` is case-sensitive because URI#host preserves case and nothing downcases it. So `http://Example.com/u` does not match instance `example.com`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "For a same-domain URL with path `/`, `website_name` renders `example.com/`. The port is also silently dropped, so `example.com:8080/u` shows as `example.com/u`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Same-domain matching in `website_name` is asymmetric. With website `http://www.example.com/u` on instance `example.com`, the check runs in the wrong direction (`'example.com'.ends_with?('.www.example.com')`) and shows only the host without the path, while the reverse case shows the path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The client-side computed websiteName that tracked `model.website` was replaced by a server-computed `model.website_name` that is set once. After a user edits their website in preferences, the profile shows a stale or missing website name until a full page reload.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": "controllers/preferences.js.es6",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The preferences controller's `.then` refreshes only `name` and `bio_cooked` after saving, not `website_name`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": "models/user.js.es6",
+   "line": null,
+   "severity": "Minor",
+   "claim": "`User#save` copies back only `bio_excerpt` from the PUT response and ignores `website_name`, even though `users_controller#update` returns the full UserSerializer.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The profile template gates rendering on `model.website_name` but uses `model.website` for the href/title. When `website` is omitted, it can render text with an empty or broken link.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`website_name` parses `URI(website)` three times and calls `discourse_host.split('.')` four times, using nested ternaries.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

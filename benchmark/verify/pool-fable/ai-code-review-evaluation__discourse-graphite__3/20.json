@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`:do_nothing` is defined at app/models/blocked_email.rb:8 and its only other reference in the repo is the spec at spec/models/blocked_email_spec.rb:41-42; the sole non-spec consumer of BlockedEmail is lib/validators/email_validator.rb:13, which only reads via `should_block?`. No controller, admin UI, site setting or other caller creates a BlockedEmail row with any action type (the spec comment at blocked_email_spec.rb:13 implies manual table loading).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.23850090000000002
+}

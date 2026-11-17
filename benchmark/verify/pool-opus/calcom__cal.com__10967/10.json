@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "EventManager.ts:339-370 loops over each destination but passes the whole `event` to `createEvent(credential, event, destination.externalId)`. CalendarManager.ts:236 then calls `calendar.createEvent(calEvent, credential.id)` and only copies externalId into the returned result (line 267), never to the provider. Office365 (CalendarService.ts:73-77), Lark (lines 128-142) and CalDAV (lib/CalendarService.ts:156) all use `destinationCalendar[0]`, while only Google selects its calendar by credentialId.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1533411
+}

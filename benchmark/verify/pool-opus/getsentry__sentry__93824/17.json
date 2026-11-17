@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "flusher.py:152 now builds `SpansBuffer(shards)` for each process's subset of shards. buffer.py:382-384 then divides `spans.buffer.max-flush-segments` by that subset size instead of the full shard count, so every process flushes up to the whole budget each cycle and the total grows with the number of processes. The limit check at buffer.py:411 uses the same `max_segments_per_shard`, so the backpressure threshold scales with process count too.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1396581
+}

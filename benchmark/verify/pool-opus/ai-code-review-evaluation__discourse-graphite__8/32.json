@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Group.findMembers builds its URL as '/groups/' + this.get('name') + '/members.json' (discourse/models/group.js, patch line 261). That `name` is bound to the editable text-field (admin/templates/group.hbs, patch line 153), so next/previous and the reloads after addMembers/removeMember (which post to /admin/groups/<id>) request the unsaved name; one detail is wrong: the server raises InvalidAccess via ensure_can_see!(nil) (groups_controller.rb find_group, lib/guardian/ensure_magic.rb:19), so the request fails with 403, not 404, and if the new name matches another group it lists that group's members.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1938778
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:164-172 calls bundleEnglish.getString(key) and catches MissingResourceException to fall back to \"\", rather than checking containsKey(key) first. Behaviour is correct; this is only a style point in a build-time verifier.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1262287
+}

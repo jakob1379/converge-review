@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/calendar-cache/calendar-cache.repository.ts:173-182 groups by credentialId with only `credentialId: { in: credentialIds }` in the where clause and no expiresAt filter, whereas the read path at lines 112 and 127 requires `expiresAt >= now`. connectedCalendars.handler.ts:35 therefore sets cacheUpdatedAt from rows that are already expired, and CredentialActionsDropdown.tsx:69 shows the cache status for them.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2372003
+}

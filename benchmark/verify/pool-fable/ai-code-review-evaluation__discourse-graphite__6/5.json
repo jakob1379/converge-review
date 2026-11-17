@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only `website_name` specs (spec/serializers/user_serializer_spec.rb:77-89) use website `http://example.com/user` with hostnames `discourse.org`, `example.com` and `forums.example.com`; these hit the equality branch and the `else` branch only. The sibling-subdomain `elsif` at app/serializers/user_serializer.rb:143-145 needs both hosts to have the same number of labels and more than two, which no spec sets up.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1335626
+}

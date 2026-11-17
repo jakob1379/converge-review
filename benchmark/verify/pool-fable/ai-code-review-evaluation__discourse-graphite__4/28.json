@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/jobs/scheduled/poll_feed.rb:20-22 defines feed_key, but a repo-wide search finds no caller anywhere (only the definition), and it is the only user of Digest::SHA1 in that file, so the require 'digest/sha1' at line 4 is also unused there.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1055191
+}

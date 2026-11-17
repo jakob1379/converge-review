@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds upsampled_count in src/sentry/search/events/datasets/discover.py (~line 1041). It wraps sum(sample_weight) in toInt64 but sets default_result_type=\"number\", while the count() it replaces is declared with default_result_type=\"integer\" (discover.py:251-258). transform_query_columns_for_error_upsampling swaps count() for 'upsampled_count() as count' in organization_events_stats.py:233/277/296, so the 'count' field's metadata type changes from integer to number when upsampling is on.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0805224
+}

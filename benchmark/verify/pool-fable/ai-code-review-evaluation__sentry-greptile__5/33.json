@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:153-155 compares the nodestore error `timestamp` (epoch seconds, read at :115) directly against the top-level rrweb `event.get(\"timestamp\", 0)`, which is epoch milliseconds per the repo's own fixtures (src/sentry/replays/testutils.py:326,373,398 \"rrweb timestamps are in ms\"). Every error therefore compares as earlier and is flushed at the first ms-stamped event; the patch's tests miss it because they use seconds on both sides (tests/sentry/replays/test_project_replay_summarize_breadcrumbs.py:188,290-320).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.9176154
+}

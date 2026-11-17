@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "For an anonymous user `request.user.id` is `None` (no AttributeError), and the event declares `analytics.Attribute(\"user_id\", required=False)` at src/sentry/preprod/analytics.py:10. `get_data` only raises for required attributes that are None (src/sentry/analytics/utils.py:13-14) and `Attribute.extract` returns None for None (src/sentry/analytics/attribute.py:14), so the `analytics.record` call at src/sentry/preprod/api/endpoints/organization_preprod_artifact_assemble.py:81-86 does not raise.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6155219
+}

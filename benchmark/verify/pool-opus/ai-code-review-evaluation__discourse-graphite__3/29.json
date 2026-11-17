@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch leaves spec/models/user_spec.rb unchanged, but its existing 'email_validator' block (spec/models/user_spec.rb:488-565) still runs the refactored `validates :email, email: true, if: :email_changed?` through `User#valid?`. That block covers the blacklist, the whitelist, existing records and changed emails. The new blocked-email path is covered by the patch's spec/components/validators/email_validator_spec.rb:210-221.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.10315049999999998
+}

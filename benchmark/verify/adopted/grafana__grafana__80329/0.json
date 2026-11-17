@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds six unconditional r.log.Error calls inside the cleanup closures (xorm_store.go:534/537, 554/557, 576/579), so they fire on every batch, including healthy and empty ones. They log the full ids slice and cond, and the first call of each pair logs err only after the `if err != nil { return }` check, so that value is always nil.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0553279
+}

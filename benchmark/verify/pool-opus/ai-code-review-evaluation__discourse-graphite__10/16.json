@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After the patch, spec/fabricators/category_fabricator.rb:1-4 contains only `Fabricator(:embeddable_host)`, and spec/fabricators/embeddable_host_fabricator.rb:1-27 contains the `:category`, `:diff_category`, `:happy_category` and `:private_category` fabricators, so the two files' contents are swapped. Fabrication loads every file in spec/fabricators, so all the fabricators are still defined and tests behave the same; the problem is only the misleading file names.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0575998
+}

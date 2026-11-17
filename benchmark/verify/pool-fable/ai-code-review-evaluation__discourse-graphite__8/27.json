@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`create` at app/controllers/admin/groups_controller.rb:22-32 sets only `name` and `visible`, while `update` at line 37 does read `params[:alias_level]`; the client's `create()` posts `asJSON()`, which includes `alias_level` (app/assets/javascripts/discourse/models/group.js, per the patch), so the value is dropped on create. The pre-patch `create` also ignored it, but the patch rewrote the action and kept the omission.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3366753
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`Init` logs `\"error initializing resource server\"` at pkg/storage/unified/resource/server.go:314 and returns the error at :317; the patch-added call in `NewResourceServer` logs the identical message at :260 and returns the same error at :261, so one init failure produces two identical error log lines plus a returned error.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1697597
+}

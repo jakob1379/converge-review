@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "With org-auth-token auth, request.user is Django's AnonymousUser, whose `id` attribute is None, so `request.user.id` at src/sentry/preprod/api/endpoints/organization_preprod_artifact_assemble.py:85 returns None rather than raising. The event declares `analytics.Attribute(\"user_id\", required=False)` (src/sentry/preprod/analytics.py:11), so None is accepted.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.25699310000000003
+}

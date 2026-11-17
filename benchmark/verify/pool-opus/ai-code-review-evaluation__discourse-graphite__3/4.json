@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/blocked_email.rb:14-17, should_block? loads the record, runs `record.match_count += 1`, then `record.save`. Rails writes the value computed in memory (`SET match_count = N+1`), not an atomic increment like `update_counters` or `increment_counter`, so two concurrent signups that read the same N each write N+1 and one increment is lost.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0468991
+}

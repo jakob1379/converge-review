@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The call this patch adds, registerIDPLoginInvalidation(storedIdp) at InfinispanIdentityProviderStorageProvider.java:111, is safe with null because getLoginPredicate() first checks Objects::nonNull (IdentityProviderStorageProvider.java:253), and in the normal path a missing alias leaves `cached` null, so remove returns false. The only possible NPE is registerIDPInvalidation(storedIdp) at line 103, which runs only when the alias key was already invalidated earlier in the same session, and the code before the patch had the same unchecked call to idpDelegate.getByAlias(alias).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.11446089999999999
+}

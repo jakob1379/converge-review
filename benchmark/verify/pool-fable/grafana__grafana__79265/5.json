@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only limit test is `TestIntegrationBeyondDeviceLimit` (pkg/services/anonymous/anonimpl/anonstore/database_test.go:51-70), which uses limit 1 and asserts only that a new device is rejected; it never re-submits the existing device to exercise the successful `updateDevice` path. Both service tests in pkg/services/anonymous/anonimpl/impl_test.go:117 and :152 pass `setting.NewCfg()`, so `AnonymousDeviceLimit` is 0 and the limit branch is never reached through `TagDevice` or the local cache.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2526698
+}

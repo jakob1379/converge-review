@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/remote_subscriptions/consumers/queue_consumer.py:135-143 the inner try wraps only `sentry_sdk.start_transaction` and `self.result_processor(...)`; the only `work_queue.get()` is in the separate try at lines 130-133. The sole production processor, `ResultProcessor.__call__` (result_consumer.py:44-54), never touches a `queue.Queue` and swallows all `Exception`s anyway, so `except queue.ShutDown` at line 142 is dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3043311
+}

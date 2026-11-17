@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only tests that call sync_group_assignee_inbound for real (tests/sentry/models/test_groupassignee.py:289-388) each set up one integration and never check outbound syncing, and the new test (test_groupassignee.py:180) calls GroupAssignee.objects.assign directly with one integration. The webhook tests (jira/test_webhooks.py:44, jira_server/test_webhooks.py:68, vsts/test_webhooks.py:103) replace sync_group_assignee_inbound with a mock.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14604330000000001
+}

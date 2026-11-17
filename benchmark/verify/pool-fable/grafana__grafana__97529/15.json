@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/storage/unified/resource/search.go:190-191 each errgroup goroutine does `_, _, err = s.build(...)` then `return err` on the outer `err` declared at line 181, with no synchronization, so a concurrent worker's nil can overwrite another's error before it is returned and `group.Wait()` (line 195) never sees it. The patch does narrow `cacheMu` in pkg/storage/unified/search/bleve.go:137-139 so builds run in parallel, but the racy assignment is in lines the patch did not change and was already outside that lock.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.27374
+}

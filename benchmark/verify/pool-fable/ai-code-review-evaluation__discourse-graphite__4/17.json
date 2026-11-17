@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/topic_embed.rb:48 calls `open(url).read` with no timeout options or `Timeout` wrapper, on a URL that reaches it from the embed path (lib/topic_retriever.rb:52). Only Net::HTTP's default per-read timeout applies, so there is no bound on total time and a slow-dripping host can stall the worker; \"indefinitely\" is slightly overstated for a fully silent host.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1375419
+}

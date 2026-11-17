@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AuthorizationTokenService.java:350-358 builds a fresh ClientSessionContext and calls generateAccessToken() without setting Constants.GRANT_TYPE, and PermissionGrantType.process never goes through OAuth2GrantTypeBase.createTokenResponse (line 109), the only generic place that sets it. TokenManager.initToken (1052-1054) therefore hits the null fallback to UNKNOWN=\"na\" in DefaultTokenContextEncoderProvider.java:57-60, so the RPT id carries 'na' instead of the 'pg' shortcut declared in PermissionGrantTypeFactory.java:40.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.565384
+}

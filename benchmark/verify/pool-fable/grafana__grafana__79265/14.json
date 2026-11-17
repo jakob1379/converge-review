@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/anonymous/anonimpl/anonstore/database_test.go:51-70 adds TestIntegrationBeyondDeviceLimit, which goes straight to db.InitTestDB(t) at line 52 with no `if testing.Short() { t.Skip(...) }` guard. The neighbouring TestIntegration* tests in the same file (lines 14 and 72) also lack the guard, so the new test follows the existing local pattern.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1183099
+}

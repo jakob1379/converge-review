@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`OptimizedCursorPaginator.get_item_key` (src/sentry/api/paginator.py:838-840) calls `math.floor`/`math.ceil` directly on `getattr(item, self.key)`, which is a `datetime` because the endpoint orders by `-datetime` (src/sentry/api/endpoints/organization_auditlogs.py:76-83; `DateTimeField` at src/sentry/models/auditlogentry.py:69). `build_cursor` calls the key on any non-empty result set (src/sentry/utils/cursors.py:122,137,197) and `paginate` only catches `BadPaginationError` (src/sentry/api/base.py:540), so the `TypeError` becomes a 500 for superusers/global-access members using `?optimized_pagination=true`.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5020257
+}

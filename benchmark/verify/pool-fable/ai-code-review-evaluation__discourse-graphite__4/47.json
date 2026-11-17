@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The feed code never parses a timestamp: app/jobs/scheduled/poll_feed.rb:31-36 passes only url, title and content to TopicEmbed.import. The only Date.parse the patch touches is a line it removes from lib/tasks/disqus.thor; the one that remains (lib/tasks/disqus.thor:164) is untouched code that parses Disqus comment dates, not feed items.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1634136
+}

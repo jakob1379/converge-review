@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/workflows.tsx:9 imports `Prisma` from \"@prisma/client\", but the only other `Prisma*` reference in the file is `PrismaPromise` at line 342; the patch removed the sole `Prisma.BatchPayload` usage while re-adding the import, and packages/config/eslint-preset.js:22 sets `unused-imports/no-unused-imports` to error.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1125496
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds wait_until_empty at src/sentry/remote_subscriptions/consumers/queue_consumer.py:222 (patch line 250), and a repo-wide search finds no caller anywhere else, so it is dead code. The claim is slightly off on one point: the new tests in tests/sentry/remote_subscriptions/consumers/test_queue_consumer.py don't call it either.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.042017799999999994
+}

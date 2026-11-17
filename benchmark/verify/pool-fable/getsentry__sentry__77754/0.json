@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/services/assignment_source.py:18 declares `queued: datetime = timezone.now()` as a plain dataclass default, so it is evaluated once at import; `from_integration` (lines 22-25) never passes `queued`, so every instance gets the process-import timestamp. Nothing in src/sentry currently reads `.queued`, so the stale value is only serialised via `to_dict`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10220169999999999
+}

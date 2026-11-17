@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:29 returns the whole safeParse result ({success, data}), and packages/app-store/googlecalendar/lib/CalendarService.ts:97-100 writes it straight to credential.key (previously googleCredentialSchema.parse(...) gave the plain object). On the next construction, googleCredentialSchema.parse(credential.key) at CalendarService.ts:75 throws because scope, token_type, expiry_date, access_token and refresh_token are missing at the top level.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.23762499999999998
+}

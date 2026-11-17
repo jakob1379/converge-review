@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/office365calendar/lib/CalendarService.ts:94 declares `updateEvent(uid, event)` and :111 declares `deleteEvent(uid)`, and both always call `/me/calendar/events/${uid}` (:96, :113), while the interface at packages/types/Calendar.d.ts:223-229 passes `externalCalendarId`. It is not a type error since TypeScript allows fewer parameters, and whether Graph actually fails for events in a non-default calendar cannot be settled from source.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2061374
+}

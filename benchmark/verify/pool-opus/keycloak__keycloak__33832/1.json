@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the 'Multiple crypto providers loaded' IllegalStateException from CryptoIntegration.detectProvider (common/.../CryptoIntegration.java:55-73). It now sorts the providers by order() from highest to lowest and returns the first one, logging the rest only at debug level. DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider all return 200, so the stable sort leaves a tie in ServiceLoader/classpath order. The Quarkus server is not affected because it calls CryptoIntegration.setProvider explicitly (KeycloakRecorder.java:214), but any caller of init() is.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1738889
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/components/topic_retriever_spec.rb:11-40 sets expectations on `perform_retrieve` and `retrieved_recently?`, both private in lib/topic_retriever.rb:21,35, so the `$redis.setnx`/`expire` throttle and the `no_throttle` branch are never run by any spec. spec/controllers/embed_controller_spec.rb:43 mocks `TopicRetriever.new`, but app/controllers/embed_controller.rb:15 only calls `Jobs.enqueue(:retrieve_topic, ...)`; the mock is reached only if the job runs inline (app/jobs/base.rb:168-172).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3735505
+}

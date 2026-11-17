@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/embeddable_host.rb:6 calls `self.host.sub!` with no nil check, so a nil host raises NoMethodError before validation can run. app/controllers/admin/embeddable_hosts_controller.rb:23 passes `params[:embeddable_host][:host]` through as-is, so a request without a host sends nil to the model, and a request without `params[:embeddable_host]` fails earlier on `nil[:host]`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.065549
+}

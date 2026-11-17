@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/javascripts/admin/controllers/admin-group.js.es6:61-65, the addMembers action calls model.addMembers(usernames) but never resets `usernames`, and a `// TODO: should clear the input` comment admits it. model.addMembers in discourse/models/group.js only reloads the member list, so the user-selector bound to `usernames` (group.hbs) still shows the names after the add.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1528285
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `embed.permalink` at config/locales/server.en.yml:37, but no code references it: the only `embed.*` lookups are title, start_discussion and continue (app/views/embed/best.html.erb:3,5,25), loading (app/views/embed/loading.html.erb:2) and imported_from (app/models/topic_embed.rb:13), and there are no dynamic or scoped `embed` lookups.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11392729999999998
+}

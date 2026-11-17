@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Cached grants were already trusted for the 30s shortCacheTTL before this patch: getUserPermissions returned permCache hits directly (removed lines at service.go ~377 in the patch). The new Check (service.go:114-127) only adds a DB re-query when the cached map does not grant access, which makes denials fresher and does not make grants staler, so the asymmetry the claim describes does not cause stale grants to give access.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.127893
+}

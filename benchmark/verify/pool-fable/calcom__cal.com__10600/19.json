@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The `errorMessages` map at apps/web/pages/auth/login.tsx:73-80 has no entries for `IncorrectBackupCode` or `MissingBackupCodes`, so without the new branches at login.tsx:157-158 the fallback at line 160 would show the generic `something_went_wrong` instead of the specific backup-code messages. The branches add behaviour rather than duplicate it; DisableTwoFactorModal.tsx:73-76 has no `errorMessages` map at all.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.16983199999999998
+}

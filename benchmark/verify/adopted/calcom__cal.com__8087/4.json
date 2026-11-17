@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/CalendarManager.ts:28 calls the now-async getCalendar without await, so each item's `calendar` is a Promise<Calendar | null>. The only reader, getConnectedCalendars (CalendarManager.ts:48), awaits it, and the external callers (viewer.tsx:340/415, availability/calendar.ts:83) only pass the items to getConnectedCalendars, so this is a latent type change rather than a current bug.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1480093
+}

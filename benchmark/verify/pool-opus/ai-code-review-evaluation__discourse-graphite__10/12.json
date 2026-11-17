@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Admin::EmbeddingController#update (app/controllers/admin/embedding_controller.rb:9-11) does the same thing as show: it re-serializes @embedding, which fetch_embedding builds, and saves nothing. The only caller is the saveChanges action (admin-embedding.js.es6), which sends update({}) with an empty body, and no template uses it: embedding.hbs only binds addHost and deleteHost. Hosts are saved separately through the embeddable-host component, so the PUT customize/embedding route is effectively dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0702614
+}

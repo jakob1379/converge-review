@@ -1,0 +1,253 @@
+{
+  "findings": [
+    {
+      "path": "pkg/tests/apis/playlist/playlist_test.go",
+      "line": 132,
+      "severity": "Important",
+      "claim": "Mode 3 is unreachable: SetDualWritingMode only handles 1<->2 transitions and falls back to Mode1 for a desired Mode3, so the new 'mode 3' playlist integration subtests (lines 132, 191, 287) actually exercise mode 1 and production config '=3' also yields mode 1.",
+      "evidence": "pkg/apiserver/rest/dualwriter.go:151-222 defaults unset mode to Mode1 and hits '#TODO add support for other combinations' for Mode3. Proposed red test: add {desiredMode: Mode3, expectedMode: Mode3} to TestSetDualWritingMode (pkg/apiserver/rest/dualwriter_test.go:26); it returns Mode1. Reasoned, not run.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Correctness seat, concrete failing test named; the new integration tests give false coverage until mode 3 is reachable."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 51,
+      "severity": "Important",
+      "claim": "Background legacy writes (Create/Update/Delete/DeleteCollection goroutines at lines 51, 110, 135, 163) derive their context from the request ctx via context.WithTimeoutCause(ctx, 10s, ...), so they can be cancelled when the handler returns and legacy silently drifts from unified storage.",
+      "evidence": "net/http and the apiserver timeout filter cancel the request context when the handler returns; the handler returns immediately after `go func()`. Playlist legacy SQL writes use that ctx. Same pattern exists in dualwriter_mode1.go:54. Fix direction: context.WithoutCancel(ctx) (go 1.22.4). Reasoned; apiserver source not in module cache.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Raised Important by both correctness seats; previously synchronous writes are now racy against cancellation, breaking rollback to Mode1/2."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 50,
+      "severity": "Important",
+      "claim": "Legacy write failures are no longer logged; the goroutines only record an is_error histogram label, so legacy divergence is invisible.",
+      "evidence": "Old code logged 'unable to create object in legacy storage' / 'could not delete from legacy store'; new goroutines at 50-57, 108-114, 134-141, 161-167 drop err after recording duration.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Correctness-seat Important; combined with the cancellation issue, divergence has no diagnosable trace."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 139,
+      "severity": "Important",
+      "claim": "Update now passes the caller's raw objInfo to Legacy.Update in a goroutine, so legacy re-applies UpdatedObject against its own old object (re-running patch/admission after the request ended) and can store a different object than unified storage; the updateWrapper that pinned the stored object was removed.",
+      "evidence": "pkg/registry/apis/playlist/legacy_storage.go:147 calls objInfo.UpdatedObject(ctx, legacyOld). For PATCH/SSA the objInfo is the apiserver patcher with mutable state. Proposed test: UpdatedObjectInfo whose output depends on oldObj; compare legacy mock input to storage result. Reasoned; not run with -race.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Both correctness seats rate Important; regression vs prior updateWrapper design."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 100,
+      "severity": "Important",
+      "claim": "Delete returns early on any storage error including NotFound, so objects that exist only in legacy can no longer be deleted and reappear after rollback to mode 1/2; previously NotFound from storage was tolerated and legacy delete still ran.",
+      "evidence": "Old code ignored apierrors.IsNotFound and still deleted from legacy; dualwriter_mode2.go Delete still tolerates NotFound. Proposed red test: storage mock returns NewNotFound, legacy mock expects Delete; AssertCalled fails. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "OCR Important with a concrete test; superpowers concurs (Minor). Normalised to Important; no evidence that full sync is enforced before mode 3."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 45,
+      "severity": "Important",
+      "claim": "Duration metrics are recorded against the wrong store: Create (45) and Update (129) record a storage failure with recordLegacyDuration, and the DeleteCollection legacy goroutine (166) records with recordStorageDuration.",
+      "evidence": "Copy-paste drift across duplicated record*Duration calls. Proposed red test: prometheus.NewRegistry(), NewDualWriter(Mode3,...), storage Create returns error, testutil.CollectAndCount on dual_writer_legacy_duration_seconds expects 0 but gets 1. Reasoned.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Four seats; corrupts the mode-3 rollout signal this PR emits. Severity normalised to Important (two seats Important, one Minor)."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 106,
+      "severity": "Important",
+      "claim": "Delete passes the object name instead of options.Kind as the 'kind' label to recordStorageDuration, creating an unbounded number of histogram series (high cardinality).",
+      "evidence": "metrics.go labels are {is_error, mode, kind, method}; contribute/backend/instrumentation.md requires a pre-defined set of label values. Same bug copied from dualwriter_mode1.go:155. Proposed test: dw.Delete(ctx, \"foo\", ...) then CollectAndCount shows a series with kind=\"foo\". Reasoned.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Raised by all four seats; documented-standard breach with production cardinality risk."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3_test.go",
+      "line": null,
+      "severity": "Important",
+      "claim": "Mode-3 unit tests cannot verify mode-3 behaviour: legacyStoreMock and storageMock share one mock.Mock, so 'legacy' expectations are satisfied by storage calls (the 'unified store fails' Create case only works via setupLegacyFn), and no test asserts reads skip legacy, that legacy is written, or waits for the goroutine.",
+      "evidence": "dualwriter_mode3_test.go lines 28-44, 297-325: no AssertExpectations/AssertNotCalled; mode 1 tests use AssertNotCalled. Goroutines call the mock after subtests end.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Superpowers rates Important; this gap is why all of the async/metric bugs above pass CI."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3_test.go",
+      "line": null,
+      "severity": "Minor",
+      "claim": "Success-case setupLegacyFn blocks in Create and Update tests are duplicate/no-op expectations on the shared mock, and the Create error-case expectation is mislabelled as legacy.",
+      "evidence": "Update legacy m.On(\"Update\",...) is byte-identical to the storage one; Create storage setup already matches mock.Anything.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Advisory; resolved together with the shared-mock finding."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 97,
+      "severity": "Minor",
+      "claim": "Delete stores d.Log instead of the enriched log in the context via klog.NewContext(ctx, d.Log), dropping name/kind/method fields for downstream loggers.",
+      "evidence": "Every other method uses the local log with values attached; copied from mode 1.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Four seats; one-token fix."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 42,
+      "severity": "Minor",
+      "claim": "Create sends the caller's input obj (not created, not deep-copied) to the legacy goroutine, sharing it with the request path; mode 1 deep-copies first.",
+      "evidence": "Legacy uses p.Name as UID and only sees generated names because BeforeCreate mutates obj in place; potential data race on obj.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Correctness seat; small change consistent with mode 1's createdCopy."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 59,
+      "severity": "Minor",
+      "claim": "`return created, err` always returns a nil err at that point.",
+      "evidence": "err was checked and returned earlier in the function.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Trivial clarity fix; return nil."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3_test.go",
+      "line": 119,
+      "severity": "Minor",
+      "claim": "TestMode3_Get creates a local prometheus registry shadowing the package-level p, the same line the patch removes from dualwriter_mode1_test.go; it is the only use of the prometheus import.",
+      "evidence": "Other five mode-3 tests use package-level p from dualwriter_mode1_test.go:27.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Advisory; inconsistent within the same patch, -2 lines."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3_test.go",
+      "line": 72,
+      "severity": "Minor",
+      "claim": "assert.NoError after meta.Accessor followed by acc.GetResourceVersion() will nil-panic if the accessor fails; style guide requires require.* for error checks.",
+      "evidence": "contribute/backend/style-guide.md 'Assertions'.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented standard; trivial."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode1_test.go",
+      "line": 138,
+      "severity": "Minor",
+      "claim": "Removing the local registry in favour of the package-level global p moves tests toward global state, against style-guide 'avoid using global variables'.",
+      "evidence": "contribute/backend/style-guide.md 'Globals'.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "reject",
+      "reason": "The package-level p (dualwriter_mode1_test.go:27) pre-exists and is already used by the other tests; removing the shadowing local is consistent, and superpowers rates it harmless."
+    },
+    {
+      "path": "pkg/apiserver/rest/dualwriter_mode3.go",
+      "line": 44,
+      "severity": "Minor",
+      "claim": "Log messages start lowercase, contrary to instrumentation.md 'Start the log message with a capital letter'.",
+      "evidence": "Lines 44, 69, 85, 101, 128, 155.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "reject",
+      "reason": "Guide targets pkg/infra/log; this package uses klog and modes 1/2 use the same lowercase convention (seat itself would not block)."
+    },
+    {
+      "path": "go.work.sum",
+      "line": 405,
+      "severity": "Minor",
+      "claim": "Added github.com/grafana/grafana/pkg/apimachinery .../go.mod line duplicates the line above; go.work.sum churn is unrelated to the change.",
+      "evidence": "Check: sort go.work.sum | uniq -d. Not verified.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: generated file; regenerate with go work sync rather than hand-editing; unverified and non-blocking."
+    },
+    {
+      "path": "pkg/tests/apis/playlist/playlist_test.go",
+      "line": 287,
+      "severity": "Minor",
+      "claim": "The etcd mode-3 subtest starts with t.Skip(\"local etcd testing\") and never runs in CI.",
+      "evidence": "Copied from existing etcd mode 0/1/2 blocks.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Matches existing house convention for modes 0-2; seat proposes no change."
+    },
+    {
+      "path": "",
+      "line": null,
+      "severity": "Minor",
+      "claim": "Commit subjects lack the '<Area>: ' prefix required by contribute/create-pull-request.md.",
+      "evidence": "e.g. '[REVIEW] FInish mode 3 and add tests'.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "reject",
+      "reason": "Grafana squash-merges; only the PR title is governed, and commit messages are not part of the reviewed patch."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode): nothing installed, compiled, linted or tested; all findings are reasoned from source, none reproduced. go.work.sum skipped by ponytail, mattpocock and open-code-review seats (generated checksums); superpowers only checked it for duplicate lines, checksums not verified. open-code-review treated *_test.go as context only. No spec, so spec-compliance axis did not run. k8s.io/apiserver source not in module cache, so request-context cancellation and patcher behaviour claims are unverified; no -race run. Single model family across all seats; no cross-family reviewer available."
+}

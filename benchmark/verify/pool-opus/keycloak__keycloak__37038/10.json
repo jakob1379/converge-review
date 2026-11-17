@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "V1 GroupPermissions.canView(group) (GroupPermissions.java:254-257) calls canView()/canManage() first. V2 GroupPermissionsV2.canView(group) calls hasPermission(group.getId(), VIEW, MANAGE), and when the group has no resource of its own, hasPermission falls back to the 'Groups' resource-type resource and evaluates the all-groups permissions (GroupPermissionsV2.java hasPermission, patch lines ~668-679), so admins with only global Groups VIEW/MANAGE still see the groups and listings are not empty.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.229802
+}

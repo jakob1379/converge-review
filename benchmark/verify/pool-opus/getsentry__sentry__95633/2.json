@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched code, OrderedQueueWorker.run (patch lines 172-177) catches the processor exception and then calls complete_offset in `finally`, so the failed offset still becomes committable. That contradicts the 'Only commits offsets after successful processing' docstring (patch line 282). The test's assertion (patch line 1202) runs after about 0.2s of sleep, before _commit_loop's first 1s tick (line 304), so it passes only because of timing.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.09089670000000001
+}

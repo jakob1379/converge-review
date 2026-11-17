@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/workflow_engine/processors/detector.py:226-228 declares `StatefulDetectorHandler.evaluate` as returning `dict[DetectorGroupKey, DetectorEvaluationResult]` (and builds `results = {}` at line 237), while the docstring at line 230 still says it \"returns a list of `DetectorEvaluationResult`\". The patch changed the signature from `list[DetectorEvaluationResult]` and left the docstring untouched.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1620057
+}

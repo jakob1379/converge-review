@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:25-27 sets `refresh_token = \"refresh_token\"` whenever it is missing. office365calendar/lib/CalendarService.ts:263-264 spreads the parsed data over the stored credentials and saves them, and its schema has `refresh_token` as optional (line 56). zoomvideo/lib/VideoApiAdapter.ts:120 saves `key.refresh_token = newTokens.refresh_token`, which in sync mode goes through the minimal schema with no `refresh_token`, so the placeholder replaces the real token.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2559039
+}

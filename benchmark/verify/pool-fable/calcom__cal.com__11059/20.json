@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:62-80 picks a credential with `findFirst({ where: { userId, appId } })` (no orderBy) and updates only that row, while `model Credential` in packages/prisma/schema.prisma:127-146 has only `@@index([userId])` and `@@index([appId])`, no unique on the pair. Duplicates are reachable: packages/app-store/googlecalendar/api/callback.ts:44-51 unconditionally creates a new google-calendar credential on every connect.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4901091999999999
+}

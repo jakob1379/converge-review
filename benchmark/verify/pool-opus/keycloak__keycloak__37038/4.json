@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "getOrCreateResource creates per-group resources with resourceStore.create(resourceServer, name, owner) and only calls updateScopes, never setType (AdminPermissionsSchema.java:120-127); JPAResourceStore.create:62-77 sets no type either. Only init() sets a type, and only on the all-groups 'Groups' resource (AdminPermissionsSchema.java:274), so GroupPermissionsV2.getGroupIdsWithViewPermission's findByType(server, GROUPS_RESOURCE_TYPE, ...) (patch line 648) returns only that resource and skips per-group VIEW_MEMBERS/MANAGE_MEMBERS grants.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.38811979999999996
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:9-11, `execute(...)[0]['id']` runs with no row-count check. When no embed_category row matches, pg 0.18.1's PG::Result#[] (Gemfile.lock:220) raises IndexError, so the migration crashes before the category_id == 0 fallback can run; lines 18-19 of the same file do guard with cmd_tuples. One part of the claim is overstated: on a fresh migrate, line 15 probably succeeds, because db/migrate/20131022045114_add_uncategorized_category.rb:17-18 inserts an uncategorized_category_id row.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0923698
+}

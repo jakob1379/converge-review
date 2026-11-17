@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Ember's EachView.createChildView (vendor/assets/javascripts/development/ember.js:8217-8224) writes the `member` alias into each item view's own keywords (`view._keywords[keyword] = content`). So group_member.hbs:1 can resolve `member` inside the `{{each member in members itemView=\"group-member\"}}` rows created at group.hbs:170, and the rows and the removeMember action get the actual user.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0.173724
+}

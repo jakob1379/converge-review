@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Every submitted offset goes into all_offsets in add_offset (patch lines 84-88, 239, 330, 348), and mark_committed only drops offsets <= the committed one (line 133), so an unfinished offset stays in all_offsets and the outstanding check at line 118 stops the scan there on every commit cycle. Using min_offset at line 114 only skips offsets that were never submitted, such as Kafka offset gaps, and test_simple_tracking (lines 536-543) shows 101 still blocks 102 after 100 is committed.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.13044440000000002
+}

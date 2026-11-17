@@ -1,0 +1,71 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "addGuests.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In addGuests.handler.ts, the team permission check uses `isTeamAdmin(...) && isTeamOwner(...)` where `||` is intended. This reduces it to an owner-only check, so team ADMINs who are not the organizer or an attendee get FORBIDDEN even though the variable is named isTeamAdminOrOwner.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": "addGuests.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The BLACKLISTED_GUEST_EMAILS check lowercases the blacklist but compares it against the raw guest email, with no toLowerCase or extractBaseEmail normalization. Blacklisted addresses therefore pass when submitted with different casing or a plus-alias.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "sendAddGuestsEmails does not respect the hideCalendarNotes setting, so hidden notes can be sent to attendees.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In onError, the toast message is the template string `${code}: ${t(msg)}`, which is never falsy. The unable_to_add_guests fallback is therefore never used, and users see raw 'CODE: key' strings.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new action updates by bookingId only, without seat-level scoping, so on seats events guests are added to the shared booking instead of the current seat.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The MultiEmail component reassigns its function parameter `value`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

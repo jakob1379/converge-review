@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/remote_subscriptions/consumers/queue_consumer.py:335-338 `close()` sets the event and does `self.commit_thread.join(timeout=5.0)` without checking the thread actually stopped, and `terminate()` (340-342) does not join at all, so a daemon commit thread still inside `_commit_loop` (273-289, e.g. blocked in `commit_function`) can commit after the revoke returns. The window is narrow because the loop exits after at most one more pass; nothing in the strategy filters offsets by currently owned partitions.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5761912
+}

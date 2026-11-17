@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes the only call, the `experiment.run(content, _handle_regex_match)` else-branch (change.patch:156-159). That leaves the nested `_handle_regex_match` in parametrize_w_experiments (src/sentry/grouping/parameterization.py:335-343) defined but never used. Only `_incr_counter` is passed at line 349.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06780960000000001
+}

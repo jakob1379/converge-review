@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new file services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java, the private getEvaluationContext (line 262) is never called, logger (line 51) is never referenced, and the TOKEN_EXCHANGE (line 46) and Scope (line 27) imports are unused. ClientModelIdentity, DefaultEvaluationContext and EvaluationContext (lines 22, 23, 29) are referenced only inside that dead method, and canExchangeTo (line 148) just throws UnsupportedOperationException.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.23780859999999998
+}

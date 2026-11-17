@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/AssertEvents.java:483 calls items[0].substring(3, 5) with no length check after only verifying items.length == 2 (line 481), so a token ID whose part before ':' is shorter than 5 characters throws StringIndexOutOfBoundsException instead of returning false.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1702978
+}

@@ -1,0 +1,418 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/79265",
+ "cost_usd": 0.08919189999999999,
+ "items": [
+  {
+   "id": "c1",
+   "source": "converge-review-replay",
+   "text": "Stale Wire wiring: wire.go:374-375 registers anonstore.ProvideAnonDBStore but provider now requires extra int64 parameter that no Wire provider supplies. ProvideAnonymousDeviceService builds own store, making OSS registration dead. Injecting AnonStore elsewhere fails with 'no provider found for int64'."
+  },
+  {
+   "id": "c2",
+   "source": "golden",
+   "text": "The updateDevice function returns ErrDeviceLimitReached when rowsAffected == 0, but zero affected rows means the device doesn't exist or falls outside the time window, not that a limit was reached."
+  },
+  {
+   "id": "c3",
+   "source": "qodo-extended-v2",
+   "text": "Stale wire provider unresolvable dependency: ProvideAnonDBStore signature changed from (db.DB) to (db.DB, int64) and ProvideAnonymousDeviceService no longer receives AnonStore via injection, but pkg/server/wire.go still registers anonstore.ProvideAnonDBStore as a wire provider with no provider for the int64 parameter, causing wire code generation to fail"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review-replay",
+   "text": "Frontend type mismatch: server serializes int64 with 0 meaning unlimited, but grafana-data/src/types/config.ts:200 declares number | undefined, and grafana-runtime class field inferred as undefined, so value cannot be read as number."
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "New [auth.anonymous] device_limit config key is not added to conf/defaults.ini, conf/sample.ini, or docs/sources/administration/configuration.md, and the meaning of 0 (unlimited) is undocumented"
+  },
+  {
+   "id": "c6",
+   "source": "coderabbit",
+   "text": "Test for device limit doesn't verify that existing devices can still be updated when limit is reached"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "Limit coverage is store-only: no test for an already-known device refreshing at the limit, a device older than 30 days counting as new, or the service/cache path; impl_test.go only uses limit 0"
+  },
+  {
+   "id": "c8",
+   "source": "augment",
+   "text": "tagDeviceUI caches the device ID before calling CreateOrUpdateDevice, so returning ErrDeviceLimitReached can leave the cache entry set and let subsequent requests bypass the device limit until cache expiry. The cache should only be populated after a successful DB write or cleared on error."
+  },
+  {
+   "id": "c9",
+   "source": "coderabbit",
+   "text": "Missing CreatedAt field in test device struct may cause issues with DB constraints or default value handling"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "anonymousDeviceLimit is added to the public GrafanaConfig interface and frontend settings DTO but nothing in public/ or packages/ reads it; adding a required member to a published interface is also a potential breaking change for implementers"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "The device limit is exposed in frontend settings to all clients, including unauthenticated anonymous ones (minor licence/tier sizing disclosure)"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "args = append([]interface{}{query}, args...) mutates the captured slice inside the WithDbSession callback; on a SQLite 'database locked' retry the query is prepended twice and Exec fails"
+  },
+  {
+   "id": "c13",
+   "source": "augment",
+   "text": "Using RowsAffected()==0 to signal ErrDeviceLimitReached can misfire on MySQL where RowsAffected may be 0 when the row matches but values don't change (e.g., same updated_at after second-precision truncation), which could incorrectly deny existing devices at the limit."
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "CountDevices and the subsequent insert run in separate sessions without a transaction or lock, so concurrent new devices (or multiple HA instances with separate local caches) can all observe count < limit and push the stored count past the limit"
+  },
+  {
+   "id": "c15",
+   "source": "coderabbit",
+   "text": "Duplicate constant anonymousDeviceExpiration defined in both database.go and api/api.go risks drift if one is updated without the other"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "Device tagging moved from a background goroutine (2-minute timeout, panic recover) to a synchronous call on the auth path for every anonymous request on cache miss, adding DB write latency to requests, dropping panic recovery, and tying the write to the request context"
+  },
+  {
+   "id": "c17",
+   "source": "cubic-v2",
+   "text": "rowsAffected == 0 does not necessarily indicate the device limit was reached \u2014 the device may simply not exist in the DB, or its updated_at may be outside the BETWEEN window. Need to distinguish between 'device not found' and an actual limit-related condition"
+  },
+  {
+   "id": "c18",
+   "source": "qodo-extended-v2",
+   "text": "Non-atomic device limit: Device-limit enforcement uses CountDevices followed by a separate insert/update in different DB sessions, allowing concurrent requests to both observe count < deviceLimit and proceed to insert, temporarily exceeding the configured limit"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "New TestIntegrationBeyondDeviceLimit lacks the required testing.Short() skip guard"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "30-day device window defined in three places: anonymousDeviceExpiration in anonstore/database.go:16, anonymousDeviceExpiration in api/api.go:18, and thirtyDays in impl.go:25. If one drifts, enforced limit count, device listing, and usage stats will disagree."
+  },
+  {
+   "id": "c21",
+   "source": "coderabbit",
+   "text": "updateDevice returning ErrDeviceLimitReached when rowsAffected == 0 is semantically incorrect - zero rows affected could mean the device doesn't exist within the time window, not that the limit was reached"
+  },
+  {
+   "id": "c22",
+   "source": "coderabbit",
+   "text": "GrafanaBootConfig class property anonymousDeviceLimit lacks explicit type annotation, causing TypeScript to infer narrower type 'undefined' instead of 'number | undefined' required by GrafanaConfig interface"
+  },
+  {
+   "id": "c23",
+   "source": "golden",
+   "text": "Time window calculation inconsistency: Using device.UpdatedAt.UTC().Add(-anonymousDeviceExpiration) as the lower bound but device.UpdatedAt as the current time may not match the intended logic. Consider using time.Now().UTC() consistently."
+  },
+  {
+   "id": "c24",
+   "source": "coderabbit",
+   "text": "Potential time skew in limit check - CountDevices uses time.Now().UTC() while subsequent upsert operations use device.UpdatedAt, which may differ significantly"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review-replay",
+   "text": "New [auth.anonymous] device_limit config key not added to conf/defaults.ini, conf/sample.ini, or docs/sources/administration/configuration.md, and nothing documents that 0 means unlimited."
+  },
+  {
+   "id": "c26",
+   "source": "cubic-v2",
+   "text": "Add device_limit to the shipped [auth.anonymous] config files; otherwise the new setting cannot be overridden via GF_AUTH_ANONYMOUS_DEVICE_LIMIT and silently falls back to 0"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review-replay",
+   "text": "Device tagging now runs synchronously on anonymous auth path instead of previous goroutine with 2-minute timeout and panic recovery. Anonymous request latency now depends on database (upsert plus COUNT when limit set), panic guard removed, and cancelled request drops tag write."
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "Device limit only blocks the first request of a rejected device: tagDeviceUI writes the localCache entry before CreateOrUpdateDevice and never evicts it on ErrDeviceLimitReached, so subsequent requests hit the cache, TagDevice returns nil and Authenticate grants anonymous access for up to 29 minutes"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "wire.go still registers anonstore.ProvideAnonDBStore and binds AnonStore, but the provider now takes an unprovided int64 deviceLimit and no OSS consumer needs AnonStore any more (ProvideAnonymousDeviceService builds the store itself); wire generation likely fails or the binding is dead"
+  },
+  {
+   "id": "c30",
+   "source": "cubic-v2",
+   "text": "Propagating this error makes device-limit enforcement bypassable after the first rejected request because the device is cached before the store write runs"
+  },
+  {
+   "id": "c31",
+   "source": "golden",
+   "text": "Anonymous authentication now fails entirely if anonDeviceService.TagDevice returns ErrDeviceLimitReached. Previously, device tagging was asynchronous and non-blocking. This change prevents anonymous users from authenticating when the device limit is reached."
+  },
+  {
+   "id": "c32",
+   "source": "golden",
+   "text": "Race condition: Multiple concurrent requests could pass the device count check simultaneously and create devices beyond the limit. Consider using a database transaction or lock."
+  },
+  {
+   "id": "c33",
+   "source": "claude-code",
+   "text": "pkg/server/wire.go lines 374-375 still register anonstore.ProvideAnonDBStore and wire.Bind for AnonStore, but ProvideAnonDBStore now requires (db.DB, int64) which wire cannot inject, and ProvideAnonymousDeviceService no longer accepts anonstore.AnonStore. Both lines and the anonstore import in wire.go must be removed for wire generation to succeed."
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "anonymousDeviceLimit = undefined without a type annotation infers type undefined on GrafanaBootConfig, so the field cannot be read as a number; the backend always sends an int64"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "ErrDeviceLimitReached is a plain fmt.Errorf value rather than an errutil error, so it is logged at Warn on every rejected request and the client gets a generic 401 with no device-limit message or chosen status"
+  },
+  {
+   "id": "c36",
+   "source": "coderabbit",
+   "text": "Race condition between CountDevices check and device creation/update in CreateOrUpdateDevice allows concurrent requests to exceed the device limit"
+  },
+  {
+   "id": "c37",
+   "source": "claude-code",
+   "text": "tagDeviceUI() sets the local cache entry BEFORE the CreateOrUpdateDevice DB call. When the device limit is reached, the first request from a new device poisons the cache and fails auth, but the second request within 29 minutes hits the cache, returns nil (no error), and bypasses the device limit entirely. Fix by moving localCache.SetDefault after the successful DB write, or by clearing the cache entry when ErrDeviceLimitReached is returned."
+  },
+  {
+   "id": "c38",
+   "source": "converge-review-replay",
+   "text": "Device limit cache bypass: tagDeviceUI writes device to localCache before CreateOrUpdateDevice, and entry persists when store returns ErrDeviceLimitReached. For next 29 minutes, TagDevice returns nil from cache path and Authenticate grants anonymous identity to refused device."
+  },
+  {
+   "id": "c39",
+   "source": "qodo-extended-v2",
+   "text": "Device-limit cache bypass: tagDeviceUI caches the device ID before the failing DB write, so when device limit is reached, the first request is denied but subsequent requests from the same device within cache TTL skip CreateOrUpdateDevice entirely and bypass the limit"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "Doc comment says 'updated between the given times' but the function takes no times; the window is derived from device.UpdatedAt"
+  },
+  {
+   "id": "c41",
+   "source": "golden",
+   "text": "The `tagDeviceUI` function populates the local cache with the device ID before the `CreateOrUpdateDevice` call. If `ErrDeviceLimitReached` is returned, the cache entry remains set, allowing subsequent requests to bypass the device limit until the cache expires after 29 minutes."
+  },
+  {
+   "id": "c42",
+   "source": "converge-review",
+   "text": "Clients that omit X-Grafana-Device-Id (or send an unparsable IP) are never counted and still authenticate as anonymous, so the limit can be bypassed by dropping a client-controlled header"
+  },
+  {
+   "id": "c43",
+   "source": "converge-review",
+   "text": "The 30-day window is now defined three times (anonymousDeviceExpiration in anonstore and api, thirtyDays in impl.go); drift would make the enforced count, device list and usage stats disagree"
+  },
+  {
+   "id": "c44",
+   "source": "cubic-v2",
+   "text": "When the device limit is reached and a new (untracked) device tries to authenticate, updateDevice returns ErrDeviceLimitReached which propagates to client.go's Authenticate, returning nil and blocking anonymous access entirely. This means the device limit acts as a hard cap on anonymous authentication rather than just on device tracking"
+  },
+  {
+   "id": "c45",
+   "source": "cubic-v2",
+   "text": "The count-then-insert pattern has a TOCTOU race condition. Under concurrent load, multiple goroutines can read count < deviceLimit at the same moment and all proceed to insert, exceeding the limit"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "pkg/server/wire.go (lines 374-375) still registers anonstore.ProvideAnonDBStore and binds AnonStore. ProvideAnonDBStore now requires an int64 parameter that no Wire provider supplies, and ProvideAnonymousDeviceService builds its own store instead of receiving AnonStore, so wire generation fails or the binding is dead.",
+   "path": "pkg/server/wire.go",
+   "members": [
+    "c1",
+    "c3",
+    "c29",
+    "c33"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "updateDevice returns ErrDeviceLimitReached when rowsAffected == 0. Zero affected rows means the device does not exist or its updated_at falls outside the time window, not that the limit was reached.",
+   "path": null,
+   "members": [
+    "c2",
+    "c17",
+    "c21"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "Using RowsAffected()==0 to signal ErrDeviceLimitReached can misfire on MySQL. MySQL reports 0 rows affected when a row matches but its values are unchanged, for example the same updated_at after second-precision truncation, so existing devices at the limit can be denied.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The anonymousDeviceLimit field on the GrafanaBootConfig class is initialized to undefined without a type annotation, so TypeScript infers type undefined instead of number | undefined. The value cannot be read as a number even though the backend sends an int64.",
+   "path": "grafana-data/src/types/config.ts",
+   "members": [
+    "c4",
+    "c22",
+    "c34"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The new [auth.anonymous] device_limit config key is not added to conf/defaults.ini, conf/sample.ini, or docs/sources/administration/configuration.md. Nothing documents that 0 means unlimited.",
+   "path": "conf/defaults.ini",
+   "members": [
+    "c5",
+    "c25",
+    "c26"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The device limit tests do not verify that an already-known device can still be updated or refreshed when the limit is reached. They also do not cover other limit cases or the service/cache path, and impl_test.go only uses limit 0.",
+   "path": "impl_test.go",
+   "members": [
+    "c6",
+    "c7"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "tagDeviceUI writes the device ID to localCache before calling CreateOrUpdateDevice and does not evict it on ErrDeviceLimitReached. Later requests from a rejected device hit the cache, TagDevice returns nil, and the device bypasses the limit until the cache entry expires.",
+   "path": null,
+   "members": [
+    "c8",
+    "c28",
+    "c30",
+    "c37",
+    "c38",
+    "c39",
+    "c41"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The test device struct is missing the CreatedAt field.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "anonymousDeviceLimit is added to the public GrafanaConfig interface and the frontend settings DTO, but nothing in public/ or packages/ reads it. Adding a required member to a published interface also affects implementers.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The device limit is exposed in frontend settings to all clients, including unauthenticated anonymous ones.",
+   "path": null,
+   "members": [
+    "c11"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "args = append([]interface{}{query}, args...) mutates the captured slice inside the WithDbSession callback. On a SQLite 'database locked' retry, the query is prepended twice and Exec fails.",
+   "path": null,
+   "members": [
+    "c12"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "CountDevices and the subsequent insert/update in CreateOrUpdateDevice run in separate sessions without a transaction or lock. Concurrent requests or HA instances can all observe count < limit and insert devices beyond the limit.",
+   "path": null,
+   "members": [
+    "c14",
+    "c18",
+    "c32",
+    "c36",
+    "c45"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The 30-day device window is defined in three places: anonymousDeviceExpiration in anonstore/database.go and api/api.go, and thirtyDays in impl.go. If one drifts, the enforced count, device listing and usage stats will disagree.",
+   "path": "anonstore/database.go",
+   "members": [
+    "c15",
+    "c20",
+    "c43"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "Device tagging moved from a background goroutine with a 2-minute timeout and panic recovery to a synchronous call on the anonymous auth path. This adds DB write latency to requests, removes panic recovery, and ties the write to the request context.",
+   "path": null,
+   "members": [
+    "c16",
+    "c27"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The new TestIntegrationBeyondDeviceLimit lacks the testing.Short() skip guard.",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The device-limit time window is computed inconsistently. CountDevices uses time.Now().UTC(), while the upsert uses device.UpdatedAt and device.UpdatedAt.Add(-anonymousDeviceExpiration) as its bounds.",
+   "path": null,
+   "members": [
+    "c23",
+    "c24"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "When TagDevice returns ErrDeviceLimitReached, Authenticate in client.go fails, so anonymous authentication is blocked entirely rather than only device tracking being capped.",
+   "path": "client.go",
+   "members": [
+    "c31",
+    "c44"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "ErrDeviceLimitReached is a plain fmt.Errorf value rather than an errutil error. It is logged at Warn on every rejected request, and the client gets a generic 401 with no device-limit message.",
+   "path": null,
+   "members": [
+    "c35"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "The doc comment says 'updated between the given times', but the function takes no time arguments; the window is derived from device.UpdatedAt.",
+   "path": null,
+   "members": [
+    "c40"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "Clients that omit X-Grafana-Device-Id or send an unparsable IP are never counted but still authenticate as anonymous, so the limit can be bypassed by dropping the header.",
+   "path": null,
+   "members": [
+    "c42"
+   ]
+  }
+ ]
+}

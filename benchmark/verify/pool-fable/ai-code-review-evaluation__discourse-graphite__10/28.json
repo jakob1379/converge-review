@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20150818190757_create_embeddable_hosts.rb:22-25 splits the legacy setting value with `val.split(\"\\n\")` and interpolates each piece straight into the INSERT with no strip/chomp, so any trailing `\\r` or surrounding whitespace is stored in `embeddable_hosts.host`. Raw SQL also bypasses the model's `before_validation` normalisation (app/models/embeddable_host.rb:5-8), which does not strip whitespace anyway.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1375089
+}

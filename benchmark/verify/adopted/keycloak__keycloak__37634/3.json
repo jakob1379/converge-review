@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AbstractTokenExchangeProvider.exchangeClientToOIDCClient (:399-410) builds clientSessionCtx with TokenManager.attachAuthenticationSession and calls generateAccessToken without setting Constants.GRANT_TYPE, so DefaultTokenContextEncoderProvider:57 falls back to UNKNOWN ('na') when TokenManager:1053-1054 encodes the token ID. Only StandardTokenExchangeProvider:237 sets TOKEN_EXCHANGE_GRANT_TYPE.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1903124
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`FixedQueuePool.__init__` (src/sentry/remote_subscriptions/consumers/queue_consumer.py:175-184) stores `num_queues` with no validation, and `get_queue_for_group` at :202 does `hash(group_key) % self.num_queues`, which raises ZeroDivisionError for 0. The only production caller passes `max_workers or 20` (src/sentry/remote_subscriptions/consumers/result_consumer.py:136), so 0 cannot reach it from the CLI; only direct construction with 0 triggers it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4613985
+}

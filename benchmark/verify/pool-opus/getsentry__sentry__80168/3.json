@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/sentry/workflow_engine/processors/test_detector.py (patch lines 458-489), `build_mock_occurrence_and_event` never uses `value` and always sets `id=\"eb4b0acffadb4d098d48cb14165ab578\"`, and src/sentry/issues/issue_occurrence.py:181-184 compares only `id`, so fingerprint and priority differences go unnoticed. The tests show this: `test_results_on_change` builds the expected occurrence with 6 when the real value is 100, multi_group expects 6 for group_2 (real value 10), and `TestEvaluateGroupKeyValue.test_dedupe` uses \"val1\" against \"group_key\", yet all of them would pass.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1471238
+}

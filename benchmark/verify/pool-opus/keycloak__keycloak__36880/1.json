@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch wraps the role/client/group removal listener in `if (Profile.isFeatureEnabled(ADMIN_FINE_GRAINED_AUTHZ))` (AdminPermissions.java:77). V1 and V2 are versions of the same feature and cannot both be on (Profile.java:56-58), so under V2 the block never runs. Nothing else deletes V2 resources: AdminPermissionsSchema.java:104 owns them by the admin-permissions client, and ClientApplicationSynchronizer.java:49-75 only removes the deleted client's own resource server and client policies, so the V2 'Clients' resource for a deleted client is left behind.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21686149999999998
+}

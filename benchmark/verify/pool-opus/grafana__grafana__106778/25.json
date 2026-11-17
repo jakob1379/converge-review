@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In useAbilities.ts, the new useAllGrafanaPromRuleAbilities (lines 287-333) builds the same 10-key map (Duplicate through DeletePermanently, lines 318-330) as useAllRulerRuleAbilities (lines 262-274). It repeats the provisioned/federated/plugin immutableRule logic (line 306 vs 250), the duplicate-of-plugin-rule rule, and the `isRemovable && isAdmin()` check (line 329 vs 273); only the Silence/ModifyExport inputs and the supported flags differ.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.24078360000000001
+}

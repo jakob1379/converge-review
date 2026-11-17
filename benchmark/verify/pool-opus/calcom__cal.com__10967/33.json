@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch writes the 'booking calendar, else user calendar, wrapped in an array' logic in two forms. One uses a `selectedDestinationCalendar ? [x] : []` temp variable (apps/web/pages/api/cron/bookingReminder.ts:107,130; packages/features/ee/payments/api/webhook.ts:101,119 and 207,229). The other uses a nested ternary (handleCancelBooking.ts:251-255 and 528-532, paypal-webhook.ts:152-156, deleteCredential.handler.ts:290-294, confirm.handler.ts:175-179, editLocation.handler.ts:85-89, plus a variant in handleNewBooking.ts:1063-1067), which comes to about 10 sites.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.207474
+}

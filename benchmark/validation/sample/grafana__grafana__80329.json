@@ -1,0 +1,38 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "cleanup.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The global CleanUpService ticker in cleanup.go was changed from 10 minutes to 1 minute. As a result, all cleanup jobs (snapshots, query history, short URLs, temp users, annotations, etc.) run 10x as often, and the loop can run nearly continuously when a run takes longer than a minute.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cleanup log statements include the full ids slice, which can contain thousands of annotation IDs and produce very large log lines.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cleanup log statements log 'err' after the error has already been checked and returned, so the logged value is always nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

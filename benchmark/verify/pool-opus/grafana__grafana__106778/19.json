@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In AlertRuleMenu.tsx (patch lines 56-78) the same five-action array is written inline twice, once for useRulerRuleAbilities and once for useGrafanaPromRuleAbilities. Each ability is then destructured from both results and ORed by hand (patch lines 80-99). Both hooks memoize on [abilities, actions] (useAbilities.ts, patch lines 380 and 584), so a new inline array on every render recomputes that memo each time.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2211561
+}

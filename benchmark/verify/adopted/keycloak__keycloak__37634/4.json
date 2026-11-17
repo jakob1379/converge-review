@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AccessTokenContext.java:73 calls `Objects.requireNonNull(grantType, \"Null rawTokenId not allowed\")`, so it checks grantType twice and never checks rawTokenId. DefaultTokenContextEncoderProvider.encodeTokenId (patch line 352) appends `':' + tokenContext.getRawTokenId()`, so a null id is encoded as \"<prefix>:null\".",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0814562
+}

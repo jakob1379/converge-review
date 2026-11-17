@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 evaluates `organization_context.member.has_global_access` on every request with no None check, and `member` is None for non-members (src/sentry/organizations/services/organization/impl.py:123-125, model.py:346). An org ApiKey or sentry-app proxy user passes OrganizationAuditPermission via src/sentry/auth/access.py:1183-1193 and 917-918 and then hits AttributeError; only the superuser example is wrong, since `request.user.is_superuser` short-circuits.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5401527
+}

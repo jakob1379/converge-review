@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The blocked-email validation itself uses the new key: lib/validators/email_validator.rb:14 adds `I18n.t(:'user.email.blocked')`. The only `user.email.invalid` use is the client-side `rejectedEmails` check at app/assets/javascripts/discourse/controllers/create_account_controller.js:72, which covers any server-rejected email and could not use the new key anyway, since `blocked` exists only in config/locales/server.en.yml:734, not client.en.yml.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2174943
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/embeddable_host.rb:2 accepts an optional port (`(:[0-9]{1,5})?`) and the before_validation at lines 5-8 strips only the scheme and path, so `example.com:8080` is stored as-is; record_for_host at lines 14-17 compares `lower(host)` against `uri.host`, which never contains a port, so such a record can never match.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0933098
+}

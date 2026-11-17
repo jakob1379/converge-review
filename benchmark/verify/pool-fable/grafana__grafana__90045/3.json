@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/apiserver/rest/dualwriter_mode3.go:51, :110, :135 and :163 start the legacy write in a goroutine using context.WithTimeoutCause(ctx, ...) on the request ctx (only wrapped by klog.NewContext, no context.WithoutCancel), and the handler returns immediately, so request-ctx cancellation propagates to the legacy write, whose error is also never logged. The same pattern is at pkg/apiserver/rest/dualwriter_mode1.go:54, :159, :193 and :225, which this patch did not touch. That the request ctx is cancelled on handler return is standard net/http behaviour, not something I traced in this repo.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4982236
+}

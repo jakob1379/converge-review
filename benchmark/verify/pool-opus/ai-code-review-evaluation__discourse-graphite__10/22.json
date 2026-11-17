@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "db/migrate/20150818190757_create_embeddable_hosts.rb:25 inserts each legacy line unchanged with raw SQL, so the scheme/path stripping in the model's before_validation (app/models/embeddable_host.rb:5-8) never runs. A stored 'http://eviltrout.com' will never equal URI(referer).host in `lower(host) = ?` (embeddable_host.rb:17), even though the removed SiteSetting.allows_embeddable_host? accepted such entries by stripping `^https?://`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.09999469999999999
+}

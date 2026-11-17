@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At bookings.tsx:553-556 the patch changed the loop to `forEach(async ...)` with `await getCalendar(...)`, and getCalendar is now async (_utils/getCalendar.ts:9-22), so a CalendarService constructor throw becomes a rejected promise that nothing catches; the emails (570) and webhooks (606-618) still go out. One part of the claim is wrong: the DB update at bookings.tsx:475 already happened before this loop even before the patch, so only the emails and webhooks were previously cut short.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.11695849999999999
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new getCredentials at BackwardsCompatibilityUserStorage.java:231-248 returns the OTP credential, which now has a generated id (:179). That credential reaches AccountCredentialResource.java:184 through UserCredentialManager.getFederatedCredentialsStream (:141), so the 'otp-id' placeholder at :212-219 is never built. The Issue 19575 test (BackwardsCompatibilityUserStorageTest.java:302-336) now deletes through the federated-id branch (CredentialDeleteHelper.java:64-70), and the '-id' fallback at :75-80 is no longer reached. The patch also adds var and recovery-code branches to a provider whose javadoc (:58-62) says its code should not need to change.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3824256
+}

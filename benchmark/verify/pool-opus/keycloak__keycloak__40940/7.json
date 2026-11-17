@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new test (GroupTest.java patch lines 102-112) only calls `groups().groups(null, 0, MAX, true)`, so it never reaches `GroupResource.getSubGroups` (GroupResource.java:171-196). That endpoint uses the same `GroupUtils.populateSubGroupCount` \u2192 `GroupAdapter.getSubGroupsCount` path, so the patch's null-safe fix covers it too and the only real gap is the missing test.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1142002
+}

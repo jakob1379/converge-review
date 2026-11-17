@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In store.js.es6:64-72, `find` returns a result set only when `typeof findArgs === \"object\"`. When `store.find('embedding')` is called with no id, `findArgs` is undefined, so the code takes the `_hydrate(type, result['embedding'], result)` branch and builds one record. The custom adapter (admin/adapters/embedding.js.es6:4-6) points at the singleton endpoint `/admin/customize/embedding`, so this is not a collection.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0946403
+}

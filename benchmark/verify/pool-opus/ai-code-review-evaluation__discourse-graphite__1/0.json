@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a second `def self.downsize(from, to, dimensions, opts={})` at app/models/optimized_image.rb:149, which replaces the 5-argument version at :145. That leaves a method taking 3\u20134 arguments, so the 5-argument call `OptimizedImage.downsize(path, path, 100, 100, opts)` at app/jobs/regular/resize_emoji.rb:14 raises ArgumentError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.05196540000000001
+}

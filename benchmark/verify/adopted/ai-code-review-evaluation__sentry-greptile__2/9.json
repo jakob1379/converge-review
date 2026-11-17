@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/scripts/spans/add-buffer.lua:30 the patch changes the redirect walk from `for i = 0, 10000 do` to `for i = 0, 1000 do` and deletes the comment saying deeper trees may not be joined correctly. Nothing explains the change, so a redirect chain deeper than about 1000 hops stops early and the span is attached to an intermediate set instead of the real segment root.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0580658
+}

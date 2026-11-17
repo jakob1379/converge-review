@@ -1,0 +1,293 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The process-wide translation cache in I18n.translate (translate_accelerator.rb) is keyed only on the key, the locale and the backend object id. It does not include SiteSetting.default_locale or the site, even though FallbackLocaleList#[] puts the default locale in the fallback chain. As a result, stale fallback strings stay cached after an admin changes default_locale, and in multisite one site's fallback text is served to another site.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The cache key at lib/freedom_patches/translate_accelerator.rb:72 is built only from key, config.locale and config.backend.object_id. FallbackLocaleList#[] (config/initializers/i18n.rb:17) inserts the per-site SiteSetting.default_locale into the fallback chain, and nothing clears the cache when default_locale changes (no I18n.reload! call does), so stale fallback text survives a setting change and is shared between sites in the same process.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0715681
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "protect_from_forgery is not configured with 'with: :exception'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`protect_from_forgery` at app/controllers/application_controller.rb:21 is indeed called without `with: :exception`, but this patch doesn't change it. It also isn't a weakness: the overridden `handle_unverified_request` (lines 26-33) clears the current user and returns a 403 'BAD CSRF' response for non-API requests.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.06146069999999999
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In ensure_loaded!, the lazy initialization `@loaded_locales ||= []` is not protected by LOAD_MUTEX. Concurrent threads read and write @loaded_locales without synchronization, which can cause lost writes or double loading.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`load_locale` re-checks `@loaded_locales.include?(locale)` inside `LOAD_MUTEX.synchronize` and does the append there (translate_accelerator.rb:47-58), so the unlocked check in `ensure_loaded!` (line 64) is only a fast path and cannot cause lost writes or double loading. `@loaded_locales` is already set by `reload!` (line 40), which the existing `translate` (line 68) relies on, so `||= []` (line 63) only matters before startup and a race there would just re-load translations harmlessly.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0612665
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The '# order: after 02-freedom_patches.rb' comment implies an ordering directive, but nothing reads it; load order is purely the alphabetical sort of file names.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Only config/initializers/i18n.rb:1 contains the '# order: after 02-freedom_patches.rb' comment, and no code in the repo reads it. Rails loads config/initializers/* in alphabetical order, and 'i18n.rb' happens to sort after '02-freedom_patches.rb', so the comment describes the order but does not control it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0425136
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SiteSetting.default_locale.to_sym is called without a nil guard, so it raises NoMethodError if default_locale is nil.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The unguarded `.to_sym` call is real (config/initializers/i18n.rb:82, added by the patch), but `default_locale` cannot be nil. It defaults to 'en' (config/site_settings.yml:59-60) and is an enum checked by `LocaleSiteSetting.valid_value?`, which only accepts supported locales (app/models/locale_site_setting.rb:5-6), so a nil value is rejected.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0535768
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The PR adds no tests for the new i18n fallback system, including FallbackLocaleList#[], FallbackLocaleList#ensure_loaded!, I18n.ensure_loaded!, the fallback order, and fallback/cache interaction.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch only touches application code: the new FallbackLocaleList in config/initializers/i18n.rb:77-89, I18n.ensure_loaded! in lib/freedom_patches/translate_accelerator.rb:106-109, and the call in application_controller.rb:158. It adds no spec files, and searching spec/ and test/ finds no reference to FallbackLocaleList, ensure_loaded! or fallbacks.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0465761
+   }
+  },
+  {
+   "issue": "i7",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Locales are not normalized to one type (Symbol or String) before the @loaded_locales include? check and insertion. Because :en != 'en', the same locale passed as a String and as a Symbol produces duplicate entries and redundant loads.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Every caller passes Symbols. `I18n.locale` and `config.locale` are always Symbols because I18n converts them with `to_sym` (translate_accelerator.rb:68), and `FallbackLocaleList#[]` builds `[I18n.locale, SiteSetting.default_locale.to_sym, :en]` (config/initializers/i18n.rb:17-21), so String and Symbol entries never get mixed in @loaded_locales (translate_accelerator.rb:48,58,64).",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0651396
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new public I18n.ensure_loaded! duplicates load_locale's existing already-loaded guard. Its `@loaded_locales ||= []` is also inconsistent with translate, which dereferences @loaded_locales without a guard.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both parts are accurate. ensure_loaded! (lib/freedom_patches/translate_accelerator.rb:62-65) repeats the `@loaded_locales.include?` check that load_locale already does inside its mutex (line 48). It also guards with `@loaded_locales ||= []` (line 63), while translate reads `@loaded_locales` directly at line 68, and the only other place that sets it is reload! (line 40). The repeated check is the same lock-free fast path translate uses, so this is a style inconsistency, not a bug.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0691239
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "I18n::Backend::Pluralization is included via send(:include, ...) even though include is public since Ruby 2.1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The send(:include, ...) call is there (new config/initializers/i18n.rb, patch line 70, moved unchanged from config/initializers/pluralization.rb). But the project still supports Ruby 2.0.0 (.travis.yml:23, .ruby-version.sample:1), where Module#include is private, so send is needed and is not a mistake.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.056468599999999994
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "I18n::Backend::Fallbacks is included via send(:include, ...) even though include is public since Ruby 2.1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new file config/initializers/i18n.rb:9 contains `I18n.backend.class.send(:include, I18n::Backend::Fallbacks)`. `Module#include` has been public since Ruby 2.1, so `send` isn't needed here.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.04294880000000001
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "I18n.fallbacks.ensure_loaded! is called only in ApplicationController#set_locale. Non-request paths (Sidekiq jobs, mailers, I18n.with_locale callers, rake tasks, console) therefore never load the fallback locales, so lookups yield 'translation missing' and the LRU cache stores that result.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only call to I18n.fallbacks.ensure_loaded! is in app/controllers/application_controller.rb:159. I18n.translate (lib/freedom_patches/translate_accelerator.rb:67-76) loads only config.locale, so in a non-request path the fallback locales stay unloaded until something else loads them, and the 'translation missing' result is cached in the LRU under a key with no fallback state. \"Never load\" overstates it, since a process that translates in en or the site locale will have loaded it.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0698395
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Fallbacks are now enabled in all environments, including development and test, instead of only production/profile/cloud66. This hides missing translations behind English text and can break specs that expect missing-translation output.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new config/initializers/i18n.rb:8-24 adds I18n::Backend::Fallbacks and sets I18n.fallbacks in every environment, replacing the per-environment `config.i18n.fallbacks = true` lines that the patch removes from production.rb, profile.rb and cloud66. The spec-breakage part is speculative: the chain always ends in :en, and the only 'translation missing' checks (spec/integrity/i18n_spec.rb:7,14,21) use not_to match, so none of them expect missing-translation output.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.07792740000000001
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backend classes are monkey-patched via send(:include), which is fragile across gem upgrades.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "config/initializers/i18n.rb:5 and :9 (patch lines 70 and 74) use `send(:include, ...)` to mix Pluralization into I18n::Backend::Simple and Fallbacks into `I18n.backend.class`. However, this is the extension method the i18n gem documents, so calling it 'fragile across gem upgrades' is a style concern, not a defect.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.053894
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "FallbackLocaleList inherits from Hash but only implements [] and ensure_loaded!. Because the underlying Hash storage is never populated, other Hash methods (fetch, keys, each, to_h) return empty results or raise.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "config/initializers/i18n.rb:77-89 (added by the patch) defines `FallbackLocaleList < Hash`, overrides only `[]` and `ensure_loaded!`, and never stores anything, so `keys`, `each` and `to_h` return empty results and `fetch(locale)` raises KeyError. No code in the repo calls those methods; the only callers are I18n's own `fallbacks[locale]` lookup and application_controller.rb:159, so nothing currently breaks.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.059914300000000004
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ensure_loaded! is called on every request in set_locale.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `I18n.fallbacks.ensure_loaded!` to the end of `set_locale` (app/controllers/application_controller.rb:158), and `set_locale` runs on every request through `before_filter :set_locale` (application_controller.rb:36). No controller skips it.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0598811
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The custom fallback list drops the standard locale-ancestor fallbacks, so regional locales skip the matching base-language translations.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "config/initializers/i18n.rb:82 does return only [locale, site default, :en], but this is not a regression. Discourse locales use underscores (config/locales/server.pt_BR.yml, server.zh_TW.yml), and the standard fallbacks in i18n 0.7.0 (Gemfile.lock:126) only split locale names on '-', so :pt_BR never fell back to :pt before; the removed `config.i18n.fallbacks = true` (config/environments/production.rb) only added the default locale.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0799731
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

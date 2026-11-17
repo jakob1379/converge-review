@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "public/app/features/alerting/unified/components/rule-viewer/AlertRuleMenu.tsx:58-64 and :73-79 pass the same five-action list as two inline array literals, and :81-100 destructure each ability from both results and OR them by hand. Both hooks memoise on `[abilities, actions]` (public/app/features/alerting/unified/hooks/useAbilities.ts:214-216 and :403-405), so the fresh array identity each render makes those useMemo calls recompute every time; no React Compiler config was found to offset this.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5432277000000001
+}

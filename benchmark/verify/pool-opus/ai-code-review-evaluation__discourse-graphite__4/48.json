@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/topic_embed.rb:356-357 (patch lines 356-357), `embed.update_column(:content_sha1, content_sha1)` runs right after `revisor.revise!(...)` without checking what it returns, so the hash is saved even when revise! returns false. However, lib/post_revisor.rb:13,26-28 shows revise! only returns false when the post's raw text already equals the new raw text, so in practice saving the hash then does little harm.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.16338160000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/blocked_email.rb:11-19, the predicate `should_block?` finds the matching record, increments `match_count`, sets `last_match_at` and calls `record.save` every time it runs. lib/validators/email_validator.rb:13 calls it during validation, so each `valid?` call writes to the database and inflates the count.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0444884
+}

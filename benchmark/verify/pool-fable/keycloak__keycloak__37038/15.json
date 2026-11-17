@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:107 switches on the String `resourceType` with no null check, so a null value throws NullPointerException before reaching the `default` branch at :111. The removed if-chain used `USERS.getType().equals(resourceType)`, which left `name` null and fell through to the IllegalStateException at :114-116; null is only guarded for ScopePermissionRepresentation (:219-221), so other callers such as RepresentationToModel.java:1423 can still pass it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.262482
+}

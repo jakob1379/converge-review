@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/lib/server/service/__tests__/insightsBooking.integration-test.ts:445-466 the test creates userEventType and userBooking, and the only cleanup is the inline deletes at lines 494-500 after the raw query (481-484) and the expect (487-491), with no try/finally or afterEach, so a throw from either skips the deletes. The create/cleanup structure is unchanged context in the patch (only the query and assertion at patch lines 254-273 changed), so it predates this change.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1624921
+}

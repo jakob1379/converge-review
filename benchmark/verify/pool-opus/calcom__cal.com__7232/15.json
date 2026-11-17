@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The workflows.tsx hunk at about lines 901-965 only strips leading indentation (for example `throw new TRPCError`, `createdAt`, and the `evt = {...}` fields). That code is inside the `testAction` block comment, which opens at line 848, reopens with `/*) {` at line 901 and is next closed at line 967, so no behaviour changes.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1377625
+}

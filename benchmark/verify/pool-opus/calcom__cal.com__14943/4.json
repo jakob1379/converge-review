@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The `retryCount: { gt: 1 }` branch at scheduleSMSReminders.ts:38-42 does lack method and scheduled filters. But the only code that raises retryCount is this cron (lines 184 and 195), and it only touches rows the query at lines 48-55 returned, which are SMS rows with scheduled:false. A row deleted at retryCount 2 cannot have been scheduled successfully, so EMAIL, WHATSAPP and already-scheduled rows never reach retryCount > 1 and the claimed deletion cannot happen. It is only a latent risk if another job starts incrementing retryCount.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06779120000000001
+}

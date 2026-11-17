@@ -1,0 +1,16 @@
+{
+ "findings": [
+  {
+   "issue": "i4",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "TablesList now uses the stub NewInMemoryDB(), whose RunCommands returns a generic 'not implemented' error. Upstream code reports this as 'invalid SQL' / sql-invalid-sql, so valid SQL expressions fail with a validation error instead of an explicit 'disabled' error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

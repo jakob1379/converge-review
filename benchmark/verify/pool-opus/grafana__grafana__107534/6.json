@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "shardQuerySplitting.ts:49-52 now drops empty exprs before applyTemplateVariables, so a '$query' target that interpolates to '' survives. It falls into the non-sharded 'otherQueries' group (shardQuerySplitting.ts:243-249, because requestSupportsSharding rejects ''), and line 163 passes it to runSplitQuery. There querySplitting.ts:298 filters it out, leaving requests empty, so querySplitting.ts:95-96 gets Math.max() = -Infinity and then reads `[0].partition` of undefined. That TypeError is thrown inside the `.then` at shardQuerySplitting.ts:213, which has no catch, so the Observable never emits or completes.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.35568690000000003
+}

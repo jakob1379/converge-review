@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/jobs/scheduled/poll_feed.rb:35 calls `i.content.scrub` with no nil guard or rescue inside the `rss.items.each` loop (lines 31-37), and line 12 sets `retry: false`, so a nil `content` raises NoMethodError and aborts the whole poll. That `content` is nil for description-only RSS 2.0 items rests on my recollection of simple-rss 1.3.1 (Gemfile_rails4.lock:344), whose items are Hashes with `method_missing` returning `self[name]` and `content:encoded` stored as `:content_encoded`; the gem source is not in the checkout, so I did not read it here.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2388496
+}

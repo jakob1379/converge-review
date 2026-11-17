@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The migration creates embeddable_hosts with no unique index on host (db/migrate/20150818190757_create_embeddable_hosts.rb:3-7), and the model only checks the host's format (app/models/embeddable_host.rb:2). So the admin controller can save duplicate hosts, and record_for_host's `where(\"lower(host) = ?\", host).first` with no order (app/models/embeddable_host.rb:17) returns whichever row comes first, and that row's category is used in topic_embed.rb.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1870371
+}

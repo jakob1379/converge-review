@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch moves the `ADMIN_FINE_GRAINED_AUTHZ` check outside `manager.register(...)` (services/src/main/java/org/keycloak/services/resources/admin/permissions/AdminPermissions.java:73-99), and `registerListener` is called only once at session-factory init (DefaultKeycloakSessionFactory.java:122, QuarkusKeycloakSessionFactory.java:88). The `skipRestart=true` path only re-runs `Profile.init` with no restart (TestingResourceProvider.java:987-993, KeycloakContainerFeaturesController.java:161), so a server booted with V1 off never gets the role/client/group-removed cleanup listener, e.g. UsersTest.java:228.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.9045943000000001
+}

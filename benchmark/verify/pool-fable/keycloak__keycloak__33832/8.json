@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/ASN1Decoder.java:71-73, `readInteger()` passes a length of 0 straight to `read(0)` and then `new BigInteger(new byte[0])`, which throws the unchecked NumberFormatException (\"Zero length BigInteger\") rather than the method's declared IOException. The only in-repo caller of the conversion, core/src/main/java/org/keycloak/crypto/ECDSASignatureSignerContext.java:33-35, catches `Exception` and feeds it DER produced by the local JCA signer, so the bad input is not realistically reachable there.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.410539
+}

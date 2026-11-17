@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both the else-branch (scheduleSMSReminders.ts:184) and the catch block (:195) write `retryCount: reminder.retryCount + 1` using the value read by findMany at :48-60, not an atomic `{ increment: 1 }`, so two overlapping runs can each read N and both write N+1, losing an increment.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0698583
+}

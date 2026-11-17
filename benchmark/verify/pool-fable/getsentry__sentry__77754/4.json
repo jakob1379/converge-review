@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/integrations/services/test_assignment_source.py:8-11 defines test_from_dict_empty_array but passes `data: dict[str, Any] = {}` (an empty dict) to AssignmentSource.from_dict, so the name says \"array\" while the input is a dict. The file is newly added by this patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.076582
+}

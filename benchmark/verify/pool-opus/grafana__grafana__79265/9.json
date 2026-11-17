@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/api/frontendsettings.go:198 always sets AnonymousDeviceLimit from hs.Cfg.AnonymousDeviceLimit, with no check on who is asking. getFrontendSettings feeds setIndexViewData (pkg/api/index.go:29), which the unauthenticated LoginView uses (pkg/api/login.go:101), and anonymous sessions can also call /api/frontend/settings/ (pkg/api/api.go:417), so every client gets the value.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11536650000000001
+}

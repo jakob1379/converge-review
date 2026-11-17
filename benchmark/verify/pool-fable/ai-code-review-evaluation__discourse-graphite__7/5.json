@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/mobile/compose.scss:174-175 still reads `.wmd-input { color: darken($primary, 40%); }`, while the patch converted the adjacent `.wmd-input:disabled` rule at line 172 to `dark-light-choose(...)`; the desktop counterpart (desktop/compose.scss:275-276) uses plain `$primary`. The line is unchanged context in the patch, so the problem pre-exists.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.24837370000000003
+}

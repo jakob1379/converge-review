@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds plain GET routes for unsubscribe (config/routes.rb:444-445). They go to TopicsController#unsubscribe (app/controllers/topics_controller.rb:98-116), which needs only a session cookie (ensure_logged_in, line 28; check_xhr skipped, line 32), has no signed key or token, and calls tu.save! to set the level to regular or muted. Rails does not check CSRF tokens on GET, and the slug redirect at line 102 still reaches the action, so an <img> on a third-party page can trigger it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13428579999999998
+}

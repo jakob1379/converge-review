@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "VerifyMessageProperties.java:157 builds its message from only the anchor tag (`\"Didn't find anchor tag \" + matcher.group() + \" in original string\"`). It leaves out `key`, even though `key` is passed into santizeAnchors (:150), and it leaves out `file`. ThemeVerifierMojo.java:51-55 then merges every file's messages into one list without adding any file context, unlike the messages at :111 and :194, which name the key and/or the file.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2903718
+}

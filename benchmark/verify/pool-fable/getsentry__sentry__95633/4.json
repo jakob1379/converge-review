@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch-added tests assign the literal `max_wait = 50` as a local in three separate tests (tests/sentry/uptime/consumers/test_results_consumer.py:1718, 1765, 1812) with no shared constant; three further tests use `max_wait = 20` (1860, 1912, 1961), so \"throughout\" overstates it slightly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11937969999999999
+}

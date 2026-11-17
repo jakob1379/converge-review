@@ -1,0 +1,239 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "scheduleSMSReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The catch block awaits an unguarded prisma.workflowReminder.update to increment retryCount. That update can throw, for example P2025 when the row was deleted concurrently or by the earlier deleteMany. The error then escapes the for loop, which skips the remaining reminders and the original error log and aborts the cron run.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In scheduleSMSReminders.ts:189-198 the catch block awaits prisma.workflowReminder.update with no guard, before the console.log. If that update fails, for example with P2025 because the row was deleted concurrently (the same failure that sends control into the catch from the update at :169), the error escapes the for loop at :67, so the remaining reminders, the error log and the 200 response at :201 are all skipped. One detail of the claim is wrong: the earlier deleteMany (:29) runs before findMany (:48), so it cannot delete rows the loop has already fetched.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.06936400000000001
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "retryCount is incremented by read-modify-write from the stale in-memory value (reminder.retryCount + 1) instead of Prisma's atomic { increment: 1 }. Overlapping or concurrent cron runs therefore lose increments.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both new update paths write `retryCount: reminder.retryCount + 1` using the value read earlier in the run (packages/features/ee/workflows/api/scheduleSMSReminders.ts:184 and :195), not Prisma's atomic `{ increment: 1 }`. If two cron runs overlap, both can write the same value, so one increment is lost.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0507168
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The identical prisma.workflowReminder.update retryCount block is duplicated in the else branch (lines 178-187) and in the catch block (lines 189-197).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the same prisma.workflowReminder.update({where:{id: reminder.id}, data:{retryCount: reminder.retryCount + 1}}) call twice: once in the else branch (packages/features/ee/workflows/api/scheduleSMSReminders.ts:178-187) and once in the catch block (189-197).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.043670600000000004
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "retryCount is read by spreading the shared select and casting ad hoc to (PartialWorkflowReminder & { retryCount: number })[] at the call site. The type and select in getWorkflowReminders.ts are not extended.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts:56-60 the code builds `{...select, retryCount: true}` and casts the result to `(PartialWorkflowReminder & { retryCount: number })[]`. getWorkflowReminders.ts is not in the patch and does not mention retryCount anywhere.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0413824
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "scheduleSMSReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The deleteMany OR branch { retryCount: { gt: 1 } } has no method: WorkflowMethods.SMS filter (and no scheduled:false filter). The SMS cron therefore deletes EMAIL, WHATSAPP and already-scheduled WorkflowReminder rows with retryCount > 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The `retryCount: { gt: 1 }` branch at scheduleSMSReminders.ts:38-42 does lack method and scheduled filters. But the only code that raises retryCount is this cron (lines 184 and 195), and it only touches rows the query at lines 48-55 returned, which are SMS rows with scheduled:false. A row deleted at retryCount 2 cannot have been scheduled successfully, so EMAIL, WHATSAPP and already-scheduled rows never reach retryCount > 1 and the claimed deletion cannot happen. It is only a latent risk if another job starts incrementing retryCount.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.06779120000000001
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover the new branches: increment on a falsy result, increment on throw, deletion at the threshold, and no increment on success.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds the retryCount increments (scheduleSMSReminders.ts:178-186 for the falsy result, 189-197 for the throw) and the `retryCount gt 1` deletion (lines 31-41), but it adds no test files, and no test or spec file anywhere in the repo mentions scheduleSMSReminders or retryCount.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.040152999999999994
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Reminders for SMS-locked or rate-limited users and teams are counted as failures and deleted after two cron runs. scheduleSMS returns undefined when isLockedForSMSSending, which hits the else-branch increment, and checkSMSRateLimit throws, which hits the catch increment. Previously these reminders stayed queued until scheduledDate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Only the SMS-lock half of the claim holds: scheduleSMS returns undefined when isLockedForSMSSending (twilioProvider.ts:90-95), the new else-branch increments retryCount (scheduleSMSReminders.ts:178-186), and the new `retryCount > 1` clause in deleteMany deletes the reminder after two failed runs, where before it stayed queued until scheduledDate. The rate-limit half is wrong: checkSMSRateLimit does not throw (checkRateLimitAndThrowError.ts:29-46), it only sets the lock state to REVIEW_NEEDED for smsMonth, so rate-limited users still get their SMS scheduled and are not counted as failures.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.13064189999999998
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Reminders skipped via continue because workflowStep or booking is missing, or because they have no message or sendTo, never have retryCount incremented. The retry cap therefore does not cover every path where a reminder is not scheduled.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In scheduleSMSReminders.ts, the `continue` at lines 68-70 (missing workflowStep or booking) and the `if (message?.length ... && sendTo)` guard at line 158, which has no else branch, both leave a reminder unscheduled without changing retryCount. Only a falsy scheduleSMS result (lines 178-186) and the catch block (lines 190-197) increment it. These skipped reminders make no Twilio call, though, and are still deleted once scheduledDate passes (lines 32-37).",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.0719411
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Twilio API call and the database persistence share one try-catch. A database update failure after Twilio accepted the SMS is treated as a send failure, which causes a duplicate SMS on retry.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts, twilio.scheduleSMS (lines 159-166) and the prisma update that sets scheduled/referenceId (lines 169-177) sit in the same try block. If that update throws after Twilio has accepted the message, the catch (lines 189-199) only increments retryCount and leaves scheduled=false, so the next run sends the SMS to Twilio again. This try/catch structure was already there before the patch; the patch only adds retry counting, which limits how many duplicates can happen.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.06654800000000001
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "After repeated database failures the reminder row can be deleted while its job is still scheduled on Twilio, leaving orphaned Twilio jobs with no database reference.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In scheduleSMSReminders.ts:159-177, if twilio.scheduleSMS succeeds but the update that stores `scheduled: true`/`referenceId` throws, the catch block at 189-197 only increments retryCount. The next run schedules the SMS on Twilio again, and once retryCount > 1 the new OR branch in deleteMany (lines 38-42) deletes the row while those Twilio jobs are still scheduled and have no stored referenceId.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0782434
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The WhatsApp cron uses the same twilio.scheduleSMS path and has the same retry-forever problem, but it does not use retryCount even though the column exists on every WorkflowReminder.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "scheduleWhatsappReminders.ts:90-98 calls twilio.scheduleSMS(..., true), and when that fails it only updates on success (100-110) or logs (112-114). retryCount never appears in that file (it does not select, increment or delete by it), so failing WhatsApp reminders are retried on every cron run until their scheduledDate passes. scheduleSMSReminders.ts got that handling at patch lines 47-66.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0670286
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The comment 'delete all scheduled sms reminders where scheduled date is past current date' no longer matches the query, which now also deletes rows with retryCount > 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts around line 28, the comment still says only past-due SMS reminders are deleted. The deleteMany query below it now uses an OR that also deletes any reminder with retryCount > 1, and that branch is not even limited to SMS.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0372533
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Every failure, transient or permanent, counts toward deletion. Two failed cron runs set retryCount to 2, and the next run's deleteMany removes the unscheduled SMS reminder with no backoff and no distinction between transient and permanent errors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In scheduleSMSReminders.ts, both the falsy-scheduledSMS branch (lines 178-186) and the catch block for any thrown error (lines 189-197) raise retryCount by 1, with no check on the error type and no delay between retries. Once retryCount reaches 2, the next run's deleteMany OR clause `retryCount: { gt: 1 }` (patch lines 20-24) deletes the reminder, so a transient Twilio or DB failure on two consecutive cron runs loses the SMS reminder for good.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0670528
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

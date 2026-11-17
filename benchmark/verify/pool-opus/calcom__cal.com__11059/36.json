@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In sync mode, parseRefreshTokenResponse checks the response against minimumTokenResponseSchema (parseRefreshTokenResponse.ts:189-195). That schema's computed keys both become the literal string \"[object Object]\", so the plain z.object keeps only access_token and drops expires_in. As a result, office365calendar/lib/CalendarService.ts:264-271 keeps and saves the old, expired expires_in, and getToken's isExpired check (line 279) triggers another refresh on every new service instance.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2701069
+}

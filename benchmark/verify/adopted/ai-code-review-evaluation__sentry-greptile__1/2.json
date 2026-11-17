@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "organization_auditlogs.py:71 reads `organization_context.member.has_global_access` on every request, before checking `use_optimized`, unless `request.user.is_superuser` is true. `member` is typed `RpcOrganizationMember | None` (organizations/services/organization/model.py:344-346). OrganizationAuditPermission (bases/organization.py:110-124) accepts any org:write caller. That includes legacy ApiKeys, whose user is AnonymousUser, and internal-integration proxy users with no membership (sentry_apps/logic.py:351-353). For them `member` is None, so the default path raises AttributeError and returns a 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.12670420000000002
+}

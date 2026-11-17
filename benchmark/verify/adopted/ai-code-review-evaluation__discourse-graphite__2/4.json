@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes only one spec file: spec/components/email/message_builder_spec.rb:511-513, where it passes unsubscribe_url to an existing fixture. spec/controllers/topics_controller_spec.rb has no unsubscribe test, and nothing tests TopicsController#unsubscribe (app/controllers/topics_controller.rb), Topic#unsubscribe_url or the new routes, which goes against CONTRIBUTING.md:42-44 ('Include tests, and ensure they pass').",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0679347
+}

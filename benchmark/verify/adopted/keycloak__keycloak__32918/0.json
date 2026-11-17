@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In OrganizationCacheTest.java:381, the loop creates the IDPs \"idp-alias-\" + i, and :424 creates \"idp-alias-20\". Both cleanups (:381, :425) register testRealm().identityProviders().get(\"alias\")::remove with the literal \"alias\", so no cleanup ever removes the IDPs the test created. This copies the existing bug at :303.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0894521
+}

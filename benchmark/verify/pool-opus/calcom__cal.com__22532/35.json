@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new CredentialActionsDropdown.tsx:102-115 and 193-204 copies the credentials.delete mutation, the toasts, both invalidations and the confirm dialog from DisconnectIntegration.tsx:26-40. It calls mutate({ id: credentialId }) at line 199 without the `...(teamId ? { teamId } : {})` from DisconnectIntegration.tsx:46, and it has no isDelegationCredential({credentialId}) guard (DisconnectIntegration.tsx:43); it checks only the delegationCredentialId prop (line 118). The practical effect is small: the replaced call sites in SelectedCalendarsSettingsWebWrapper never passed teamId and already hid the button with the same delegationCredentialId check.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.15453340000000002
+}

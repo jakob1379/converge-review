@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The startup duplicate check exists only in postInit (services/src/main/java/org/keycloak/protocol/oidc/encode/DefaultTokenContextEncoderProviderFactory.java:82-85), while the lazy refresh in getShortcutByGrantType does an unconditional grantsByShortcuts.put(shortcut, grantType) at :113, so a later-deployed grant reusing e.g. \"ac\" silently replaces the existing shortcut\u2192grant mapping. The getGrantTypeByShortcut branch at :123-133 only runs when the shortcut is absent, so the overwrite is in the sibling method within the cited 106-137 range, and it needs runtime deploy (DefaultKeycloakSessionFactory.java:184-222, which only initialises the newly deployed factories).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6469738
+}

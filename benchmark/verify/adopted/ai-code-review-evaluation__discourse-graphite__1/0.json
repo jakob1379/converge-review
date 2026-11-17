@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a second `def self.downsize(from, to, dimensions, opts={})` at app/models/optimized_image.rb:149, which replaces the 5-argument version at line 145. app/jobs/regular/resize_emoji.rb:14 still calls `OptimizedImage.downsize(path, path, 100, 100, opts)` with 5 arguments, and that job is enqueued from app/models/emoji.rb:73, so the call raises ArgumentError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.045757900000000004
+}

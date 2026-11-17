@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/PermissionClientTest.java:170-174 asserts only `not(empty())` before calling `defaultClientScopes.get(1)`, so a one-element list would throw IndexOutOfBoundsException. The literal `getDefaultClientScopes().get(1)` at line 148 is harmless (the server's requireView at ClientResource.java:382 should throw ForbiddenException first), and a client created in a realm normally has several default scopes, so this is only a weak-assertion nit in test code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.17812429999999999
+}

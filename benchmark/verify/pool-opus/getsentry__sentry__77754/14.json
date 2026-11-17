@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Both parameters are in fact unused in the base `should_sync` (src/sentry/integrations/mixins/issues.py, around line 66, which just returns False). But nothing would flag them: the repo has no Ruff config or dependency, and its linter is flake8 (setup.cfg:96), which has no unused-argument rule. Also, `attribute` was already unused before this patch, and a base method meant to be overridden needs these parameters to keep the same signature.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.05743380000000001
+}

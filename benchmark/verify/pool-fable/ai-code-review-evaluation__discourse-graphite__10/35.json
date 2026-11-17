@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds blank lines directly inside block bodies at spec/models/embeddable_host_spec.rb:4,37,39, spec/controllers/admin/embeddable_hosts_controller_spec.rb:4,8, spec/controllers/admin/embedding_controller_spec.rb:4,8 and in spec/models/topic_spec.rb's `expandable_first_post?` block, which RuboCop's default Layout/EmptyLinesAroundBlockBody would flag. However, the repo has no .rubocop.yml or rubocop dependency, and 66 existing files in spec/models use the same style, so nothing is enforced or broken.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.28543810000000003
+}

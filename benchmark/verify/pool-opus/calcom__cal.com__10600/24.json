@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/auth/two-factor/totp/disable.ts:49-52, the new backup-code branch does `throw new Error(ErrorCode.InternalServerError)`, while line 23 returns `res.status(500).json({ error: ErrorCode.InternalServerError })`. However, the file is already inconsistent: the existing TOTP branch throws the same way at lines 77, 82 and 90, so the patch copies an existing pattern, and Next.js turns the uncaught throw into a 500 anyway.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1706082
+}

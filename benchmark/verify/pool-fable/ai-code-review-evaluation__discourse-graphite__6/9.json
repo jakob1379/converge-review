@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The profile header now reads `model.website_name` (app/assets/javascripts/discourse/templates/user/user.hbs:66-71), which is only populated by `findDetails` in the user route's `afterModel` (routes/user.js.es6:54, models/user.js.es6:320). `User.save` copies only `bio_excerpt` from the PUT response (models/user.js.es6:209-213), and preferences is nested under the user route (routes/app-route-map.js.es6:74), so the name stays stale or missing after a website edit until the user route is re-entered \u2014 not strictly a full page reload.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3378372
+}

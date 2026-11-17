@@ -1,0 +1,455 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The async functions deleteScheduledEmailReminder and deleteScheduledSMSReminder are called inside forEach loops without await. The call sites include handleCancelBooking.ts, handleNewBooking.ts, bookings.tsx and workflows.tsx. Because of this, reminder cancellation or DB updates may not complete before the request ends, and rejections are lost.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both functions are async and are called without await inside forEach at handleCancelBooking.ts:485-493, handleNewBooking.ts:966-972, bookings.tsx:488-494 and workflows.tsx:212-218, 376-382, 519-525, 574-580, so the Prisma delete/update they now perform is fire-and-forget. The patch removed the previously awaited `Promise.all` over the `workflowReminder.deleteMany` calls; the \"rejections are lost\" part is overstated, since both functions catch and log internally (emailReminderManager.ts:197+, smsReminderManager.ts:177+).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3738632
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "handleNewBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In handleNewBooking.ts the new try/catch wraps a forEach of un-awaited async reminder-deletion calls. As a result, the catch block and its log.error are unreachable.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/bookings/lib/handleNewBooking.ts:964-975 wraps a synchronous forEach that calls deleteScheduledEmailReminder/deleteScheduledSMSReminder without await; both are async functions that also catch their own errors internally (emailReminderManager.ts:197-236, smsReminderManager.ts:177-190), and workflowReminders is always an array from the Prisma include (handleNewBooking.ts:772), so nothing in the try can throw synchronously and the log.error at line 974 is effectively dead code.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4211656
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "emailReminderManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In deleteScheduledEmailReminder (emailReminderManager.ts), the immediateDelete=true branch cancels the SendGrid scheduled send and then returns. It neither deletes the workflowReminder DB row nor marks it cancelled, which leaves orphaned rows.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The `immediateDelete` branch at packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:213-223 only posts the SendGrid cancel and returns, so the row is neither deleted nor marked cancelled. The rows are only stale temporarily, though: the workflow-delete and step-delete callers (workflows.tsx:214, 521) remove them by FK cascade, and the reschedule caller (handleNewBooking.ts:968) leaves the row only until the cron purge of past-dated email reminders (scheduleEmailReminders.ts:34-41).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.518757
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "packages/trpc/server/routers/viewer/workflows.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "deleteScheduledEmailReminder is called with immediateDelete=true on workflow deletion, step deletion and reschedule. This performs direct SendGrid cancellation that bypasses the deferred cancellation flow and is subject to SendGrid's cancelled-batch limit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`deleteScheduledEmailReminder(..., true)` is called at packages/trpc/server/routers/viewer/workflows.tsx:214 (workflow delete), :521 (step delete) and packages/features/bookings/lib/handleNewBooking.ts:968 (reschedule); that branch at packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:213-222 POSTs a cancel to `/v3/user/scheduled_sends` and returns without setting `cancelled: true`, so it skips the deferred cron flow in scheduleEmailReminders.ts:43-77. SendGrid's cancelled-batch limit is external and not checkable here, but it is the limit the deferred flow exists to avoid, and a failed cancel is only logged (emailReminderManager.ts:233-235).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4967336
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "packages/trpc/server/routers/viewer/workflows.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Prisma is imported but no longer used in workflows.tsx, which violates unused-imports/no-unused-imports.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/workflows.tsx:9 imports `Prisma` from \"@prisma/client\", but the only other `Prisma*` reference in the file is `PrismaPromise` at line 342; the patch removed the sole `Prisma.BatchPayload` usage while re-adding the import, and packages/config/eslint-preset.js:22 sets `unused-imports/no-unused-imports` to error.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1125496
+   }
+  },
+  {
+   "issue": "i6",
+   "path": "packages/trpc/server/routers/viewer/workflows.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In workflows.tsx, PrismaPromise was changed to a value import but is used only as a type, which violates @typescript-eslint/consistent-type-imports.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes `import type { Prisma, PrismaPromise }` and adds `PrismaPromise` to the value import at packages/trpc/server/routers/viewer/workflows.tsx:1-10, yet its only use is a type annotation at workflows.tsx:342. The rule is set to \"error\" with `prefer: \"type-imports\"` for all *.ts/*.tsx in packages/config/eslint-preset.js:35-44, which the root .eslintrc.js applies; ESLint was not run here.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2229585
+   }
+  },
+  {
+   "issue": "i7",
+   "path": "handleNewBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In handleNewBooking.ts, 'import type { App, Credential, EventTypeCustomInput, Prisma }' was folded into a value import even though all four names are used only as types. This violates @typescript-eslint/consistent-type-imports.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/bookings/lib/handleNewBooking.ts:1-10 now imports App, Credential, EventTypeCustomInput and Prisma as value imports, yet every use is in a type position (lines 73, 79, 82, 90, 109, 349, 402, 776, 805, 899, 1289). packages/config/eslint-preset.js:35-44 sets @typescript-eslint/consistent-type-imports to \"error\" with prefer: \"type-imports\", so the merged import violates it; the patch removed the previous separate `import type` line.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3844215999999999
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Line 9 ('Prisma') in the merged import lacks a trailing comma, which violates the prettier trailingComma 'es5' rule.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/trpc/server/routers/viewer/workflows.tsx:9 reads `  Prisma` with no trailing comma as the last specifier of the multi-line import (lines 1-10), while packages/config/prettier-preset.js:6 sets `trailingComma: \"es5\"`, which requires one there. The patch added this line (`+  Prisma`).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2907843
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "scheduleEmailReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In scheduleEmailReminders.ts, the new import of Prisma and WorkflowReminder from '@calcom/prisma/client' is a value import of names used only as types. This violates @typescript-eslint/consistent-type-imports.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/ee/workflows/api/scheduleEmailReminders.ts:10 adds `import { Prisma, WorkflowReminder } from \"@calcom/prisma/client\"` without `type`, and both names are used only in a type annotation at line 54; packages/config/eslint-preset.js:35-44 sets @typescript-eslint/consistent-type-imports to \"error\" with prefer \"type-imports\" for all *.ts files, and the root .eslintrc.js applies that preset.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2490543
+   }
+  },
+  {
+   "issue": "i10",
+   "path": "scheduleEmailReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cron cancel loop in scheduleEmailReminders.ts wraps all sequential SendGrid cancel calls in a single try/catch. One failed cancel therefore aborts the loop, skips the remaining cancelled reminders, and affects the queued row deletes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/ee/workflows/api/scheduleEmailReminders.ts:53-77 wraps the whole `for` loop of awaited `client.request` cancel calls and the trailing `Promise.all(workflowRemindersToDelete)` (line 74) in one try/catch. A single SendGrid rejection at line 57 jumps to the catch, skipping every remaining reminder and never reaching `Promise.all`, so the lazily queued Prisma deletes for already-cancelled reminders are not run in that cron pass.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1386506
+   }
+  },
+  {
+   "issue": "i11",
+   "path": "scheduleEmailReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cancellation query in scheduleEmailReminders.ts does not restrict to scheduled EMAIL reminders. A reminder with a null referenceId, or an SMS reminder, is passed to SendGrid as an invalid batch_id, which causes API errors and prevents its deletion.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The query at packages/features/ee/workflows/api/scheduleEmailReminders.ts:44-51 does lack method/scheduled filters, but `cancelled: true` is only ever written at packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:225-232, after the `!referenceId` early-return delete at :203-211, and every caller invokes it only when `reminder.method === WorkflowMethods.EMAIL` (SMS reminders are deleted outright in smsReminderManager.ts). So no SMS or null-referenceId reminder can be cancelled and reach the SendGrid call at :57-64; the missing filter is a defensive gap, not a reachable bug.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.46725440000000007
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Cancellations in the cron are processed after the earlier delete-by-date logic. If the cron runs late, a cancelled reminder can be removed from the DB without a SendGrid cancellation request ever being sent.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/ee/workflows/api/scheduleEmailReminders.ts:34-41 the cron first deletes every EMAIL reminder with scheduledDate <= now regardless of the cancelled flag, and only afterwards (lines 44-74) looks up cancelled reminders to send the SendGrid cancel. Because emailReminderManager.ts now only sets cancelled=true instead of cancelling immediately, a cancelled reminder whose scheduledDate has passed before the cron reaches it is deleted with no cancel request ever sent.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.311865
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch uses prisma.workflowReminder.delete where callers previously used deleteMany. delete throws P2025 when the row is already gone.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes the callers' `deleteMany({where:{id}})` calls (handleCancelBooking.ts, bookings.tsx, workflows.tsx) and replaces them with `prisma.workflowReminder.delete` at smsReminderManager.ts:182, emailReminderManager.ts:204 and scheduleEmailReminders.ts:66, which does throw P2025 on a missing row. Every one of those sites sits inside a try/catch that only logs, so the effect is a logged error rather than a crash.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.33826799999999996
+   }
+  },
+  {
+   "issue": "i14",
+   "path": "emailReminderManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The SendGrid scheduled_sends cancel request is duplicated in the cron and in emailReminderManager.ts:214-221.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The same POST to /v3/user/scheduled_sends with {batch_id, status: \"cancel\"} appears in the cron at packages/features/ee/workflows/api/scheduleEmailReminders.ts:57-64 and in packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:214-221; the patch adds the cron copy instead of reusing a shared helper.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2807108
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "twilio.cancelSMS and the row delete share one try block. If cancelSMS throws, the row is not deleted, whereas the old callers deleted it regardless of the Twilio result.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/ee/workflows/lib/reminders/smsReminderManager.ts:178-189, `twilio.cancelSMS` (line 180) and `prisma.workflowReminder.delete` (lines 182-186) sit in one try block, so a throw from cancelSMS (Twilio error or `assertTwilio` failing, twilioProvider.ts:48-51) skips the delete and is only logged. The patch removes the unconditional `workflowReminder.deleteMany` calls the old callers ran independently of the un-awaited Twilio call (e.g. handleCancelBooking.ts, bookings.tsx, workflows.tsx).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3047912
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "About 60 lines inside a commented-out block are re-indented with no behaviour change.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The last hunk of packages/trpc/server/routers/viewer/workflows.tsx only strips leading whitespace from lines at 904-960, all inside the commented-out `testAction` block (comment opens at :848, reopens at :901, closes at :967), so there is no behaviour change. The count is loose: 38 lines are actually re-indented, within a 63-line hunk.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3870683
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Deferred cancellation only sets cancelled=true and relies on the 15-minute cron, which cancels only reminders due within the next hour. A booking cancelled shortly before its reminder's send time, after the last cron pass, still gets the reminder email.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "With no `immediateDelete` flag, `deleteScheduledEmailReminder` only sets `cancelled: true` (packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:225-232), and the booking-cancel path calls it that way (handleCancelBooking.ts in the patch). The real SendGrid cancel happens only in the cron handler (packages/features/ee/workflows/api/scheduleEmailReminders.ts:44-64), which runs every 15 minutes (.github/workflows/cron-scheduleEmailReminders.yml:8), so a booking cancelled after the last pass before `sendAt` still gets the email, and the next pass just deletes the past-due row (scheduleEmailReminders.ts:34-41).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4096799
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The EMAIL/SMS reminder-deletion dispatch block is duplicated at 7 call sites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The same `if (reminder.method === WorkflowMethods.EMAIL) deleteScheduledEmailReminder(...) else if (... SMS) deleteScheduledSMSReminder(...)` block appears at exactly 7 call sites: packages/trpc/server/routers/viewer/workflows.tsx:213, :377, :520, :575; packages/trpc/server/routers/viewer/bookings.tsx:489; packages/features/bookings/lib/handleCancelBooking.ts:487; packages/features/bookings/lib/handleNewBooking.ts:967. They differ only in the optional `immediateDelete` argument.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3723442
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover the new cancel lifecycle or the reschedule paths.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds no test files, and no test or e2e file in the repo references `deleteScheduledEmailReminder`, `deleteScheduledSMSReminder`, `workflowReminder`, the `cancelled` flag or the `scheduleEmailReminders` cron (packages/features/ee/workflows/api/scheduleEmailReminders.ts:43-77). apps/web/playwright/reschedule.e2e.ts:21-212 does drive the reschedule flows, but never creates workflow reminders, so the new cancellation loops in handleNewBooking.ts:964-975 and bookings.tsx:488-494 run over empty arrays.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.43277829999999995
+   }
+  },
+  {
+   "issue": "i20",
+   "path": "WorkflowStepContainer.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In WorkflowStepContainer.tsx, the verify button is not disabled while sendVerificationCodeMutation is loading, so multiple verification SMS sends can be triggered.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The button that calls `sendVerificationCodeMutation.mutate` (the \"send_code\" button, not the \"Verify\" button the claim names) is disabled only by `numberVerified` at packages/features/ee/workflows/components/WorkflowStepContainer.tsx:410-416, with no `isLoading` guard, so repeated clicks can fire multiple sends; the patch only re-indented this block and the old code had the same `disabled={numberVerified || false}`.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.20201550000000001
+   }
+  },
+  {
+   "issue": "i21",
+   "path": "schema.prisma",
+   "line": null,
+   "severity": "Minor",
+   "claim": "schema.prisma has no composite index on (cancelled, scheduledDate) for WorkflowReminder.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The `WorkflowReminder` model at packages/prisma/schema.prisma:634-645 has no `@@index` at all (only the `@id` and the `@unique` on `referenceId`), and the patch's migration only adds the `cancelled` column, while the new cron query filters on `cancelled: true` plus a `scheduledDate` range (change.patch:127-128).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08794260000000001
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The boolean immediateDelete parameter makes deleteScheduledEmailReminder do two different jobs. In the immediate path it deletes nothing and relies on an undocumented precondition that the caller cascade-deletes the row.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:213-223 the `immediateDelete` branch only posts a SendGrid batch cancel and returns, with no `workflowReminder` delete or `cancelled` update, while the default path at :225-232 soft-flags the row for the cron instead. The callers passing `true` (packages/trpc/server/routers/viewer/workflows.tsx:214 and :521) rely on the following `workflow.deleteMany` / `workflowStep.delete` cascade (:220, :527) to remove the row, and nothing documents that requirement.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4361791
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new 'cancelled' field on WorkflowReminder is nullable without a default of false, so existing records can have null values.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/prisma/schema.prisma:644 declares `cancelled Boolean?` with no `@default(false)`, and the migration at packages/prisma/migrations/20230217230604_add_cancelled_to_workflow_reminder/migration.sql:2 adds the column as a plain nullable `BOOLEAN`, so existing and newly created rows hold NULL. The only reader filters on `cancelled: true` (packages/features/ee/workflows/api/scheduleEmailReminders.ts:46), so NULL currently behaves like false and nothing breaks.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1315203
+   }
+  },
+  {
+   "issue": "i24",
+   "path": "WorkflowStepContainer.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In WorkflowStepContainer.tsx, verification can be submitted with an empty phone number or empty code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The Verify button's onClick at packages/features/ee/workflows/components/WorkflowStepContainer.tsx:450-454 calls verifyPhoneNumberMutation.mutate with `sendTo || \"\"` and the raw `verificationCode` state (initially \"\", line 66) with no emptiness guard or disabled check beyond isLoading (line 449); the `required` attributes do not block an onClick, and the server schema is plain `z.string()` (packages/trpc/server/routers/viewer/workflows.tsx:1082-1087). The pre-patch code had the identical handler; the patch only un-nested and re-indented this block.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5395495
+   }
+  },
+  {
+   "issue": "i25",
+   "path": "WorkflowStepContainer.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In WorkflowStepContainer.tsx, the 'Verification code' placeholder and the 'Verify' button label are hardcoded strings that bypass i18n.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/ee/workflows/components/WorkflowStepContainer.tsx:439 has the literal `placeholder=\"Verification code\"` and line 456 the literal button label `Verify`, while neighbouring strings use `t(...)` (e.g. `t(\"send_code\")`, `t(\"number_verified\")`). Both literals already existed before the patch, which only re-indents that block (change.patch:284/301 removed, 238/265 re-added).",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.1513178
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

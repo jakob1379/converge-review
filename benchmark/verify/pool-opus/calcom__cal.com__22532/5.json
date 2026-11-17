@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {})` in packages/app-store/googlecalendar/lib/CalendarService.ts:1023-1024. It calls `prisma.selectedCalendar.updateMany` with empty data, and Prisma 5.x only adds `@updatedAt` (schema.prisma:860) when the update data is non-empty, so the timestamp is not bumped; this comes from Prisma's query-engine behaviour as I know it, not code in this repo. user.ts selects `updatedAt`, but nothing reads `SelectedCalendar.updatedAt`: the UI uses `CalendarCache.updatedAt` (connectedCalendars.handler.ts:31), so the call does nothing useful and adds a database round-trip on every run.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1272402
+}

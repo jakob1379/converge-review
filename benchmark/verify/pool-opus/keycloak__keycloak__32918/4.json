@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `idp.getOrganizationId() == null || BROKER_PUBLIC` to the public `LoginFilter.getLoginPredicate()` (server-spi IdentityProviderStorageProvider.java:254). `IdentityProviderBean.federatedProviderPredicate()` (IdentityProviderBean.java:225-227) uses that predicate directly, and it is the bean used whenever the Organization feature or realm organizations are off (FreeMarkerLoginFormsProvider.java:482-485), so a user's linked organization IdPs that are not public, which were shown before, are now filtered out.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2764617
+}

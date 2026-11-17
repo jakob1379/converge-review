@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:161-167 the legacy goroutine calls d.Legacy.DeleteCollection and then d.recordStorageDuration(err != nil, ..., startLegacy) at line 166, so the legacy duration lands in the storage histogram (pkg/apiserver/rest/metrics.go:59-62); the sibling Delete and Update goroutines use recordLegacyDuration (lines 113, 140).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1754907
+}

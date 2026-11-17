@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/lib/server/service/insightsBooking.ts:154-168, teamIds always includes options.orgId, but userIdsFromOrg is only fetched when teamsFromOrg.length > 0 (line 158). Otherwise it is [], so the personal-booking clause (\"isTeamBooking\" = false) is never added and org members' personal bookings are left out. The patch did not touch these lines, and the legacy code at packages/features/insights/server/trpc-router.ts:88 has the same pattern.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0792305
+}

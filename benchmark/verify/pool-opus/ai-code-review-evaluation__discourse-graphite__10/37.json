@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/assets/javascripts/discourse/models/store.js.es6:197-200, `hydrated` is the result of `obj[k].map(...)`. That result is always an array, and arrays are truthy even when empty. If `obj[k]` is null or undefined, the `.map` call throws before reaching the `||`, so `|| []` can never take effect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0382749
+}

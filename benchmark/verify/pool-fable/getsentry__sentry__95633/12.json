@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`identifier` is indeed unused in `track_calls` (tests/sentry/uptime/consumers/test_results_consumer.py:1746-1747), but the repo has no Ruff configuration at all; linting is flake8 (setup.cfg:86-109, .pre-commit-config.yaml:45), which has no unused-argument rule enabled. The parameter is also required because the function is the `side_effect` for a mock called as `(identifier, result)` (line 1749).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.19941009999999998
+}

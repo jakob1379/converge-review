@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At scripts/test-gcal-webhooks.sh:5, ENV_FILE=\"../.env\" is resolved against the directory the script is run from, not the script's own location, and nothing in the repo calls the script from a fixed directory. If it is run from the repo root, lines 62-70 create or edit a .env outside the repo instead of the project's .env.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0482295
+}

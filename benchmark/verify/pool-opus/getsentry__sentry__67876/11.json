@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new OAuthLoginView (integration.py, patch lines 101-113), state is pipeline.signature, an md5 of view class names (pipeline/base.py:132-133). That value is the same for every user, which is why the tests hard-code 9cae5e88\u2026. The authorize URL is built with an f-string without urlencode, and failures return error() without logging, whereas OAuth2LoginView/OAuth2CallbackView (identity/oauth2.py:245-252, 293-345) use secrets.token_hex(), urlencode(params) and pipeline.logger.info.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1368755
+}

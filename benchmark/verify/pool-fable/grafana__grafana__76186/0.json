@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/plugins/log/fake.go:46-48 has `FromContext` return `NewTestLogger()` rather than `f`, and pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go:58 logs via `m.logger.FromContext(ctx).Info(...)`, so those calls would not be recorded on the original TestLogger. No test in the repo currently asserts on a TestLogger passed through that path, and the existing `New()` at fake.go:18-20 behaves the same way, so the effect is latent.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1824112
+}

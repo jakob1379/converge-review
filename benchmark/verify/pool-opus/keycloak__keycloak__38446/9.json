@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodeInputLoginBean.java:19-21 calls credentialModelOpt.get() and getNextRecoveryAuthnCode().get() with no check. The patch now saves the codes in user storage whenever updateCredential succeeds (CredentialHelper.createRecoveryCodesCredential), and configuredFor (RecoveryAuthnCodesFormAuthenticator.java:149) asks that provider. A provider that keeps the default CredentialInputUpdater.getCredentials (server-spi CredentialInputUpdater.java:50, which returns Stream.empty()) therefore leaves RecoveryAuthnCodesUtils.getCredential empty, and the login form throws NoSuchElementException.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21962169999999998
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.canManage() (GroupPermissionsV2.java:65-71, added by the patch) returns hasPermission(null, VIEW, MANAGE), so an all-groups VIEW grant is enough to pass it. GroupPermissions.requireManage() (GroupPermissions.java:279-283) relies only on canManage(), and GroupsResource.addTopLevelGroup (GroupsResource.java:181-202) checks nothing else before createGroup or moveGroup(child, null).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1213904
+}

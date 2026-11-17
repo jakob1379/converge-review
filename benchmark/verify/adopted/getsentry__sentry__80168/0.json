@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At grouptype.py:11-12, MetricAlertDetectorHandler subclasses StatefulDetectorHandler with only `pass`, so it does not implement the abstract counter_names, get_dedupe_value, get_group_key_values or the new build_occurrence_and_event_data (processors/detector.py:142-170). Because of that, the handler construction at models/detector.py:86 raises TypeError for metric_alert_fire detectors (grouptype.py:27), and process_detectors (processors/detector.py:53) has no guard, so the error stops the whole batch. No production code calls process_detectors yet, so the crash is latent.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1911011
+}

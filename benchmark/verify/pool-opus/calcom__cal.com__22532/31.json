@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new deleteCache procedure at packages/trpc/server/routers/viewer/calendars/_router.tsx:29 validates its input with z.object({ credentialId: z.number() }), with no .int() or .positive(). This has little effect because deleteCache.handler.ts looks the credential up by id and userId and throws if none is found, so an invalid id is still rejected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.055246300000000005
+}

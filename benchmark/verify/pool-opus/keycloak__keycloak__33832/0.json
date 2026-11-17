@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In AuthzClientCryptoProvider.java:114-115, each call writes into a fresh ASN1Encoder's private ByteArrayOutputStream and the result is thrown away. The return at 117-121 encodes rBigInteger and sBigInteger again with new encoders, so lines 114-115 do nothing.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0428737
+}

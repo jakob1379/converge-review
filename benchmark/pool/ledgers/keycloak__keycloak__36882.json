@@ -1,0 +1,137 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`picocli.exit()` is used for the feature-disabled exit code and calls `System.exit()` directly. This hard-terminates the JVM and makes the following `return` unreachable.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The PR has no changelog or release-note entry for the exit-code renumbering, the new rolling-updates preview feature, or the requirement that update-compatibility now needs --features=rolling-updates.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The guide documents exit code 1 for a missing or corrupt metadata file, but the code throws PropertyException, which exits with code 2 (usage error).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "UpdateCompatibilityCheck.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Tests run only the 'update-compatibility metadata' subcommand with the feature disabled. The separate feature gate in UpdateCompatibilityCheck.run() (lines 46-50) is never exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The exit-code contract was renumbered (recreate 4->3, feature-disabled=4), but no test asserts either value. testFeatureNotEnabled and testIncompatible check only the message text.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The default-strategy test case returns before the rolling-updates feature flag is enabled, so the `null` branch no longer covers the rolling-update path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The documentation table describes exit code 4 as 'Rolling Upgrade is not possible'. Exit code 4 is also returned when the feature is disabled, with the message 'Unable to use this command...'. The table therefore conflates a disabled tool with a compatibility verdict and does not cover the metadata command returning 4.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The CAUTION documentation block (lines 446-450) says the Operator will fail unless the rolling-updates feature is enabled. The operator code does not check this feature, spec.update.strategy is not gated, and the default `<not set>` strategy works without it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": "UpdateCompatibilityCheck.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "UpdateCompatibilityCheck.run() line 46 calls Profile.isFeatureEnabled(...) without ensuring Profile is initialized. This throws NullPointerException if Profile.getInstance() is null.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": "UpdateCompatibilityCheck.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The same feature-disabled guard (isFeatureEnabled / printFeatureDisabled / exit(FEATURE_DISABLED) / return) is duplicated in UpdateCompatibilityCheck.run() and UpdateCompatibilityMetadata.run() at lines 46-50 instead of being centralized in AbstractUpdatesCommand.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The documentation macro hard-codes --features=rolling-updates after the user's parameters. This overrides features set via KC_FEATURES or keycloak.conf, and may not take effect on an --optimized image because features are build-time.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RECREATE_UPGRADE_EXIT_CODE was changed from 4 to 3, which changes the exit code that existing scripts consume.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

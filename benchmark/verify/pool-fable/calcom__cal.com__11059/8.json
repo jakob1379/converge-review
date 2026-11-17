@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:25-27 sets a falsy `refresh_token` to the literal \"refresh_token\". office365calendar/lib/CalendarService.ts:263-272 spreads that data over the stored credentials (its schema at :56 makes `refresh_token` optional) and writes it to the DB, and zoomvideo/lib/VideoApiAdapter.ts:104-124 assigns `key.refresh_token = newTokens.refresh_token` and persists it \u2014 for Zoom this only bites in credential-sync mode, since its normal schema requires the field.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.6209059
+}

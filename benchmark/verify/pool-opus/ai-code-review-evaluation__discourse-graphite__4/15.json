@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/jobs/scheduled/poll_feed.rb:30 calls `open(SiteSetting.feed_polling_url)` with open-uri loaded. A value that isn't a scheme:// URL falls through to Kernel#open, so an admin-set value starting with '|cmd' runs a shell command. TopicEmbed.import_remote (topic_embed.rb:48) also calls bare `open(url)`. The public embed path is guarded because URI('|...') raises and TopicRetriever#invalid_host? rejects it (topic_retriever.rb:15-18), but the Disqus importer passes links from the export file with no check.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.16637919999999998
+}

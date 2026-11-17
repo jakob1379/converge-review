@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "RolePermissions.java:302 does call checkAdminRoles(role), but the old line (`if (root.users().canManageDefault()) return checkAdminRoles(role);`, patch line 773) already did that, so the patch only changes the condition and keeps the manage-users shortcut. The checkAdminRoles call is a deliberate guard against granting admin roles the caller does not hold (lines 290-291), not a lost shortcut.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0906197
+}

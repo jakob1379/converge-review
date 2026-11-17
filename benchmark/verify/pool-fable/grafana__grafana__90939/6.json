@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the package-level `entryPointAssetsCacheMu sync.RWMutex` next to the existing global `entryPointAssetsCache` at pkg/api/webassets/webassets.go:35-38, and contribute/backend/style-guide.md:185-189 says to avoid global variables as a general rule. The cache global itself pre-dates the patch, and the patch marks it with a TODO to remove the global state.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1156547
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:31 calls appCredentialWebhookRequestBodySchema.parse(req.body) and :57-59 calls JSON.parse(symmetricDecrypt(...)) with no try/catch, and the handler is a bare default export (:17) with no defaultResponder or other error-mapping wrapper. A ZodError, a createDecipheriv/final throw (packages/lib/crypto.ts:37-39) or a JSON SyntaxError therefore propagates uncaught and Next.js answers 500.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1271592
+}

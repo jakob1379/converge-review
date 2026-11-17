@@ -1,0 +1,302 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In admin-ui, error-invalid-multivalued-size was rewritten from i18next {{0}}/{{1}}/{{2}} placeholders to Java MessageFormat {0}..{2,choice,...} syntax. The Admin UI loads it with plain i18next and no ICU plugin, so the raw template text is shown instead of interpolated values.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In account-ui, error-invalid-multivalued-size was changed from i18next {{N}} placeholders to MessageFormat {N}/choice syntax. account-ui uses default i18next interpolation without i18next-icu, so the string renders with raw placeholders.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "messages_zh_CN.properties",
+   "line": null,
+   "severity": "Minor",
+   "claim": "totpStep1 in the Simplified Chinese locale file messages_zh_CN.properties uses Traditional Chinese characters (\u624b\u6a5f, \u5b89\u88dd, \u61c9\u7528\u7a0b\u5f0f) instead of Simplified forms (\u624b\u673a, \u5b89\u88c5, \u5e94\u7528\u7a0b\u5e8f).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "messages_lt.properties",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the Lithuanian bundles messages_lt.properties (account totpStep1 and login loginTotpStep1), the value was replaced with the Italian text 'Installa una delle seguenti applicazioni sul tuo cellulare:' instead of Lithuanian.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "normalizeValue has special cases for specific keys (templateHelp, optimizeLookupHelp, linkExpirationFormatter, error-invalid-multivalued-size, email RTL styles) that bypass parts of sanitization.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In verifySafeHtml, failures reading the file or its derived _en counterpart are rethrown as raw RuntimeException instead of MojoExecutionException, which is inconsistent with the rest of verify().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Anchors are matched by position against the English string, so a valid translation that reorders links is flagged. In addition, ANCHOR_PATTERN </?a[^>]*> also matches <abbr>, <area> and <audio>.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The method name 'santizeAnchors' is misspelled; it should be 'sanitizeAnchors'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": "pom.xml",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new dependencies, including owasp-java-html-sanitizer 20240325.1, have hard-coded versions in the module pom.xml. This duplicates the root pom.xml owasp.html.sanitizer.version property instead of being managed centrally, which allows version drift.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The check compares the value to the sanitizer's re-serialized output instead of checking that nothing was removed. As a result, equivalent markup such as <br/>, </ b> or < p> fails the build.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "POLICY_SOME_HTML, POLICY_NO_HTML and HTML_TAGS use constant naming but are non-static instance fields rebuilt per instance. This is inconsistent with the private static final ANCHOR_PATTERN.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": "messages_ka.properties",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In messages_ka.properties, lines 172, 174, 451 and 452 use '<br />{0}' without a space, while other locales use '<br /> {0}'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The common prefix/suffix trimming that builds the 'Illegal HTML' message does not cap start+end at the shorter string length. Overlapping indices make substring throw StringIndexOutOfBoundsException and abort the Mojo.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Anchor sanitization consumes English matcher groups without validating counts, so a translation with more anchor tags than the English text can produce incorrect validation results.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'Didn't find anchor tag \u2026 in original string' error message omits the message key and file, unlike the 'Illegal HTML' message.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commons-text dependency version 1.13.0 is outdated compared with 1.15.0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "All tests are positive detections, and no test asserts that a valid bundle yields zero messages. The duplicate-keys assertion was loosened from contains to hasItem.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The theme verifier anchor check does not fail when a translation drops an anchor present in the source, so translations can lose links and still pass.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "For allowlisted keys, the whole {N,choice,...} block is replaced with '...' before sanitizing, so HTML inside a translator-supplied choice branch passes the check.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The owasp-java-html-sanitizer dependency version 20240325.1 is outdated compared with 20260313.1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Email bundle detection uses file.getAbsolutePath().contains('email'), and English path derivation uses replaceAll over the absolute path. A checkout directory containing 'email' or 'resources-community' therefore changes behaviour for every file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The sanitize/unescape/strip-comment/trim-diff pipeline and the commons-text dependency duplicate functionality available through OWASP's HtmlChangeListener.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test fixture value 'Some <div>tag</div' has a malformed closing tag missing '>'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getEnglishValue uses MissingResourceException for control flow instead of checking bundleEnglish.containsKey(key).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new translator-facing HTML rules (HTML only where English has HTML; only br/p/strong/b; anchors identical to English) are not documented.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "santizeAnchors modifies value via replaceFirst while iterating matches, which can misbehave with repeated identical anchors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "santizeAnchors and getEnglishValue take an unused key parameter, and 'numberic' is misspelled at L94.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

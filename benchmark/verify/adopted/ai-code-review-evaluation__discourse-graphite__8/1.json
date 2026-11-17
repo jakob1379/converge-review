@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/groups_controller.rb:22-26 the patch now applies limit 50 to every group by default. Before, it returned all members of non-automatic groups and 200 for automatic ones. The public page loads only the first page: Group.findMembers in models/group.js sends limit 50 and offset 0, and group-members.js.es6:11 calls it once. templates/group/members.hbs has no next/previous controls, and there is no group-members controller or view, so members after the 50th cannot be reached.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1690995
+}

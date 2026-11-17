@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/routes.rb:440-441 maps GET `t/:slug/:topic_id/unsubscribe` to `topics#unsubscribe`, and app/controllers/topics_controller.rb:98-113 changes and saves `tu.notification_level` with no token or key; `protect_from_forgery` (application_controller.rb:21) does not cover GET and `check_xhr` is skipped for this action (topics_controller.rb:32), so a cross-site GET with the session cookie triggers it. The only limit is that the user must already have a TopicUser row for the topic (otherwise `tu` is nil and the action errors).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3463111
+}

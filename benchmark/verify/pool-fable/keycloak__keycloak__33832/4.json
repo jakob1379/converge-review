@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AuthzClient.create now calls CryptoIntegration.init(AuthzClient.class.getClassLoader()) (authz/client/src/main/java/org/keycloak/authorization/client/AuthzClient.java:95), and init only assigns the static cryptoProvider when it is null (common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:30-33), so a later init with a different class loader cannot replace the stub; only an explicit setProvider (CryptoIntegration.java:96) can. AuthzClientCryptoProvider throws UnsupportedOperationException from 16 of its 20 methods, e.g. getAlgorithmProvider, getPemUtils, getKeyFactory, getSignature (authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/AuthzClientCryptoProvider.java:74-224).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4133896
+}

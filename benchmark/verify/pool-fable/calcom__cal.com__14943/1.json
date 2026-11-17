@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/ee/workflows/api/scheduleSMSReminders.ts:184 and :195 write `retryCount: reminder.retryCount + 1` using the value read by the earlier findMany (select at :58), not Prisma's atomic `{ increment: 1 }`, so two overlapping runs that both read the same value write the same result and one increment is lost. The practical effect is limited to an extra retry before the `retryCount > 1` cleanup at :39 deletes the reminder.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1017072
+}

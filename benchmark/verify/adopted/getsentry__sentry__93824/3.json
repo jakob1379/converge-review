@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch gives each process a `SpansBuffer(shards)` holding only its shard subset (flusher.py:152). That buffer's `flush_segments` divides the option by `len(self.assigned_shards)` (buffer.py:382-384), so each process can fetch up to the full `spans.buffer.max-flush-segments`, which defaults.py:2716 documents as a per-cycle limit, and the total grows with the process count. The `any_shard_at_limit` threshold at buffer.py:411 rises the same way, so `backpressure_since` (flusher.py:172) gets set later.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13150900000000001
+}

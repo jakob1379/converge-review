@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At requestReschedule.handler.ts:240-242 the true branch `[bookingToReschedule?.destinationCalendar]` only runs once `bookingToReschedule?.destinationCalendar` is truthy, so the second `?.` does nothing. `bookingToReschedule` also can't be null there: it comes from `findFirstOrThrow` (line 43) and is checked again at line 105.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0753502
+}

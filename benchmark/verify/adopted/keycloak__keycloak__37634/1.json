@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientCredentialsGrantType.java:140-141 builds the token with tokenManager.responseBuilder(...).generateAccessToken(), which goes through createClientAccessToken and then initToken (TokenManager.java:1205, 613, 1053). Nothing on that path sets Constants.GRANT_TYPE; the only setters are OAuth2GrantTypeBase:109, ROPC:134, TokenManager:248, PreAuthorizedCodeGrantType:82 and StandardTokenExchangeProvider:237, so DefaultTokenContextEncoderProvider.java:57 falls back to 'na' and the 'cc' shortcut registered by the patch is never emitted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19322669999999997
+}

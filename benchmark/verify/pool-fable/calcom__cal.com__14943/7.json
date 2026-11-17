@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts the `continue` at lines 68-70 (missing workflowStep or booking) and the else-less `if (message?.length && message?.length > 0 && sendTo)` at line 158 (a fall-through, not a `continue`) both leave retryCount untouched; it is only incremented at lines 178-186 and 190-197. Such reminders are re-processed on every cron run until the scheduledDate-based delete at lines 33-36 removes them, though neither path calls Twilio.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1588577
+}

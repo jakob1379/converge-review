@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "runShardSplitQuery makes one applyTemplateVariables call per target (shardQuerySplitting.ts:52). Each of the 4 shard sub-requests then goes through runSplitQuery (shardQuerySplitting.ts:163), and the patch makes runSplitQuery call applyTemplateVariables for every target too (querySplitting.ts patch line 39), so the test at shardQuerySplitting.test.ts:112 correctly expects 1 + 4 = 5 calls.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0986349
+}

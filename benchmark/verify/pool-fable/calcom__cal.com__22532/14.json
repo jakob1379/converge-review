@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Before the patch the Alert branch showed DisconnectIntegration gated only on `!delegationCredentialId`; it now renders CredentialActionsDropdown with `disableConnectionModification` (packages/platform/atoms/selected-calendars/wrappers/SelectedCalendarsSettingsWebWrapper.tsx:124-131), and `canDisconnect = !delegationCredentialId && !disableConnectionModification` hides 'Remove app' (packages/features/apps/components/CredentialActionsDropdown.tsx:68,113). The only caller setting the flag is the event-type advanced tab (packages/features/eventtypes/components/tabs/advanced/EventAdvancedTab.tsx:375), so broken credentials can no longer be removed there, though the main calendar settings page is unaffected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.35285389999999994
+}

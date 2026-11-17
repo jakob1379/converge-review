@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/javascripts/embed.js:19 (patch line 88), `iframe.height = e.data.height + \"px\"` uses the received value after only a truthiness check. It is never parsed (e.g. parseInt) or checked to be a positive number; the only guard is the loose `discourseUrl.indexOf(e.origin)` origin check at embed.js:15.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1547595
+}

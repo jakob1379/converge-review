@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "BlockedEmail.should_block? does `record.save` on the stats from inside EmailValidator (lib/validators/email_validator.rb:183). In Rails 3.2.12, save/save! run validation inside with_transaction_returning_status, and that transaction is rolled back when validation fails. So when User.create_for_email's `user.save!` (app/models/user.rb:103) or EmailToken.confirm's `user.save!` inside `User.transaction` (app/models/email_token.rb:45-53) fails on a blocked email, the match_count/last_match_at update is lost.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1310506
+}

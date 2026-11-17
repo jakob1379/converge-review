@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "GrafanaRuleListItem.tsx (patch line 1073) passes only `promRule` to RuleActionsButtons. AlertRuleMenu.tsx:96/126 shows 'Silence' when the Prom-based `grafanaSilenceAbility` allows it, but RuleActionsButtons.V2.tsx:104 renders SilenceGrafanaRuleDrawer only when `rulerRuleType.grafana.alertingRule(rule)` is true, and `rule` is undefined here, so the click sets state and no drawer appears.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.33078280000000004
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/post.rb:133 returns `raw` unsanitised when cook_method is raw_html, and topic_embed.rb:22 sets that mode for content from the feed (poll_feed.rb:35 only runs CGI.unescapeHTML) and from Readability (topic_embed.rb:48-50 keeps href/src with any scheme). cook_method stays on the post and is reapplied whenever it is re-cooked (post.rb:321, process_post.rb:13), so later edits are also stored raw and rendered with `raw post.cooked` (best.html.erb:19).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.18196869999999996
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/groups_controller.rb:71-72 does `usernames.split(\",\")` with no strip, and `User.find_by_username` (app/models/user.rb:175-176) only downcases, so \"alice, bob\" silently skips bob while still returning success. Blank entries are harmless (they just match nobody), and the UI joins with a bare \",\" (user-selector.js.es6:52), so only the whitespace half holds and only for direct API callers.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3717628
+}

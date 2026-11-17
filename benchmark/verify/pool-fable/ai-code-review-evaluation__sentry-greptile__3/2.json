@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "src/sentry/testutils/factories.py:353 does use `if client_sample_rate:` and so skips 0, but 0 is not a valid rate: production code at src/sentry/event_manager.py:786 only accepts `0 < client_sample_rate <= 1`, and tests/sentry/event_manager/test_event_manager.py:3115-3127 expects a rate of 0 to be ignored. Skipping 0 in this test-only helper therefore matches intended behaviour.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2217084
+}

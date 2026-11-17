@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The same `if (reminder.method === WorkflowMethods.EMAIL) deleteScheduledEmailReminder(...) else if (... SMS) deleteScheduledSMSReminder(...)` block appears at exactly 7 call sites: packages/trpc/server/routers/viewer/workflows.tsx:213, :377, :520, :575; packages/trpc/server/routers/viewer/bookings.tsx:489; packages/features/bookings/lib/handleCancelBooking.ts:487; packages/features/bookings/lib/handleNewBooking.ts:967. They differ only in the optional `immediateDelete` argument.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3723442
+}

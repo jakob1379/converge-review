@@ -1,0 +1,332 @@
+{
+ "findings": [
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 133,
+   "severity": "Critical",
+   "claim": "On any day with a date override, a slot inside the override window returns true at `if (dateOverrideExist) return true;` before `busy.every(...)` runs. Existing bookings and calendar busy times are ignored, which allows double bookings on the fixed-host and round-robin host paths.",
+   "evidence": "All three seats reason the same early return (lines 133-135); before the patch the busy check always ran. superpowers reports repro.mjs case 3 printing true (predicate level only; the orchestrator did not observe this). Proposed red tests: mattpocock snippet 1 in override-ignores-busy.test-snippet.ts (booking at 09:30Z inside the IST override); open-code-review adds a booking for user 101 at plus2 08:30-09:29:59Z and expects 08:30Z absent. Neither has been run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted by unanimous correctness-seat agreement plus an advisory seat. Before fixing, the proposed getSchedule booking-on-override-day test must be shown red on the pinned code. Gate not run.",
+   "list": "main"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 138,
+   "severity": "Critical",
+   "claim": "The working-hours check uses `workingHours.find(day matches && slot outside wh)`, which means 'outside ANY range' instead of 'inside SOME range'. Any day with more than one working-hours entry loses valid slots. This covers split hours such as 09-12 plus 13-17, and hours that getWorkingHours splits at UTC midnight. The branch now runs for every fixed host, including all personal event types.",
+   "evidence": "open-code-review and superpowers cite packages/lib/availability.ts getWorkingHours splitting America/Los_Angeles 9-17 into [1-5] 1020-1439 plus [2-6] 0-60. The seats disagree on magnitude: open-code-review says the last hour of Mon-Thu is lost, superpowers says all Tue-Fri slots are lost. mattpocock notes `isFixed: !schedulingType` (line 369) widens the reach. superpowers reports repro.mjs cases 1 and 2 printing true (seat-reported). Proposed red test (open-code-review): a single user with 09:00-12:00 and 13:00-17:00 UTC on all days expects slots and gets none. Not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Severity normalised to Critical (2 of 3 seats; it removes availability for common schedules on every event type). Needs the split-hours getSchedule test made red first.",
+   "list": "main"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 142,
+   "severity": "Important",
+   "claim": "In the working-hours check, `end` is computed from `slotStartTime` instead of `slotEndTime`. A slot that runs past the end of working hours is never rejected.",
+   "evidence": "All four seats identify the copy-paste at line 142. ponytail example: hours 9:00-17:00, 60-min event, 30-min interval; the 16:30 slot ending 17:30 passes. ponytail says this is reachable for collective events where another fixed host's override replaces the combined working hours. Reasoned; no seat ran a test.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Red test still to be written: a slot whose end exceeds working hours must be absent. Fix by using slotEndTime.",
+   "list": "main"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 107,
+   "severity": "Important",
+   "claim": "An override is matched to slots by the UTC calendar date of its shifted start (`format(\"YYYY MM DD\")`), not by the organizer's local date. An override near local midnight therefore lands on the adjacent UTC date, and every slot on that date outside the window is rejected. Overrides east of UTC wipe the previous day, and those west of UTC wipe the next day. In-override slots on the other UTC date skip the override. Separately, `dayjs(date.start)...format()` uses the server's local zone while `slotStartTime` is UTC, so results depend on the server TZ.",
+   "evidence": "Seat examples: IST unavailable override 00:00 D becomes D-1 18:30Z (mattpocock); Australia/Sydney Jan 10 09:00-12:00 local (open-code-review); UTC-7 18:00-20:00 Nov 17 (superpowers). superpowers reports repro.mjs case 4 printing true (seat-reported). Proposed red test: mattpocock snippet 2 (unavailable override on plus3, expects all 8 plus2 slots). Not run.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Severity normalised to Important (open-code-review and superpowers say Important; mattpocock says Critical). Needs snippet 2 shown red first.",
+   "list": "main"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 123,
+   "severity": "Important",
+   "claim": "The override containment check only tests `slotEndTime <= start` and `slotStartTime.isAfter(end)`. Slots that partially overlap the override are accepted: one that starts inside and ends after it, one that starts before and ends inside it, and one that starts exactly at the override end. In round-robin this is the only per-host gate, so a host can be assigned a slot past their override.",
+   "evidence": "mattpocock (lines 117-125), open-code-review (line 123; example: host B override 09:00-12:00 assigned 11:30-12:30), superpowers (line 124). Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Severity normalised to Important (2 of 3; superpowers rated Minor). Red test to write: a slot straddling the override end must be absent.",
+   "list": "main"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 114,
+   "severity": "Minor",
+   "claim": "`dayjs(a) === dayjs(b)` compares object identity and is always false. The intended start==end 'unavailable all day' branch is dead code, and a slot starting exactly at that instant falls through.",
+   "evidence": "All four seats agree on identity comparison. superpowers notes getSlots masks it in practice.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Delete the branch or use `.isSame(...)`. Severity normalised to Minor (ponytail rated Important).",
+   "list": "main"
+  },
+  {
+   "path": "packages/lib/slots.ts",
+   "line": 206,
+   "severity": "Important",
+   "claim": "The `activeOverrides` day filter still selects the invitee day by treating the organizer wall-clock value (stored as if UTC) as a real instant. The offset correction is only half applied, so the shifted override can land on the wrong invitee day.",
+   "evidence": "Shared example from mattpocock and superpowers: IST override 02:00-05:00 (or 02:00-04:00) on D viewed by a UTC invitee is selected for D and shifted to 20:30Z, but the real instant is D-1. open-code-review names this as the cause of its finding 5 (lines 205-207 unchanged). Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted as a spec gap against the PR title. Needs a red getSchedule test with a cross-midnight override and an invitee in another zone.",
+   "list": "main"
+  },
+  {
+   "path": "packages/lib/slots.ts",
+   "line": 218,
+   "severity": "Important",
+   "claim": "`startTime`/`endTime` are computed as `hour()*60+minute()` with no day carry. When the shifted override crosses the invitee's midnight, `endTime < startTime` and buildSlots skips the range (`if (start >= end) continue`). Working hours for that day were already removed, so the day has zero slots. This regression is new.",
+   "evidence": "Seat examples: IST 14:00-18:00 viewed from +12:00 gives 20:30-00:30 (mattpocock); New_York 09:00-17:00 viewed from Asia/Kolkata gives 1110 to 150 (open-code-review); +6 05:00-08:00 viewed from UTC gives 23:00 to 02:00 (superpowers). Reasoned.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Needs a red test where the override wraps the invitee's midnight and slots are expected.",
+   "list": "main"
+  },
+  {
+   "path": "packages/lib/slots.ts",
+   "line": 212,
+   "severity": "Minor",
+   "claim": "`TimeRange.timeZone` is optional. When it is undefined, `.tz(undefined)` silently falls back to the process timezone, so results depend on the host machine.",
+   "evidence": "schedule.d.ts makes timeZone optional. superpowers says only getSchedule passes overrides today, so this is latent. ponytail notes TeamAvailabilityTimes callers appear not to pass dateOverrides.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Latent per seat reports: no current getSlots caller reaches it without timeZone. Defer with a `ponytail:` comment at packages/lib/slots.ts:212 recommending the field be required or the fallback be explicit.",
+   "list": "main"
+  },
+  {
+   "path": "packages/lib/slots.ts",
+   "line": 213,
+   "severity": "Minor",
+   "claim": "`dayjs(override.start.toString())` round-trips through non-ISO `Date#toString()` output. That parsing is engine-dependent and drops milliseconds; `dayjs(override.start)` is sufficient.",
+   "evidence": "open-code-review and superpowers flag the engine-dependent parse; ponytail flags the string round trip as redundant (same code, same fix).",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. One-line change to pass the Date directly.",
+   "list": "main"
+  },
+  {
+   "path": "apps/web/test/lib/getSchedule.test.ts",
+   "line": 788,
+   "severity": "Minor",
+   "claim": "The only new test covers a single fixed host in a second invitee timezone and reuses the +5:30 day window (18:30Z) for Asia/Dhaka (+6:00). It does not exercise round-robin or loose hosts (the branch's purpose), busy times on override days, cross-UTC-midnight hours, split hours, or the new working-hours branch. None of the main-list bugs would be caught. This breaches the PR-template checklist item 'added tests that prove my fix is effective'.",
+   "evidence": "mattpocock cites .github/PULL_REQUEST_TEMPLATE.md. open-code-review and superpowers note findings 1-5 pass this test.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Accepted. Severity normalised to Minor (superpowers rated Important). Correct the Dhaka window to 18:00Z. The red tests for the accepted findings supply the missing coverage.",
+   "list": "main"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 103,
+   "severity": "Important",
+   "claim": "The override check uses `.find()` with a side-effecting `dateOverrideExist` flag. With two override ranges on one day, every slot is outside one of them, so all slots that day are rejected.",
+   "evidence": "ponytail reasoned (9:00-10:00 plus 14:00-15:00 example); no test has two ranges on one day.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: raised by one seat (advisory). Not reported and not fixed under the merge rule.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/slots.ts",
+   "line": 212,
+   "severity": "Minor",
+   "claim": "The UTC offset is taken at the fake-UTC wall-clock instant, so it can be wrong on DST-transition days.",
+   "evidence": "open-code-review, reasoned.",
+   "seats": [
+    "open-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 107,
+   "severity": "Minor",
+   "claim": "The offset comes from the stored UTC-labelled time instead of the actual local time, so it can be wrong on DST-transition dates.",
+   "evidence": "superpowers, reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 110,
+   "severity": "Minor",
+   "claim": "`dayjs(date.start).add(utcOffset, \"minutes\")` (and the end equivalent) is rebuilt four times; compute once per override.",
+   "evidence": "mattpocock smell (lines 110-123); ponytail finding 1.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats, both advisory.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/slots.ts",
+   "line": 219,
+   "severity": "Minor",
+   "claim": "The `dayjs(override.start).utc().add(offset,\"minute\")` chain is built twice each for start and end.",
+   "evidence": "mattpocock smell (lines 219-222); ponytail finding 5 (lines 218-223).",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/slots.ts",
+   "line": 211,
+   "severity": "Minor",
+   "claim": "`flatMap` returns a single object per override; it should be `map`.",
+   "evidence": "ponytail finding 5.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Mysterious name: the `organizerTimeZone` parameter of checkIfIsAvailable receives each host's timezone, not the organizer's.",
+   "evidence": "mattpocock smell.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/lib/slots.ts",
+   "line": 212,
+   "severity": "Minor",
+   "claim": "Mysterious name: `organizerUtcOffset` is the override owner's offset.",
+   "evidence": "mattpocock smell.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 585,
+   "severity": "Minor",
+   "claim": "The selected-slots checkIfIsAvailable call looks up userSchedule (line 579) and passes organizerTimeZone, but it passes no dateOverrides or workingHours. The lookup is dead work run per slot per user, and the prop is never read.",
+   "evidence": "mattpocock (speculative generality, line 585); ponytail finding 4 (lines 579, 585).",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 82,
+   "severity": "Minor",
+   "claim": "`organizerTimeZone: x.timeZone` duplicates the `timeZone` already spread in through `...schedule`/`...userSchedule`; checkIfIsAvailable could take `timeZone` directly.",
+   "evidence": "ponytail finding 6 (lines 82, 93, 492, 517).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": 87,
+   "severity": "Minor",
+   "claim": "The inline type `dateOverrides?: { start: Date; end: Date }[]` duplicates `TimeRange[]` from @calcom/types/schedule.",
+   "evidence": "ponytail finding 7 (lines 87-90).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/slots.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Scope / spec gap: the title promises a timezone fix, but the patch also newly enforces working hours and overrides in checkIfIsAvailable for every fixed host, including personal event types. The title does not cover this behaviour change.",
+   "evidence": "superpowers (spec-gap item); mattpocock (finding 3 notes the reach beyond round robin via `isFixed: !schedulingType`, line 369).",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats report reviewing all four patch files: apps/web/test/lib/getSchedule.test.ts, packages/lib/slots.ts, packages/trpc/server/routers/viewer/slots.ts, packages/types/schedule.d.ts. Caveats: open-code-review's OCR tool excluded the test file by default path, but the seat read it by hand; ponytail read the test file for over-engineering only; schedule.d.ts only adds the optional timeZone field. Axes that did not run: (1) The gate was not run (benchmark mode), so this review is unanchored and no finding has gate-backed ground truth. (2) No seat ran the project's lint, build or tests because node_modules is absent. mattpocock's two test snippets and open-code-review's proposed tests are unrun. superpowers reports running a standalone repro.mjs at predicate level only; the orchestrator did not observe that output. No red test exists yet for any accepted Critical or Important finding. (3) No spec was given; intent was inferred from the PR title and the branch fix/round-robin-date-override. (4) Standards docs are limited to CONTRIBUTING.md, .github/PULL_REQUEST_TEMPLATE.md and packages/config/eslint-preset.js; there is no AGENTS.md, CLAUDE.md or CODING_STANDARDS. (5) No reviewer from another model family filled a correctness seat. (6) Rejections: none. No seat report disproves another seat's claim. On the multi-block working-hours finding the seats disagree only on magnitude (last hour vs all of Tue-Fri)."
+}

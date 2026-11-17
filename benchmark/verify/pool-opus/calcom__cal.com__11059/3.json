@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/salesforce/lib/CalendarService.ts:96 (added by the patch) calls `prisma.credential.update`, but the file's imports (lines 1-20) never import prisma. TypeScript accepts the name only because of the global declared in packages/prisma/index.ts:6-9, and `globalThis.prisma` is set only when NODE_ENV !== 'production' (packages/prisma/index.ts:58-60), so in production getClient would throw a ReferenceError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0935251
+}

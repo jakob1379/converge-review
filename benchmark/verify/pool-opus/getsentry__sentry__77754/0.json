@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/services/assignment_source.py:18 (patch line 80) sets `queued: datetime = timezone.now()` as a plain dataclass default. Python evaluates it once when the class is defined, so every instance built without a value, including through `from_integration` (lines 20-25), gets the import-time timestamp. The fix is `field(default_factory=timezone.now)`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.05949599999999999
+}

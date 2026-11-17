@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The loop the patch adds (GroupTest.java around patch lines 88-96) checks for a SUCCESSFUL status, calls fail() if it isn't, and wraps the response in try-with-resources. ApiUtil.getCreatedId (tests/utils/src/main/java/org/keycloak/tests/utils/admin/ApiUtil.java:53-59) already asserts a 201 status and closes the response, so the extra code adds nothing except the reason phrase in the error message.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06767000000000001
+}

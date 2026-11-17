@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes useAllAlertRuleAbilities (useAbilities.ts:396) to call groupIdentifier.fromCombinedRule. For non-Grafana rules, that function calls getDatasourceAPIUid (groupIdentifier.ts:21-22), which throws `Datasource \"...\" not found` when the name isn't in getAllDataSources() (datasource.ts:299-306). The old path, getRulesSourceName (datasource.ts:238-240), only read the name and never threw; the patch also had to change RuleDetails.test.tsx to pass a registered mimir data source so the cloud-rule tests would pass.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.268312
+}

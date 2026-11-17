@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The only caller that passes add_unsubscribe_link: true is app/mailers/user_notifications.rb:294, and the patch now passes unsubscribe_url there (line 295); RejectionMailer blocks that option and no plugins use it, so nothing hits the missing-interpolation error. Non-English locales do keep the old string, which only drops the new link and causes no error.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.16073369999999998
+}

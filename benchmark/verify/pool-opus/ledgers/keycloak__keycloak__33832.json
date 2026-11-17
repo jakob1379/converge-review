@@ -1,0 +1,419 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "AuthzClientCryptoProvider.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In concatenatedRSToASN1DER, lines 114-115 call ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) and discard the results. The return statement at lines 117-121 repeats the encoding with new encoders, so lines 114-115 are dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In AuthzClientCryptoProvider.java:114-115, each call writes into a fresh ASN1Encoder's private ByteArrayOutputStream and the result is thrown away. The return at 117-121 encodes rBigInteger and sBigInteger again with new encoders, so lines 114-115 do nothing.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0428737
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "CryptoIntegration.detectProvider() no longer throws the fail-fast 'Multiple crypto providers loaded' IllegalStateException; it picks the highest order() instead. The Default, Elytron and FIPS1402 providers all return 200, so a tie is decided by ServiceLoader/classpath order. For example, a FIPS deployment with a stray crypto-default jar can run on non-FIPS BouncyCastle without failing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch removes the 'Multiple crypto providers loaded' IllegalStateException from CryptoIntegration.detectProvider (common/.../CryptoIntegration.java:55-73). It now sorts the providers by order() from highest to lowest and returns the first one, logging the rest only at debug level. DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider all return 200, so the stable sort leaves a tie in ServiceLoader/classpath order. The Quarkus server is not affected because it calls CryptoIntegration.setProvider explicitly (KeycloakRecorder.java:214), but any caller of init() is.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1738889
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "int order() is added to the public CryptoProvider SPI interface as an abstract method with no default. External implementations stop compiling, and already-compiled ones throw AbstractMethodError when the detectProvider comparator calls order().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `int order();` to CryptoProvider with no default body (common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java:44), and CryptoIntegration.java:57 sorts with `Comparator.comparingInt(CryptoProvider::order)`. Only the four providers in this repository implement order(), so any outside implementation stops compiling, and an already-compiled one throws AbstractMethodError when it is sorted.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0464903
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Crypto is initialized with AuthzClient.class.getClassLoader() instead of the thread context class loader. CryptoProvider implementations visible only through the context class loader can be missed, and the wrong provider may be selected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "AuthzClient.java:95 does pass AuthzClient.class.getClassLoader(), but that is a deliberate choice that follows the codebase's own pattern (KeycloakApplication.java:89 does the same). The loader can always see the AuthzClientCryptoProvider shipped in the same jar (META-INF/services), and any default, FIPS or Elytron provider on that classpath ranks above it by order(). Nothing in the repository shows a provider reachable only through the thread context class loader, so the claimed missed or wrong selection is speculative rather than a defect.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1772134
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "AuthzClient.create now calls CryptoIntegration.init, which sets JVM-global first-caller-wins crypto state. If only the stub provider is visible, it stays pinned for the JVM, and most of its methods throw UnsupportedOperationException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "AuthzClient.create now calls CryptoIntegration.init(AuthzClient.class.getClassLoader()) (AuthzClient.java:95). That method only sets the static volatile cryptoProvider when it is still null (CryptoIntegration.java:29-38), so the first caller wins for the whole JVM; later init calls with another classloader can only replace it via setProvider. If that classloader sees only the new AuthzClientCryptoProvider (order 100), the stub gets pinned, and almost all of its methods throw UnsupportedOperationException (getCertificateUtils, getPemUtils, getKeyFactory, getSignature, getX509CertFactory, etc.; patch lines 439-589).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.18281179999999997
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getBouncyCastleProvider() returns the provider of the default KeyStore type (e.g. SUN for JKS), not a BouncyCastle provider. As a result, BouncyIntegration.PROVIDER is derived incorrectly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The code does return the default KeyStore provider (e.g. SUN), at change.patch:425-431. That is on purpose: AuthzClientCryptoProvider is the order-100 fallback used only when no BouncyCastle provider is present, and BouncyIntegration.loadProvider already falls back to a JDK provider in that case (common/.../BouncyIntegration.java:34-36). In common/core/authz-client, PROVIDER is only used in a debug log (CryptoIntegration.java:34), so the value derived is not wrong.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1560415
+   }
+  },
+  {
+   "issue": "i7",
+   "path": "ASN1Decoder.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "For indefinite-length encoding (0x80), ASN1Decoder.readLength() returns -1, and callers do not handle it. readSequence skips its loop or computes length arithmetic on -1, and readInteger calls read(-1), which throws NegativeArraySizeException instead of IOException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In ASN1Decoder.java:133-134, readLength() returns -1 for 0x80 and no caller checks for it. readSequence's `while (length > 0)` loop (line 57) never runs, so it returns an empty list. readInteger passes -1 straight to read() (line 72), whose `new byte[length]` (line 170) throws NegativeArraySizeException, not IOException; readNext (lines 80-82) also adds -1 to the header size and reads too few bytes.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.07762730000000001
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The DER decoder implements general-purpose high-tag-number and indefinite-length decoding. DER ECDSA signatures only need a 0x30 SEQUENCE containing two 0x02 INTEGERs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the new ASN1Decoder.java (patch lines 141-173), readTagNumber fully decodes multi-byte high-tag-number tags, and readLength recognises the 0x80 indefinite-length marker by returning -1 (patch lines 181-182), although nothing actually decodes indefinite-length content. All the ECDSA path needs is readSequence (0x30) plus readInteger (0x02), so this general-purpose logic is more than it requires.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0661951
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In DER parsing, a zero-length INTEGER throws NumberFormatException instead of being handled as a parse error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In ASN1Decoder.readInteger (authz/client/.../util/crypto/ASN1Decoder.java, patch lines 119-121), a length byte of 0 makes read(0) return an empty array, and `new BigInteger(new byte[0])` then throws an unchecked NumberFormatException (\"Zero length BigInteger\"). Nothing checks for or wraps this, so it never becomes an IOException parse error, and asn1derToConcatenatedRS (AuthzClientCryptoProvider, patch lines 497-498) passes it straight to the caller.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15114139999999998
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No upgrade/migration or release note is provided for the breaking CryptoProvider SPI change, although PR-CHECKLIST.md requires one.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds an abstract `int order()` with no default to the public `CryptoProvider` interface (common/.../CryptoProvider.java:39-44), so any outside implementation stops compiling. The patch has no docs or release-note changes, and `docs/` never mentions CryptoProvider. PR-CHECKLIST.md:9 asks for release-note and upgrade-guide updates \"if applicable\", in this PR or an associated one, so this only weakly breaks a rule for what is mostly an internal SPI.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1713098
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The ES256, ES384 and ES512 tests in ECDSAAlgorithmTest all use one key from the default-curve KeyPairGenerator.getInstance(\"EC\"). Curve-appropriate key sizes (P-384, P-521) and the DER long-form length paths (length > 127 in ASN1Encoder.writeLength / ASN1Decoder.readLength) are therefore never exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The ECDSAAlgorithmTest constructor (patch lines 663-665) makes a single key with KeyPairGenerator.getInstance(\"EC\").genKeyPair(), which uses the JDK's default curve, normally P-256. testES256, testES384 and testES512 (lines 681-694) all sign with that one key, so each DER signature is a SEQUENCE of two roughly 32-byte INTEGERs, about 70 bytes. That stays under 128, so the long-form branches in ASN1Encoder.writeLength (length > 127, line 324) and ASN1Decoder.readLength (line 185) never run; only a real P-521 key for ES512 would produce DER over 127 bytes.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15512269999999997
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers the new order()-based provider selection logic in CryptoIntegration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds sorting by order() and drops the multiple-providers exception in common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:57-71, but its only new test, authz/client/.../test/ECDSAAlgorithmTest.java, creates AuthzClientCryptoProvider directly and checks only ECDSA round-trips. The only order() match under src/test is services/.../DefaultKeycloakSessionFactoryTest.java:126, which is about ProviderFactory, not CryptoIntegration.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15508629999999998
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "detectProvider instantiates every CryptoProvider via ServiceLoader, so constructor side effects of non-selected providers still occur. For example, the FIPS provider inserts Security providers even when it is not selected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:56-58 collects every provider from the ServiceLoader, which constructs each one, before sorting and keeping only the first. FIPS1402Provider's constructor (crypto/fips1402/.../FIPS1402Provider.java:94-100) calls Security.insertProviderAt for the Keycloak FIPS, BCFIPS and BCJSSE providers and changes security properties, even if the selection at CryptoIntegration.java:71 returns a different provider.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.18935
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An org.hamcrest:hamcrest test-scope dependency is added but not used. ECDSAAlgorithmTest imports only org.junit.Assert and org.junit.Test.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds an org.hamcrest:hamcrest test-scope dependency to authz/client/pom.xml (patch lines 15-19), but ECDSAAlgorithmTest.java, the only test file in the module, imports only org.junit.Assert and org.junit.Test (lines 649-650). It calls only Assert.assertArrayEquals, and nothing else in authz/client refers to hamcrest.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1572689
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "CryptoIntegration.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The ignored-providers debug line passes a runtime-built string as the debugf format string, so a '%' in it would be misinterpreted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "CryptoIntegration.java (patch lines 724-728) builds a StringBuilder from the fixed prefix and provider class names, then calls `logger.debugf(builder.toString())`, so that runtime string is used as the printf format. In practice a '%' cannot appear, because Java class names cannot contain it, so this is a misuse of the logging API rather than a bug anyone can hit.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0587342
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The ignored-providers debug message leaves a trailing ', ' in its output.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:66-69, the loop adds \", \" after every ignored provider name, including the last one, and nothing removes it before logger.debugf, so the message ends with a trailing \", \".",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0343089
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "concatenatedRSToASN1DER() assumes signature.length == signLength without validating it. A malformed signature can throw ArrayIndexOutOfBoundsException instead of IOException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new AuthzClientCryptoProvider.java:103-110 (patch lines 467-474) calls System.arraycopy(signature, len, s, 1, len) without checking signature.length, so a signature shorter than signLength throws ArrayIndexOutOfBoundsException and a longer one is silently truncated. The impact is small: callers such as core/.../ECDSASignatureVerifierContext.java:28-33 catch Exception and turn it into a VerificationException, and the same unchecked pattern already exists in BCECDSACryptoProvider.java:28-35.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1921062
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The ECDSA tests only check a self round-trip, comparing rsConcat to rsConcat2. The DER output is never verified independently (e.g. with Signature.verify), so a symmetric encoder/decoder bug would pass.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java:675-678, the test decodes the JDK signature, re-encodes it to DER (asn1Des), decodes that again and asserts only rsConcat == rsConcat2. Nothing checks asn1Des against the original `sign` bytes or with Signature.verify, and nothing checks that rsConcat is correct, so matching encoder/decoder bugs would still pass.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.149448
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "DER parsing ignores trailing bytes after the parsed structure.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In ASN1Decoder.java, readSequence() (patch lines ~97-111) and readInteger() (~113-122) return once they have read the declared length and never check that the stream is empty (is.available()==0 / count==limit), so extra bytes after the outer SEQUENCE are silently accepted by asn1derToConcatenatedRS (AuthzClientCryptoProvider.java:125). The only caller is the signing path (core ECDSASignatureSignerContext.java:33), which passes signatures produced locally by JCA, never attacker input.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.167887
+   }
+  },
+  {
+   "issue": "i20",
+   "path": "ASN1Decoder.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ASN1Decoder tag checks mask the tag with 0x1f, ignoring the class and constructed bits.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In ASN1Decoder.java:94 `readTagNumber` computes `tag & 0x1f`, and `readSequence` (lines 51-52) and `readInteger` (lines 67-68) compare only that number with SEQUENCE/INTEGER, so the class and constructed bits are never checked (for example, a context-specific tag 0xA2 would pass as INTEGER). The leniency only matters for malformed DER, and the decoder here only parses ECDSA signatures that the local signer produced (the patch's DER-to-concatenated conversion), so the practical effect is small.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0581028
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit message's issue link 'closes #33831' is lowercase and not on a separate trailing line, as CONTRIBUTING.md requires ('Closes #1234').",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "change.patch is a plain diff with no commit message. The string '33831' appears nowhere in the patch or verify directory, so there is no source to check the 'closes #33831' wording or line placement against the 'Closes #1234' rule in CONTRIBUTING.md:119.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.16196429999999998
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Untouched code is reformatted with whitespace-only changes at CryptoProvider.java:94, DefaultCryptoProvider.java:186 and FIPS1402Provider.java:203,208,230,234, contrary to CONTRIBUTING.md.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch only strips trailing whitespace from lines it otherwise leaves alone: CryptoProvider.java:94, DefaultCryptoProvider.java:186 and FIPS1402Provider.java:203, 208, 230 and 234. CONTRIBUTING.md:63 says not to format code unrelated to the contribution.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1592385
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An identical 'return 200' order() override is copy-pasted into DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider because order() has no default implementation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `int order();` to the CryptoProvider interface without a default implementation (common/.../CryptoProvider.java:~43). It then adds the same `public int order() { return 200; }` override to DefaultCryptoProvider.java:~82, WildFlyElytronProvider.java:~75 and FIPS1402Provider.java:~113.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0578976
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

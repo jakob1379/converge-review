@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodesUtils.getCredential (RecoveryAuthnCodesUtils.java:101-107, added by the patch) reads getFederatedCredentialsStream() first and falls back to getStoredCredentialsByTypeStream() only if nothing is found. Before the patch, RecoveryAuthnCodesFormAuthenticator.java:80 and RecoveryAuthnCodeInputLoginBean read only local stored credentials. This looks intentional: it matches UserCredentialManager.isValid and updateCredential (model/storage/.../UserCredentialManager.java:66-77, 86-98), which already check federated storage before local storage.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.22426000000000001
+}

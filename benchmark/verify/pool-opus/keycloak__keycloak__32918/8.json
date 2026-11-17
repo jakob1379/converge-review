@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new OrganizationCacheTest.testCacheIDPForLogin, the loop over FetchMode.values() with assertNull/assertNotNull on cacheKeyForLogin appears five times (patch lines 247, 288, 312, 329, 365). The REALM_ONLY/ORG_ONLY/ALL getForLogin plus assertNotNull/assertEquals size block appears three times (patch lines 254-267, 336-349, 372-385).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0796757
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/authz/rbac/service.go:342-368, getCachedIdentityPermissions repeats the identity-type switch from getIdentityPermissions (lines 330-339). It returns the GetUserIdentifiers store error or an 'unsupported identity type' error as well as cache.ErrNotFound, and both Check (`if err == nil`) and List (`else` branch) treat any non-nil error as a cache miss and fall back to getIdentityPermissions.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1137194
+}

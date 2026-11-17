@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch caches login results under a single key per realm and FetchMode, `cacheKeyForLogin(realm, mode)` (InfinispanIdentityProviderStorageProvider.java:32-34), with one map entry per organization. On a miss for a new org it calls `invalidateObject` (line 97), which bumps the revision (CacheManager.java:131-137), then builds a new `IdentityProviderListQuery` that copies the whole previous map (IdentityProviderListQuery.java:39-44). Two transactions missing different orgs at once each bump the revision, so the older revision is skipped by `addRevisioned` (CacheManager.java:165,175), and any login-IdP create, update or remove invalidates every mode's key and drops the results for all orgs (lines 125-161).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1615769
+}

@@ -1,0 +1,567 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/37038",
+ "cost_usd": 0.1202357,
+ "items": [
+  {
+   "id": "c1",
+   "source": "coderabbit",
+   "text": "requireManageMembers() Javadoc points at canManage() but should point at canManageMembership(GroupModel)"
+  },
+  {
+   "id": "c2",
+   "source": "coderabbit",
+   "text": "RealmAdminPermissionsConfig adds AdminRoles.QUERY_GROUPS to shared fixture, which may hide regressions in Groups resource-type permission path for tests that shouldn't satisfy the group list gate"
+  },
+  {
+   "id": "c3",
+   "source": "coderabbit",
+   "text": "getGroupIdsWithViewPermission() uses groupResource.getId() (authorization resource IDs) instead of groupResource.getName() (Keycloak group IDs), causing permission checks to miss intended per-group resources and returning UUIDs that downstream group filters cannot match"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "V2 canManage() returns hasPermission(null, VIEW, MANAGE), so an all-groups VIEW-only permission grants global group manage, causing privilege escalation"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "getGroupIdsWithViewPermission javadoc says '@return Stream of IDs' but the method returns Set<String>"
+  },
+  {
+   "id": "c6",
+   "source": "augment",
+   "text": "canManage() falls back to hasPermission(... VIEW, MANAGE), which means a principal with only view on Groups could satisfy auth.groups().requireManage() (e.g., GroupsResource.addTopLevelGroup). That seems to broaden write access beyond manage scope and could allow unintended group modifications."
+  },
+  {
+   "id": "c7",
+   "source": "cubic-v2",
+   "text": "This drops support for V2's global group-view permission. `canView(group)` does not include the realm-wide `canView()` check, so flat group listings can become empty for admins who have global Groups VIEW/MANAGE but no per-group grants."
+  },
+  {
+   "id": "c8",
+   "source": "converge-review-replay",
+   "text": "Javadoc for getGroupIdsWithViewPermission omits that V2 returns the type-resource ID instead of actual group IDs."
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "V1 feature check moved from event time to listener registration time, so runs that enable V1 at runtime with skipRestart=true never register the role/client/group-removed cleanup listener"
+  },
+  {
+   "id": "c10",
+   "source": "claude-code",
+   "text": "Per-group VIEW_MEMBERS permissions are non-functional in V2, breaking getUsersCount and the DB-level group filtering optimization in user searches"
+  },
+  {
+   "id": "c11",
+   "source": "coderabbit",
+   "text": "@return tags say Stream but the method returns Set<String>"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "getGroupIdsWithViewPermission() returns authz resource IDs instead of group IDs and only sees the all-groups type resource, breaking user search/count for group-scoped admins"
+  },
+  {
+   "id": "c13",
+   "source": "coderabbit",
+   "text": "response.getLocation() can be null even with 201 status, causing NPE - should add explicit null assertion before parsing the path"
+  },
+  {
+   "id": "c14",
+   "source": "coderabbit",
+   "text": "UserPermissionsV2 dropped the AdminRoles.ADMIN fast-path shortcut - users granted only the umbrella admin role will fail canView/canManage/canMapRoles/canManageGroupMembership checks"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review-replay",
+   "text": "In V2, canManage() returns hasPermission(null, VIEW, MANAGE), allowing an admin with only all-groups VIEW permission to pass requireManage(). This lets them create top-level groups and move any existing group to top level, which should require MANAGE permission only."
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "switch(resourceType) throws NullPointerException for a null resource type where the old if-chain threw IllegalStateException"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "New Groups resource type and scopes (manage-membership, manage-members, view-members) ship without documentation"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "Javadoc for getGroupIdsWithViewPermission says '@return Stream of IDs' but the method returns Set<String>."
+  },
+  {
+   "id": "c19",
+   "source": "cubic-v2",
+   "text": "The feature guard only checks the V1 flag (`ADMIN_FINE_GRAINED_AUTHZ`), but this cleanup listener is also needed when V2 (`ADMIN_FINE_GRAINED_AUTHZ_V2`) is enabled. When a deployment runs V2 without V1, this listener is never registered, so removed roles, clients, and groups will leave orphaned permission resources."
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "getResourceName is not extended for GROUPS, so group permission resources render a null display name and the type resource lacks an 'All groups' label"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "New test file has copyright year 2024 on a 2025 file"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "getResourceTypeResource returns null then policyStore.findByResource(server, null) NPEs giving HTTP 500 on group checks for admins without MANAGE_USERS/VIEW_USERS roles"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "GroupsResource.addTopLevelGroup gates only on auth.groups().requireManage(), allowing a view-only admin to create top-level groups and move any group to top level via realm.moveGroup(child, null)"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review-replay",
+   "text": "Javadoc for requireManageMembers incorrectly says it throws when canManageMembership(GroupModel) is false, but the implementation actually checks canManageMembers."
+  },
+  {
+   "id": "c25",
+   "source": "converge-review-replay",
+   "text": "With only per-group VIEW_MEMBERS permission, getGroupIdsWithViewPermission() returns empty set, causing users().count() to return 0 while search returns members through post-filter, and pagination is applied before post-filter resulting in short pages."
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "Per-group resources are created without a type, so findByType returns only the type resource, causing /users to return empty for all-groups VIEW_MEMBERS/MANAGE_MEMBERS permissions"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review",
+   "text": "Stray ';;' at line 68 in new test file"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review",
+   "text": "No migration adds the Groups type resource and new scopes to realms whose admin-permissions client was initialised before this change; init() returns early when the client exists"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "hasPermission evaluates either the per-group resource or the all-groups type resource but never both, so once any per-group permission exists for group G, all-groups grants no longer apply to G"
+  },
+  {
+   "id": "c30",
+   "source": "coderabbit",
+   "text": "AdminPermissions listener for cleanup on role/client/group removal is only registered when ADMIN_FINE_GRAINED_AUTHZ is enabled, leaving orphaned authorization state in V2-only deployments"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "GroupPermissionsV2 hasPermission is missing the resourceId filter that UserPermissionsV2.hasPermission has to prevent permission leakage across resources"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review-replay",
+   "text": "Per-group resources are created untyped by resourceStore.create(), and findByType('Groups') only returns the type resource, not per-group resources. hasPermission falls back to type resource and adds the wrong UUID to the result set."
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "hasPermission is a third near-copy of the V2 evaluator (UserPermissionsV2:94-133, ClientPermissionsV2:207-235) and the copies have already diverged; should be shared on MgmtPermissionsV2"
+  },
+  {
+   "id": "c34",
+   "source": "coderabbit",
+   "text": "canManage() Javadoc says V2 VIEW is enough to manage groups, but this is incorrect - VIEW should not grant management rights"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review",
+   "text": "Deleting a group under FGAP v2 leaves its per-group authz resource and permissions orphaned; GroupRemovedEvent cleanup is registered only for V1 with no V2 replacement"
+  },
+  {
+   "id": "c36",
+   "source": "qodo-extended-v2",
+   "text": "getGroupIdsWithViewPermission returns wrong IDs - uses groupResource.getId() (the authorization framework's internal resource UUID) instead of groupResource.getName() (which stores the actual group ID), causing hasPermission() to fail per-group lookup and returning wrong IDs that won't match actual group IDs when used for user filtering"
+  },
+  {
+   "id": "c37",
+   "source": "qodo-extended-v2",
+   "text": "canManage() wrongly accepts VIEW permission - GroupPermissionsV2.canManage() (no-arg) checks both VIEW and MANAGE permissions via hasPermission(null, VIEW, MANAGE) with OR logic, allowing users with only VIEW permission to pass manage authorization checks and create top-level groups"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "Patch removed the canViewGlobal short-circuit in GroupsResource:113/GroupResource getSubGroups so every listing goes through canView(g), contradicting javadoc and test comments"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "try(Response)+assertEquals(CREATED)+ApiUtil.handleCreatedResponse is redundant now that handleCreatedResponse asserts 201 and closes the response"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review-replay",
+   "text": "getGroupIdsWithViewPermission() returns authz resource UUIDs instead of group IDs, causing GET /users and GET /users/count to return empty results when user has all-groups VIEW_MEMBERS/MANAGE_MEMBERS permission."
+  },
+  {
+   "id": "c41",
+   "source": "converge-review",
+   "text": "When group G has no per-group resource, evaluating the all-groups type resource pulls in every per-group permission, so a VIEW permission on group A grants VIEW on every group without its own resource"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review-replay",
+   "text": "GroupsResource.addTopLevelGroup is guarded only by auth.groups().requireManage(), so with the flawed canManage() check, users with VIEW-only permission can create top-level groups (expected 403, returns 201)."
+  },
+  {
+   "id": "c43",
+   "source": "converge-review",
+   "text": "Typo 'initializaed' in the @BeforeEach comment"
+  },
+  {
+   "id": "c44",
+   "source": "coderabbit",
+   "text": "canManage() method treats AdminPermissionsSchema.VIEW as sufficient for global group management by calling hasPermission(null, AdminPermissionsSchema.VIEW, AdminPermissionsSchema.MANAGE) - VIEW should not confer create/move authority"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "canView() javadoc says 'Or if it has a permission to VIEW or MANAGE groups' without the 'For V2 only' qualifier that canList/canManage carry; V1 canView() checks roles only"
+  },
+  {
+   "id": "c46",
+   "source": "augment",
+   "text": "In hasPermission, when no group-specific resource exists you call getResourceTypeResource(...) and then immediately policyStore.findByResource(server, resource); if resource is null (schema not initialized / missing resource), this will NPE. Consider handling a missing resource-type resource by returning false."
+  },
+  {
+   "id": "c47",
+   "source": "cubic-v2",
+   "text": "`groupResource.getId()` returns the authorization resource's internal ID, but `hasPermission()` uses its argument as a resource name via `resourceStore.findByName(server, groupId)`. For group resources, the name is the actual group ID. This means the lookup will fail to match, and the returned set will contain resource IDs instead of group IDs. Use `groupResource.getName()` instead."
+  },
+  {
+   "id": "c48",
+   "source": "converge-review",
+   "text": "No tests cover all-groups VIEW_MEMBERS/MANAGE_MEMBERS, users().count(), VIEW-only write attempts, or mixed all-groups and per-group permissions"
+  },
+  {
+   "id": "c49",
+   "source": "converge-review",
+   "text": "requireManageMembers javadoc says it throws when canManageMembership is false but implementation checks canManageMembers"
+  },
+  {
+   "id": "c50",
+   "source": "golden",
+   "text": "In GroupPermissionsV2.canManage(), the permission fallback checks for both VIEW and MANAGE scopes (hasPermission(null, AdminPermissionsSchema.VIEW, AdminPermissionsSchema.MANAGE)), but canManage() should only grant access for MANAGE scope, not VIEW. This means users with only VIEW permission on groups can pass the canManage() check, granting them write access they should not have. The canView() method correctly checks both VIEW and MANAGE, but canManage() should only check MANAGE."
+  },
+  {
+   "id": "c51",
+   "source": "converge-review",
+   "text": "Per-group VIEW_MEMBERS returns empty set causing getUsersCount to return 0 while /users returns members via post-filter; first/max applied before canView filter gives short pages"
+  },
+  {
+   "id": "c52",
+   "source": "claude-code",
+   "text": "AdminPermissionsSchema.getOrCreateResource() never calls resource.setType(resourceType) on individual group resources, so findByType(server, GROUPS_RESOURCE_TYPE, ...) cannot find them"
+  },
+  {
+   "id": "c53",
+   "source": "golden",
+   "text": "In getGroupIdsWithViewPermission, hasPermission is called with groupResource.getId() and the same groupResource.getId() is added to granted, but hasPermission resolves resources by name (treating the argument as a group id) and the GroupPermissionEvaluator contract says this method returns group IDs that are later used as UserModel.GROUPS and in getUsersCount group filters. This mismatch means per-group VIEW_MEMBERS/MANAGE_MEMBERS permissions may not yield the expected group IDs for filtering and counts, and evaluation may effectively only look at the type-level 'all-groups' resource; consider revisiting whether this should operate on the underlying group ids (resource names) instead so it aligns with the JPA queries and the interface contract."
+  },
+  {
+   "id": "c54",
+   "source": "coderabbit",
+   "text": "canMapRole() checks root.hasOneAdminRole(AdminRoles.MANAGE_USERS) then calls checkAdminRoles(role), removing the schema-level users-manage shortcut - should return true immediately when MANAGE_USERS is detected"
+  },
+  {
+   "id": "c55",
+   "source": "cubic-v2",
+   "text": "Privilege escalation: `canManage()` grants manage access to users who only have VIEW permission. The `AdminPermissionsSchema.VIEW` scope should be removed so only `MANAGE` scope is checked, consistent with `canManage(GroupModel group)`."
+  },
+  {
+   "id": "c56",
+   "source": "claude-code",
+   "text": "In GroupPermissionsV2.getGroupIdsWithViewPermission(), granted.add(groupResource.getId()) adds the authorization resource UUID instead of the group model ID - should be groupResource.getName()"
+  },
+  {
+   "id": "c57",
+   "source": "augment",
+   "text": "getGroupIdsWithViewPermission() uses groupResource.getId() (authz resource id) as if it were the Keycloak group id; hasPermission() also expects an identifier that can be resolved via resourceStore.findByName() (i.e., the resource name). This likely breaks group-scoped user visibility and can populate UserModel.GROUPS with unusable identifiers."
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "The requireManageMembers() Javadoc references canManage() when it should reference canManageMembership(GroupModel).",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The requireManageMembers Javadoc says it throws when canManageMembership(GroupModel) is false, but the implementation checks canManageMembers.",
+   "path": null,
+   "members": [
+    "c24",
+    "c49"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "RealmAdminPermissionsConfig adds AdminRoles.QUERY_GROUPS to the shared test fixture. This can hide regressions in the Groups resource-type permission path for tests that should not satisfy the group list gate.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "GroupPermissionsV2.getGroupIdsWithViewPermission() passes groupResource.getId() to hasPermission() and adds it to the result. That is the authorization resource ID, not the group ID (groupResource.getName()). hasPermission() resolves by name, so the per-group lookup fails, and the returned IDs do not match group IDs used in user filtering and counts.",
+   "path": null,
+   "members": [
+    "c3",
+    "c36",
+    "c47",
+    "c56",
+    "c57",
+    "c53",
+    "c12",
+    "c40"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "Per-group resources are created without a type, because getOrCreateResource() never calls setType. As a result, findByType(server, 'Groups', ...) returns only the all-groups type resource and not the per-group resources.",
+   "path": null,
+   "members": [
+    "c26",
+    "c32",
+    "c52"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "With only per-group VIEW_MEMBERS permission in V2, getGroupIdsWithViewPermission() returns an empty set. users().count()/getUsersCount then returns 0 while /users returns members through the post-filter. Pagination is applied before the canView post-filter, which produces short pages.",
+   "path": null,
+   "members": [
+    "c10",
+    "c25",
+    "c51"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The getGroupIdsWithViewPermission Javadoc says '@return Stream of IDs', but the method returns Set<String>.",
+   "path": null,
+   "members": [
+    "c5",
+    "c11",
+    "c18"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The getGroupIdsWithViewPermission Javadoc does not mention that V2 returns the type-resource ID instead of actual group IDs.",
+   "path": null,
+   "members": [
+    "c8"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "GroupPermissionsV2.canManage() (no-arg) falls back to hasPermission(null, VIEW, MANAGE). An admin with only all-groups VIEW permission therefore passes requireManage(). This lets them create top-level groups and move groups to top level in GroupsResource.addTopLevelGroup, which is guarded only by requireManage().",
+   "path": null,
+   "members": [
+    "c4",
+    "c6",
+    "c15",
+    "c37",
+    "c44",
+    "c50",
+    "c55",
+    "c23",
+    "c42"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The canManage() Javadoc states that V2 VIEW permission is enough to manage groups.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The canViewGlobal short-circuit was removed from group listing in GroupsResource and GroupResource getSubGroups, so every listing goes through canView(g), which lacks the realm-wide canView() check. Admins with global Groups VIEW/MANAGE but no per-group grants get empty listings.",
+   "path": null,
+   "members": [
+    "c7",
+    "c38"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The V1 feature check was moved from event time to listener registration time. Runs that enable V1 at runtime with skipRestart=true never register the role/client/group-removed cleanup listener.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The AdminPermissions cleanup listener for role/client/group removal is registered only when ADMIN_FINE_GRAINED_AUTHZ (V1) is enabled. In V2-only deployments, removed roles, clients and groups leave orphaned authorization resources and permissions.",
+   "path": null,
+   "members": [
+    "c19",
+    "c30",
+    "c35"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "response.getLocation() can be null even with a 201 status, which causes an NPE when parsing the path.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "UserPermissionsV2 dropped the AdminRoles.ADMIN fast-path. Users with only the umbrella admin role fail the canView/canManage/canMapRoles/canManageGroupMembership checks.",
+   "path": null,
+   "members": [
+    "c14"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The switch(resourceType) throws NullPointerException for a null resource type, where the previous if-chain threw IllegalStateException.",
+   "path": null,
+   "members": [
+    "c16"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The new Groups resource type and its scopes (manage-membership, manage-members, view-members) have no documentation.",
+   "path": null,
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "getResourceName is not extended for GROUPS. Group permission resources show a null display name, and the type resource has no 'All groups' label.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "The new test file has a copyright year of 2024.",
+   "path": null,
+   "members": [
+    "c21"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "In GroupPermissionsV2.hasPermission, getResourceTypeResource can return null, and the result is passed directly to policyStore.findByResource(server, null). This causes an NPE (HTTP 500) on group checks.",
+   "path": null,
+   "members": [
+    "c22",
+    "c46"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "There is a stray ';;' at line 68 of the new test file.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "No migration adds the Groups type resource and the new scopes to realms whose admin-permissions client already exists, because init() returns early in that case.",
+   "path": null,
+   "members": [
+    "c28"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "hasPermission evaluates either the per-group resource or the all-groups type resource, never both. Once a per-group permission exists for a group, all-groups grants no longer apply to it.",
+   "path": null,
+   "members": [
+    "c29"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "GroupPermissionsV2.hasPermission lacks the resourceId filter that UserPermissionsV2.hasPermission uses to prevent permission leakage across resources.",
+   "path": null,
+   "members": [
+    "c31"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "GroupPermissionsV2.hasPermission is a third near-copy of the V2 evaluator in UserPermissionsV2 and ClientPermissionsV2, and the copies have already diverged.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The test wraps the call in try(Response) and assertEquals(CREATED) before ApiUtil.handleCreatedResponse. This is redundant, since handleCreatedResponse already asserts 201 and closes the response.",
+   "path": null,
+   "members": [
+    "c39"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "When a group has no per-group resource, evaluating the all-groups type resource pulls in every per-group permission. A VIEW permission on one group therefore grants VIEW on every group that lacks its own resource.",
+   "path": null,
+   "members": [
+    "c41"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The @BeforeEach comment contains the typo 'initializaed'.",
+   "path": null,
+   "members": [
+    "c43"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "The canView() Javadoc says 'Or if it has a permission to VIEW or MANAGE groups' without the 'For V2 only' qualifier, but V1 canView() checks roles only.",
+   "path": null,
+   "members": [
+    "c45"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "There are no tests for all-groups VIEW_MEMBERS/MANAGE_MEMBERS, users().count(), VIEW-only write attempts, or mixed all-groups and per-group permissions.",
+   "path": null,
+   "members": [
+    "c48"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "canMapRole() checks root.hasOneAdminRole(AdminRoles.MANAGE_USERS) and then calls checkAdminRoles(role) instead of returning true, which removes the users-manage shortcut.",
+   "path": null,
+   "members": [
+    "c54"
+   ]
+  }
+ ]
+}

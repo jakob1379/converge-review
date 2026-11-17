@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "admin-group.js.es6:19 (patch line 19) computes totalPages as Math.floor(user_count/limit)+1, so 100/50 gives 3. With offset 50, currentPage is 2, which is not equal to totalPages, so showingLast is false (line 23). The `next` action (lines 58-61) then sets offset to min(100, 100) = 100, which loads an empty page 3.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.046246499999999996
+}

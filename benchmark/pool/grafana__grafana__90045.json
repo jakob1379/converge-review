@@ -1,0 +1,489 @@
+{
+ "pr_url": "https://github.com/grafana/grafana/pull/90045",
+ "cost_usd": 0.0911589,
+ "items": [
+  {
+   "id": "c1",
+   "source": "cubic-v2",
+   "text": "Use separate mocks for legacy and unified storage; a shared mock.Mock makes backend routing assertions indistinguishable."
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "Added github.com/grafana/grafana/pkg/apimachinery go.mod line duplicates the line above; go.work.sum churn is unrelated to the change"
+  },
+  {
+   "id": "c3",
+   "source": "augment",
+   "text": "recordStorageDuration is labeled with name here, but the metric's third label is kind; this will make the dual_writer_storage_duration_seconds{kind=...} series inconsistent with other methods"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "Background legacy writes (Create/Update/Delete/DeleteCollection goroutines) derive their context from the request ctx via context.WithTimeoutCause, so they can be cancelled when the handler returns and legacy silently drifts from unified storage"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "assert.NoError after meta.Accessor followed by acc.GetResourceVersion() will nil-panic if the accessor fails; style guide requires require.* for error checks"
+  },
+  {
+   "id": "c6",
+   "source": "augment",
+   "text": "On unified-store Create failure this records recordLegacyDuration using startStorage, which should be recordStorageDuration (otherwise the legacy duration metric will be polluted)"
+  },
+  {
+   "id": "c7",
+   "source": "converge-review",
+   "text": "Success-case setupLegacyFn blocks in Create and Update tests are duplicate/no-op expectations on the shared mock, and the Create error-case expectation is mislabelled as legacy"
+  },
+  {
+   "id": "c8",
+   "source": "claude-code",
+   "text": "Delete success path (line 106): passes name instead of options.Kind as the kind argument"
+  },
+  {
+   "id": "c9",
+   "source": "golden",
+   "text": "Inconsistency: using name instead of options.Kind for metrics recording differs from other methods."
+  },
+  {
+   "id": "c10",
+   "source": "claude-code",
+   "text": "DeleteCollection goroutine (line 166): calls recordStorageDuration for the legacy operation \u2014 should be recordLegacyDuration"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review-replay",
+   "text": "Async legacy writes in Create, Update, Delete and DeleteCollection derive their context from the request ctx with context.WithTimeoutCause. When the handler returns, the request ctx is cancelled, so legacy writes can be cancelled too, causing legacy to silently drift from unified storage and breaking rollback. The same pattern exists at dualwriter_mode1.go:54"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "Delete passes the object name instead of options.Kind as the 'kind' label to recordStorageDuration, creating an unbounded number of histogram series (high cardinality)"
+  },
+  {
+   "id": "c13",
+   "source": "qodo-extended-v2",
+   "text": "Mode3 Delete/DeleteCollection tests only mock unified storage calls but the implementation spawns async legacy calls on success, which will hit unmocked methods and fail"
+  },
+  {
+   "id": "c14",
+   "source": "qodo-extended-v2",
+   "text": "Mode3 DeleteCollection records the async legacy delete-collection duration into the storage histogram instead of legacy histogram"
+  },
+  {
+   "id": "c15",
+   "source": "claude-code",
+   "text": "Async goroutines derive child contexts from the request context, which may already be cancelled by the time the goroutine executes since the handler returns immediately after spawning the goroutine, causing legacy writes to fail silently"
+  },
+  {
+   "id": "c16",
+   "source": "coderabbit",
+   "text": "klog.NewContext uses d.Log instead of the enriched log variable, dropping the enriched fields"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "Duration metrics are recorded against the wrong store: Create and Update record a storage failure with recordLegacyDuration, and the DeleteCollection legacy goroutine records with recordStorageDuration"
+  },
+  {
+   "id": "c18",
+   "source": "cubic-v2",
+   "text": "The success path passes name (the object name) instead of options.Kind as the resource kind for the metric, creating a unique time series per deleted object and causing metric cardinality explosion."
+  },
+  {
+   "id": "c19",
+   "source": "augment",
+   "text": "Async legacy writes inherit the request ctx; if the apiserver cancels it when the request completes, the safe measure legacy write may be canceled before it runs"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review-replay",
+   "text": "Delete calls recordStorageDuration with the object `name` as the `kind` label value, causing unbounded label cardinality since each deleted object name creates a new histogram series. The same issue exists at dualwriter_mode1.go:155"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "Mode-3 unit tests cannot verify mode-3 behaviour: legacyStoreMock and storageMock share one mock.Mock, so 'legacy' expectations are satisfied by storage calls, and no test asserts reads skip legacy, that legacy is written, or waits for the goroutine"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "Update now passes the caller's raw objInfo to Legacy.Update in a goroutine, so legacy re-applies UpdatedObject against its own old object (re-running patch/admission after the request ended) and can store a different object than unified storage"
+  },
+  {
+   "id": "c23",
+   "source": "claude-code",
+   "text": "Update error path (line 129): calls recordLegacyDuration when storage fails \u2014 should be recordStorageDuration"
+  },
+  {
+   "id": "c24",
+   "source": "cubic-v2",
+   "text": "recordStorageDuration is called for the legacy DeleteCollection operation instead of recordLegacyDuration, recording the wrong metric."
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "Delete stores d.Log instead of the enriched log in the context via klog.NewContext(ctx, d.Log), dropping name/kind/method fields for downstream loggers"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "Create sends the caller's input obj (not created, not deep-copied) to the legacy goroutine, sharing it with the request path; potential data race on obj"
+  },
+  {
+   "id": "c27",
+   "source": "converge-review-replay",
+   "text": "Create's storage-error path records the failure with recordLegacyDuration (using startStorage) when it should use recordStorageDuration, corrupting legacy and storage duration metrics that gate the mode-3 rollout"
+  },
+  {
+   "id": "c28",
+   "source": "converge-review-replay",
+   "text": "Update hands the caller's raw objInfo to Legacy.Update in a goroutine. UpdatedObject is then re-run against legacy's own old object after the request has ended. For PATCH and server-side apply this can give legacy a different object than storage, and may race on handler state"
+  },
+  {
+   "id": "c29",
+   "source": "claude-code",
+   "text": "Logger context bug in Delete: ctx = klog.NewContext(ctx, d.Log) uses the base logger instead of the enriched log variable"
+  },
+  {
+   "id": "c30",
+   "source": "augment",
+   "text": "The async legacy Create uses obj (the pre-storage object) rather than created returned by unified storage, which can drop server-assigned fields and cause legacy/unified divergence"
+  },
+  {
+   "id": "c31",
+   "source": "augment",
+   "text": "Mode3 previously attempted legacy deletion even when unified storage returned NotFound; now any error from Storage.Delete returns early and skips the legacy cleanup, which may leave stray legacy objects during migrations"
+  },
+  {
+   "id": "c32",
+   "source": "coderabbit",
+   "text": "Delete metrics label uses resource name instead of kind, which can explode label cardinality and mislabel metrics"
+  },
+  {
+   "id": "c33",
+   "source": "coderabbit",
+   "text": "Metrics are attributed to the wrong path on failures - Create/Update error paths record legacy duration instead of storage duration, and DeleteCollection legacy goroutine records storage duration instead of legacy duration"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review",
+   "text": "return created, err always returns a nil err at that point since err was checked and returned earlier in the function"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review-replay",
+   "text": "Delete calls klog.NewContext(ctx, d.Log) when it should pass `log`, so the name, kind and method fields never reach downstream loggers. The same bug exists in mode 1"
+  },
+  {
+   "id": "c36",
+   "source": "qodo-extended-v2",
+   "text": "In Mode3 Update, a failure from unified storage is recorded via recordLegacyDuration instead of recordStorageDuration"
+  },
+  {
+   "id": "c37",
+   "source": "augment",
+   "text": "In TestMode3_Create, the failing case only stubs Legacy.Create, but Mode3 calls Storage.Create first; without a storage expectation this won't exercise the intended error path (and may panic due to an unexpected mock call)"
+  },
+  {
+   "id": "c38",
+   "source": "qodo-extended-v2",
+   "text": "In Update (line 129), when Storage.Update fails, the code records the duration using recordLegacyDuration instead of recordStorageDuration"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review",
+   "text": "Delete returns early on any storage error including NotFound, so objects that exist only in legacy can no longer be deleted and reappear after rollback to mode 1/2; previously NotFound from storage was tolerated and legacy delete still ran"
+  },
+  {
+   "id": "c40",
+   "source": "coderabbit",
+   "text": "Mode 3 async legacy writes can make test assertions race - doPlaylistTests validates legacy API results immediately after K8s writes, but in mode 3 legacy writes are fire-and-forget, causing potential flakiness"
+  },
+  {
+   "id": "c41",
+   "source": "converge-review-replay",
+   "text": "legacyStoreMock and storageMock share one *mock.Mock in mode-3 unit tests, preventing verification of mode 3's contract. Nothing checks that reads skip legacy or that legacy is written. No AssertExpectations or AssertNotCalled calls and no wait for the goroutine"
+  },
+  {
+   "id": "c42",
+   "source": "golden",
+   "text": "The context is being created with d.Log instead of the log variable that was initialized with additional context values (name, kind, method). This means those values won't be propagated to the logging context."
+  },
+  {
+   "id": "c43",
+   "source": "coderabbit",
+   "text": "Async legacy writes are tied to request cancellation - background legacy operations inherit the request context, so if the request ends quickly the legacy write can be canceled immediately"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review-replay",
+   "text": "DeleteCollection legacy goroutine records the legacy call's duration with recordStorageDuration when it should use recordLegacyDuration"
+  },
+  {
+   "id": "c45",
+   "source": "golden",
+   "text": "In DualWriterMode3's DeleteCollection method, when a storage operation fails, recordStorageDuration is incorrectly called with recordLegacyDuration instead."
+  },
+  {
+   "id": "c46",
+   "source": "qodo-extended-v2",
+   "text": "Mode3 Create error test doesn't stub Storage.Create, so it won't exercise the intended 'unified store fails' error path"
+  },
+  {
+   "id": "c47",
+   "source": "claude-code",
+   "text": "Create error path (line 45): calls recordLegacyDuration when storage fails \u2014 should be recordStorageDuration"
+  },
+  {
+   "id": "c48",
+   "source": "qodo-extended-v2",
+   "text": "In Delete (line 97), klog.NewContext(ctx, d.Log) stores the base logger instead of the enriched log variable that includes name, kind, and method fields"
+  },
+  {
+   "id": "c49",
+   "source": "converge-review",
+   "text": "Legacy write failures are no longer logged; the goroutines only record an is_error histogram label, so legacy divergence is invisible"
+  },
+  {
+   "id": "c50",
+   "source": "qodo-extended-v2",
+   "text": "In Mode3 Create, a failure from unified storage is recorded via recordLegacyDuration instead of recordStorageDuration, corrupting the legacy-vs-storage latency/error dashboards"
+  },
+  {
+   "id": "c51",
+   "source": "augment",
+   "text": "The async legacy Update reuses the original objInfo; since Storage.Update already applied the update, calling Legacy.Update with the same UpdatedObjectInfo can compute a different object or run update logic twice"
+  },
+  {
+   "id": "c52",
+   "source": "cubic-v2",
+   "text": "Context is set with d.Log instead of the enriched log variable, discarding the name, kind, and method values added on the previous line, so downstream code extracting the logger from context will lack those fields."
+  },
+  {
+   "id": "c53",
+   "source": "converge-review-replay",
+   "text": "Update's storage-error path records the failure with recordLegacyDuration when it should use recordStorageDuration"
+  },
+  {
+   "id": "c54",
+   "source": "augment",
+   "text": "Context logger is set to d.Log instead of the enriched log, so name/kind/method values won't be attached to log lines emitted by downstream calls"
+  },
+  {
+   "id": "c55",
+   "source": "qodo-extended-v2",
+   "text": "DualWriterMode3.Delete records the storage duration metric with the object name in the kind label instead of options.Kind, creating unbounded Prometheus label cardinality"
+  },
+  {
+   "id": "c56",
+   "source": "cubic-v2",
+   "text": "d.recordLegacyDuration is called when Storage create fails instead of d.recordStorageDuration, recording storage failure latency under the legacy metric and skewing both dashboards. The same bug exists in the Update error path."
+  },
+  {
+   "id": "c57",
+   "source": "converge-review",
+   "text": "Mode 3 is unreachable: SetDualWritingMode only handles 1<->2 transitions and falls back to Mode1 for a desired Mode3, so the new 'mode 3' playlist integration subtests actually exercise mode 1 and production config '=3' also yields mode 1"
+  },
+  {
+   "id": "c58",
+   "source": "converge-review",
+   "text": "TestMode3_Get creates a local prometheus registry shadowing the package-level p, the same line the patch removes from dualwriter_mode1_test.go; it is the only use of the prometheus import"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In the mode-3 unit tests, legacyStoreMock and storageMock share one mock.Mock. As a result, 'legacy' expectations are satisfied by storage calls, success-case setupLegacyFn blocks are duplicate or no-op, and nothing verifies that reads skip legacy or that legacy is written. No AssertExpectations or AssertNotCalled calls are made, and no test waits for the goroutine.",
+   "path": null,
+   "members": [
+    "c1",
+    "c21",
+    "c41",
+    "c7"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The added github.com/grafana/grafana/pkg/apimachinery go.mod line duplicates the line above it, and the go.work.sum changes are unrelated to this change.",
+   "path": "go.mod",
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "In DualWriterMode3.Delete, the success path passes the object name instead of options.Kind as the kind label to recordStorageDuration. This creates a new histogram series per deleted object and differs from the other methods. The same pattern exists in dualwriter_mode1.go.",
+   "path": null,
+   "members": [
+    "c3",
+    "c8",
+    "c9",
+    "c12",
+    "c18",
+    "c20",
+    "c32",
+    "c55"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The background legacy write goroutines in Create, Update, Delete and DeleteCollection derive their context from the request ctx via context.WithTimeoutCause. When the handler returns and the request ctx is cancelled, the legacy writes can be cancelled too, and legacy drifts from unified storage. The same pattern exists in dualwriter_mode1.go.",
+   "path": null,
+   "members": [
+    "c4",
+    "c11",
+    "c15",
+    "c19",
+    "c43"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "The test uses assert.NoError after meta.Accessor and then calls acc.GetResourceVersion(), which nil-panics if the accessor fails. Error checks should use require.*.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "In Mode3 Create, a failure from unified storage is recorded with recordLegacyDuration (using startStorage) instead of recordStorageDuration. Some comments note this alongside the same mis-attribution in Update and DeleteCollection.",
+   "path": null,
+   "members": [
+    "c6",
+    "c27",
+    "c47",
+    "c50",
+    "c56",
+    "c17",
+    "c33"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "In Mode3 Update, when Storage.Update fails, the duration is recorded with recordLegacyDuration instead of recordStorageDuration.",
+   "path": null,
+   "members": [
+    "c23",
+    "c36",
+    "c38",
+    "c53"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The Mode3 DeleteCollection legacy goroutine records the legacy operation's duration with recordStorageDuration instead of recordLegacyDuration.",
+   "path": null,
+   "members": [
+    "c10",
+    "c14",
+    "c24",
+    "c44",
+    "c45"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The Mode3 Delete and DeleteCollection tests only mock unified storage calls. On success, the implementation spawns async legacy calls that hit unmocked methods.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "Delete calls klog.NewContext(ctx, d.Log) instead of passing the enriched log variable, so the name, kind and method fields are not propagated to downstream loggers. The same bug exists in mode 1.",
+   "path": null,
+   "members": [
+    "c16",
+    "c25",
+    "c29",
+    "c35",
+    "c42",
+    "c48",
+    "c52",
+    "c54"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "Mode3 Update passes the caller's original objInfo to Legacy.Update in a goroutine. UpdatedObject is therefore re-applied against legacy's own old object after the request has ended, which can produce a different object than unified storage stored.",
+   "path": null,
+   "members": [
+    "c22",
+    "c28",
+    "c51"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "Mode3 Create passes the caller's input obj, rather than the created object returned by unified storage, to the async legacy Create. This drops server-assigned fields and shares the non-deep-copied obj with the request path.",
+   "path": null,
+   "members": [
+    "c26",
+    "c30"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "Mode3 Delete returns early on any Storage.Delete error, including NotFound, and skips the legacy delete that previously still ran. Objects that exist only in legacy are therefore not deleted.",
+   "path": null,
+   "members": [
+    "c31",
+    "c39"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The function ends with 'return created, err', but err is always nil at that point because it was already checked and returned earlier.",
+   "path": null,
+   "members": [
+    "c34"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "In TestMode3_Create, the failing case only stubs Legacy.Create and not Storage.Create. Mode3 calls Storage.Create first, so the intended unified-store-failure path is not exercised.",
+   "path": null,
+   "members": [
+    "c37",
+    "c46"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "doPlaylistTests validates legacy API results immediately after K8s writes. In mode 3, legacy writes are fire-and-forget, so these assertions race with the async writes.",
+   "path": null,
+   "members": [
+    "c40"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "Legacy write failures in the async goroutines are not logged; only an is_error histogram label is recorded.",
+   "path": null,
+   "members": [
+    "c49"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "SetDualWritingMode only handles 1<->2 transitions and falls back to Mode1 when Mode3 is requested. As a result, the 'mode 3' playlist integration subtests and production config '=3' actually run mode 1.",
+   "path": null,
+   "members": [
+    "c57"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "TestMode3_Get creates a local prometheus registry that shadows the package-level p, which is the same line the patch removes from dualwriter_mode1_test.go. It is the only use of the prometheus import.",
+   "path": null,
+   "members": [
+    "c58"
+   ]
+  }
+ ]
+}

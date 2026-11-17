@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/dialog/AddGuestsDialog.tsx, `isInvalidEmail` is set true at line 56 and reset only in the Cancel handler at line 91; MultiEmail's `setValue` (line 73) never clears it, so the banner at lines 76-85 stays after the input is corrected. The claim's second sentence is slightly generous: a later successful add attempt (lines 53-54, 36-41) does not clear it either, so only Cancel does.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3329161
+}

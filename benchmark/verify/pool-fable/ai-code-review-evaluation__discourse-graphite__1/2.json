@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/lib/utilities.js:182 now sets `maxSizeKB = 10 * 1024` for every `type` (and again at :246 for the 413 message), replacing `Discourse.SiteSettings['max_' + type + '_size_kb']`. The server-side downsizing added at app/controllers/uploads_controller.rb:64-66 only covers images, so attachments between `max_attachment_size_kb` (default 3072, config/site_settings.yml:516-518) and 10 MB pass the browser check, and sites configured above 10 MB are blocked client-side.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2095066
+}

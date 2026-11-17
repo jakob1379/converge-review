@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new private GroupPermissionsV2.hasPermission (patch lines 657-692) follows the same steps as UserPermissionsV2.hasPermission (UserPermissionsV2.java:94-133) and ClientPermissionsV2.hasPermission (ClientPermissionsV2.java:207-235): realm check, resource lookup, fallback to the all-resources resource, then evaluation and a scope match. The copies already differ. Only the Users copy checks `permission.getResourceId().equals(resource.getId())` (UserPermissionsV2.java:123) and accepts an EvaluationContext. Only the Clients copy calls `findByName` with `server.getId()` and gets the policy store through `authz.getStoreFactory()` (ClientPermissionsV2.java:214,219).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2637616
+}

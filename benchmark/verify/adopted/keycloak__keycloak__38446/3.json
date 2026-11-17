@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodesFormAuthenticator.java:80 now gets the credential through RecoveryAuthnCodesUtils.getCredential, which checks the provider's credentials first (RecoveryAuthnCodesUtils.java:56-61). Lines 85-87 then pass that credential's id to removeStoredCredentialById, which only reaches local or federated storage via getStoreForUser (UserCredentialManager.java:114-116), never the provider. The fixture builds its model with createFromValues, which never sets an id (RecoveryAuthnCodesCredentialModel.java:58-78). In a mixed state, isValid falls back to local validators when the provider rejects the code (UserCredentialManager.java:66-77), but getCredential still returns the provider's copy, so the code inspects and removes a different credential from the one that validated.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.262209
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The team and org scope tests only assert `expect(conditions).toEqual(Prisma.sql`...ANY(${[...]})...`)` (packages/lib/server/service/__tests__/insightsBooking.integration-test.ts:294-299, 330-343). The only test that executes SQL via `prisma.$queryRaw` uses `scope: \"user\"` with no ANY(...) (same file, lines 468-484), and no other test file exercises InsightsBookingService.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.27664659999999996
+}

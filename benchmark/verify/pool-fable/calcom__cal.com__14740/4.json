@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:168 passes raw `guests` rather than `uniqueGuests` (line 74), and packages/emails/email-manager.ts:541-542 sends AttendeeScheduledEmail to any attendee in that list, so an existing attendee re-submitted alongside a new guest gets the wrong email. The claim's last clause is overstated: emails only go to `calendarEvent.attendees`, so blacklisted guests who were never added receive nothing.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1547404
+}

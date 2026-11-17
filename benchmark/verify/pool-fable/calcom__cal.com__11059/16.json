@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/refreshOAuthTokens.ts:8-18 assigns `const response = await ...` and then immediately `return response` in both branches, where a direct return would do. Call sites pass `async () => await fetch(...)`/`await axios(...)` wrappers (e.g. office365calendar/lib/CalendarService.ts:247-248, zoomvideo/lib/VideoApiAdapter.ts:80-81, hubspot/lib/CalendarService.ts:178-179), where the `async`/`await` pair adds nothing; behaviour is unaffected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4821186
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.value_from_cursor returns cursor.value unchanged (paginator.py, added at patch lines 98-99). The patch's audit-log endpoint orders this paginator by -datetime, so BasePaginator.build_queryset (paginator.py:119-126) puts that integer into a `datetime <= %s` filter. DateTimePaginator (paginator.py:238-241) converts the value to a datetime first; this method does not. Separately, get_item_key calls math.floor/ceil on a datetime, which crashes even the first page.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1601545
+}

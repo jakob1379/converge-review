@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patch (change.patch:526-534), `reauthenticationOfUserWithoutPasskey` calls `.setWebAuthnPolicyPasskeysEnabled(Boolean.FALSE)`, which turns passkeys off for the whole realm, so the case of a user without a passkey while passkeys are on is never tested. The comment at line 524 says this was intended, but the test name and the comment at line 555 ('as this user does not have passkey') describe the other scenario.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0473028
+}

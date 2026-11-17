@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/api/webassets/webassets.go:69 assigns `entryPointAssetsCache = result` with no error check, and the read helpers return nil on failure (lines 77, 107), so a failed fetch stores nil. It can replace a valid entry in Dev mode (always refetches) or when two callers both pass the nil check at line 45 and the second fails after the first succeeds, since nothing re-checks after `Lock()` at line 48; the next call simply retries.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1531172
+}

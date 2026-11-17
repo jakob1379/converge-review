@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After the rename, pkg/services/pluginsintegration/clientmiddleware/metrics_middleware_test.go:21 still declares `func TestInstrumentationMiddleware`, and pkg/services/pluginsintegration/clientmiddleware/metrics_middleware.go:77-80 still uses the local variable `imw` inside `NewMetricsMiddleware`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0780486
+}

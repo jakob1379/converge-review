@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/webhook/app-credential.ts (lines 62-92 of the new file), the handler runs findFirst on (userId, appId) and then calls either update or create with no transaction or lock. The Credential model in packages/prisma/schema.prisma:127-146 has only @@index([userId]) and @@index([appId]) and no unique constraint, so two concurrent requests can both miss the row and each create a credential.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.22448980000000002
+}

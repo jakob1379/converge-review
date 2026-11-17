@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds tests/sentry/spans/consumers/process/test_consumer.py:84-123. The test only checks `flusher.processes`, `max_processes`, `num_processes` and the shard count in `process_to_shards_map` (lines 115-121), then calls `step.join()`; it never submits span messages or checks that segments from the 4 shards are flushed into `messages`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.047498200000000004
+}

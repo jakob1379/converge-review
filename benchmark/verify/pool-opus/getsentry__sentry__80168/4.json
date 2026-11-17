@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/incidents/grouptype.py:10 still says 'TODO: This will be a stateful detector when we build that abstraction', but line 11 (changed by the patch) now makes MetricAlertDetectorHandler subclass StatefulDetectorHandler, so the comment is out of date. The class body is still just `pass`, so a TODO about implementing it would still fit, but this wording no longer does.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.139271
+}

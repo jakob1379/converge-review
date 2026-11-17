@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "parseRefreshTokenResponse.ts:21-23, added by the patch, throws whenever safeParse fails and otherwise returns the successful result, so success is never false. That makes the `!success` checks at salesforce/lib/CalendarService.ts:92 and zoomvideo/lib/VideoApiAdapter.ts:108 unreachable; the error and message are the same either way, so this is only redundant code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09599649999999998
+}

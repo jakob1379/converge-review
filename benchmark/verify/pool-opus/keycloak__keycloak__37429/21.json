@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "VerifyMessageProperties.java:134-153 compares the full sanitized output with the input, so it catches any change to the text, including malformed markup the sanitizer silently drops or rewrites (e.g. the `</ b>` and `</p >` fixes in messages_tr/messages_uk), and it prints the differing substring. HtmlChangeListener only reports discarded tags and attribute names, so it cannot do what this pipeline does and would not make the text comparison (and the unescape it needs) unnecessary. (I could not read the OWASP library source: it is not in the repo and ~/.m2 access was denied, so the listener's behaviour is from its known API.)",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.25638289999999997
+}

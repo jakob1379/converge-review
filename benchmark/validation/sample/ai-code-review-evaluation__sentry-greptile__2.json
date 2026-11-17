@@ -1,0 +1,49 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil on the sort key without converting it, but for audit logs ordered by -datetime the key is a datetime object. This raises TypeError, so every non-empty page with ?optimized_pagination=true returns 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When enable_advanced_features is True and cursor.offset < 0, OptimizedCursorPaginator.get_result passes the negative offset directly into queryset slicing. Django rejects negative QuerySet indexing, and paginate() only catches BadPaginationError, so the error surfaces as a 500. The comment saying Django handles negative slicing is incorrect, and a crafted cursor (e.g. '0:-5:0') from users who pass the gate can trigger this.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The gate uses has_global_access, which is true for all members of open-membership orgs, so the comment's 'authorized administrators' is misleading and the advanced paginator is exposed far more widely than intended.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "span-buf:s:* keys change from Redis SET to ZSET in the same key namespace with no migration, prefix bump, or dual-read. During a rolling deploy this causes WRONGTYPE errors and loss of spans stored in old SET keys.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

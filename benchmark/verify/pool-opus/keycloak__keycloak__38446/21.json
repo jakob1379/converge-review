@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testRecoveryKeysSetupAndLogin (BackwardsCompatibilityUserStorageTest, patch lines 518-524), a new TestAppHelper calls only startLogin() and then logout() without ever calling completeLogin(). Its refreshToken is therefore null when TestAppHelper.java:106 calls oauth.doLogout(refreshToken), and the test does not assert the result, so the logout does nothing and the failure goes unnoticed.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.21884940000000003
+}

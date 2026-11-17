@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The interpolated value is `model.fancyTitle` (app/assets/javascripts/discourse/controllers/topic-unsubscribe.js.es6:6), which comes from the server's `fancy_title`, already HTML-escaped with `ERB::Util.html_escape(title)` at app/models/topic.rb:264. The triple-stash in templates/topic/unsubscribe.hbs therefore renders escaped text, the same pattern as the existing `{{{model.fancyTitle}}}` in templates/topic.hbs:38.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.340504
+}

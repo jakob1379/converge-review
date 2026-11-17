@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`get_environment_info` (src/sentry/integrations/source_code_management/commit_context.py:584-590) calls `issue.get_recommended_event()` once per issue from the `get_comment_body` loops (github/integration.py:406-411, gitlab/integration.py:257); each call runs a Snuba query with nodestore binding (models/group.py:305, eventstore/snuba/backend.py:155-159) plus an `Environment.objects.get` (eventstore/models.py:180). N is capped at 5 by `get_top_5_issues_by_count` in the async task (source_code_management/tasks.py:134-147).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.6966521000000001
+}

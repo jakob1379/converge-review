@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Per-group resources are created without a type (AdminPermissionsSchema.java:121), so findByType(\"Groups\") in GroupPermissionsV2.java:121-123 only yields the all-groups resource and then passes its resource ID to a name lookup, leaving the set empty when only a per-group VIEW_MEMBERS permission exists. UsersResource.java:430 then gets 0 from JpaUserProvider.java:600-601, while UsersResource.java:448-460 skips the DB group filter, paginates in SQL (JpaUserProvider.java:773) and only afterwards filters with canView, which does grant members via canViewMembers (GroupPermissionsV2.java:83-87).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.4006226000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The client only reads result.values.email (create_account_controller.js:274-275), and the email there is the raw submitted value: User.new_from_params copies params[:email] unchanged (app/models/user.rb:87) and the model has no callback that normalizes email. So users_controller.rb:199 returns data the client already has in its local `email` variable (create_account_controller.js:263), and name and username are never read.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.17818330000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/components/dialog/AddGuestsDialog.tsx:43-44 builds `${err.data?.code}: ${t(err.message)}`, which is always a non-empty string, so the `|| t(\"unable_to_add_guests\")` fallback is dead code. Users see toasts like 'FORBIDDEN: you_do_not_have_permission' (thrown at addGuests.handler.ts:55, key absent from en/common.json) or 'undefined: \u2026' on non-tRPC errors; the other two handler messages do translate, so the raw key shows only for that case.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14549099999999998
+}

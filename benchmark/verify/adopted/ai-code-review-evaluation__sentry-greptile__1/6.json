@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.get_result (paginator.py:845-911 in the patch) repeats BasePaginator.get_result (paginator.py:136-215) step for step; its only additions are the negative-offset branch, which Django rejects because querysets don't support negative indexing, and get_item_key/value_from_cursor copied from the integer Paginator (paginator.py:221-227). math.floor/ceil fails on the endpoint's `datetime` key, and the raw integer cursor value is compared against a datetime column. Nothing in the class is faster, and DateTimePaginator (paginator.py:230-241) already handles this endpoint correctly.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.0960358
+}

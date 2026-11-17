@@ -1,0 +1,401 @@
+{
+ "findings": [
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 153,
+   "severity": "Important",
+   "claim": "Error/breadcrumb interleave compares nodestore error timestamps (float seconds) against rrweb event timestamps (milliseconds), so error_ts < event_ts is always true and every error is emitted before the first breadcrumb instead of in chronological order.",
+   "evidence": "rrweb fixtures use ms (tests/sentry/replays/unit/test_event_parser.py:329 'timestamp': 1674291701348); nodestore event 'timestamp' is seconds. Executed repro (superpowers seat, scratch repro_replay_ts.py) with breadcrumbs at 1700000000000/1700000005000 ms and error at 1700000002.0 s fails the chronological-order assertion. New tests mask it by writing rrweb timestamps in seconds (tests/sentry/replays/test_project_replay_summarize_breadcrumbs.py:188).",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Two independent correctness seats, one with an executed failing repro against HEAD source."
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 118,
+   "severity": "Important",
+   "claim": "fetch_error_details zips error_ids with events.values() from nodestore.get_multi, which dedupes ids, returns uncached items first then cached ones, and omits missing ids; error ids get paired with the wrong event's title/message/timestamp.",
+   "evidence": "src/sentry/nodestore/base.py get_multi: dedupe and items.update(cache_items) after fetched items (~:184-205). Proposed test: warm cache for A only, call fetch_error_details(project.id,[A,B]); A's entry receives B's data. Fix: events.get(node_id) per id.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review",
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Ordering assumption contradicted by cited nodestore source; the wrong title/message/timestamp feeds the Seer prompt even if id itself is unused. OCR rated Important, superpowers Minor; kept Important."
+  },
+  {
+   "path": "src/sentry/issues/endpoints/browser_reporting_collector.py",
+   "line": 43,
+   "severity": "Important",
+   "claim": "Serializer makes destination and attempts required, but browsers POST only age/type/url/user_agent/body (W3C Reporting 'serialize reports'); real browser payloads get 422 and one bad report rejects the whole batch.",
+   "evidence": "Reasoned from the W3C spec, not a captured payload. Both test fixtures (DEPRECATION_REPORT, INTERVENTION_REPORT) invent destination/attempts. Proposed failing test: POST [{age:0,type:'deprecation',url:'https://x.com/',user_agent:'UA',body:{}}] with option enabled expects 200, gets 422. Superpowers notes the old dataclass had the same assumption (not a regression).",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Two correctness seats agree; consistent with the W3C serialization algorithm. Unverified against a live browser payload; settle with a captured Chrome Reporting API request."
+  },
+  {
+   "path": "static/app/views/performance/newTraceDetails/traceDrawer/details/span/eapSections/attributes.tsx",
+   "line": 61,
+   "severity": "Important",
+   "claim": "HIDDEN_ATTRIBUTES (is_segment, project_id, received) is applied only after the early 'if (!searchQuery.trim()) return sorted;', so in the default no-search view the attributes are still shown; they are hidden only while searching.",
+   "evidence": "Reasoned from code order at attributes.tsx:61-69. Proposed failing test: render Attributes with an attribute named project_id and empty search; expect it absent, it is present.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Two correctness seats; the commit intent ('Hiding some attrs') is defeated in the common path."
+  },
+  {
+   "path": "static/app/views/dashboards/widgetCard/chart.tsx",
+   "line": 164,
+   "severity": "Minor",
+   "claim": "New 'use-table-widget-visualization' branch renders TableWidgetVisualization with columns=[] and empty data, ignoring tableResults/loading; the flag is not registered in src/sentry/features/temporary.py, so the branch and the new component have no live caller.",
+   "evidence": "grep -rn 'use-table-widget-visualization' src/ returns nothing; other flags in the patch are in temporary.py (lines 441, 278). CLAUDE.md: 'Feature Flags: Always add for new features'.",
+   "seats": [
+    "ponytail:ponytail-review",
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Work-in-progress behind an unregistered flag (may be registered in getsentry, not checked); no user impact until enabled. Normalized from Important (ponytail/standards) to Minor because it is unreachable. ponytail: register flag and feed tableResults before enabling."
+  },
+  {
+   "path": "src/sentry/issues/endpoints/browser_reporting_collector.py",
+   "line": 50,
+   "severity": "Minor",
+   "claim": "age/timestamp mutual-exclusion validators use truthiness (initial_data.get), so age:0 with timestamp passes, and a report with neither field passes despite the docstrings; validate_timestamp/validate_age are duplicate code replaceable by one validate().",
+   "evidence": "browser_reporting_collector.py:50-60; both fields required=False. Reasoned.",
+   "seats": [
+    "ponytail:ponytail-review",
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "All four seats raised it; trivial to make red with a payload containing age:0 and timestamp."
+  },
+  {
+   "path": "tests/sentry/api/endpoints/test_browser_reporting_collector.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Rewritten tests no longer post content_type='application/reports+json'; the custom BrowserReportsJSONParser has no positive-path coverage, only the 415 negative test.",
+   "evidence": "grep -n 'reports+json' on the test file returns nothing.",
+   "seats": [
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Test gap, not a behavior bug. ponytail: add one positive test posting application/reports+json."
+  },
+  {
+   "path": "src/sentry/workflow_engine/endpoints/validators/error_detector.py",
+   "line": 45,
+   "severity": "Minor",
+   "claim": "ErrorDetectorValidator inherits the new owner field from BaseDetectorTypeValidator but its create() override never persists it, so owner is silently ignored when creating error detectors.",
+   "evidence": "Reasoned: error_detector.py create() override does not set owner_user_id/owner_team_id; update goes through base class. No test covers owner on error detectors.",
+   "seats": [
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Silent data drop on a newly exposed field; cheap to make red with an error-detector create test asserting owner."
+  },
+  {
+   "path": "src/sentry/preprod/api/endpoints/organization_preprod_artifact_assemble.py",
+   "line": 81,
+   "severity": "Minor",
+   "claim": "analytics.record('preprod_artifact.api.assemble') runs before the organizations:preprod-artifact-assemble feature check at :88, so orgs without the feature emit the event while receiving 404; no test covers the event.",
+   "evidence": "Line order 81 vs 88; test_organization_preprod_artifact_assemble.py never mentions analytics.",
+   "seats": [
+    "mattpocock-skills:code-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Skews analytics; move the record after the feature gate."
+  },
+  {
+   "path": "static/app/views/replays/detail/ai/index.tsx",
+   "line": 90,
+   "severity": "Minor",
+   "claim": "useProjectFromId returns undefined while the projects store loads (or project not in the user's store), so the page shows 'Project not found. Unable to load AI summary.' instead of a loading state.",
+   "evidence": "Reasoned from useProjectFromId behaviour.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Two correctness seats; transient wrong error message to users."
+  },
+  {
+   "path": "static/app/components/feedback/list/useFeedbackSummary.tsx",
+   "line": 37,
+   "severity": "Minor",
+   "claim": "enabled: Boolean(normalizedDateRange) is always true because normalizeDateTimeParams returns an object, so it gates nothing.",
+   "evidence": "normalizeDateTimeParams returns an object.",
+   "seats": [
+    "ponytail:ponytail-review",
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "fix",
+   "reason": "Three seats; dead condition misleads readers about query gating."
+  },
+  {
+   "path": "static/app/components/feedback/list/useFeedbackSummary.tsx",
+   "line": 43,
+   "severity": "Minor",
+   "claim": "Pending/error/success branches build the same return object three times; one return expression suffices. Feature flag is also checked both here and in feedbackSummary.tsx.",
+   "evidence": "useFeedbackSummary.tsx:43-66.",
+   "seats": [
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "defer",
+   "reason": "Advisory simplification; non-blocking. ponytail: collapse to a single return."
+  },
+  {
+   "path": "static/app/components/feedback/feedbackSummary.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "New feedbackSummary component and useFeedbackSummary hook have no colocated .spec.tsx; tooFewFeedbacks logic and hide/placeholder states are untested.",
+   "evidence": "CLAUDE.md Frontend Rules: 'ALWAYS colocate tests'; ls static/app/components/feedback/feedbackSummary.spec.tsx fails.",
+   "seats": [
+    "mattpocock-skills:code-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Documented-standard breach, test gap only. ponytail: add a spec covering the three render states."
+  },
+  {
+   "path": "static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "New hook has no colocated spec; the substringMatch/queryString path is never exercised (only indirectly via useTraceItemAttributeKeys.spec.tsx without queryString).",
+   "evidence": "CLAUDE.md 'ALWAYS colocate tests'.",
+   "seats": [
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Test gap. ponytail: add a spec for the search path or drop the unused parameter."
+  },
+  {
+   "path": "static/app/views/explore/hooks/useTraceItemAttributeKeys.tsx",
+   "line": 26,
+   "severity": "Minor",
+   "claim": "Refactor changes behaviour and adds dead weight: staleTime:0/retry:false dropped for queryClient defaults; isLoading now reflects isFetching; thrown Error stringifies and discards responseJSON; useMemos recompute every render because projectIds is a fresh array; options built twice; search parameter has no caller.",
+   "evidence": "useTraceItemAttributeKeys.tsx:26-43, useGetTraceItemAttributeKeys.tsx:34-86.",
+   "seats": [
+    "superpowers:requesting-code-review",
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "defer",
+   "reason": "Reasoned, no user-visible failure demonstrated. ponytail: confirm intended query defaults; drop rethrow and ineffective memos."
+  },
+  {
+   "path": "static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx",
+   "line": 50,
+   "severity": "Minor",
+   "claim": "useTraceItemAttributeKeys no longer sends environment in the attribute-keys request.",
+   "evidence": "Raised as a behaviour change.",
+   "seats": [
+    "mattpocock-skills:code-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "reject",
+   "reason": "Intentional: source comment at useGetTraceItemAttributeKeys.tsx:50 reads '// environment left out intentionally as it's not supported'."
+  },
+  {
+   "path": "src/sentry/integrations/source_code_management/commit_context.py",
+   "line": 584,
+   "severity": "Minor",
+   "claim": "get_environment_info calls issue.get_recommended_event() per issue in the PR-comment task: an extra Snuba query (plus nodestore/DB) per issue, N+1 pattern.",
+   "evidence": "commit_context.py:584, called from github/integration.py:409 and gitlab/integration.py:257; bounded by set_limit(5) at :572 and runs in a task.",
+   "seats": [
+    "mattpocock-skills:code-review",
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Bounded to 5 issues in an async task; negligible impact. ponytail: batch if the limit grows."
+  },
+  {
+   "path": "src/sentry/integrations/source_code_management/commit_context.py",
+   "line": 143,
+   "severity": "Minor",
+   "claim": "Issue title is interpolated into markdown link text [**{title}**]({url}) without escaping; titles containing ']' break the link.",
+   "evidence": "commit_context.py:143.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Superpowers notes the risk pre-exists the patch. ponytail: escape markdown in titles."
+  },
+  {
+   "path": "src/sentry/integrations/source_code_management/commit_context.py",
+   "line": 578,
+   "severity": "Minor",
+   "claim": "PR-comment format change (environment added, culprit dropped, link style changed) ships with no feature flag and thin tests: _truncate_title (>50 chars) and get_environment_info's exception branch are never exercised.",
+   "evidence": "grep -rn '_truncate_title\\|ISSUE_TITLE_MAX_LENGTH' tests/ returns nothing; test titles are 'issue 1'..'issue 3'. CLAUDE.md 'Always add [flags] for new features'.",
+   "seats": [
+    "mattpocock-skills:code-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Test/rollout gap, no demonstrated bug. ponytail: add a long-title test."
+  },
+  {
+   "path": "src/sentry/integrations/github/integration.py",
+   "line": 394,
+   "severity": "Minor",
+   "claim": "format_comment_subtitle in github and gitlab integrations lost its only caller (dead code); _truncate_title's max_length parameter is never passed.",
+   "evidence": "grep -rn 'format_comment_subtitle(' src tests shows only the two definitions (github/integration.py:394, gitlab/integration.py:240).",
+   "seats": [
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "fix",
+   "reason": "Dead code left by the refactor; delete."
+  },
+  {
+   "path": "src/sentry/grouping/parameterization.py",
+   "line": 335,
+   "severity": "Minor",
+   "claim": "_handle_regex_match inside parametrize_w_experiments is dead after the regex experiment removal; its only caller branch was deleted.",
+   "evidence": "parameterization.py:335; ParameterizationRegexExperiment branch removed in this patch.",
+   "seats": [
+    "open-code-review:delegate-review"
+   ],
+   "verdict": "fix",
+   "reason": "Dead code left by the removal; delete."
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 100,
+   "severity": "Minor",
+   "claim": "Every paginated page's Seer request receives the full error list (functools.partial with all error_events); unemitted errors are appended at the end of each page, so errors repeat across pages in the wrong context.",
+   "evidence": "project_replay_summarize_breadcrumbs.py:100.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Reasoned; degrades summary quality, not correctness of stored data. ponytail: filter errors to each page's time window."
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 107,
+   "severity": "Minor",
+   "claim": "Error node ids are built with the replay's project_id, so errors from other projects in the replay's error_ids (e.g. backend) are silently dropped.",
+   "evidence": "project_replay_summarize_breadcrumbs.py:107.",
+   "seats": [
+    "open-code-review:delegate-review",
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Reasoned feature limitation. ponytail: resolve each error's project before building node ids."
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 67,
+   "severity": "Minor",
+   "claim": "The Snuba replay query for error ids runs even when enable_error_context is false.",
+   "evidence": "project_replay_summarize_breadcrumbs.py:67-100.",
+   "seats": [
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Wasted query only. ponytail: gate the query on the flag."
+  },
+  {
+   "path": "src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py",
+   "line": 37,
+   "severity": "Minor",
+   "claim": "ErrorEvent.category is always 'error' and never read; generate_error_log_message uses only title, message, timestamp.",
+   "evidence": "project_replay_summarize_breadcrumbs.py:37,112.",
+   "seats": [
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "defer",
+   "reason": "Advisory cleanup. ponytail: drop the field."
+  },
+  {
+   "path": "tests/sentry/replays/tasks/test_delete_replays_bulk.py",
+   "line": 97,
+   "severity": "Minor",
+   "claim": "Test sets max_segment_id: None but delete_matched_rows is mocked, so the new None guard in src/sentry/replays/usecases/delete.py:89 is never exercised; the 0 case was removed from the fixture.",
+   "evidence": "test_delete_replays_bulk.py:97 with mocked delete_matched_rows.",
+   "seats": [
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Test gap. ponytail: unit-test the guard directly."
+  },
+  {
+   "path": "static/app/components/events/eventAttachments.tsx",
+   "line": 143,
+   "severity": "Minor",
+   "claim": "Replaced FlexCenter had overflowEllipsis on the grid cell; plain <Flex> does not, so long attachment names may widen the 1fr column instead of truncating.",
+   "evidence": "Reasoned from component swap; not verified visually.",
+   "seats": [
+    "superpowers:requesting-code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Unverified visual regression; settle by rendering an attachment with a long filename."
+  },
+  {
+   "path": "static/app/views/feedback/feedbackListPage.tsx",
+   "line": 88,
+   "severity": "Minor",
+   "claim": "New styled component SummaryListContainer gets inline style={{gridArea: 'list'}}.",
+   "evidence": "CLAUDE.md anti-pattern: 'WRONG: Inline styles ... RIGHT: Emotion styled'.",
+   "seats": [
+    "mattpocock-skills:code-review"
+   ],
+   "verdict": "defer",
+   "reason": "Carried over from previous code; cosmetic. ponytail: move grid-area into the styled definition."
+  },
+  {
+   "path": "static/app/views/dashboards/widgets/tableWidget/tableWidgetVisualization.tsx",
+   "line": 31,
+   "severity": "Minor",
+   "claim": "fit, frameless, scrollable props (and FRAMELESS_STYLES) have no caller; required tableData is read with optional chaining at :94,:98,:103.",
+   "evidence": "grep shows no callers incl. stories and spec.",
+   "seats": [
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "defer",
+   "reason": "Advisory; component is unreleased. ponytail: trim before wiring up."
+  },
+  {
+   "path": "static/app/views/explore/utils.tsx",
+   "line": 439,
+   "severity": "Minor",
+   "claim": "After the single-yAxis refactor, several sites keep 'const dedupedYAxes = [visualize.yAxis]' and map over a one-element array; Visualize.stack is always 'all' yet typed optional and computed.",
+   "evidence": "utils.tsx:439, spansTab.tsx:349, useExploreTimeseries.tsx:179, useAnalytics.tsx:475,496, toolbarSaveAs.tsx:153, charts/index.tsx:154, visualizes.tsx:41,49.",
+   "seats": [
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "defer",
+   "reason": "Advisory cleanup; behaviour correct. ponytail: inline visualize.yAxis."
+  },
+  {
+   "path": "src/sentry/workflow_engine/endpoints/validators/base/detector.py",
+   "line": 66,
+   "severity": "Minor",
+   "claim": "Owner-to-owner_user_id/owner_team_id mapping duplicated between update (:66-79) and create (:120-128).",
+   "evidence": "detector.py:66-79 and :120-128.",
+   "seats": [
+    "ponytail:ponytail-review"
+   ],
+   "verdict": "defer",
+   "reason": "Advisory duplication. ponytail: compute ids once."
+  }
+ ],
+ "coverage": "Gate not run (benchmark mode: no dependency install, no project checks), so the review is unanchored by executed checks; the only executed evidence is one standalone repro by the superpowers seat for the replay timestamp-unit finding. No spec: spec axis did not run. Standards source: root CLAUDE.md only. Files skipped or skimmed: open-code-review seat skipped tableWidgetVisualization.stories.tsx and, via OCR's default filter, all test/spec/fixture files (23 files, two read partially for evidence); ponytail seat skimmed test/spec/fixture files and devservices/config.yml; superpowers seat diff-read Flex-primitive swaps and CSS tweaks without rendering, skimmed stories, devservices/config.yml and test_organization_events_stats.py; mattpocock seat read all 106 files, skimming mechanical spec updates. Not checked by any seat: TypeScript compilation/lint, any Python/JS test run, live browser Reporting API payloads, getsentry flag registration. Untracked environment files in the worktree (.bashrc, .claude/, etc.) are not part of the change and were excluded from the patch."
+}

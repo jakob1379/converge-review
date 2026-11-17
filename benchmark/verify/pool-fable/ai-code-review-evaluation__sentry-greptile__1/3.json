@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/paginator.py:877-882 slices `queryset[cursor.offset:stop]` with a negative offset that `Cursor.from_string` (src/sentry/utils/cursors.py:59) accepts unvalidated; Django 5.2.1 (requirements-frozen.txt:36) rejects negative slice bounds with a ValueError, by my knowledge of Django as its source is not in the checkout. `paginate` only catches `BadPaginationError` (src/sentry/api/base.py:540), so the error falls through to the generic 500 handler (base.py:316-328), reachable via `?optimized_pagination=true&cursor=0:-10:0` in organization_auditlogs.py:73-83.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.402739
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/controllers/admin/groups_controller_spec.rb:115 sends `xhr :put, :remove_member`, but config/routes.rb:49 routes only DELETE to groups#remove_member, and the companion spec at line 125 uses `:delete`. Controller specs call the action without going through routing, so the test still passes with the wrong verb.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0598896
+}

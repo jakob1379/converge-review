@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/lib/slots.ts:218-223 the patch shifts each override by the gap between the invitee's and organizer's UTC offsets, then keeps only `hour()*60+minute()`, so the day carry is lost. For New York 09:00-17:00 viewed from Kolkata this gives startTime 1110 and endTime 150. buildSlots then drops the range at slots.ts:68 (`if (start >= end) continue`), and the user's working hours for that day were already removed at slots.ts:228-243, so the day has no slots.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1301312
+}

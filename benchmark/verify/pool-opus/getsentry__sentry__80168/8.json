@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In test_state_results_multi_group (tests/sentry/workflow_engine/processors/test_detector.py:206), the patch checks Kafka publishes with `assert_has_calls(..., any_order=True)` and never checks `call_count`, so the test still passes if there are extra or duplicate `produce_occurrence_to_kafka` calls. Only the single-group test at :167 uses the strict `assert_called_once_with`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1455951
+}

@@ -1,0 +1,491 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup code comparison uses indexOf, which is case-sensitive, and only '-' is stripped from the input. Valid codes typed in a different case or with whitespace are rejected, for example uppercase from iOS auto-capitalize. The same comparison appears in disable.ts and BackupCode.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The codes are lowercase hex (`randomBytes(5).toString(\"hex\")`), and both disable.ts (patch line 372) and next-auth-options.ts:650 match them with `backupCodes.indexOf(input.replaceAll(\"-\", \"\"))`, so the match is case-sensitive and only dashes are removed; the 'XXXXX-XXXXX' placeholder in BackupCode.tsx even suggests uppercase. One correction: the second comparison is in next-auth-options.ts, not BackupCode.tsx, which only renders the input.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0794745
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup code consumption is a non-atomic read, decrypt, check, null-slot and write-back, with no transaction, lock or compare-and-swap. Concurrent requests can both accept the same backup code, and last-write-wins can restore a code that was already consumed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In next-auth-options.ts (patch lines 643-662), authorize() reads user.backupCodes from an earlier findUnique, decrypts it, runs indexOf, sets the matching slot to null, then calls prisma.user.update with only `where: { id }`. There is no transaction, lock or compare on the old value, so two concurrent logins can both accept the same code, and a stale write can put back a code that was already used.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0557276
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup codes are stored as reversible ciphertext via symmetricEncrypt instead of one-way hashes, so they can be recovered if the DB and the app key are exposed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The setup endpoint stores the backup codes with `symmetricEncrypt(JSON.stringify(backupCodes), CALENDSO_ENCRYPTION_KEY)` (apps/web/pages/api/auth/two-factor/totp/setup.ts, patch line 413), and they are read back in plaintext with `symmetricDecrypt` in totp/disable.ts (patch line 369) and next-auth-options.ts (patch lines 645-660). Nothing hashes them, so anyone with the database and the app key can recover them.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0439466
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "BackupCode.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The component exported from BackupCode.tsx is named `TwoFactor` instead of `BackupCode`. It collides with the existing TwoFactor component in DevTools, stack traces and imports.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new file apps/web/components/auth/BackupCode.tsx:7 declares `export default function TwoFactor(...)`, which is the same name used in apps/web/components/auth/TwoFactor.tsx. Both components will show up as `TwoFactor` in DevTools and stack traces. Imports don't actually collide, because callers import the default export as `BackupCode`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0588722
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The object URL created for the backup-codes download is only revoked when a new one is generated. It is never revoked when the modal is closed, reset or unmounted, so the blob leaks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/components/settings/EnableTwoFactorModal.tsx:98, the only call to URL.revokeObjectURL comes right before a new URL is created in handleSetup. resetState (lines ~79-83) and the Close and Cancel handlers do not revoke the URL, and the only useEffect (line 157) handles TOTP auto-submit and has no cleanup.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.08090149999999999
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`req.body.backupCode.replaceAll()` is called on an unvalidated body. A truthy non-string backupCode throws a TypeError and returns 500 instead of 400.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/api/auth/two-factor/totp/disable.ts:48, the handler takes the backup-code path whenever `req.body.backupCode` is truthy, and the patch adds `req.body.backupCode.replaceAll(\"-\", \"\")` (patch line 372) with no type check. A truthy non-string value, such as a number or an object, throws an uncaught TypeError, so the request fails with a 500 instead of a 400.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0652562
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`JSON.parse(symmetricDecrypt(...))` on backupCodes is unguarded. Corrupted data can throw or return a non-array, which crashes the authorize/disable flow with a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds unguarded `JSON.parse(symmetricDecrypt(user.backupCodes, ...))` calls, with no try/catch or array check before `.indexOf`, at apps/web/pages/api/auth/two-factor/totp/disable.ts:58 and packages/features/auth/lib/next-auth-options.ts:139-140, so corrupted data or a rotated key throws an unhandled error. This can only happen with corrupted stored data: setup.ts always writes an encrypted JSON array, and the existing twoFactorSecret decrypt at disable.ts:85 and next-auth-options.ts:172 has no guard either.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1619157
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover login with a backup code, rejection of a reused or wrong code, the missing-codes case, or disabling 2FA with a backup code. The new test only exercises Download, Copy and Close.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only test that mentions backup codes is in apps/web/playwright/login.2fa.e2e.ts:114-125, and it only clicks the backup-codes Download, Copy and Close buttons. The patch adds a TODO saying login and disabling 2FA with a backup code still need tests. Nothing tests the new paths in next-auth-options.ts or totp/disable.ts for a correct, wrong, reused or missing backup code.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.061985399999999996
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "disable.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The backup-code verification block (key guard, missing-codes guard, decrypt and JSON.parse, strip '-', indexOf) is duplicated in disable.ts:48-64.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The block at disable.ts:48-64 repeats, nearly line for line, the logic the patch adds to packages/features/auth/lib/next-auth-options.ts:637-651: the encryption-key guard (with the same 'backup code login' message), the missing-codes guard, JSON.parse of symmetricDecrypt, and indexOf on replaceAll('-', ''). Only the error handling differs: disable.ts returns an HTTP 400, while the auth options throw.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.15434130000000001
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `user.twoFactorEnabled &&` check (line 48) and the `else if (user.twoFactorEnabled)` check (line 69) are always true after the early return at line 36. The CALENDSO_ENCRYPTION_KEY check is copied into both branches.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/api/auth/two-factor/totp/disable.ts:36-38 the handler returns early when `!user.twoFactorEnabled`, so the `user.twoFactorEnabled &&` check at line 48 and the `else if (user.twoFactorEnabled)` at line 69 are always true. The CALENDSO_ENCRYPTION_KEY check is also repeated in both branches (lines 49 and 80).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1637411
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Download control renders a Button (a `<button>`) nested inside an `<a>`, which is invalid nested interactive content.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At apps/web/components/settings/EnableTwoFactorModal.tsx:283-284 the patch wraps `<Button color=\"primary\" data-testid=\"backup-codes-download\">` in `<a download href={backupCodesUrl}>`. That Button has no href, so packages/ui/components/button/Button.tsx:135-136 renders it as a `<button>`, which puts interactive content inside an `<a>`.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.04783130000000001
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The shared PasswordField show/hide toggle button has tabIndex={-1}, which removes it from keyboard tab order for every password field.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds `tabIndex={-1}` to the show/hide toggle `<button>` inside the shared `PasswordField` (packages/ui/components/form/inputs/Input.tsx:47-52), so pressing Tab skips that button in every password field that uses this component.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1420158
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The e2e assertion `expect(locator.isChecked()).toBeTruthy()` checks a Promise object, which is always truthy, rather than the resolved boolean. It is left unfixed despite an added FIXME.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At apps/web/playwright/login.2fa.e2e.ts:53, `expect(...isChecked()).toBeTruthy()` passes the unawaited Promise from `isChecked()`, and a Promise is always truthy, so the check can never fail. The patch only adds the FIXME comment at lines 50-51 and leaves the assertion as it was.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.034984299999999996
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "onEnable (`utils.viewer.me.invalidate()`) runs only from the backup-codes Close button. Dismissing the dialog via Escape, overlay click or X leaves 2FA enabled in the DB but shown as disabled. Because resetState never runs, reopening shows the stale DisplayBackupCodes step.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch makes handleEnable go to SetupStep.DisplayBackupCodes instead of calling onEnable (EnableTwoFactorModal.tsx, patch line 233). onEnable and resetState now run only from the backup-codes-close button (patch lines 303-306). Escape or an overlay click goes through onOpenChange, which only toggles enableModalOpen (two-factor-auth.tsx:64), so viewer.me is never invalidated and the switch and badge still read the old twoFactorEnabled=false (two-factor-auth.tsx:46,54). The modal stays mounted, so on reopen step is still DisplayBackupCodes. One detail is wrong: DialogContent has no X button (Dialog.tsx:84-127), so only Escape and an overlay click apply.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.24702639999999998
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`navigator.clipboard.writeText()` is not awaited or error-handled, so the success toast shows even when the write fails. Where navigator.clipboard is undefined (plain-HTTP non-localhost), the click throws.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/components/settings/EnableTwoFactorModal.tsx:278, the code calls `navigator.clipboard.writeText(...)` without `await`, `.then` or `.catch`, and calls `showToast(\"backup_codes_copied\", \"success\")` right after it, so the success toast shows even if the write fails. If `navigator.clipboard` is undefined, the handler throws a TypeError before the toast.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0386936
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When totpEmail is present, the login page renders ExternalTotpFooter, so SAML/Google users never see the backup-code entry point.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/auth/login.tsx:178-182 the footer is `!totpEmail ? TwoFactorFooter : ExternalTotpFooter`. Only TwoFactorFooter (lines 103-133) has the new 'lost_access' button, and ExternalTotpFooter (135-143) has only Cancel, so a totpEmail user can never turn on twoFactorLostAccess or see BackupCode (line 221). The backend would also reject such a login: packages/features/auth/lib/next-auth-options.ts:113 throws for non-CAL users who send no totpCode.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.20531560000000001
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The authorize guards exempt only totpCode. An SSO (Google/SAML) user submitting a backupCode hits ThirdPartyIdentityProviderEnabled or IncorrectEmailPassword before the backup-code branch runs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/auth/lib/next-auth-options.ts:113-119 the guards bypass only on `!credentials.totpCode`. A non-CAL identity provider user who sends only a backupCode is rejected at line 113 (ThirdPartyIdentityProviderEnabled), or at line 117 (IncorrectEmailPassword) if that check is reached, before the backup-code branch at line 131 can run. The login page shows ExternalTotpFooter to SSO users (apps/web/pages/auth/login.tsx:180-182), which has no 'lost access' button, so these users have no working backup-code recovery.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1879424
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Migration timestamp 20230804153419 is older than existing migrations such as 20230828094603, which causes Prisma migration-order drift.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds packages/prisma/migrations/20230804153419_add_backup_codes/migration.sql (change.patch:679-686), and the repo already has the later 20230828094603_add_include_calendar_event, so the new migration sorts before one that already exists. The migration only adds an independent nullable column (`users.backupCodes`), so the order is wrong but it is unlikely to cause real schema drift.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.049625100000000005
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An error message in the disable endpoint refers to 'backup code login'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "apps/web/pages/api/auth/two-factor/totp/disable.ts:50 logs \"Missing encryption key; cannot proceed with backup code login.\" inside the disable handler. The text was copied from the login path in next-auth-options.ts and does not fit the disable flow.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0606241
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new else-if branches for IncorrectBackupCode and MissingBackupCodes duplicate the existing errorMessages map, whose fallback already covers these codes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The `errorMessages` map in apps/web/pages/auth/login.tsx:73-80 has no entries for IncorrectBackupCode or MissingBackupCodes, so without the new branches (patch lines 512-513) these errors would fall back to the generic `something_went_wrong` text. The new branches are what give these codes their own messages, and DisableTwoFactorAuthModal (patch lines 123-126) has no such map at all.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.07575890000000002
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Users who enabled 2FA before the migration have backupCodes = NULL and are told to generate them in settings, but no regenerate UI or endpoint exists. Once all codes are used, the array is all nulls and the user gets IncorrectBackupCode instead of MissingBackupCodes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Only setup.ts (around line 61) creates backup codes, and no regenerate endpoint or UI exists, yet the missing_backup_codes text in common.json tells users to 'generate them in your settings'. Disabling and re-enabling 2FA is the only workaround. Login replaces each used code with null (next-auth-options.ts around lines 650-660), so once all are used `indexOf` returns -1 and throws IncorrectBackupCode; the `!user.backupCodes` check only catches NULL, not an array of all nulls.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1570312
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The password check (~line 121) runs only when totpCode is falsy, and the backup-code branch never verifies totpCode. A valid backupCode plus any non-empty totpCode therefore authenticates without the password.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/auth/lib/next-auth-options.ts:121-129 the password is checked only when `!credentials.totpCode`. The new branch at line 131 (`twoFactorEnabled && credentials.backupCode`) accepts a matching backup code and never checks totpCode, so the TOTP check at 157-186 is skipped. A valid backupCode plus any non-empty totpCode therefore logs the user in without a password check.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.1776838
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "PasswordField (line 167) is passed an explicit type=\"password\". Because {...props} is spread after the computed type, the show/hide toggle never reveals the value.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/ui/components/form/inputs/Input.tsx:36-39, PasswordField sets type={isPasswordVisible ? \"text\" : \"password\"} and then spreads {...props}, so the type=\"password\" passed at apps/web/components/settings/EnableTwoFactorModal.tsx:174-176 (the claim says line 167) overrides it and the eye toggle has no effect.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.08425350000000001
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The first e2e test never clicks backup-codes-close after OTP verification, so onEnable() is never called before the two-factor-switch is checked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/playwright/login.2fa.e2e.ts:44-53, the first test goes from fillOtp straight to checking two-factor-switch and never clicks backup-codes-close. The patch changed EnableTwoFactorModal so a successful OTP only moves to the DisplayBackupCodes step (patch line 233), and onEnable() now runs only from the backup-codes-close handler (patch lines 303-306). The switch check at line 53 still passes only because `expect(promise).toBeTruthy()` is always true, which the patch's own FIXME at lines 50-51 acknowledges.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.16071280000000002
+   }
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new branch throws `new Error(ErrorCode.InternalServerError)` when the encryption key is missing, instead of returning `res.status(500).json` like the rest of the file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/api/auth/two-factor/totp/disable.ts:49-52, the new backup-code branch does `throw new Error(ErrorCode.InternalServerError)`, while line 23 returns `res.status(500).json({ error: ErrorCode.InternalServerError })`. However, the file is already inconsistent: the existing TOTP branch throws the same way at lines 77, 82 and 90, so the patch copies an existing pattern, and Next.js turns the uncaught throw into a 500 anyway.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1706082
+   }
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A redundant fragment wraps a single div.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/components/settings/EnableTwoFactorModal.tsx:200-208, the new DisplayBackupCodes step wraps a single <div> in `<>...</>`. WithStep's `children` is typed as a single JSX.Element (line 43), so the bare div would work and the fragment is redundant.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1617922
+   }
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`const mockUser: User` lacks the new required backupCodes field, and the type-check script does not include this file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The `mockUser: User` literal at packages/trpc/server/routers/viewer/teams/inviteMember/inviteMemberUtils.test.ts:65-101 has no `backupCodes` key, but the patch makes `backupCodes String?` part of the Prisma User model (schema.prisma ~line 205), so the generated type requires `backupCodes: string | null`. The patch adds the field to packages/lib/test/builder.ts but not to this mock, and the type-check script misses the file: packages/trpc/package.json has no type-check script, and apps/web/tsconfig.json only includes files under apps/web plus a few .d.ts files.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.0954016
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The 413 branch at app/assets/javascripts/discourse/lib/utilities.js:245-248 hardcodes `maxSizeKB = 10 * 1024` and shows it in the `file_too_large` message. A 413 comes from the web server, whose limit is set separately (config/nginx.sample.conf:61 `client_max_body_size 10m` is only a sample; docs/INSTALL-ubuntu.md:390 mentions 2m), so the reported figure can be wrong.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.21790330000000002
+}

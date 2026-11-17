@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/blocked_email.rb:16 calls `record.save` (non-bang) inside `should_block?` and discards the result, so a failed update of `match_count`/`last_match_at` goes unnoticed; the block decision at line 18 does not depend on it, so only the statistics are affected.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1392467
+}

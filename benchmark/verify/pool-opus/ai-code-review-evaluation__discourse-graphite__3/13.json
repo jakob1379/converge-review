@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In create_account_controller.js, lines 41-43 of the patch push result.values.email into rejectedEmails whenever result.errors.email exists, whatever the reason (taken, not_allowed or blocked). The emailValidation check at lines 18-22 then returns the generic I18n.t('user.email.invalid') ('Please enter a valid email address.', client.en.yml:216) in the inline tip. The server's actual reason still appears in the flash message.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0869189
+}

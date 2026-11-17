@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The only specs for the new controllers are spec/controllers/admin/embeddable_hosts_controller_spec.rb:5-7 and spec/controllers/admin/embedding_controller_spec.rb:5-7, each asserting only that the class subclasses Admin::AdminController. No other file under spec/ or test/ references these controllers or their routes, so create/update/destroy (app/controllers/admin/embeddable_hosts_controller.rb:5-18) and show/update (app/controllers/admin/embedding_controller.rb:5-11) have no behavioural tests.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.14712569999999997
+}

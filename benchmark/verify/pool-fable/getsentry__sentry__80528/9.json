@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The names are indeed gone from src/sentry/monitors/logic/mark_failed.py (now only `mark_failed`, lines 14-79), but nothing in the repo breaks: every importer takes only `mark_failed` (e.g. src/sentry/monitors/consumers/monitor_consumer.py:33, tests/sentry/monitors/logic/test_mark_failed.py:11) and no `mock.patch` targets `sentry.monitors.logic.mark_failed.*`. The helpers were moved to logic/incidents.py, logic/incident_occurrence.py and src/sentry/monitors/types.py:105; code outside this repo was not checkable.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4257016
+}

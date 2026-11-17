@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/jobs/scheduled/poll_feed.rb:35 the job calls `i.content.scrub` with no nil guard and no rescue around each item (lines 31-37). The gem is pinned at simple-rss 1.3.1 in Gemfile_rails4.lock, and its source is not in this repo. From my knowledge of that version, `content:encoded` is stored as `:content_encoded` and a missing key returns nil, so an RSS 2.0 item with only `<description>` would raise NoMethodError and stop the import. With `retry: false` the same item would fail again every hour, and TopicRetriever's synchronous `PollFeed#execute` call would fail too.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.2052558
+}

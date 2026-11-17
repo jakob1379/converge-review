@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodesFormAuthenticator.java:80-87 now uses RecoveryAuthnCodesUtils.getCredential(), which prefers the user-storage provider's credential over the local one, then passes its id to removeStoredCredentialById(). That method (UserCredentialManager.java:114-117) only deletes from Keycloak's local or federated store, so the provider's copy stays. Also, isValid (UserCredentialManager.java:59-80) falls back to the local validators when the provider rejects the code, but getCredential still returns the provider's credential, so the allCodesUsed check can run on a different credential from the one that validated.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.28206109999999995
+}

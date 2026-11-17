@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AdminPermissions.java:73-98 registers the remove listener only when ADMIN_FINE_GRAINED_AUTHZ (V1) is enabled, and nothing else cleans up V2 data. No V2 handler exists for GroupRemovedEvent, and ClientApplicationSynchronizer.java:49-75 only deletes the removed client's own resource server. So in V2-only deployments, Groups/Clients resources and permissions in the admin-permissions client are left behind; roles have no V2 resource type, so that part does not apply. The patch only moved the V1 check from inside onEvent to around manager.register, which behaves the same, so the gap existed before; the patch does add V2 group resources that can now be orphaned.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.31676279999999996
+}

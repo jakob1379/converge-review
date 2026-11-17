@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/optimized_image.rb:145 and :149 both define `self.downsize`; the later `(from, to, dimensions, opts={})` definition replaces the first and accepts at most 4 arguments, so the 5-argument call at app/jobs/regular/resize_emoji.rb:14 (`downsize(path, path, 100, 100, opts)`) raises ArgumentError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.177624
+}

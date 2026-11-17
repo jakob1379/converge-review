@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/storage/unified/search/bleve.go:144-154 ranges over b.cache with no cacheMu lock while BuildIndex writes the map at bleve.go:137-139; TotalDocs is called from the new log at resource/search.go:216 (after the watch goroutine starts at search.go:207, which can reach BuildIndex via handleEvent) and from the registered collector at resource/bleve_index_metrics.go:96, so an unsynchronised map read/write is possible. The unlocked TotalDocs and the Collect caller predate the patch; the patch adds the search.go:216 call site.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.36081230000000003
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "getCalendarCredentials does store an unawaited Promise in `calendar` (packages/core/CalendarManager.ts:28), but the patch deliberately changes its only consumer to do `const calendar = await item.calendar;` before the `if (!calendar)` check (CalendarManager.ts:48-51), so the always-truthy-Promise bug does not happen. The callers at viewer.tsx:340/415 and api/availability/calendar.ts:83 only pass the result to getConnectedCalendars, and its awaits sit inside try/catch, so those rejections are handled.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.13485909999999998
+}

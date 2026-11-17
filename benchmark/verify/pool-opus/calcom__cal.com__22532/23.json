@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts (patch lines 511-516), prisma.credential.findFirst has only a where clause on id/userId and no select, so it fetches the whole Credential row, including `key`, just to check that it exists. The result is only null-checked and never returned, so the tokens are not leaked.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.035854300000000006
+}

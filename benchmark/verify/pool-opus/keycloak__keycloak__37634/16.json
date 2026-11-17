@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "DefaultTokenContextEncoderProvider.getTokenContextFromTokenId throws unless the prefix is exactly 6 characters and splits it 2+2+2 (DefaultTokenContextEncoderProvider.java patch lines 309-316). The new OAuth2GrantTypeFactory.getShortcut javadoc says shortcuts are usually about 3 letters, and nothing checks their length when they are registered (Factory postInit / getShortcutByGrantType). So a 3-letter custom shortcut encodes to a 7-character prefix that decoding then rejects.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13485
+}

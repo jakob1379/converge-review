@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `if (!this.get('id')) { return };` at app/assets/javascripts/discourse/models/group.js:82 (patch line 339). The semicolon after the closing brace of the block is an empty statement, which jshint reports as W032 \"Unnecessary semicolon\".",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.052679000000000004
+}

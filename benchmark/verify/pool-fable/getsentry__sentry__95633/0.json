@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/remote_subscriptions/consumers/queue_consumer.py:270-287 starts a daemon thread whose `_commit_loop` calls `self.commit_function`, which at src/sentry/remote_subscriptions/consumers/result_consumer.py:249-252 calls arroyo's `commit` directly with no lock or hand-off to the `poll()`/`submit()` thread. The absence of locking in arroyo's `KafkaConsumer.stage_offsets`/`commit_offsets` is from recall of sentry-arroyo 2.28.0 (requirements-frozen.txt:124), which is not vendored here and could not be read.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.617713
+}

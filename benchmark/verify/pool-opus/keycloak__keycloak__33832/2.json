@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `int order();` to CryptoProvider with no default body (common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java:44), and CryptoIntegration.java:57 sorts with `Comparator.comparingInt(CryptoProvider::order)`. Only the four providers in this repository implement order(), so any outside implementation stops compiling, and an already-compiled one throws AbstractMethodError when it is sorted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0464903
+}

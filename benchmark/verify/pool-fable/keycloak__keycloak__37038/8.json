@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:65-70 has the no-arg canManage() return hasPermission(null, VIEW, MANAGE), so a granted all-groups VIEW scope alone satisfies it. The inherited requireManage() (GroupPermissions.java:279-283) calls that override, and it is the only guard on GroupsResource.addTopLevelGroup (GroupsResource.java:181), which then runs realm.moveGroup(child, null) or realm.createGroup(groupName) with no per-group check.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.46948720000000005
+}

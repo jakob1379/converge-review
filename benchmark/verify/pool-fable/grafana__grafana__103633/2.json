@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/authz/rbac/service.go:123-136, Check returns immediately when the cached permCache map allows, but when that same cached map does not allow it falls through to getIdentityPermissions at :139, which always queries the DB (:380-406). A revoked grant therefore stays honoured until the permCache entry expires (shortCacheTTL, 30s, :32); the patch adds this asymmetry, though the 30s stale-grant window already existed because the old getUserPermissions returned any cache hit.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3804712
+}

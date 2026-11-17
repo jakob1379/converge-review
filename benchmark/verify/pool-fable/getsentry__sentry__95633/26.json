@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/remote_subscriptions/consumers/test_queue_consumer.py:161-173 asserts only that 6 items were processed and that 3 group names appear in the item strings, which is always true once all items are processed; tests/sentry/uptime/consumers/test_results_consumer.py:1820 asserts only `mock_processor_call.call_count == 2`. Neither checks overlap, thread identity or timing, so a single serial worker would pass both.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2740275
+}

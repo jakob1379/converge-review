@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The strategy's `__init__` starts a daemon `_commit_loop` thread (queue_consumer.py:298-299), and only `close()` or `terminate()` sets `shutdown_event` to stop it (queue_consumer.py:363-370). Several new tests create the strategy and only call `factory.shutdown()`, which shuts down `queue_pool` but never closes the strategy: test_results_consumer.py `test_thread_queue_parallel*` (e.g. patch lines 977/1011, 1119/1152, 1221/1265) and test_queue_consumer.py:910/916. Their commit threads keep looping after the test ends; the 'timing-dependent' part mostly comes from the 1s commit interval, not from the leak.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2299924
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/groups_controller.rb:649 (patch line 649) calls group.users.delete(user_id) on `has_many :users, through: :group_users` (app/models/group.rb:8). Under Rails 4.1.8 (Gemfile.lock:307) this removes the GroupUser join rows with delete_all and skips callbacks, so the `counter_cache: \"user_count\"` on GroupUser (app/models/group_user.rb:2) is not decremented. add_members goes through group.add, which calls users.push (group.rb:272-273) and creates the GroupUser normally, so the count goes up; the existing Group#remove (group.rb:276-277) destroys each row and would keep the count right.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.24459060000000002
+}

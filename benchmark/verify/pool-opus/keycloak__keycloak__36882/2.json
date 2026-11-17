@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "docs/guides/server/update-compatibility.adoc:122-123 says exit code 1 means the metadata file is missing or corrupt. But UpdateCompatibilityCheck.java:80 and :90 throw PropertyException in those cases, and ExecutionExceptionHandler.java:44-50 turns a PropertyException into getInvalidInputExitCode. No exit-code mapper is set, so that falls back to exitCodeOnInvalidInput, which is picocli's default of 2 (ShortErrorMessageHandler.java:98-101).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.16584410000000002
+}

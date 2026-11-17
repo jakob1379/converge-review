@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "group.hbs:170 uses the keyword form `{{each member in members itemView=\"group-member\"}}`. In the bundled Ember 1.9 (vendor/assets/javascripts/development/ember.js:7997-7998), that form binds each item view's context to `_parentView.context`, which is the admin-group ObjectController, so `automatic` in group_member.hbs:1 resolves to the group's flag and not to the member. That is also why the template has to name `member` explicitly.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1489714
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings.tsx:967 awaits `appStore[...]`, now a dynamic `import()` promise (packages/app-store/index.ts:19), and the `confirm` mutation (from line 722) has no try/catch around it, so a rejection would propagate and abort the refund path. That only fails the request before any refund or booking update, the same fail-closed behaviour as the adjacent throws at lines 938, 963 and 977, so it is not a harmful defect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2095885
+}

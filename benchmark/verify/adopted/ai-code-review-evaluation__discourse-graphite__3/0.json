@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/blocked_email.rb:12 does an exact `BlockedEmail.where(email: email)` match on a plain varchar column (migration 20130724201552 uses `t.string :email`), and nothing lowercases either side. `User.new_from_params` (app/models/user.rb:87) stores the email as typed, so on Postgres 'Bad@spammers.org' would not match a blocked 'bad@spammers.org', while the domain check in lib/validators/email_validator.rb:190 ignores case.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0948905
+}

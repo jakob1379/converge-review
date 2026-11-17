@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/embeddable_host.rb:14-17 takes `host = uri.host` and passes it unchanged into `where(\"lower(host) = ?\", host)`; Ruby's URI does not downcase the host unless `normalize` is called, so `http://EvilTrout.com/x` yields `EvilTrout.com`, which can never equal the lowercased column. This rests on known Ruby URI behaviour, not on running the code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1655142
+}

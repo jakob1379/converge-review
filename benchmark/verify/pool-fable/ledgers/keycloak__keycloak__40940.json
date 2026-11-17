@@ -1,0 +1,149 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The variable name groupUuuids is misspelled with three u's instead of two.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a local variable spelled `groupUuuids` (three u's) at tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:121, used again at lines 129 and 152; it is consistently spelled so it compiles, making this a naming typo only.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.059356000000000006
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The create loop duplicates the status check, try-with-resources and fail() logic that ApiUtil.getCreatedId already performs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new loop at tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:125-133 wraps the call in try-with-resources, checks the status family and calls fail(), while the imported ApiUtil.getCreatedId (tests/utils/src/main/java/org/keycloak/tests/utils/admin/ApiUtil.java:53-59) already asserts status 201 and closes the response. The only difference is that getCreatedId does not close the response when its assertion fails, so the wrapper is redundant except on that failure path.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2281444
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupAdapter.getSubGroupsCount() returns null when modelSupplier.get() returns null because the group was deleted. This violates the GroupModel contract that the method never returns null, and callers that unbox the Long can get a NullPointerException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/GroupAdapter.java:274-275 now returns null when modelSupplier.get() is null, while server-spi/src/main/java/org/keycloak/models/GroupModel.java:296 documents \"Never returns {@code null}\". The NPE part is only potential: the sole in-repo caller, services/src/main/java/org/keycloak/utils/GroupUtils.java:90, passes the value to setSubGroupCount(Long) without unboxing.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2984371
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The three paginated getSubGroupsStream(...) overloads in GroupAdapter (lines 256, 262, 268) still call modelSupplier.get().getSubGroupsStream(...) without a null check. They throw a NullPointerException when the group is deleted concurrently, which is reachable through the GET /admin/realms/{realm}/groups/{id}/children endpoint.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/GroupAdapter.java:256, 262 and 268 dereference modelSupplier.get() with no null check, while the delegate lookup returns null for a deleted group (model/jpa/src/main/java/org/keycloak/models/jpa/JpaRealmProvider.java:513). The children endpoint calls the four-argument overload directly at services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java:180, so a cached adapter whose group is deleted concurrently throws a NullPointerException; the patch only guarded getSubGroupsCount at GroupAdapter.java:274-275.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.40511820000000004
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The regression test never joins the background reader thread before asserting on caughtExceptions. The assertion runs immediately after deletedAll.set(true), so exceptions from in-flight reads can be missed and the thread can outlive the test.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:139-149 the reader thread is started anonymously with no reference kept and is never joined; line 155 sets deletedAll and line 157 asserts on caughtExceptions immediately, so an in-flight groups() call that fails after the assertion is missed and the thread can still be running when the test returns.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1103947
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test has no assertion that the reader thread completed any reads during the deletes, so it can pass vacuously, including on unpatched code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:139-157 the reader thread only records exceptions; nothing counts successful reads and the thread is never joined. The sole assertion, `assertThat(caughtExceptions, Matchers.empty())` at line 157, therefore passes whenever the race is not hit or no read finishes, with or without the fix.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1249942
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The stop flag deletedAll is not set in a finally block, so a failed delete leaves the polling reader thread running indefinitely.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:152-155 the delete loop is followed by a plain `deletedAll.set(true)` with no try/finally, so if `remove()` at line 153 throws, the flag is never set. The reader thread started at lines 139-149 (not a daemon, swallows every exception) then loops on `while (!deletedAll.get())` forever, hammering the server and accumulating exceptions.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1112634
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test only exercises the top-level brief group listing and does not cover the children endpoint path (GroupResource.getSubGroups), which has the same race condition.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new test `createMultiDeleteMultiReadMulti` in tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java only races `groups().groups(null, 0, Integer.MAX_VALUE, true)` against deletes and never calls the children endpoint. That endpoint (services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java:180,191) reaches the same cache adapter: its `getSubGroupsCount` call is now null-safe, but `modelSupplier.get().getSubGroupsStream(...)` at model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/GroupAdapter.java:268 still dereferences a possibly-null model if the parent group is deleted concurrently.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4396837
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

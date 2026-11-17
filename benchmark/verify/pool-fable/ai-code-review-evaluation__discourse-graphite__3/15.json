@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The guard at app/assets/javascripts/discourse/controllers/create_account_controller.js:274 checks `result.values` but not `result.values.email`, so line 275 pushes null if the server (app/controllers/users_controller.rb:199) returns a nil email. It is harmless and hard to reach: `emailValidation` returns early on a blank `accountEmail` (lines 61-65) before consulting `rejectedEmails`, and the form cannot be submitted with a blank or invalid email (line 22).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2059999
+}

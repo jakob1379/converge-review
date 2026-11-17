@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`previous_checkins` holds only id, date_added and status (incidents.py:227), but `create_incident_occurrence` also reads `failed_checkin.trace_id` (incident_occurrence.py:89-90), so the full objects fetched at incidents.py:276 are needed; the claim that `previous_checkins` already holds the needed data is wrong. The query was also only moved from the old `mark_failed_threshold` (old mark_failed.py:418), not added by this patch.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1059716
+}

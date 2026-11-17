@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch removes the `--category` option and the thread `created_at` from lib/tasks/disqus.thor (now line 148 calls `TopicEmbed.import_remote(user, t[:link], title: t[:title])`), which does an unrescued `open(url).read` per thread (app/models/topic_embed.rb:48) in a file that never requires open-uri. `TopicEmbed.import` returns the existing `embed.post` on a re-run (topic_embed.rb:32,41), so disqus.thor:149-175 appends every comment again; whether the missing require actually fails at runtime depends on load order and was not tested.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.414459
+}

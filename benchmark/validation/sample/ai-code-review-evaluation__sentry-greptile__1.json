@@ -1,0 +1,38 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil directly on the sort key. With order_by='-datetime' in the audit logs endpoint, that key is a datetime, so a TypeError is raised. DateTimePaginator avoids this by converting to an epoch timestamp first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The enable_advanced check in the audit logs endpoint accesses organization_context.member.has_global_access without a None check. member is None for callers without membership, such as superusers, API keys/org auth tokens, legacy org ApiKeys and internal-integration proxy users, so an AttributeError is raised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When enable_advanced_features is true, OptimizedCursorPaginator.get_result passes a user-supplied negative cursor.offset directly into queryset[start_offset:stop]. Django QuerySets do not support negative indexing, so a crafted cursor (e.g. 0:-10:0) raises an error that is not converted to BadPaginationError and results in a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

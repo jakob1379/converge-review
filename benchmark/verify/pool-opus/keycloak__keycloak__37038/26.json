@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "When a group has no resource of its own, GroupPermissionsV2.java:668-679 evaluates the 'Groups' type resource, whose type is 'Groups' (AdminPermissionsSchema.java:274). DefaultPolicyEvaluator.java:74 then calls findByResourceType, which loads every permission with defaultResourceType=Groups, including per-group ones (RepresentationToModel.java:1234, PolicyEntity.java:64). DecisionPermissionCollector.java:81-91 grants their scopes without checking which resource they belong to, so a VIEW on one group gives VIEW on every group without a resource (and on canView()). This only happens when at least one all-groups permission exists, because of the guard at GroupPermissionsV2.java:674.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.7721471000000001
+}

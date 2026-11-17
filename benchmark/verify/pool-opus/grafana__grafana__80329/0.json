@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the ticker at pkg/services/cleanup/cleanup.go:77 from `time.Minute * 10` to `time.Minute * 1`. That ticker drives `srv.clean`, which runs every cleanup job, so they now run 10x as often. Each run can take up to 9 minutes (`timeout = 9 * time.Minute` at line 89), so a long run is followed almost immediately by the next one.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0456313
+}

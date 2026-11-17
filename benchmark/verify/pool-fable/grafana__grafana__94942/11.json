@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/expr/reader.go:131 returns `fmt.Errorf(\"sqlExpressions is not implemented\")`, a plain error with no errutil status, messageID or public message, unlike the SQL errors at pkg/expr/sql_command.go:27-34 which use `errutil.BadRequest`. The other rejections in `ReadQuery` (reader.go:56, 87, 100, 149, 181) are also plain `fmt.Errorf`, so it matches the function's existing convention.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.49554289999999995
+}

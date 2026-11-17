@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`identifier` is unused only in the second `result_processor` (tests/sentry/remote_subscriptions/consumers/test_queue_consumer.py:219-224); the first one uses it at line 75. No linter fires: the repo has no Ruff configuration at all and lints with flake8 (setup.cfg:86-95, .pre-commit-config.yaml:45) with no unused-argument rule enabled, and the parameter is required by the `Callable[[str, T], None]` callback signature.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2363873
+}

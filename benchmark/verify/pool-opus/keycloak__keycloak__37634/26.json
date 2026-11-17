@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In DefaultTokenContextEncoderProviderFactory.postInit (patch lines 432-441), the value from gtf.getShortcut() goes straight into ConcurrentHashMap.put as both key and value with no null check, so a factory returning null throws an NPE when the server starts. No factory in this repo returns null (all nine return non-null literals), so only a custom OAuth2GrantTypeFactory that breaks the new getShortcut() contract would hit it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2644234
+}

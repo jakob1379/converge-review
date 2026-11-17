@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch touches 12 files, all production code (e.g. packages/app-store/_utils/getCalendar.ts:10, packages/app-store/index.ts, packages/core/videoClient.ts:21), and no test or spec file. A repo search finds no test that references getCalendar, getVideoAdapters or appStore lookups; the only related test, apps/web/test/lib/getSchedule.test.ts:1374, mocks CalendarManager.getBusyCalendarTimes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1989604
+}

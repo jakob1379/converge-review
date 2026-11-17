@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/endpoints/organization_events_stats.py:220-222 computes eligibility from the closed-over outer `dataset` and `request` (helper reads `request.GET['query']`), not the `scoped_dataset`/`query` arguments. The dashboard-split path only runs when the outer dataset is metrics (line 344) and then executes against `discover` with a rewritten query (lines 363-364, 387, 428, 445), so the helper always returns False and those error subqueries are never upsampled.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3721921
+}

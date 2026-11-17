@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch does add QUERY_GROUPS to the shared fixture (tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/RealmAdminPermissionsConfig.java:34-36), but that role is read only by the list gate (services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java:149), so per-group view/manage/membership checks in GroupPermissionsV2 are still exercised. No test under tests/base/.../fgap expects the list gate to deny: the only group-listing test, testViewGroups (GroupResourceTypeEvaluationTest.java:254), needs the role to get an empty list instead of a 403, mirroring the existing QUERY_USERS setup.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.867
+}

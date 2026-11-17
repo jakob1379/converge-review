@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/api/helpers/test_error_upsampling.py:21 (a file added by this patch) does `self.organization = Organization.objects.create(name=\"test-org\")`, while CLAUDE.md:322 says \"Use factories for test data\" and its test pattern at CLAUDE.md:341 uses `self.create_organization(...)`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.10454359999999999
+}

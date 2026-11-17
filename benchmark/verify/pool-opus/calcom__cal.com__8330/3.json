@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/slots.ts (patch line 112), the code uses `===` to compare two separately created Dayjs objects. That compares object references, so it is always false and the zero-length override branch never runs. The later isBefore/isSame/isAfter checks block most slots on that day anyway, but a slot starting exactly at the override's start time slips through and is reported as available.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0488434
+}

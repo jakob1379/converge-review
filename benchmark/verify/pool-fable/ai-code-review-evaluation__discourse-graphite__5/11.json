@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In `app/assets/javascripts/discourse/templates/header.hbs:6-95` the DOM order is home-logo, `.panel`, then `header-extra-info`, and the only `order()` uses (`common/base/header.scss:39`, `common/base/topic.scss:30`) exist to draw the focusable topic link between logo and panel, so Tab order differs from visual order. Moving the block above `.panel` (which keeps `margin-left: auto`) gives the same layout without them; the same mismatch already existed under the old float layout, so it is not a regression.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.47034580000000004
+}

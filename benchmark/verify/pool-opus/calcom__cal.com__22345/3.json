@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/lib/server/service/__tests__/insightsBooking.integration-test.ts:445-500, userEventType and userBooking are created and then deleted at lines 494-499 after the $queryRaw and expect at 480-491, with no try/finally. A failing query or assertion skips the deletes and leaves both rows in the database.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.07086100000000001
+}

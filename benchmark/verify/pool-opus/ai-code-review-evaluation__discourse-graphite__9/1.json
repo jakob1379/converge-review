@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`protect_from_forgery` at app/controllers/application_controller.rb:21 is indeed called without `with: :exception`, but this patch doesn't change it. It also isn't a weakness: the overridden `handle_unverified_request` (lines 26-33) clears the current user and returns a 403 'BAD CSRF' response for non-API requests.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.06146069999999999
+}

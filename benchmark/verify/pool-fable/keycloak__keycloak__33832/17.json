@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "authz/client/src/test/java/org/keycloak/authorization/client/test/ECDSAAlgorithmTest.java:53-56 decodes a JCA signature, re-encodes it, decodes again and asserts only rsConcat == rsConcat2. The re-encoded DER (asn1Des) is never compared to the original `sign` nor checked with Signature.verify, so an encoder bug the lenient decoder tolerates would pass.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3271146999999999
+}

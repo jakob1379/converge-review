@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In attributes.tsx:61-63, an empty searchQuery returns `sorted` straight away. The `!HIDDEN_ATTRIBUTES.includes(...)` check at line 67 only runs when a search is entered, so the default view passes is_segment, project_id and received through to the render at lines 135-139.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0647117
+}

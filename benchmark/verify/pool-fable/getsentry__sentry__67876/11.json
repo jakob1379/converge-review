@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`OAuthLoginView` in `src/sentry/integrations/github/integration.py:389-439` reimplements the authorize redirect and token exchange that `OAuth2LoginView`/`OAuth2CallbackView` (`src/sentry/identity/oauth2.py:210-353`) already provide, and which sibling integrations reuse through `NestedPipelineView` + `IdentityProviderPipeline` (e.g. `github_enterprise/integration.py:321`). The copy uses the constant `pipeline.signature` (md5 of view class names, `pipeline/base.py:133`) as state instead of `secrets.token_hex()`, builds the URL by raw f-string without `urlencode` (`integration.py:408`), and swallows exchange failures with no logging (`integration.py:425-432`).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4941985
+}

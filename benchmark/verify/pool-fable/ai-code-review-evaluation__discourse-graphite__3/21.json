@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "lib/validators/email_validator.rb:21 evaluates `value =~ regexp`, and in Ruby `nil =~ regexp` returns nil rather than raising (Object#=~ / NilClass#=~), so a missing email does not crash. The missing blank guard in validate_each (lines 3-16) at worst adds a redundant \"not allowed\" error next to the presence error, and the same nil-tolerant `self.email =~ regexp` existed before the patch in app/models/user.rb.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1556319
+}

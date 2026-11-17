@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:69 calls logger.debugf(builder.toString()), where the string is built at runtime from provider class names (lines 65-68) and used as the printf format. The only variable content is class names, which in practice never contain '%', so this is a style nit (should be debug(...) or debugf(\"%s\", ...)).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1297988
+}

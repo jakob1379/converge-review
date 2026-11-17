@@ -1,0 +1,93 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The variable name groupUuuids is misspelled with three u's instead of two.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The create loop duplicates the status check, try-with-resources and fail() logic that ApiUtil.getCreatedId already performs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupAdapter.getSubGroupsCount() returns null when modelSupplier.get() returns null because the group was deleted. This violates the GroupModel contract that the method never returns null, and callers that unbox the Long can get a NullPointerException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The three paginated getSubGroupsStream(...) overloads in GroupAdapter (lines 256, 262, 268) still call modelSupplier.get().getSubGroupsStream(...) without a null check. They throw a NullPointerException when the group is deleted concurrently, which is reachable through the GET /admin/realms/{realm}/groups/{id}/children endpoint.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The regression test never joins the background reader thread before asserting on caughtExceptions. The assertion runs immediately after deletedAll.set(true), so exceptions from in-flight reads can be missed and the thread can outlive the test.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test has no assertion that the reader thread completed any reads during the deletes, so it can pass vacuously, including on unpatched code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The stop flag deletedAll is not set in a finally block, so a failed delete leaves the polling reader thread running indefinitely.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test only exercises the top-level brief group listing and does not cover the children endpoint path (GroupResource.getSubGroups), which has the same race condition.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

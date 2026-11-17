@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`mainHostDestinationCalendar` can be undefined, but the destructuring falls back to `[]` when `destinationCalendar` is null or empty (packages/app-store/googlecalendar/lib/CalendarService.ts:100-103, 198-199). Its only uses are guarded by optional chaining with a fallback to the organizer email (lines 122-124, 228-230), so no null reference occurs.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1221236
+}

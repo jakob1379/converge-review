@@ -1,0 +1,159 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In testCacheIDPForLogin, the cleanup registrations (lines 381 and 425) remove the literal alias \"alias\" instead of the created aliases ('idp-alias-' + i). As a result, the 21 created identity providers are never removed and stay in the realm for later tests.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "testCacheIDPByOrg (line 303) also registers cleanup with the hardcoded alias \"alias\" instead of the actual alias variable.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the test, the response status of create(idpRep).close() is never checked, so failures such as duplicate-alias conflicts go unnoticed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "registerIDPLoginInvalidationOnUpdate evaluates the login predicate on the org-aware wrapped original from getById() but on the raw unwrapped updated model. While the linked organization is disabled, both can fail the predicate and the method returns early, so the ORG_ONLY/ALL login caches are not invalidated. After the organization is re-enabled, stale entries surface hidden, link-only or non-public IdPs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "LoginFilter.getLoginPredicate(), a public SPI predicate, now includes 'organizationId == null || BROKER_PUBLIC'. Because of this, organization-linked non-public IdPs are hidden outside the cache, e.g. in IdentityProviderBean.federatedProviderPredicate() when the Organization feature is off, where they were previously shown.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": "OrganizationAwareIdentityProviderBean.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The isEnabled() re-filter added in OrganizationAwareIdentityProviderBean.java at lines 75 and 80 is a change outside the commit's scope.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "testCacheIDPForLogin only asserts cache-entry presence and id counts. It does not cover disabled or removed organizations, the isEnabled() re-check in OrganizationAwareIdentityProviderBean (lines 75 and 80), or what the login page renders.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getForLogin (lines 213-255) duplicates getByOrganization (lines 167-211) nearly line for line, and the copies have drifted: getByOrganization bypasses on isInvalid(orgId) and getForLogin does not.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "testCacheIDPForLogin repeats the FetchMode assertNull/assertNotNull loop five times and the REALM_ONLY/ORG_ONLY/ALL size checks three times.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "registerIDPLoginInvalidationOnUpdate uses about 28 lines, 12 of them Javadoc, for one boolean condition. It repeats the FetchMode invalidation loop from registerIDPLoginInvalidation and evaluates the predicate up to four times per update.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Javadoc for getForLogin (lines 151-152), getFederatedIdentityProviders (lines 202-203) and the LoginFilter enum (line 216) describes only enabled/linkOnly/hideOnLogin. getLoginPredicate() now also hard-codes the org/BROKER_PUBLIC condition, so getLoginSearchOptions() and getLoginPredicate() no longer encode the same criteria.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ORG_ONLY/ALL login results for all organizations are stored in one IdentityProviderListQuery per realm and mode. Each new org miss bumps the revision and copies the whole previous map, so the entry grows unbounded. Concurrent misses for different orgs defeat addRevisioned, and any login-IdP change drops the results for every org.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": "InfinispanIdentityProviderStorageProvider",
+   "line": null,
+   "severity": "Minor",
+   "claim": "InfinispanIdentityProviderStorageProvider.getForLogin() calls session.identityProviders().getById() instead of idpDelegate.getById(), so the lookup re-enters the same caching layer.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In remove, storedIdp is not null-checked before invalidation. If the alias does not exist, the invalidation calls throw an NPE instead of the method returning false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

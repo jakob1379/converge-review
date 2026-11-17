@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`load_locale` re-checks `@loaded_locales.include?(locale)` inside `LOAD_MUTEX.synchronize` and does the append there (translate_accelerator.rb:47-58), so the unlocked check in `ensure_loaded!` (line 64) is only a fast path and cannot cause lost writes or double loading. `@loaded_locales` is already set by `reload!` (line 40), which the existing `translate` (line 68) relies on, so `||= []` (line 63) only matters before startup and a race there would just re-load translations harmlessly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0612665
+}

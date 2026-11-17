@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Every mode-3 test case enables FlagKubernetesPlaylists (playlist_test.go:733-734, 755-756, 781). With that flag on, pkg/api/playlist.go:30-38 sends the legacy /api/playlists routes through the k8s client, which in mode 3 reads from Storage (dualwriter_mode3.go Get/List). So the legacy-API checks in doPlaylistTests (playlist_test.go:523-535) never read the legacy store that the background goroutines write to, and there is no race.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.24127700000000002
+}

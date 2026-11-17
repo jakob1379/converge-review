@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "GroupPermissionsV2.hasPermission (GroupPermissionsV2.java:156-162) does lack the `permission.getResourceId().equals(resource.getId())` check that UserPermissionsV2.java:123 has, but no leakage results from it: it evaluates one non-null ResourcePermission, and DecisionPermissionCollector.grantPermission (DecisionPermissionCollector.java:187-194) builds every returned Permission from that same resource, so the filter is redundant.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2591489
+}

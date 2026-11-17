@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/scripts/spans/add-buffer.lua:47 and :53 call `zunionstore set_key 2 set_key <other>` with no AGGREGATE option, so Redis defaults to SUM. A span payload redelivered after its subsegment was already merged is re-added to the parent key by `zadd` (src/sentry/spans/buffer.py:197) and then exists in both inputs, so its `end_timestamp_precise` score doubles and skews the `zpopmin` eviction at add-buffer.lua:62-63 (the only consumer of the scores).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3579694
+}

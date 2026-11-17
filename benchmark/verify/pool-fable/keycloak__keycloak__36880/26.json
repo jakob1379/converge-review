@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The leftover state is real: `onAfter()` at tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/PermissionClientTest.java:78-83 removes only scope permissions, while the rename and scope move (166-178) and the roles, mapping and composite (334-364) are never reverted, and the framework runs only registered policy-removal tasks on the class-scoped realm (AbstractPermissionTest.java:128-131, test-framework/core/src/main/java/org/keycloak/testframework/injection/Registry.java:196-211). The order-dependence is latent only: I found no existing assertion that reads the leaked state, so no test provably changes outcome today.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.8374614999999999
+}

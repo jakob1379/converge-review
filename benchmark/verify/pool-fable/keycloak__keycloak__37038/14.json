@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch does remove `AdminRoles.ADMIN` from the checks (UserPermissionsV2.java:48,57), but that entry never matched: `MgmtPermissions.hasOneAdminRole` (MgmtPermissions.java:163-173) only tests client roles on the master-admin/realm-management client, and `admin` is a master realm role. That role is a composite of every `ALL_REALM_ROLES` client role, including manage-users and view-users (RealmManager.java:346,362-366), so admin-only users still pass via `MANAGE_USERS`/`VIEW_USERS`.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.9724822000000001
+}

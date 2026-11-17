@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "testCacheIDPForLogin (OrganizationCacheTest.java:370-535) only makes assertNull/assertNotNull checks on the login cache entries and assertEquals on getIDPs(...).size(); it never disables or removes an organization and never renders a login page. The isEnabled() re-check the patch adds at OrganizationAwareIdentityProviderBean.java:75 and :80 is therefore not exercised by this test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4568673
+}

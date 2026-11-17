@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The spec at spec/controllers/embed_controller_spec.rb:812-815 never stubs `embeddable_host`, so it uses the default '' (config/site_settings.yml:550). The `before_filter :ensure_embeddable` in app/controllers/embed_controller.rb:201 therefore raises InvalidAccess before `params.require(:embed_url)` on line 185 runs, and the test's `should_not be_success` only checks that the response failed, not why.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1525414
+}

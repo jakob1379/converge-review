@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/assets/javascripts/discourse/adapters/rest.js.es6:22 the patch adds `type.replace('_', '-')`. A string pattern replaces only the first match, so a type with several underscores (e.g. 'a_b_c' \u2192 'a-b_c') would not match a hyphenated ADMIN_MODELS entry and would get '/' instead of '/admin/'. No current entry in ADMIN_MODELS (line 1) has more than one hyphen, so this is a latent bug only.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.041901
+}

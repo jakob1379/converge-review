@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/calendars/_router.tsx:29 declares the new deleteCache input as `z.object({ credentialId: z.number() })` with no `.int()` or `.positive()`. The handler then checks ownership via `prisma.credential.findFirst({ id: credentialId, userId })` in deleteCache.handler.ts, so a non-integer or negative value only yields a Prisma validation error or \"not found\", not a security problem.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1261449
+}

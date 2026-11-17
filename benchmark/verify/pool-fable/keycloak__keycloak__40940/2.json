@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/GroupAdapter.java:274-275 now returns null when modelSupplier.get() is null, while server-spi/src/main/java/org/keycloak/models/GroupModel.java:296 documents \"Never returns {@code null}\". The NPE part is only potential: the sole in-repo caller, services/src/main/java/org/keycloak/utils/GroupUtils.java:90, passes the value to setSubGroupCount(Long) without unboxing.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2984371
+}

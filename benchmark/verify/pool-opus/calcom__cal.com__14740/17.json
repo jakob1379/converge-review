@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The CalendarEvent built in addGuests.handler.ts (patch lines 548-571) has no `team` field, so the `calendarEvent.team?.members` loop in sendAddGuestsEmails (email-manager.ts, patch lines 224-230) never runs. Only the organizer and the attendees get emails; other team hosts on collective bookings get nothing.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1351895
+}

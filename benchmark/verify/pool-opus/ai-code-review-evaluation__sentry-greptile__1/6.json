@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In src/sentry/api/paginator.py:182, start_offset differs from offset only when the cursor is not is_prev. The trim check at lines 186-193 only runs when cursor.is_prev is true, and then start_offset equals offset, so the two values can never differ.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.06447750000000001
+}

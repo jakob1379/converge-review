@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/mobile/modal.scss:102 now reads dark-light-choose(scale-color($primary, $lightness: 30%), scale-color($secondary, $lightness: 70%)), so on the light theme the hint is darker than the original 70%. The desktop twin at desktop/modal.scss:94 uses (70%, 30%), and dark-light-choose takes the light-theme value first (common/foundation/variables.scss:46), so the two files disagree.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0464478
+}

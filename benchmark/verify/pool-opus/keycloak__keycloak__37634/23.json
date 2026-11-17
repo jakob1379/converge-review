@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "RevokedTokenEntity.java:34 declares @Column(name=\"ID\", length = 36), and JpaRevokedTokensPersisterProvider.java:46-47 stores the access-token ID there; the patch's encodeTokenId (DefaultTokenContextEncoderProvider) makes that ID 6 + ':' + a 36-char UUID = 43 characters. The real column is VARCHAR(255) (jpa-changelog-26.0.0.xml:60) and Hibernate does not enforce the annotation's length at runtime, so this is a stale-metadata mismatch rather than a truncation or insert failure.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.30889110000000003
+}

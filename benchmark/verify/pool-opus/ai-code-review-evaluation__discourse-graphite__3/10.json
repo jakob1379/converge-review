@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new EmailValidator (lib/validators/email_validator.rb:183-185) adds an error when BlockedEmail.should_block? is true. User.create_for_email calls user.save! (app/models/user.rb:103), and it is reached via InviteRedeemer#create_new_user (app/models/invite_redeemer.rb:47), Invite#redeem and InvitesController#show (app/controllers/invites_controller.rb:12). None of these rescue ActiveRecord::RecordInvalid, so the request fails with a 500 error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.122785
+}

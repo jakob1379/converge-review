@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/github/integration.py:408 builds the authorize URL with an f-string and does not URL-encode client_id, state or redirect_uri. In practice nothing breaks today: state is the pipeline's hex signature, redirect_uri comes from absolute_uri(reverse(...)) of a fixed path with no &, ? or #, and client_id comes from operator configuration.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.10320019999999999
+}

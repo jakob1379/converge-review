@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The Javadoc on canView() at GroupPermissionEvaluator.java:85-92 says \"Or if it has a permission to VIEW or MANAGE groups\" with no \"For V2 only\" qualifier (unlike canList() at :36 and canManage() at :75), while V1 GroupPermissions.canView() at GroupPermissions.java:286-288 checks only the MANAGE_USERS/VIEW_USERS roles; only GroupPermissionsV2.java:47-53 adds the permission check.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.274288
+}

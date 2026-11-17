@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The Javadoc at GroupPermissionEvaluator.java:133 says requireManageMembers throws when canManageMembership(GroupModel) is false, but the only implementation (GroupPermissions.java:376-380, with no V2 override) checks canManageMembers(group). This patch added that Javadoc line (change.patch around line 405), copied from requireManageMembership.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08820410000000001
+}

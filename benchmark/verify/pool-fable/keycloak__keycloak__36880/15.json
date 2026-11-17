@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Per-client resources are created with no type (AdminPermissionsSchema.java:104), and ClientPermissionsV2.hasPermission(client, scope) falls back to the typed \"Clients\" resource only when no per-client resource exists (ClientPermissionsV2.java:214-222). DefaultPolicyEvaluator.java:71-88 then collects only that resource's own policies, because the type branch is skipped and findByScopes(null resource) requires resource-less policies; so all-clients manage/configure/map-roles grants are dropped for that client (only all-clients VIEW survives, via canView()).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 1.2418485
+}

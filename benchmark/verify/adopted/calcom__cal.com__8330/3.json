@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At slots.ts:107-111, `date.start` is the organizer's wall-clock time stored as UTC (getUserAvailability.ts:218-222). Shifting it by the offset gives a UTC instant, and only its date is compared with `slotStartTime.format(\"YYYY MM DD\")`, so an override near local midnight is applied to the adjacent UTC date and rejects that date's out-of-window slots at lines 117-124. `dayjs(date.start)` is not `.utc()` and @calcom/dayjs sets no default zone, so the formatted date also depends on the server's time zone.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1162845
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Both functions are async and are called without await inside forEach at handleCancelBooking.ts:485-493, handleNewBooking.ts:966-972, bookings.tsx:488-494 and workflows.tsx:212-218, 376-382, 519-525, 574-580, so the Prisma delete/update they now perform is fire-and-forget. The patch removed the previously awaited `Promise.all` over the `workflowReminder.deleteMany` calls; the \"rejections are lost\" part is overstated, since both functions catch and log internally (emailReminderManager.ts:197+, smsReminderManager.ts:177+).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3738632
+}

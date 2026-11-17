@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/authz/rbac/service.go:116 the patch builds the denial key from the raw checkReq.UserUID, while getCachedIdentityPermissions builds the permission key from the resolved userIdentifiers.UID returned by GetUserIdentifiers (service.go:452-470, which also accepts a numeric ID). The two keys are inconsistent, but each raw identifier still maps to a single user, so this only splits cache entries and should not grant the wrong access.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.137295
+}

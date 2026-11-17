@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/bookings/lib/handleCancelBooking.ts the recurring branch at lines 444-468 sits inside `for (const reference of bookingCalendarReference)` (line 423) but ignores `reference`: it iterates only `bookingToDelete.user.credentials` (the organizer's) and picks each booking's first calendar ref with `updBooking.references.find(...)` (line 454). The same series delete therefore repeats once per reference, and other hosts' references and credentials are never used.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5124449
+}

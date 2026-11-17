@@ -1,0 +1,7 @@
+{
+ "verdict": "unverifiable",
+ "reason": "The patch does require `attempts = serializers.IntegerField(min_value=1)` (src/sentry/issues/endpoints/browser_reporting_collector.py, patch line 368). Whether browsers send `attempts: 0` is about real browser behaviour, and nothing in the repo shows it: the test fixtures all use `\"attempts\": 1` (patch lines 5083, 5099), and the W3C report format the code cites may not include `attempts` at all.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.10087460000000001
+}

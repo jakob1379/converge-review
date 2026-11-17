@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "test_consumer.py:396 patches the attribute on the `time` module with `monkeypatch.setattr(\"time.sleep\", lambda _: None)`. The `time.sleep(0.1)` added at test_consumer.py:403 looks `sleep` up on that same module when it runs, so it calls the no-op lambda and waits for nothing.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0958588
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In config/routes.rb:49-50, `delete \"members\"` and `put \"members\"` sit directly inside the `resources :groups` block, not inside a `member do` block. Rails therefore treats them as nested routes, `/admin/groups/:group_id/members`, so `params.require(:group_id)` in app/controllers/admin/groups_controller.rb:617 and :644 reads the right key.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1559495
+}

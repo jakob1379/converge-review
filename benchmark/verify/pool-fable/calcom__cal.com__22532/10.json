@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes `dev:cron` from `ts-node cron-tester.ts` to `npx tsx cron-tester.ts` (apps/web/package.json:11), a dev-runner swap that none of the cache-status or delete-cache code depends on, and `cron-tester.ts` itself is untouched. The only link is that the script happens to poll `/calendar-cache/cron` (apps/web/cron-tester.ts:26), which makes it a local-testing convenience, not part of the feature.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2115882
+}

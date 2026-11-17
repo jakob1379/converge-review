@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds a line to go.work.sum:408 (the claim says go.mod, but the line is in go.work.sum) that exactly repeats the existing `github.com/grafana/grafana/pkg/apimachinery v0.0.0-20240701135906-559738ce6ae1/go.mod h1:DkxMin...` entry at go.work.sum:404, a few lines above. The other go.work.sum additions (azure-sdk, alertmanager, otel, genproto) have nothing to do with the dualwriter code changes, and the patch changes no go.mod file.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.07969430000000001
+}

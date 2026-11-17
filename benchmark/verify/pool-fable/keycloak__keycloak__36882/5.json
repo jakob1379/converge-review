@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The null case does return at operator/src/test/java/org/keycloak/operator/testsuite/integration/UpgradeTest.java:105-107 before the flag is set at :115, but that early return predates the patch and the operator never checks the flag. An unset strategy still selects RecreateOnImageChangeUpgradeLogic (operator/src/main/java/org/keycloak/operator/upgrade/UpgradeLogicFactory.java:37-38), which decides a rolling upgrade on a non-image change, and testCacheMaxCount(null) still asserts eventuallyRollingUpgradeStatus (UpgradeTest.java:93-95).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6204662
+}

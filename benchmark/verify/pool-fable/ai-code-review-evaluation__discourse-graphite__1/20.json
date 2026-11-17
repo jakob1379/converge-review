@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/uploads_controller.rb:55 reads `tempfile = FileHelper.download(url, 10.megabytes, ...) rescue nil`, which discards any StandardError (network/HTTP/timeout errors included) and leaves `tempfile` nil, so line 72's `tempfile.size` then fails with an unrelated NoMethodError. The `rescue nil` was already on this line before the patch, which only changed the size argument.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1211521
+}

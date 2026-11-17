@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched deleteByIDs, the SQLite branch (patch lines 323-326) rebuilds the whole IN list on every loop pass with `values = fmt.Sprintf(\"%s, %d\", values, v)`. Each pass copies the growing string again, so total work is O(n\u00b2) in the number of IDs.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.048694
+}

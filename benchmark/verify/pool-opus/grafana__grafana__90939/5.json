@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "No code ever resets the package-level entryPointAssetsCache. It is only assigned at pkg/api/webassets/webassets.go:69, and when cfg.Env is not Dev, the cached value is returned from line 45 onward. So the first test in a process that calls GetWebAssets fixes the assets for later tests. The global existed before this patch, which only added a mutex and a 'TODO: get rid of global state' comment at line 37.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.05549370000000001
+}

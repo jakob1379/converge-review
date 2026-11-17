@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In ASN1Decoder.java, readSequence() (patch lines ~97-111) and readInteger() (~113-122) return once they have read the declared length and never check that the stream is empty (is.available()==0 / count==limit), so extra bytes after the outer SEQUENCE are silently accepted by asn1derToConcatenatedRS (AuthzClientCryptoProvider.java:125). The only caller is the signing path (core ECDSASignatureSignerContext.java:33), which passes signatures produced locally by JCA, never attacker input.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.167887
+}

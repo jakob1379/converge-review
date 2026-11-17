@@ -1,0 +1,27 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The user-match check reads integration.metadata[\"sender\"][\"login\"] without a guard. Integrations whose metadata lacks a 'sender' key (build_integration only adds it conditionally, and older or pre-existing integrations may not have it) raise a KeyError, which produces an HTTP 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "safe_urlopen() and get_user_info() (which calls raise_for_status()) are outside exception handling. Network errors or non-2xx responses during the token exchange or user fetch cause an unhandled 500 instead of the error() page.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

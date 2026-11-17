@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/components/settings/EnableTwoFactorModal.tsx:283-287 wraps `<Button color=\"primary\" data-testid=\"backup-codes-download\">` in `<a download=... href={backupCodesUrl}>`; with no `href` prop, Button renders a `<button>` element (packages/ui/components/button/Button.tsx:135-136), so a `<button>` is nested inside an `<a>`, which the HTML content model disallows.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.36997410000000003
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/CalendarManager.ts:233 does `await getCalendar(credential)` with no try/catch. The `.catch` at line 244 only wraps `calendar.createEvent`, so if the import awaited at packages/app-store/_utils/getCalendar.ts:15 fails, the error propagates out of createEvent and nothing logs it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.14007360000000002
+}

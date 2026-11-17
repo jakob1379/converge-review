@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch takes pluginId, endpoint, uname, dsName and dsUID out of LoggerMiddleware.logRequest and now uses m.logger.FromContext(ctx) (logger_middleware.go:58). Those fields only appear if ContextualLoggerMiddleware's instrumentContext ran earlier in the chain (contextual_logger_middleware.go:27-37, pluginsintegration.go:160). Nothing comments on or tests this ordering, and TestLogger.FromContext returns a blank logger (fake.go), so tests can't see the fields. One detail is wrong: traceID comes from the tracing log provider (pkg/infra/tracing/tracing.go:91), not this middleware, so reordering would not drop it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1933474
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/anonymous/anonimpl/anonstore/database.go:72-73 documents updateDevice as updating a device 'updated between the given times', but its signature is (ctx, device *Device) with no time parameters; the BETWEEN bounds are computed from device.UpdatedAt minus anonymousDeviceExpiration and plus one minute (lines ~80-82).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.10462930000000001
+}

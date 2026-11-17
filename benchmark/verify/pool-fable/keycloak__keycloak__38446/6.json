@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "BackwardsCompatibilityUserStorage.java:237-241 rebuilds the model with createFromValues(), which never calls setId and renumbers codes from 1 (RecoveryAuthnCodesCredentialModel.java:58-81), so the id generated at line 195 is dropped. Account deletion matches federated credentials by id (CredentialDeleteHelper.java:64), so a null id can never match and falls through to NotFoundException; the claim's mention of removeStoredCredentialById/admin deletion is loose, since those only touch the local store whatever the id.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.8396897000000001
+}

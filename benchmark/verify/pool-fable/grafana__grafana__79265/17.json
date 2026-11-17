@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`ErrDeviceLimitReached` is a plain `fmt.Errorf` value (pkg/services/anonymous/anonimpl/anonstore/database.go:18), so `errorLogFunc` finds no `errutil.Error` and logs at Warn (pkg/services/authn/authnimpl/service.go:230, 356-364). `writeErrOrFallback` likewise falls back to a bare 401 \"Unauthorized\" for API requests (pkg/middleware/auth.go:39, pkg/services/contexthandler/model/model.go:116-117); non-API requests are redirected to /login instead, also with no device-limit message.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.6341526
+}

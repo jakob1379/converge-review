@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Explicit IDs are set at pkg/services/annotations/annotationsimpl/cleanup_test.go:241, but every subtest seeds only through that helper and deletes all annotation rows in its cleanup (cleanup_test.go:120-127), so no sequence-based insert ever meets a seeded row. The only sequence-using inserts (cleanup_test.go:178-184) run after db.InitTestDB, which truncates with RESTART IDENTITY on Postgres (pkg/services/sqlstore/migrator/postgres_dialect.go:161), against an empty table.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4187241
+}

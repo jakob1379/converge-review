@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/ui/form/MultiEmail.tsx:2 imports Button, EmailField, Icon and Tooltip from the \"@calcom/ui\" barrel, and packages/ui/index.tsx:153 re-exports MultiEmail from that same barrel, so the files do form a loop. The risk is small: MultiEmailLazy.tsx loads MultiEmail through next/dynamic, so the loop is not hit when modules first load. Many other packages/ui files already import from \"@calcom/ui\" this way, e.g. Checkbox.tsx:7 and AnimatedPopover.tsx:5.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0804253
+}

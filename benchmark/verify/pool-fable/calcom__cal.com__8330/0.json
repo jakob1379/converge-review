@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/slots.ts:141-142 compute both `start` and `end` as `slotStartTime.hour() * 60 + slotStartTime.minute()`, so the `end > workingHour.endTime` test at line 143 only compares the slot's start; `slotEndTime` (line 99) is never used in the working-hours check, and a slot that starts inside working hours but runs past the end is not rejected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.18852239999999998
+}

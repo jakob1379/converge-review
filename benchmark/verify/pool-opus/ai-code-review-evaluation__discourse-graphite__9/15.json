@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "config/initializers/i18n.rb:82 does return only [locale, site default, :en], but this is not a regression. Discourse locales use underscores (config/locales/server.pt_BR.yml, server.zh_TW.yml), and the standard fallbacks in i18n 0.7.0 (Gemfile.lock:126) only split locale names on '-', so :pt_BR never fell back to :pt before; the removed `config.i18n.fallbacks = true` (config/environments/production.rb) only added the default locale.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0799731
+}

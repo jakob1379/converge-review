@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds only three website_name specs (spec/serializers/user_serializer_spec.rb:76-91): a different domain, the same host, and a parent domain. None covers the sibling-subdomain branch (user_serializer.rb:144-146), a nil or blank website, the `rescue nil` path (user_serializer.rb:138) or www-vs-apex. The TL0 spec's untrusted_attributes list (spec:11) also leaves out website_name, which hides that website_name is missing from untrusted_attributes (user_serializer.rb:105-111) and that `include_website_name` lacks its `?` (user_serializer.rb:153).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0968667
+}

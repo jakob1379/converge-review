@@ -1,0 +1,225 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the working-hours check in checkIfIsAvailable, `end` is computed from slotStartTime instead of slotEndTime, so start and end are identical. A slot that starts inside working hours but runs past workingHour.endTime is not rejected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When a slot falls inside a date override window, checkIfIsAvailable returns true (`if (dateOverrideExist) return true;`) before the busy.every(...) check. Existing bookings and calendar busy times are ignored on override days, which allows double bookings for fixed and round-robin hosts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The working-hours check uses workingHours.find(day matches && slot outside range), so it rejects a slot that is outside any one range for that weekday instead of requiring it to be inside some range. Days with split hours or hours split at UTC midnight lose valid slots.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`dayjs(date.start) === dayjs(date.end)` compares object references and is always false. The zero-length ('unavailable all day') date override branch therefore never runs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The only new test covers a single fixed host with no bookings in a second invitee timezone. It does not exercise round-robin, busy times on override days, split hours, UTC-midnight-crossing schedules, multiple override ranges, or the new working-hours branch.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In getSlots, the activeOverrides day filter picks the invitee day by treating the organizer's wall-clock time (stored as fake UTC) as a real instant. The offset correction is only partly applied, so the override lands on the wrong invitee day.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "After the offset is applied, override startTime/endTime are computed as hour()*60+minute() with no day carry. An override that crosses the invitee's midnight gets endTime < startTime, buildSlots drops it, and the day has zero slots.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The selected-slots checkIfIsAvailable call looks up userSchedule and passes organizerTimeZone but passes no dateOverrides or workingHours, so the lookup and the prop have no effect.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch newly enforces working hours and date overrides inside checkIfIsAvailable for every fixed and round-robin host, where these spread-in fields were previously ignored.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The date-override check uses dateOverrides.find and returns unavailable when the slot lies outside any one override range on that day. With multiple override ranges on the same date, a slot valid in one range is rejected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A date override is matched to slots by the UTC calendar date of its shifted start (format('YYYY MM DD')) rather than the host's local date. Overrides near local midnight therefore reject slots on the neighbouring day. The dayjs(date.start)...format() call also uses the server's local zone while slotStartTime is UTC.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "override.timeZone is optional on TimeRange but is passed directly to tz(override.timeZone). When it is undefined, tz falls back to the process timezone, so the override shift depends on the host machine.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "dayjs(override.start.toString()) parses the non-ISO, engine-dependent Date#toString output, which also drops milliseconds, where dayjs(override.start) would suffice.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The override containment check only tests slotEndTime <= override start and slotStartTime.isAfter(override end). Slots that partially overlap the override, such as starting inside and ending after it, are accepted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The override end boundary uses strict isAfter while the start boundary uses isBefore || isSame. A slot starting exactly at the override end time passes the check and is marked available.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The UTC offset is computed at the stored fake-UTC wall-clock instant rather than the real local instant, so it can be wrong on DST-transition dates.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The organizerTimeZone parameter duplicates the timeZone already spread in via ...schedule/...userSchedule. It is also misnamed, since it receives each host's timezone rather than the organizer's.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The inline type dateOverrides?: { start: Date; end: Date }[] duplicates TimeRange from @calcom/types/schedule.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the override check, dayjs(date.start).add(utcOffset, 'minutes') and the equivalent for end are rebuilt four times instead of computing the shifted start/end once per override.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The dayjs(override.start).utc().add(offset,'minute') chain is built twice each for start and end. The flatMap callback returns a single object, so it should be map.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

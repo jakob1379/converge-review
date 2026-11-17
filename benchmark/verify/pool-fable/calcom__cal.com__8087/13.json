@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/getCalendar.ts:15 awaits the import promise from packages/app-store/index.ts:3-30 with no try/catch, so a failed import rejects getCalendar's promise; fire-and-forget callers such as packages/app-store/vital/lib/reschedule.ts:125-128 (forEach(async \u2026)) and packages/core/CalendarManager.ts:28 (not awaited) leave that rejection unhandled. In practice these are local bundled modules, so a failure needs a module to throw during evaluation, which is unlikely.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.3921137
+}

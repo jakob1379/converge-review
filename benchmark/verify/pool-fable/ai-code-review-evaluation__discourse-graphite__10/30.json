@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/admin/components/embeddable-host.js.es6:46-48 calls `destroyRecord().then(...)` with no `.catch`, while `save` at line 40 in the same file does use `.catch(popupAjaxError)`. Nothing down the chain handles the rejection either (models/store.js.es6:125-128, adapters/rest.js.es6:74-76), so a failed delete shows the admin no error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.22144840000000002
+}

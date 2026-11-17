@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The send(:include, ...) call is there (new config/initializers/i18n.rb, patch line 70, moved unchanged from config/initializers/pluralization.rb). But the project still supports Ruby 2.0.0 (.travis.yml:23, .ruby-version.sample:1), where Module#include is private, so send is needed and is not a mistake.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.056468599999999994
+}

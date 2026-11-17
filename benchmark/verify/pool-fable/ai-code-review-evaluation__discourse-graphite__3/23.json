@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "There is no regression: the removed `User#email_validator` (change.patch:114-124) only checked the domain whitelist/blacklist and never validated format, and the new `EmailValidator#validate_each` (lib/validators/email_validator.rb:3-16) carries that logic over unchanged, adding only a `BlockedEmail` check. `sam@sam` and `sam` do pass when no whitelist is set, but they passed before the patch too.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.2759951
+}

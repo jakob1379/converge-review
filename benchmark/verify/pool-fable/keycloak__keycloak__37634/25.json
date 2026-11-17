@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes `public Context(Context context)` from `OAuth2GrantType.Context`; server-spi-private/src/main/java/org/keycloak/protocol/oidc/grants/OAuth2GrantType.java:87-103 now has only the 7-argument constructor. No in-repo caller of the copy constructor remains (the only `new OAuth2GrantType.Context(...)` is TokenEndpoint.java:149, using the 7-argument form), so only out-of-tree extensions could break.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1108531
+}

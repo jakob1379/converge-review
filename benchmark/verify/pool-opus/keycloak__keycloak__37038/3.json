@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At GroupPermissionsV2.java:122-123, `groupResource.getId()` is passed to `hasPermission()` and added to `granted`. But `hasPermission()` looks the resource up with `resourceStore.findByName(server, groupId)` (line 141), and group resources are named after the group ID (AdminPermissionsSchema.java:109,118-121, where `resolveGroup` returns `group.getId()`). So the lookup by resource ID misses and falls back to the all-groups resource, and the returned set holds generated resource IDs instead of group IDs.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1306417
+}

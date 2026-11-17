@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In VerifyMessageProperties.java (patch lines 192-203), the Matcher was created on the original immutable String, so reassigning `value` does not affect the iteration. Each `replaceFirst(Pattern.quote(...))` removes one copy of a tag that exactly equals the current match, so with repeated identical anchors, removing one copy per match still removes them all and gives the same final string.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2265432
+}

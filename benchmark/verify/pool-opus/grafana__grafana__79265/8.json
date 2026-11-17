@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds the required member `anonymousDeviceLimit: number | undefined` to the published GrafanaConfig interface (packages/grafana-data/src/types/config.ts:200), and the frontend settings DTO now sends it (pkg/api/dtos/frontend_settings.go:195). The only other mention in the repo is the default in GrafanaBootConfig (packages/grafana-runtime/src/config.ts:97); nothing in public/ or packages/ reads it, and any outside code that implements GrafanaConfig would now fail to type-check until it adds the field.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.10737369999999999
+}

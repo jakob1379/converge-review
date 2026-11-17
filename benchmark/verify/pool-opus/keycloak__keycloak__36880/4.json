@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissionsV2.java:138 calls findByType(server, \"Clients\") and adds resource.getName(). Per-client resources are created at AdminPermissionsSchema.java:104 with no setType, so they never match. Only the all-clients resource gets a type (setType at AdminPermissionsSchema.java:250), so the method never returns per-client IDs and can return the name \"Clients\". AvailableRoleMappingResource.java:230 then calls realm.getClientById(\"Clients\").getRolesStream(), and since no client has that ID this would throw a NullPointerException.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.16109630000000003
+}

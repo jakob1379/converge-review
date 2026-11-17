@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In change.patch lines 45-55, the patch adds `type NoopCache struct{}`, and its Get, Set and Delete methods all use the receiver `lc *NoopCache`. The name `lc` does not match the type, which would normally be named something like `nc`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0248574
+}

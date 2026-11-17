@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The contrast the claim rests on does not exist: createMeeting also awaits getVideoAdapters outside its try block (packages/core/videoClient.ts:52, try starts at :70), exactly like updateMeeting (:111), deleteMeeting (:144) and getBusyVideoTimes (:39). getVideoAdapters (:21-36) can only reject if an app module's dynamic import fails, since the adapter factories are plain closures, and before the patch that same failure was a static-import error breaking the whole app-store.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3837285
+}

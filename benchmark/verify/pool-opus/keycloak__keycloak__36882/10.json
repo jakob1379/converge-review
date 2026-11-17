@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes docs/guides/templates/kc.adoc:53 to `bin/kc.[sh|bat] update-compatibility ${parameters} --features=rolling-updates`. That CLI value outranks KC_FEATURES and keycloak.conf, and PersistedConfigSource has ordinal 200, so it replaces any other features the user set. `features` is a build-time option, so with --optimized the check in Picocli.java:404-437 throws 'build time options have values that differ from what is persisted' unless the image was built with exactly that value.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23382160000000002
+}

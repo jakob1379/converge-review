@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The Javadoc lists the role check, the per-client permission and then, for V2, the extra all-clients permission. ClientPermissionsV2.java:64-69/91-103 does exactly that: role, or hasPermission(client, scope), which checks the per-client resource and falls back to the all-clients resource (lines 214-222). V2 does override the V1 code, but it keeps the per-client semantics the doc describes, so the 'Also ... for all clients' wording is accurate rather than misleading.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11386990000000001
+}

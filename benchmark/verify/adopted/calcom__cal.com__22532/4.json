@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At _router.tsx:29 the patch passes an inline `z.object({ credentialId: z.number() })` instead of importing it from a deleteCache.schema.ts file, and the CalendarsRouterHandlerCache type (lines 8-11) lists only connectedCalendars and setDestinationCalendar. That type isn't used anywhere in this file, so leaving deleteCache out of it has no effect at runtime.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0408023
+}

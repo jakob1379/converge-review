@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new clamp at src/sentry/api/paginator.py:182-184 sits unconditionally in BasePaginator.get_result, which Paginator (line 221) and DateTimePaginator (line 230) inherit without overriding, so it is not gated to the new audit-log path. The claim overstates the reach, though: behaviour only differs for a negative offset on a non-prev cursor (now clamped to 0 instead of reaching the queryset slice), and paginators outside BasePaginator such as OffsetPaginator (line 247) are untouched.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.44623809999999997
+}

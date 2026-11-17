@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The guide lists exit code 1 for a missing or corrupted metadata file (docs/guides/server/update-compatibility.adoc:122-123), but UpdateCompatibilityCheck.java:80 and :90 throw PropertyException for exactly those cases, which ExecutionExceptionHandler.java:44-50 maps via ShortErrorMessageHandler.java:98-101 to exitCodeOnInvalidInput() (no exit-code mapper is set anywhere, so picocli's default USAGE = 2). The patch only added the exit code 4 row and left both the code 1 row and the throw sites untouched.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5599645
+}

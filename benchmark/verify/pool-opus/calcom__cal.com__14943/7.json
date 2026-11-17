@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In scheduleSMSReminders.ts, the `continue` at lines 68-70 (missing workflowStep or booking) and the `if (message?.length ... && sendTo)` guard at line 158, which has no else branch, both leave a reminder unscheduled without changing retryCount. Only a falsy scheduleSMS result (lines 178-186) and the catch block (lines 190-197) increment it. These skipped reminders make no Twilio call, though, and are still deleted once scheduledDate passes (lines 32-37).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.0719411
+}

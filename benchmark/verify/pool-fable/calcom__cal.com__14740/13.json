@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:26-56 loads the booking and checks only existence and caller permission, never `booking.status` or `startTime`/`endTime`, before creating attendee rows (lines 92-106) and calling `sendAddGuestsEmails` (line 168), whose templates emit ICS with status CONFIRMED / method REQUEST (packages/emails/templates/attendee-add-guests-email.ts, organizer-add-guests-email.ts). The UI hides the action for cancelled/past bookings (BookingListItem.tsx:544), but the tRPC mutation can be called directly.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.322956
+}

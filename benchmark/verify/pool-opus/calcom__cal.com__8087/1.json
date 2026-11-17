@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/vital/lib/reschedule.ts:125-134, the callback is now `forEach(async ...)` with `await getCalendar(...)` at line 128. `forEach` ignores the promises the callbacks return, so a rejection from getCalendar (now async, packages/app-store/_utils/getCalendar.ts:9-22), deleteEvent or deleteMeeting never reaches the try/catch at lines 124/135 and goes unhandled. Before the patch, deleteEvent and deleteMeeting rejections were already lost because `forEach` dropped their promises, but this patch makes getCalendar async and so lets its errors escape as well.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0888141
+}

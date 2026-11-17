@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/tasks/disqus.thor:162-163 sets `raw: p[:cooked]` and `cooked: p[:cooked]`, and p[:cooked] is the Disqus `message` CDATA (HTML) recorded at lib/tasks/disqus.thor:64. These lines are unchanged context: the patch's hunks in that file only remove the category option and swap topic creation for TopicEmbed.import_remote.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1730011
+}

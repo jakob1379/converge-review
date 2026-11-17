@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/tasks/sync_status_outbound.py:19 takes no source argument, and line 43 calls `installation.should_sync(\"outbound_status\")` with no `sync_source`. So the same-integration check added in mixins/issues.py (patch lines 35-36) only runs for assignee sync, which passes `parsed_assignment_source` in sync_assignee_outbound.py. The patch adds an `assignment_source` parameter to the abstract `sync_status_outbound`, but nothing ever passes a value to it.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0957089
+}

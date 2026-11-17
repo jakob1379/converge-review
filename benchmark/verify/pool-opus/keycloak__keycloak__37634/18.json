@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The comment at AssertEvents.java:482 says the grant shortcut 'starts at character 4th char' (and line 483 uses substring(3,5)). But the encoding is 2+2+2 chars (DefaultTokenContextEncoderProvider.java, the substring(4, 6) parse and the 'First 2 chars\u2026' comment), so the grant actually starts at the 5th char (index 4) and the comment is stale. The source can't show whether it came from an earlier 3-letter encoding.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2603524
+}

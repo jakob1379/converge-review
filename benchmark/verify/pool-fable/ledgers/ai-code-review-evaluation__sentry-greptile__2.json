@@ -1,0 +1,419 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The privilege gate for advanced pagination checks the raw request.user.is_superuser flag instead of is_active_superuser(request), so it grants access without an active superuser session.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 gates the OptimizedCursorPaginator path on the raw `request.user.is_superuser` flag, whereas the endpoint's own permission class uses `is_active_superuser(request)` (src/sentry/api/bases/organization.py:124), which checks the active superuser session (src/sentry/auth/superuser.py:143-147). A superuser-flagged user who reaches the endpoint through ordinary org:write membership therefore gets the advanced path without an active superuser session.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2904477
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil on the sort key without converting it, but for audit logs ordered by -datetime the key is a datetime object. This raises TypeError, so every non-empty page with ?optimized_pagination=true returns 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`OptimizedCursorPaginator.get_item_key` (src/sentry/api/paginator.py:838-840) calls `math.floor`/`math.ceil` directly on `getattr(item, self.key)`, which is a `datetime` because the endpoint orders by `-datetime` (src/sentry/api/endpoints/organization_auditlogs.py:76-83; `DateTimeField` at src/sentry/models/auditlogentry.py:69). `build_cursor` calls the key on any non-empty result set (src/sentry/utils/cursors.py:122,137,197) and `paginate` only catches `BadPaginationError` (src/sentry/api/base.py:540), so the `TypeError` becomes a 500 for superusers/global-access members using `?optimized_pagination=true`.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.5020257
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.value_from_cursor returns the raw numeric cursor value without converting it back to a datetime, so follow-up pages compare an int against the DateTimeField in SQL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "`OptimizedCursorPaginator.value_from_cursor` returns `cursor.value` unconverted (src/sentry/api/paginator.py:842-843), and `build_queryset` binds it into `datetime <= %s` (paginator.py:119-125) for the audit-log endpoint ordered by `-datetime`, a `DateTimeField` (src/sentry/models/auditlogentry.py:69); `DateTimePaginator` converts at paginator.py:238-241. The sibling `get_item_key` (paginator.py:838-840) also calls `math.floor`/`math.ceil` on a datetime, so a non-empty first page should fail before any follow-up cursor is issued.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.3735883
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When enable_advanced_features is True and cursor.offset < 0, OptimizedCursorPaginator.get_result passes the negative offset directly into queryset slicing. Django rejects negative QuerySet indexing, and paginate() only catches BadPaginationError, so the error surfaces as a 500. The comment saying Django handles negative slicing is incorrect, and a crafted cursor (e.g. '0:-5:0') from users who pass the gate can trigger this.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/paginator.py:877-882 slices `queryset[start_offset:stop]` with a negative `cursor.offset`, which `Cursor.from_string` (src/sentry/utils/cursors.py:53-61) accepts unvalidated from e.g. `0:-5:0`. Django (pinned 5.2.1, behaviour known rather than read here since Django is not installed in the checkout) raises ValueError on negative QuerySet indexing, and `paginate()` (src/sentry/api/base.py:540) catches only BadPaginationError, so gated users on organization_auditlogs.py:73-83 get a 500.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.4694321
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In BasePaginator.get_result, negative offsets on non-prev cursors are clamped to 0 for start_offset, while cursor.offset and build_cursor still use the unclamped value, producing inconsistent next/prev cursors.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/paginator.py:182 clamps only the slice start (`max(0, offset)` for non-prev cursors), but the original cursor is passed unchanged to build_cursor at :198-203; src/sentry/utils/cursors.py:131,141 and :187 then derive the next offset (`offset + limit`, or the raw negative offset on empty results) and `has_prev = bool(value or offset)` from the unclamped negative offset, so the emitted cursors disagree with the rows actually fetched.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.441724
+   }
+  },
+  {
+   "issue": "i6",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In BasePaginator.get_result, when cursor.is_prev is True, start_offset = offset is not clamped, so negative offsets still reach queryset slicing and crash.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/paginator.py:182 clamps only when `not cursor.is_prev`, and `Cursor.from_string` (src/sentry/utils/cursors.py:59) accepts a negative offset, so a cursor like `0:-5:1` reaches `queryset[start_offset:stop]` at paginator.py:184; Django 5.2.1 rejects negative slice indices with a ValueError (known Django behaviour, not read from this repo), which `except BadPaginationError` at src/sentry/api/base.py:540 does not catch, giving a 500. The same crash existed before the patch (`queryset[offset:stop]` was unclamped), but the patch rewrote this line and left the is_prev branch unclamped while its comment calls negative offsets safe.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5388306
+   }
+  },
+  {
+   "issue": "i7",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The BasePaginator change to offset handling is unscoped and alters behavior for every subclass (Paginator, DateTimePaginator, etc.) and every paginated endpoint.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new clamp at src/sentry/api/paginator.py:182-184 sits unconditionally in BasePaginator.get_result, which Paginator (line 221) and DateTimePaginator (line 230) inherit without overriding, so it is not gated to the new audit-log path. The claim overstates the reach, though: behaviour only differs for a negative offset on a non-prev cursor (now clamped to 0 instead of reaching the queryset slice), and paginators outside BasePaginator such as OffsetPaginator (line 247) are untouched.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.44623809999999997
+   }
+  },
+  {
+   "issue": "i8",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The BasePaginator comment claiming it allows negative offsets and that the underlying queryset will handle boundary conditions is false.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The comment at src/sentry/api/paginator.py:179-181 is false both ways: line 182 clamps non-prev offsets with max(0, offset), and for is_prev cursors the unclamped negative offset is sliced at line 184, which Django (pinned 5.2.1, requirements-base.txt:17) rejects with ValueError('Negative indexing is not supported.') rather than handling it. Django's source is not vendored here, so that rejection rests on known QuerySet behaviour; src/sentry/api/base.py:540 only catches BadPaginationError, so a cursor like 0:-5:1 would surface as an unhandled error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4036572
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An added comment describes negative-offset behavior that the Cursor class does not implement.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds a comment at src/sentry/utils/cursors.py:26-27 claiming a 'performance optimization' that allows negative offsets for efficient reverse pagination, but the line it annotates (`self.offset = int(offset)`, cursors.py:28) is unchanged. The Cursor class has no negative-offset logic anywhere (cursors.py:17-61); it only stores the integer as it always did.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.340206
+   }
+  },
+  {
+   "issue": "i10",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The gate uses has_global_access, which is true for all members of open-membership orgs, so the comment's 'authorized administrators' is misleading and the advanced paginator is exposed far more widely than intended.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The gate at src/sentry/api/endpoints/organization_auditlogs.py:71 reads the member column `has_global_access`, which defaults to True for every member (src/sentry/models/organizationmember.py:216, copied through at organizations/services/organization/serial.py:47), so it is not an admin check and the 'authorized administrators' comment is misleading. Two caveats: the open-membership rule the claim cites belongs to a different attribute (src/sentry/auth/access.py:611), and the extra exposure is small because the endpoint already requires org:write, i.e. manager/owner or active superuser (src/sentry/api/bases/organization.py:111).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.575667
+   }
+  },
+  {
+   "issue": "i11",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The enable_advanced computation accesses organization_context.member.has_global_access on every request. It raises AttributeError (500) when member is None, e.g. for non-member callers, ApiKey/org-token auth, or superusers who are not members.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 evaluates `organization_context.member.has_global_access` unconditionally (before the `use_optimized` check), and `member` is `RpcOrganizationMember | None` (src/sentry/organizations/services/organization/model.py:346), set to None when the caller has no user id or no membership (src/sentry/organizations/services/organization/impl.py:123-125). An ApiKey or other non-member token with `org:write` passes `OrganizationAuditPermission` and hits AttributeError; the superuser example is wrong only because `request.user.is_superuser` short-circuits.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.48315270000000005
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "add-buffer.lua",
+   "line": null,
+   "severity": "Minor",
+   "claim": "max_segment_spans (default 1001) is still accepted and stored but never read, because the cap is hard-coded as 1000 in add-buffer.lua; the Python-side limit is ignored and the two values disagree.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/spans/buffer.py:150,158 still accepts and stores max_segment_spans (default 1001), but the patch removed its only read in flush_segments and it is not passed to the script (EVALSHA args at buffer.py:212-221); the cap is hard-coded as 1000 in src/sentry/scripts/spans/add-buffer.lua:62-63.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2782707
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The max_segment_spans safety check in _load_segment_data was removed, so pre-existing oversized Redis sets are processed without Python-side protection.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch deletes the `len(payloads[key]) > self.max_segment_spans` skip from `_load_segment_data` (src/sentry/spans/buffer.py:439-453), leaving `max_segment_spans` set but unused (buffer.py:150,158). Practical exposure is small: the `max_segment_bytes` check remains (buffer.py:441) and add-buffer.lua:62-64 trims each set to 1000 on every insert.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.37014630000000004
+   }
+  },
+  {
+   "issue": "i14",
+   "path": "add-buffer.lua",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ZUNIONSTORE in the span buffer Lua script uses the default AGGREGATE SUM, so a payload present in both inputs gets its timestamp score summed (doubled), corrupting ordering and ZPOPMIN eviction.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/scripts/spans/add-buffer.lua:47 and :53 call `zunionstore set_key 2 set_key <other>` with no AGGREGATE option, so Redis defaults to SUM. A span payload redelivered after its subsegment was already merged is re-added to the parent key by `zadd` (src/sentry/spans/buffer.py:197) and then exists in both inputs, so its `end_timestamp_precise` score doubles and skews the `zpopmin` eviction at add-buffer.lua:62-63 (the only consumer of the scores).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3579694
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "add-buffer.lua",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ZPOPMIN keeps the 1000 latest-ending spans, so a segment/root span that ends before its children can be evicted while has_root_span remains true.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/scripts/spans/add-buffer.lua:62-64 trims the set with ZPOPMIN, which drops the lowest scores, and the score is end_timestamp_precise (src/sentry/spans/buffer.py:197-199), so a root span that ends before more than 1000 of its children is evicted. Lines 66-70 then set/keep the has_root_span flag from the hrs key or is_root_span alone, never checking whether the root payload survived the trim.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.4048579
+   }
+  },
+  {
+   "issue": "i16",
+   "path": "add-buffer.lua",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ZPOPMIN eviction drops spans silently, with no metric or logging.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/scripts/spans/add-buffer.lua:62-64 evicts the lowest-scored spans with zpopmin once a segment exceeds 1000, but the script's return value at line 72 carries no eviction count and src/sentry/spans/buffer.py:237-279 emits no metric or log for it. The patch also removed the only span-count signal, the `segment_span_count_exceeded` metric and `logger.error` in flush_segments, leaving `max_segment_spans` unused (buffer.py:150,158).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3106076
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "span-buf:s:* keys change from Redis SET to ZSET in the same key namespace with no migration, prefix bump, or dual-read. During a rolling deploy this causes WRONGTYPE errors and loss of spans stored in old SET keys.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch switches `span-buf:s:{...}` keys from SADD/SCARD/SUNIONSTORE/SSCAN to ZADD/ZCARD/ZUNIONSTORE/ZSCAN under the identical key format (src/sentry/spans/buffer.py:196-199, 434; src/sentry/scripts/spans/add-buffer.lua:24, 45-63), with no prefix change, type check, fallback read or WRONGTYPE handling anywhere in src/sentry/spans. ZADD/ZCARD/ZSCAN against a pre-existing SET key return WRONGTYPE in Redis, so old-format segments left over at deploy time (up to the 3600s TTL, buffer.py:151) cannot be written or flushed by new code; this follows from the code and Redis semantics, not from an observed run.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.40718119999999997
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Module docs still describe span-buf:s:* as set keys after the switch to sorted sets.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch switches the span-buf:s:* keys from sets to sorted sets (src/sentry/spans/buffer.py:197 `p.zadd`, plus zcard/zunionstore in add-buffer.lua), but the module docstring is unchanged and still says \"span-buf:s:* -- the actual set keys\" at src/sentry/spans/buffer.py:58 and \"Add the ingested span's payload to the set under `set_key`\" at buffer.py:39.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.09907869999999999
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The redirect-walk depth limit was reduced from 10000 to 1000 and its explanatory comment was deleted, so segment trees deeper than 1000 are not joined correctly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/scripts/spans/add-buffer.lua:30 now reads `for i = 0, 1000 do`; the patch replaced `for i = 0, 10000 do` and dropped its trailing comment about deep segment trees not being joined correctly. A redirect chain longer than about 1000 hops therefore stops at an intermediate span rather than the true segment root (lines 30-40), though this only arises with pathological arrival order because each insert stores the resolved root.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.137944
+   }
+  },
+  {
+   "issue": "i20",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_result is a near line-for-line copy of BasePaginator.get_result, with key logic wrongly copied from Paginator and no actual optimization.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/api/paginator.py:845-911 repeats BasePaginator.get_result (136-215) except for a negative-offset slice branch (877-882), which is not an optimization. get_item_key/value_from_cursor (838-843) are verbatim from Paginator (222-227), yet the class is used with order_by=\"-datetime\" (organization_auditlogs.py:36-37), so math.floor would be applied to a datetime where DateTimePaginator's conversion (233-241) is needed.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0.3873858
+   }
+  },
+  {
+   "issue": "i21",
+   "path": "factory.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "factory.py indexes val['end_timestamp_precise'] directly, so a missing field raises KeyError and fails the batch.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "src/sentry/spans/consumers/process/factory.py:141 reads val[\"end_timestamp_precise\"] by direct index inside process_batch's loop with no try/except anywhere in the file, so a payload without the field raises KeyError and aborts the whole batch. Whether such a payload can actually arrive depends on the ingest_spans_v1 schema, which is not in this checkout; trace_id, span_id and project_id are indexed the same way at lines 136-139.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3445135
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover span eviction beyond 1000, OptimizedCursorPaginator, the endpoint's optimized_pagination branch, or the BasePaginator negative-offset change.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch's test changes only add `end_timestamp_precise` to existing fixtures (tests/sentry/spans/test_buffer.py, test_flusher.py, test_consumer.py); no test references `OptimizedCursorPaginator`, `optimized_pagination` or `zpopmin`/more than 1000 spans, and the only negative-offset test (tests/sentry/api/test_paginator.py:143) exercises the separate `OffsetPaginator` (src/sentry/api/paginator.py:247), not `BasePaginator` (line 58).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3678217
+   }
+  },
+  {
+   "issue": "i23",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Style issues: trailing whitespace at organization_auditlogs.py:72,89 and paginator.py:824,827,829, a blank line at EOF in paginator.py, and three blank lines before class OptimizedCursorPaginator (E303).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Trailing whitespace is present at src/sentry/api/endpoints/organization_auditlogs.py:72 and :89 and at src/sentry/api/paginator.py:824, :827 and :829; three blank lines (paginator.py:818-820) precede class OptimizedCursorPaginator at :821, and the patch adds a blank line after the final `return cursor` (paginator.py:911-912) at end of file.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.182173
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

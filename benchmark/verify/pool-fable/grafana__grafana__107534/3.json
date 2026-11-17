@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The expected count of 5 is correct: `runShardSplitQuery` calls `applyTemplateVariables` once for the single target (shardQuerySplitting.ts:52), and each of the 4 shard-group sub-requests goes through `runSplitQuery` (shardQuerySplitting.ts:163), which after this patch also calls it once per target (querySplitting.ts:299). That gives 1 + 4 = 5, matching the 4 requests the same test asserts at shardQuerySplitting.test.ts:114-168.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.3079691
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "ClientPermissions.java:268-273 defines canManageClientsDefault() as root.hasOneAdminRole(MANAGE_CLIENTS) and canViewClientDefault() as root.hasOneAdminRole(MANAGE_CLIENTS, VIEW_CLIENTS). The new ClientPermissionsV2 makes these same calls inline (patch lines 352, 393, 405) instead of using the helpers, even though it calls canViewClientDefault() at line 373.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06360740000000001
+}

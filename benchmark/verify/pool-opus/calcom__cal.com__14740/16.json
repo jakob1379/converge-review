@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/components/dialog/AddGuestsDialog.tsx:32 initialises the list with `useState<string[]>([\"\"])`, and lines 39 and 90 reset it to `[\"\"]` again. Because of this, the `multiEmailValue.length === 0` guard in handleAdd (line 49) never fires on the initial state, so clicking Add with nothing typed shows the 'emails must be unique and valid' error instead of doing nothing.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1369992
+}

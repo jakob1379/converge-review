@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds hardcoded `firstName: \"\"` and `lastName: \"\"` to each team member at handleNewBooking.ts:998-999. These objects are passed into `evt.team.members` at line 1785, so they reach emails and webhook payloads, yet the `TeamMember` type at packages/types/Calendar.d.ts:41-46 has neither field and nothing in the destination-calendar fix uses them.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2456483
+}

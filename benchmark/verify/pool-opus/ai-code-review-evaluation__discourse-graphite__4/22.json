@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/components/topic_retriever_spec.rb:763-793 stubs the private methods perform_retrieve and retrieved_recently?, and the only tests that reach retrieved_recently? stub it, so the $redis.setnx/expire throttle in lib/topic_retriever.rb:711-723 is never run. spec/controllers/embed_controller_spec.rb:847 mocks TopicRetriever.new, but the controller only calls Jobs.enqueue(:retrieve_topic) (app/controllers/embed_controller.rb:191); the mock works only because app/jobs/base.rb:168-172 runs jobs synchronously when queue_jobs? is false.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1810803
+}

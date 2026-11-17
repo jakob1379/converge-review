@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts (patch lines 80-88), Google createEvent picks the calendar only with `destinationCalendar.find(cal => cal.credentialId === credentialId)` and otherwise uses \"primary\". EventManager.createAllCalendarEvents (patch lines 358-363) sends destinations whose credentialId is null to `createEvent(c, event)` for each credential of the matching integration type, so nothing matches and the event goes to 'primary'. Before the patch it used `destinationCalendar.externalId` directly.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2112564
+}

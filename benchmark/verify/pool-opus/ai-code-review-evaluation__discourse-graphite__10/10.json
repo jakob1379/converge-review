@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/embeddable_hosts_controller.rb:23-24 reads params[:embeddable_host][:host] without a nil guard or params.require, so a request with no embeddable_host key fails with NoMethodError on nil (a 500 error) before the model validation and render_json_error at line 30 can run.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0549086
+}

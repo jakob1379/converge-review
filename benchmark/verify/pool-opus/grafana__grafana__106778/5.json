@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "AlertRuleMenu.tsx:123 still requires `rulerRuleType.grafana.rule(rulerRule)` for Pause, and line 165 requires `canDelete && rulerRule` for Delete, even though canPause and canDelete are now ORed with the Grafana Prom abilities (lines 80-86). GrafanaRuleListItem.tsx now passes only promRule to RuleActionsButtons, so rulerRule is undefined and neither item renders; the new GrafanaGroupLoader test even expects exactly 4 menu items with no Delete.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3144882
+}

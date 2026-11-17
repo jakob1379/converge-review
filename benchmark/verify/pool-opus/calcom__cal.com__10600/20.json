@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Only setup.ts (around line 61) creates backup codes, and no regenerate endpoint or UI exists, yet the missing_backup_codes text in common.json tells users to 'generate them in your settings'. Disabling and re-enabling 2FA is the only workaround. Login replaces each used code with null (next-auth-options.ts around lines 650-660), so once all are used `indexOf` returns -1 and throws IncorrectBackupCode; the `!user.backupCodes` check only catches NULL, not an array of all nulls.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1570312
+}

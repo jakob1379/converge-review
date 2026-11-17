@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`useProjectFromId` (static/app/utils/useProjectFromId.tsx:7-13) only searches `useProjects().projects`, which is empty while `ProjectsStore` has `loading: true`, and ignores `fetching`/`initiallyLoaded`. The new guard at static/app/views/replays/detail/ai/index.tsx:90-96 therefore shows 'Project not found. Unable to load AI summary.' before the loading spinner check at line 98 is reached.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.31972
+}

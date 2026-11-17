@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the sync branch, packages/app-store/_utils/oauth/refreshOAuthTokens.ts:8-15 returns the raw fetch Response with no response.ok check and no body parsing. Callers that expect an axios/SDK-shaped result then read fields a Response does not have, e.g. googlecalendar/lib/CalendarService.ts:94-95 (`res?.data` is undefined, so `token.access_token` throws), hubspot/lib/CalendarService.ts:192 and zohocrm/lib/CalendarService.ts:217.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5557389
+}

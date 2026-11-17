@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`deleteScheduledEmailReminder(..., true)` is called at packages/trpc/server/routers/viewer/workflows.tsx:214 (workflow delete), :521 (step delete) and packages/features/bookings/lib/handleNewBooking.ts:968 (reschedule); that branch at packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:213-222 POSTs a cancel to `/v3/user/scheduled_sends` and returns without setting `cancelled: true`, so it skips the deferred cron flow in scheduleEmailReminders.ts:43-77. SendGrid's cancelled-batch limit is external and not checkable here, but it is the limit the deferred flow exists to avoid, and a failed cancel is only logged (emailReminderManager.ts:233-235).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4967336
+}

@@ -1,0 +1,126 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In TopicEmbed.import, the 'Imported from' footer interpolates url unescaped into a single-quoted <a href='#{url}'> in raw HTML. Because the post uses cook_method raw_html, the sanitizer never runs, so a crafted embed_url allows HTML/JS injection (stored XSS).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The raw_html cook method returns raw unchanged and skips sanitization. Remote content is stored as cooked HTML verbatim: RSS HTML that is only CGI.unescapeHTML'd, and Readability output that keeps javascript: hrefs. Later edits of such posts are also cooked raw.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": "embed/best.html.erb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "embed/best.html.erb uses '<%- end if %>' instead of '<%- end %>'. The stray postfix 'if' makes the block's closing conditional on the next buffer append, or is invalid syntax.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The embed iframe passes request.referer, a full URL, as postMessage's targetOrigin instead of an origin (scheme://host[:port]). The parent page therefore does not receive the resize messages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "import_remote fetches the URL without validating its format or scheme first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "PollFeed calls i.content.scrub, but RSS 2.0 items with only <description> have nil content (SimpleRSS exposes content:encoded as content_encoded). This raises NoMethodError, and with retry: false and no per-item rescue it aborts the whole feed poll.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The throttle calls setnx and then expire as two separate calls. A failure between them leaves a key with no TTL, so retrieval of that URL is blocked permanently.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no guard for a missing #discourse-comments container, so appendChild throws when it does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i35",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The spec uses the deprecated RSpec matcher be_true instead of be true.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i38",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "opts=nil is followed by opts = opts || {} instead of using opts={}, and there are no spaces around '='.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i41",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Deleting an imported post or topic breaks the embed permanently because TopicEmbed rows are never cleaned up. A missing post makes PostRevisor.new(nil).revise! raise, and a trashed topic keeps returning its id, so comments return 404.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The non-list branch returns a body-less `Response(status=HTTP_422_UNPROCESSABLE_ENTITY)` at src/sentry/issues/endpoints/browser_reporting_collector.py:104, while a per-report validation failure returns a 422 with a JSON `{\"error\", \"details\"}` body at :115-118, so the two 422 formats differ. One detail of the claim is off: the old code had no empty-body 422 for invalid list items, since `BrowserReport(**report)` would raise instead.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5306649
+}

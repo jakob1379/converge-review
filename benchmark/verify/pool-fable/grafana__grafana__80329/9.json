@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/services/annotations/annotationsimpl/xorm_store.go:608-618 has two paths: inlined IDs for SQLite when the batch size exceeds 999, placeholders otherwise. The ids are []int64 from fetchIDs (xorm_store.go:584-595), so inlining is injection-safe on every dialect, and the placeholder path is the only user of the GetDBType branch, sqliteParameterLimit, args/asAny (603, 617, 632-638) and the new migrator import.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.259483
+}

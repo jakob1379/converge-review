@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/controllers/admin/embedding_controller.rb:9-11 `update` has the same body as `show` (render_serialized only, no params read, nothing saved). The only caller path is `saveChanges` at app/assets/javascripts/admin/controllers/admin-embedding.js.es6:5-7, which sends `update({})` and is not bound by any template (embedding.hbs only wires addHost/deleteHost), so the PUT route at config/routes.rb:139 is unused.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1727906
+}

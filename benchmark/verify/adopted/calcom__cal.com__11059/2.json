@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In salesforce/lib/CalendarService.ts:75-84, getClient always POSTs a refresh_token request and skips refreshOAuthTokens. It saves the parsed token at :96-99 but builds the Connection from the old credentialKey.access_token at :105-106. In sync mode, parseRefreshTokenResponse.ts:199-200 uses minimumTokenResponseSchema, a plain z.object whose computed keys collapse to \"[object Object]\", so zod's default stripping drops instance_url and other fields. Because that function throws on failure (:205-206), the !success branch at CalendarService.ts:92-94 can never run.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.25151060000000003
+}

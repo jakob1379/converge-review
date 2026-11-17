@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "authz/client/src/main/java/org/keycloak/authorization/client/AuthzClient.java:95 calls CryptoIntegration.init(AuthzClient.class.getClassLoader()), and common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:56 runs ServiceLoader only against that loader, so a higher-order provider visible only via the context class loader would be skipped in favour of the limited AuthzClientCryptoProvider. This only matters in split-classloader deployments, matches the existing convention at services/src/main/java/org/keycloak/services/resources/KeycloakApplication.java:89, and init is a no-op if the application has already initialised crypto.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.42858779999999996
+}

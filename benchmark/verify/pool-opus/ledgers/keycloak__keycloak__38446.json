@@ -1,0 +1,419 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "BackwardsCompatibilityUserStorage.isValid() (the fixture provider) accepts any stored recovery code in any order and never consumes it. Federated recovery codes are therefore reusable, the sequential 'code #N' behaviour is not enforced, and the exhausted-credential cleanup path is never reached.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the patched test fixture, BackwardsCompatibilityUserStorage.java:326-340 isValid() returns true if any stored code matches (`generatedKeys.stream().anyMatch(...)`). It never checks the expected next code and never removes or marks the used code. So `allCodesUsed()` and the cleanup at RecoveryAuthnCodesFormAuthenticator.java:85-91 can never trigger for federated users.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.16222519999999999
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Core Keycloak does not enforce single use for recovery codes stored through the generic user-storage path. It leaves consuming a used code entirely to the user-storage provider, with no guidance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The local provider makes each code single-use by removing it inside its own isValid (services/.../credential/RecoveryAuthnCodesCredentialProvider.java:109-111). For a federated user, UserCredentialManager.isValid (model/storage/.../UserCredentialManager.java:66-79) runs the storage provider's validator first, and once that validator accepts the code the local provider never runs. After a valid code, RecoveryAuthnCodesFormAuthenticator.java:80-92 only removes the credential once all codes are used and never removes the code just entered, the new CredentialHelper.createRecoveryCodesCredential and RecoveryAuthnCodesUtils.getCredential add no javadoc on single use, and the patch's sample BackwardsCompatibilityUserStorage.isValid accepts any stored code again and again (anyMatch, patch line 354).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.27229529999999996
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The changed User Storage SPI contract for recovery codes is not documented anywhere. getCredentials must return Keycloak's internal hashed RecoveryAuthnCodesCredentialModel format, while updateCredential receives plaintext codes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "CredentialHelper.java:54-60 (createRecoveryCodesCredential) passes the plaintext codes as a JSON list to updateCredential, and RecoveryAuthnCodesUtils.getCredential (lines 101-106) returns the federated credential to RecoveryAuthnCodeInputLoginBean and RecoveryAuthnCodesFormAuthenticator, which read it with RecoveryAuthnCodesCredentialModel.createFromCredentialModel. That method expects Keycloak's hashed credentialData/secretData format (RecoveryAuthnCodesCredentialModel.java:87-95), which is why the test provider has to rebuild it with createFromValues. No javadoc, no change to docs/documentation/server_development, and no other docs in the patch describe this split contract.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.20898689999999998
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "updateCredential receives the recovery codes as a plaintext JSON list in challengeResponse, whereas the local store keeps them hashed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "CredentialHelper.createRecoveryCodesCredential (patch lines 54-60) turns the raw generatedCodes into a JSON string with JsonSerialization.writeValueAsString and passes it as the challengeResponse of the UserCredentialModel given to updateCredential. The local path instead uses credentialModel, which RecoveryAuthnCodesCredentialModel.createFromValues builds from hashed codes via RecoveryAuthnCodesUtils.hashRawCode (RecoveryAuthnCodesCredentialModel.java:67).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.19412169999999995
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RecoveryAuthnCodesFormAuthenticator takes the credential returned by getCredential(), which may come from user storage, makes the allCodesUsed decision on it, and calls removeStoredCredentialById(). That method only removes local/fed-storage credentials, so the provider's copy is not removed. When local and federated credentials both exist, the authenticator inspects or removes a different credential from the one that validated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "RecoveryAuthnCodesFormAuthenticator.java:80-87 now uses RecoveryAuthnCodesUtils.getCredential(), which prefers the user-storage provider's credential over the local one, then passes its id to removeStoredCredentialById(). That method (UserCredentialManager.java:114-117) only deletes from Keycloak's local or federated store, so the provider's copy stays. Also, isValid (UserCredentialManager.java:59-80) falls back to the local validators when the provider rejects the code, but getCredential still returns the provider's credential, so the allCodesUsed check can run on a different credential from the one that validated.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.28206109999999995
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Recovery-code credentials from federated user storage are now read before local ones, which changes the order of precedence.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "RecoveryAuthnCodesUtils.getCredential (RecoveryAuthnCodesUtils.java:101-107, added by the patch) reads getFederatedCredentialsStream() first and falls back to getStoredCredentialsByTypeStream() only if nothing is found. Before the patch, RecoveryAuthnCodesFormAuthenticator.java:80 and RecoveryAuthnCodeInputLoginBean read only local stored credentials. This looks intentional: it matches UserCredentialManager.isValid and updateCredential (model/storage/.../UserCredentialManager.java:66-77, 86-98), which already check federated storage before local storage.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.22426000000000001
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the fixture's getCredentials(), the recovery-codes model is rebuilt with RecoveryAuthnCodesCredentialModel.createFromValues(), which does not set an id. The returned credential has a null id and the codes are renumbered, so removal by id (removeStoredCredentialById, admin/account deletion) fails.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "createFromValues does leave the id null and numbers the codes 1..n (RecoveryAuthnCodesCredentialModel.java:58-81), but credentials from a user storage provider are never removed via removeStoredCredentialById. CredentialDeleteHelper.java:61-80 looks up local credentials, then matches federated ones by id, then falls back to the 'recovery-authn-codes-id' placeholder the account console shows (AccountCredentialResource.java:212-219), which calls disableCredentialType. Deletion fails only because the fixture's disableCredentialType handles OTP alone (BackwardsCompatibilityUserStorage.java:217-223), not because of the null id or the renumbering.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2794687
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "disableCredentialType() and getDisableableCredentialTypesStream() in the fixture provider do not handle the recovery-codes credential type, so recovery codes cannot be disabled or removed for federated users.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In the fixture BackwardsCompatibilityUserStorage.java, disableCredentialType (lines 217-224) only clears OTP and just logs other types, and getDisableableCredentialTypesStream (lines 255-264) only adds OTP. The patch makes the fixture store and report recovery codes (supportsCredentialType, updateCredential, getCredentials, isConfiguredFor) but has no way to disable or remove them.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1703552
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The fixture's getCredentials dereferences getMyUser(user) without a null check, so myUser.recoveryCodes throws NullPointerException for an unknown user.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In BackwardsCompatibilityUserStorage.java:232-235 the new getCredentials assigns `getMyUser(user)` (a plain `users.get(...)` at line 227) and reads `myUser.recoveryCodes` with no null check, so an unknown user throws a NullPointerException. The neighbouring methods do guard against null (lines 259, 271, 286). In practice the provider only returns users that are in its map (line 89), so this is hard to reach.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1262871
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RecoveryAuthnCodeInputLoginBean calls .get() on the Optionals from RecoveryAuthnCodesUtils.getCredential(user) and getNextRecoveryAuthnCode() without checking presence. This throws NoSuchElementException (500) when no credential is available, e.g. for a storage provider that does not override getCredentials.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "RecoveryAuthnCodeInputLoginBean.java:19-21 calls credentialModelOpt.get() and getNextRecoveryAuthnCode().get() with no check. The patch now saves the codes in user storage whenever updateCredential succeeds (CredentialHelper.createRecoveryCodesCredential), and configuredFor (RecoveryAuthnCodesFormAuthenticator.java:149) asks that provider. A provider that keeps the default CredentialInputUpdater.getCredentials (server-spi CredentialInputUpdater.java:50, which returns Stream.empty()) therefore leaves RecoveryAuthnCodesUtils.getCredential empty, and the login form throws NoSuchElementException.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.21962169999999998
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new getCredentials override in BackwardsCompatibilityUserStorage also returns the OTP credential, with a generated id. This reroutes existing tests (Issue 19575 regression, testOTPSetupAndRemoveThroughAccountMgmtAndLogin) away from the backwards-compat / 'otp-id' / '-id' fallback paths, which lose test coverage.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new getCredentials override (BackwardsCompatibilityUserStorage.java, patch lines 316-318) returns myUser.getOtp(), which now has a generated id (patch line 275). Before, the default CredentialInputUpdater.getCredentials returned Stream.empty() (CredentialInputUpdater.java:50). AccountCredentialResource.java:184/212-217 therefore no longer builds the dummy 'otp-id' credential, and the delete in BackwardsCompatibilityUserStorageTest.java:327 (Issue 19575 test) now resolves through CredentialDeleteHelper.java:64 instead of the '-id' fallback at CredentialDeleteHelper.java:75. No other test references the 'otp-id' or '-id' fallback paths.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3029151
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch adds post-4.8.3 features (var, recovery-code branches) to a provider whose javadoc says it must stay unchanged.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "BackwardsCompatibilityUserStorage.java's javadoc (patch lines 245-249) says the provider dates from Keycloak 4.8.3 and should not need changes, yet the patch adds `var` (line 232) and RecoveryAuthnCodesCredentialModel branches in supportsCredentialType, updateCredential, isConfiguredFor, isValid and a new getCredentials override. However, the file already used post-4.8.3 Stream APIs such as getDisableableCredentialTypesStream (line 255) and searchForUserStream (lines 379-414), so it was not 4.8.3-pure before this patch.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1786968
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The diff includes unrelated whitespace/formatting changes in CredentialHelper, BackwardsCompatibilityUserStorage, BackwardsCompatibilityUserStorageTest and RecoveryAuthnCodesAction.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch makes formatting-only edits in all four files: CredentialHelper.java re-indents getConfigurableAuthenticatorFactory (patch lines 22-39), and BackwardsCompatibilityUserStorage.java changes `realm,  model` to `realm, model` and ` *` to ` * <p>` (patch lines 248-257). BackwardsCompatibilityUserStorageTest.java re-indents `.auth(accountToken)` and splits `new TypeReference<>() {}` across lines (patch lines 538-539, 593-595), and RecoveryAuthnCodesAction.java adds and removes blank lines (patch lines 131, 157).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1777689
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new test performs one login using code #0 only and checks neither single use nor the advancing 'code #N' prompt.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "testRecoveryKeysSetupAndLogin (BackwardsCompatibilityUserStorageTest.java, patch lines 518-524) logs in once, calls enterRecoveryCodes with expectedCode 0, then logs out. It never logs in again to check that code #0 is rejected or that the prompt moves on to code #1.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.15188279999999998
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The storage path forwards only the codes; userLabel and generatedAt from the credential model are dropped for storage-backed credentials.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "CredentialHelper.java:58 builds `new UserCredentialModel(\"\", credentialModel.getType(), recoveryCodesJson)`, which holds only the JSON-encoded codes. The userLabel and createdDate (generatedAt) that createFromValues sets on credentialModel (RecoveryAuthnCodesAction.java:110) only reach the local-DB branch at line 64. The test storage then stamps its own time with Time.currentTimeMillis() and is left with a null userLabel.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1831389
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RecoveryAuthnCodesUtils.getCredential queries getFederatedCredentialsStream for every federated user, including LDAP, which adds an LDAP round trip per challenge render and submit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "RecoveryAuthnCodesUtils.getCredential (server-spi/.../RecoveryAuthnCodesUtils.java:101-107) calls getFederatedCredentialsStream first, and that call goes to the provider's getCredentials for any user with an enabled federation link (UserCredentialManager.java:130-142). For LDAP, LDAPStorageProvider.getCredentials (LDAPStorageProvider.java:1211-1225) runs loadLDAPUserByUuid, which is an LDAP search, and only ever returns a password credential. The patch calls this from RecoveryAuthnCodeInputLoginBean when the challenge page renders and from RecoveryAuthnCodesFormAuthenticator on submit, so each step adds a wasted LDAP query.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.21500300000000003
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test helpers setupRecoveryKeysForUserWithRequiredAction(logoutOtherSessions) and assertUserHasRecoveryKeysCredentialInUserStorage(boolean) are each called once with true, leaving dead branches.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only calls are `setupRecoveryKeysForUserWithRequiredAction(userId, true)` and `assertUserHasRecoveryKeysCredentialInUserStorage(true)` in BackwardsCompatibilityUserStorageTest.java:249 and :253. So the `if (!logoutOtherSessions)` block at :423-425 never runs. The assert helper (:456-462) has no actual branch, but its parameter is always true, so its `false` case is never used.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.060727300000000005
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When createRecoveryCodesCredential stores codes in user storage (updateCredential returns true), it returns without calling recoveryCodeCredentialProvider.createCredential(), so existing local recovery-code credentials are not deleted and old codes remain valid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In CredentialHelper.createRecoveryCodesCredential (patch lines 60-65), local createCredential is only called when updateCredential returns false. That call is the only place old stored recovery codes get deleted (RecoveryAuthnCodesCredentialProvider.java:39-40). UserCredentialManager.isValid (model/storage/.../UserCredentialManager.java:66-79) falls back to the local RecoveryAuthnCodesCredentialProvider.isValid (:101), so leftover local codes still pass authentication.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2505206
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Credentials returned from user storage via getCredentials are passed to RecoveryAuthnCodesCredentialModel.createFromCredentialModel(), which throws at runtime if their credentialData/secretData are not in Keycloak's expected JSON format.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The new RecoveryAuthnCodesUtils.getCredential (RecoveryAuthnCodesUtils.java:101-107) returns the first recovery-codes credential from getFederatedCredentialsStream(), which comes from the user-storage provider. RecoveryAuthnCodesFormAuthenticator.java:83-84 and RecoveryAuthnCodeInputLoginBean then pass it to createFromCredentialModel, which JSON-parses credentialData/secretData and turns an IOException into a RuntimeException (RecoveryAuthnCodesCredentialModel.java:92-104).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.2198557
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "LDAPStorageProvider.getCredentials throws IllegalStateException when the LDAP entry is missing, which breaks recovery-code login for imported users that previously used local codes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "LDAPStorageProvider.getCredentials (federation/ldap/.../LDAPStorageProvider.java:1214-1216) throws IllegalStateException when the LDAP entry is missing. The patch's RecoveryAuthnCodesUtils.getCredential (server-spi/.../RecoveryAuthnCodesUtils.java:57-61) calls getFederatedCredentialsStream (which reaches that method via UserCredentialManager.java:138-141) before it falls back to locally stored codes, so the exception fires before any local recovery codes are looked up. RecoveryAuthnCodesFormAuthenticator and RecoveryAuthnCodeInputLoginBean call it during login. Before the patch, login only read stored codes. In practice it is narrow: a user whose LDAP entry is gone is normally deleted or turned into a disabled read-only user by UserStorageManager.importValidation (lines 151-159). It only bites for a cached user who gets past the first step without an LDAP password check.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.3149003
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "configureBrowserFlowWithRecoveryAuthnCodes is copied from RecoveryAuthnCodesAuthenticatorTest with unused machinery: a delay parameter (only caller passes 0), a delayed-authenticator execution, the 'delayed-suthenticator-config' typo, and a redundant testingClient parameter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In BackwardsCompatibilityUserStorageTest.java:123-140 the patch adds a copy of the helper from RecoveryAuthnCodesAuthenticatorTest.java:123. The copy takes a `long delay` (its only caller, at line 243, passes 0), adds a 'delayed-authenticator' execution with the misspelled alias 'delayed-suthenticator-config', and takes a `testingClient` parameter that duplicates the inherited field.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.07458379999999999
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test calls TestAppHelper.logout(), which relies on a refreshToken set by completeLogin(), but never calls completeLogin() after submitting the recovery code, so logout may be a no-op and leave sessions behind.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In testRecoveryKeysSetupAndLogin (BackwardsCompatibilityUserStorageTest, patch lines 518-524), a new TestAppHelper calls only startLogin() and then logout() without ever calling completeLogin(). Its refreshToken is therefore null when TestAppHelper.java:106 calls oauth.doLogout(refreshToken), and the test does not assert the result, so the logout does nothing and the failure goes unnoticed.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.21884940000000003
+   }
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit message lacks the required issue link ('Closes #NNNN').",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "change.patch:1 starts directly with 'diff --git' and has no commit header or message, and nothing in the checked-out source records the commit message. The source here cannot show whether a 'Closes #NNNN' link is present.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0.037298399999999995
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "useAbilities.ts:227 now calls groupIdentifier.fromCombinedRule. For any rule that is not Grafana-managed, that function calls getDatasourceAPIUid (groupIdentifier.ts:21-22), which throws 'Datasource \"<name>\" not found' at datasource.ts:304-305 when the name is not registered. The removed code only called getRulesSourceName (patch line 391), which never throws.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12051239999999999
+}

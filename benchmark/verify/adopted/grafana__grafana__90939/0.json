@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At webassets.go:48-49 the code takes the write lock and goes straight to loading at lines 54-69 without checking `entryPointAssetsCache` again, so every caller queued behind the lock reloads and re-parses the manifest. The network part only applies hypothetically: `cdn` is hard-coded to \"\" at line 54, so `readWebAssetsFromCDN` is never called and each duplicate load is a local file read.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0574577
+}

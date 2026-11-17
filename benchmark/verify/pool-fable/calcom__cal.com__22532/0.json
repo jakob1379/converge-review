@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "scripts/test-gcal-webhooks.sh:5 sets ENV_FILE=\"../.env\" and the script never does a `cd` or resolves against the script's own directory, so the path follows the caller's cwd. Run from the repo root, lines 62-71 silently create or append GOOGLE_WEBHOOK_URL in the parent directory's .env, outside the repo; it only hits the repo .env when run from scripts/ or another first-level directory.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1264334
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The test at testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java:279-283 configures the realm only with `setWebAuthnPolicyPasskeysEnabled(Boolean.FALSE)`, yet its name and the inline comment at line 304 say passkeys are hidden because \"this user does not have passkey\". The case of a passkey-less user re-authenticating with passkeys enabled is therefore never exercised.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3890556
+}

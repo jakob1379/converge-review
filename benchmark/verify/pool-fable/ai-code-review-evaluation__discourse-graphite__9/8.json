@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/initializers/i18n.rb:5 reads `I18n::Backend::Simple.send(:include, I18n::Backend::Pluralization)`; `Module#include` is public since Ruby 2.1, so `send` is unnecessary. The line is in a file the patch adds, though it was moved verbatim from the deleted config/initializers/pluralization.rb.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0736182
+}

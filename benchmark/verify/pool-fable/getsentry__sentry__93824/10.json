@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "`--flusher-processes` is declared `type=int` with no bound (src/sentry/consumers/__init__.py:433); at src/sentry/spans/consumers/process/flusher.py:51 `max_processes or len(buffer.assigned_shards)` turns 0 into one process per shard. A negative value is truthy, so line 60 gives a negative `num_processes`, `range()` at line 62 builds an empty map, and `i % num_processes` at lines 65-66 yields 0 for the first shard, raising KeyError.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2499847
+}

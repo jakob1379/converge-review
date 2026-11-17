@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `.small-action` a flex container (app/assets/stylesheets/common/base/topic-post.scss:263-265) and `.small-action-desc` (279-280) gets no flex-grow or width anywhere in the stylesheets, so it shrink-wraps; the `float: right` buttons (306-310) are children of that div (templates/components/small-action.hbs:2-9) and so float only to its edge, next to the text, unless a long custom message stretches the box. Read from the CSS, not rendered in a browser.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.26070570000000004
+}

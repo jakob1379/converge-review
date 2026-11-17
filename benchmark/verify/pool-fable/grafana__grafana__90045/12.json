@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/apiserver/rest/dualwriter_mode3.go:100-105 returns on any Storage.Delete error, so the Legacy.Delete goroutine at lines 108-114 never runs; the removed code only returned early when `!apierrors.IsNotFound(err)` and otherwise fell through to Legacy.Delete, so a legacy-only object is now left undeleted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2247122
+}

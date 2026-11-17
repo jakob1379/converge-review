@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/test/java/org/keycloak/protocol/oidc/encode/DefaultTokenContextEncoderProviderTest.java:82 catches `RuntimeException` (variable even named `iae`) although the parser throws `IllegalArgumentException` (DefaultTokenContextEncoderProvider.java:93). The over-broad catch already hides a real failure: the test never calls `postInit`, so `sessionFactory` is null and the \"ac\" lookup throws a NullPointerException at DefaultTokenContextEncoderProviderFactory.java:125 before the intended exception is reached.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5950643
+}

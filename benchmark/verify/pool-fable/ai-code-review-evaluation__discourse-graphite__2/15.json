@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Discourse's custom resolver maps the top-level route name to the nested template path: `findTemplate` tries `templates[decamelized.replace(/\\_/, '/')]` (app/assets/javascripts/discourse/ember/resolver.js.es6:158), so `topicUnsubscribe` becomes `topic_unsubscribe` and then `topic/unsubscribe`, which is the key templates/topic/unsubscribe.hbs is registered under given `templates_root = 'discourse/templates'` (config/application.rb:147). The existing `userActivity` resource with templates/user/activity.hbs relies on the same mapping; traced by reading the code, not run.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5085234000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/search/events/datasets/discover.py (patch hunk at ~line 1046), the new upsampled_count SnQLFunction uses `snql_aggregate=lambda args, alias: Function(\"toInt64\", [Function(\"sum\", [Column(\"sample_weight\")])], alias)`, so `args` is never used. The file mixes both styles: 6 of 37 `snql_aggregate` lambdas use `_`, so this is only a style nit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.05548800000000001
+}

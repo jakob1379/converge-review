@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The deleteCache onSuccess in CredentialActionsDropdown.tsx (patch lines 92-96) only shows a toast and calls onSuccess?.(), and has no connectedCalendars invalidate, unlike disconnectMutation's onSettled (lines 111-113). EventAdvancedTab.tsx:372-384 renders SelectedCalendarsSettingsWebWrapper without onChanged, so after a cache delete the connectedCalendars query (refetchOnWindowFocus false) keeps the old cacheUpdatedAt and the 'Last updated' entry stays on screen.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1631475
+}

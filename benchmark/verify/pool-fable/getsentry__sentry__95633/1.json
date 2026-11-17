@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `OffsetTracker` is built once per factory (`src/sentry/remote_subscriptions/consumers/result_consumer.py:133`) and reused by every strategy from `create_with_partitions` (`result_consumer.py:255`) with nothing pruning it, and in `_commit_loop` any exception from `commit_function` is swallowed before `mark_committed` runs, so the same dict containing the revoked partition is retried every second (`src/sentry/remote_subscriptions/consumers/queue_consumer.py:278-291`). The one step not read here is that arroyo's `stage_offsets` raises `ConsumerError` for unassigned partitions: sentry-arroyo 2.28.0 is not in the checkout, so that rests on recall of the library.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.8400346000000001
+}

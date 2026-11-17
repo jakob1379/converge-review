@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The patch does add `errors: user.errors.to_hash` at app/controllers/users_controller.rb:198, but it exposes nothing new: those are the same user-facing validation messages already returned through `user.errors.full_messages` in `message` at line 197. The `values` slice at line 199 only returns the name, username and email the user just submitted.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0818874
+}

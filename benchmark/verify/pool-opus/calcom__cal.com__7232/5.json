@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch moves `PrismaPromise` from `import type` into the value import list (workflows.tsx:2), but its only use is a type annotation at workflows.tsx:342. That breaks the `@typescript-eslint/consistent-type-imports` rule, which packages/config/eslint-preset.js:35-44 sets to error with `prefer: \"type-imports\"`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.06126029999999999
+}

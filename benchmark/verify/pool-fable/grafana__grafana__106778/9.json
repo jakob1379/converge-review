@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new public/app/features/alerting/unified/rule-list/GrafanaRuleListItem.tsx, `rule` is a required prop (line 19) yet `rule?.health`, `rule?.lastError` and `rule?.isPaused` remain at lines 41, 42 and 45 (in `commonProps`, not strictly inside the alerting branch). Line 51 recomputes `promAlertingRule = rule && rule.type === PromRuleType.Alerting ? rule : undefined` inside a branch already narrowed by the `prometheusRuleType.grafana.alertingRule(rule)` type guard at line 50.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.6400976
+}

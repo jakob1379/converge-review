@@ -1,0 +1,350 @@
+{
+ "findings": [
+  {
+   "path": "packages/features/auth/lib/next-auth-options.ts",
+   "line": 131,
+   "severity": "Critical",
+   "claim": "A valid backup code plus any non-empty dummy totpCode logs the user in without the password. The pre-existing password gate (~line 119-121) only runs when !credentials.totpCode. The new backup-code branch at 131 is taken whenever backupCode is set and never checks totpCode. One static, exfiltratable code is therefore enough to authenticate.",
+   "evidence": "Reasoned only, not executed by either seat. open-code-review: POST /api/auth/callback/credentials with email, password='', totpCode=x and a valid backupCode should return a session. superpowers: the csrf plus callback curl sequence with password=wrong&totpCode=000000&backupCode=<valid> should set a session cookie. Before the patch, a non-empty totpCode still had to pass totpAuthenticatorCheck.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Raised by 2 seats (fewer than 3), so it goes to the appendix and is not fixed under the merge rule. Severity is normalised to Critical (superpowers: Critical, open-code-review: Important). Not rejected, because no report disproves it. Unverified. Flagged for the user: this is the most severe finding in the review, and both correctness seats raised it independently, but the agreement threshold still keeps it off the main list.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/auth/lib/next-auth-options.ts",
+   "line": 140,
+   "severity": "Important",
+   "claim": "Backup-code consumption is a non-atomic read, decrypt, null-slot, write-back with no transaction or compare-and-swap. Concurrent logins with the same code all succeed. Last-write-wins can also restore a code that another concurrent login just consumed.",
+   "evidence": "Reasoned only. open-code-review cites lines 140-156 and suggests updateMany where {id, backupCodes: old} with count === 1. superpowers M1 cites lines 136-156. ponytail notes the check-then-write race outside its brief. The rate limit narrows the window but does not close it.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "3 seats, so main list. Severity is normalised to Important (open-code-review: Important, superpowers: Minor). ponytail's vote is an unscored out-of-brief note. Before any fix it needs a red test: parallel authorize() calls with the same code must not both succeed. Unverified until that test exists.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At packages/features/auth/lib/next-auth-options.ts:139-156 the code reads user.backupCodes, decrypts it, finds the code with indexOf, sets that slot to null and writes the array back with a plain prisma.user.update keyed only on id. There is no transaction and no check that the stored value is unchanged, so concurrent logins with the same code all pass, and two concurrent logins with different codes can each overwrite the other's nulled slot.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0540858
+   }
+  },
+  {
+   "path": "apps/web/components/settings/EnableTwoFactorModal.tsx",
+   "line": 135,
+   "severity": "Important",
+   "claim": "After enabling, onEnable() (and so utils.viewer.me.invalidate()) runs only from the backup-codes Close button. Dismissing with Esc, an overlay click or the X goes through onOpenChange, which only toggles open. The settings switch and badge then show 2FA disabled while it is enabled in the DB. resetState never runs, so reopening shows the stale DisplayBackupCodes step.",
+   "evidence": "Reasoned only. superpowers proposes a red Playwright test: in 'should allow a user to disable 2FA', replace the backup-codes-close click with page.keyboard.press('Escape'). The existing data-state='checked' expectation should then fail. Parent: apps/web/pages/settings/security/two-factor-auth.tsx:62-72.",
+   "seats": [
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "3 seats, so main list. Severity is normalised to Important (superpowers: Important, open-code-review: Minor). ponytail's vote is an unscored out-of-brief note about resetState. superpowers' Escape variant is the red test to run before fixing. Unverified until it fails on the pinned code.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "After a successful enable, EnableTwoFactorModal.tsx:135 only sets the DisplayBackupCodes step. resetState() and onEnable() run only from the backup-codes-close button (lines 266-269), while Esc or an overlay click goes through onOpenChange, which at two-factor-auth.tsx:64 just toggles enableModalOpen. So viewer.me is never invalidated, the switch and badge stay stale, and because the modal stays mounted, reopening shows the old backup-codes step.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.21176389999999998
+   }
+  },
+  {
+   "path": "apps/web/playwright/login.2fa.e2e.ts",
+   "line": 12,
+   "severity": "Important",
+   "claim": "None of the new backup-code auth paths has a test: login with a backup code, rejection of a used code, a wrong code, the missing-codes case, and disabling 2FA with a backup code. The only new e2e steps click Download, Copy and Close. The patch leaves TODOs admitting the gap.",
+   "evidence": "The patch's own comments: '// TODO: add more backup code tests, e.g. login + disabling 2fa with backup', '// TODO: check file content' and '// TODO: check clipboard content' (lines 110-125). This breaches the PR template's 'added tests that prove ... my feature works' and the CONTRIBUTING e2e guidance. open-code-review notes the gap is why its findings 1 and 2 would pass CI.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "4 seats, so main list. Severity is normalised to Important (superpowers I3: Important, the others: Minor). open-code-review's vote is from its 'Not checked' section. The fix is the tests themselves: backup-code login succeeds once and is then rejected on reuse, and disable works with a backup code. These guard the main-list race finding and the appendix password-bypass finding.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only test file the patch touches is apps/web/playwright/login.2fa.e2e.ts. Its new steps just click backup-codes-download (checking only the filename), backup-codes-copy and backup-codes-close, and it leaves TODOs for 'login + disabling 2fa with backup', file content and clipboard content. No test covers the new backup-code paths in next-auth-options.ts or totp/disable.ts: login, a used code, a wrong code, missing codes, or disabling 2FA.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.056767700000000004
+   }
+  },
+  {
+   "path": "apps/web/pages/api/auth/two-factor/totp/disable.ts",
+   "line": 61,
+   "severity": "Minor",
+   "claim": "req.body.backupCode.replaceAll(...) runs on an unvalidated body. A truthy non-string backupCode (number, array, object) throws a TypeError and returns an unhandled 500 instead of a 400.",
+   "evidence": "Reasoned only, not executed. The fix is a typeof === 'string' check before use.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "3 seats, so main list. mattpocock's vote is an unscored out-of-brief note. Minor and accepted. A red request test (POST with backupCode: 123, expect 400) is cheap and should come first.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At apps/web/pages/api/auth/two-factor/totp/disable.ts:48 the only check on req.body.backupCode is that it is truthy, and line 61 then calls req.body.backupCode.replaceAll(\"-\", \"\"). A JSON number, array or object has no replaceAll method, so the call throws a TypeError that nothing catches and the request returns a 500 instead of a 400. This happens only after the password check passes and only if the user has stored backup codes.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.1621686
+   }
+  },
+  {
+   "path": "packages/features/auth/lib/next-auth-options.ts",
+   "line": 144,
+   "severity": "Important",
+   "claim": "The comparison is an exact, case-sensitive indexOf after stripping only '-', with no toLowerCase or trim. Codes are lowercase hex, the placeholder is XXXXX-XXXXX, and the input lacks autoCapitalize='off'. Uppercase, auto-capitalized or whitespace-padded codes are rejected as IncorrectBackupCode. This hits users who have lost their authenticator. The same issue exists at disable.ts:61 and BackupCode.tsx:17-26.",
+   "evidence": "Executed by superpowers: node -e with indexOf('Abcde-12345'.replaceAll('-','')) on ['abcde12345'] prints -1. The iOS auto-capitalization impact (~37.5% of codes) is reasoned.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "2 seats, so appendix and not fixed under the merge rule. Severity is normalised to Important (superpowers: Important, open-code-review: Minor). The case mismatch has an executed repro. The real-world impact is reasoned.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/public/static/locales/en/common.json",
+   "line": 2019,
+   "severity": "Minor",
+   "claim": "Users who enabled 2FA before this migration have backupCodes = null. They get 'No backup codes found. Please generate them in your settings.', but no regenerate path exists while 2FA is on. Getting codes needs disable/re-enable, which needs the authenticator they have lost.",
+   "evidence": "Reasoned. Paths are next-auth-options.ts:136 and disable.ts:54, and no regeneration endpoint or UI exists.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "2 seats, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/pages/api/auth/two-factor/totp/disable.ts",
+   "line": 51,
+   "severity": "Minor",
+   "claim": "When the encryption key is missing, the new backup-code branch does throw new Error(ErrorCode.InternalServerError) instead of res.status(500).json(...). The rest of the file uses the latter, so this is an unhandled 500.",
+   "evidence": "Reasoned. It mirrors the existing TOTP branch.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "2 seats, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/playwright/login.2fa.e2e.ts",
+   "line": 50,
+   "severity": "Minor",
+   "claim": "The existing assertion expect(locator.isChecked()).toBeTruthy() always passes because it tests an un-awaited Promise. The patch adds a FIXME documenting this but does not fix it.",
+   "evidence": "The patch's own FIXME at ~line 50. mattpocock notes the assertion predates the patch.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "2 seats, so appendix. ponytail mentions the FIXME only as comment noise, so it is not counted on this claim.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/auth/lib/next-auth-options.ts",
+   "line": 131,
+   "severity": "Minor",
+   "claim": "The backup-code verification block is duplicated between login and disable.ts (lines 47-66 / 48-64): key guard, missing-codes guard, JSON.parse(symmetricDecrypt), replaceAll('-'), indexOf. Hardening one path (case, whitespace, constant-time) would make the two drift apart.",
+   "evidence": "Side-by-side reading of the two blocks. The suggested fix is a shared helper next to totpAuthenticatorCheck.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "2 advisory seats, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/components/auth/BackupCode.tsx",
+   "line": 7,
+   "severity": "Minor",
+   "claim": "The component in BackupCode.tsx is declared as 'export default function TwoFactor', a copy-paste leftover. DevTools and stack traces show two components named TwoFactor.",
+   "evidence": "Direct reading. mattpocock cites line 7 and ponytail cites line 13 for the same declaration.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "2 advisory seats, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/pages/auth/login.tsx",
+   "line": 157,
+   "severity": "Minor",
+   "claim": "The new IncorrectBackupCode / MissingBackupCodes else-if branches (157-158) duplicate the existing errorMessages map (73-79). The map's fallback at line 160 would handle both codes if they were added to it.",
+   "evidence": "Direct reading of the map and its fallback.",
+   "seats": [
+    "mattpocock",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "2 advisory seats, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/ui/components/form/inputs/Input.tsx",
+   "line": 47,
+   "severity": "Minor",
+   "claim": "tabIndex={-1} on the show/hide-password toggle removes it from the tab order for every PasswordField in the app. This is an out-of-scope accessibility regression in a shared component.",
+   "evidence": "Direct reading. ponytail cites lines 44-51, superpowers M6 cites line 47.",
+   "seats": [
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "2 seats, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/components/settings/EnableTwoFactorModal.tsx",
+   "line": 176,
+   "severity": "Minor",
+   "claim": "The leftover type='password' on the new PasswordField overrides its computed type, because {...props} is spread after it. The show-password toggle never reveals the password in this dialog.",
+   "evidence": "Reasoned from prop-spread order in packages/ui/components/form/inputs/Input.tsx:36-39.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "1 seat, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/components/settings/EnableTwoFactorModal.tsx",
+   "line": 65,
+   "severity": "Minor",
+   "claim": "Blob/object-URL state for the download is unnecessary, and the newest URL is never revoked on close or unmount. A data: URL built from one joined string, reused for the clipboard at 278, would remove the state, the Blob and the revoke call.",
+   "evidence": "Lines 65, 94-99 and 283. Reasoned.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "1 advisory seat, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/pages/api/auth/two-factor/totp/disable.ts",
+   "line": 48,
+   "severity": "Minor",
+   "claim": "user.twoFactorEnabled checks at lines 48 and 69 are always true after the early return at line 36. The CALENDSO_ENCRYPTION_KEY check is duplicated in both branches and could be hoisted.",
+   "evidence": "Direct reading of the control flow.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "1 advisory seat, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/components/settings/EnableTwoFactorModal.tsx",
+   "line": 201,
+   "severity": "Minor",
+   "claim": "A redundant fragment <>...</> wraps a single div (lines 201 and 207).",
+   "evidence": "Direct reading.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "1 advisory seat, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/playwright/login.2fa.e2e.ts",
+   "line": 115,
+   "severity": "Minor",
+   "claim": "The TODO/FIXME comments (lines 12, 50-51, 115, 120) are noise that labels gaps instead of closing them.",
+   "evidence": "Direct reading. The missing-test substance is tracked in the main-list test-gap finding.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "1 advisory seat, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/auth/lib/next-auth-options.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup codes are compared with plain indexOf rather than a constant-time comparison.",
+   "evidence": "ponytail out-of-brief note, unscored, with no line given.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "1 seat, so appendix. Unverified.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/auth/lib/next-auth-options.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Once every code has been used, the stored array is all null. The user then sees IncorrectBackupCode instead of MissingBackupCodes, with no count of remaining codes.",
+   "evidence": "Reasoned, superpowers M2.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "1 seat, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/components/settings/EnableTwoFactorModal.tsx",
+   "line": 277,
+   "severity": "Minor",
+   "claim": "navigator.clipboard.writeText is not awaited, so the 'copied' toast shows even if the write fails. On plain-HTTP non-localhost self-hosted installs, navigator.clipboard is undefined and the click throws.",
+   "evidence": "Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "1 seat, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/teams/inviteMember/inviteMemberUtils.test.ts",
+   "line": 65,
+   "severity": "Minor",
+   "claim": "The 'const mockUser: User' literal lacks the new required backupCodes field, so it now has a type error. CI's only type-check script (apps/web) does not cover this file.",
+   "evidence": "Reasoned, not type-checked. The file is outside the patch, but the patch's schema change causes the breakage, and builder.ts was updated while this file was not.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "1 seat, so appendix.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/web/components/settings/EnableTwoFactorModal.tsx",
+   "line": 283,
+   "severity": "Minor",
+   "claim": "The download control is a Button nested inside a link, which is invalid HTML.",
+   "evidence": "superpowers checked that Button defaults to type='button', so it works today and does not submit the form.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "1 seat, so appendix. Not rejected: the seat's own check shows no functional break, but it does not disprove the invalid-markup claim.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats report reading all 16 patch files. mattpocock, ponytail and superpowers gave only a quick look to the trivial migration SQL, schema.prisma, builder.ts, ErrorCode.ts and locale lines. superpowers also flagged one file outside the patch (inviteMemberUtils.test.ts). Axes that did not run: (1) The gate was not run (benchmark mode), so the review is unanchored: no build, lint, prettier, type-check, unit or e2e results exist, and seats could not run them (no node_modules). (2) Spec axis: no spec, and no commit references an issue. (3) Standards axis ran against CONTRIBUTING.md, the PR template and the eslint/prettier presets only. The repo has no AGENTS.md, CLAUDE.md or coding-standards doc. (4) No reviewer from another model family was used. Evidence quality: nearly every claim is reasoned. The only executed check is superpowers' node -e case-sensitivity repro. The password-bypass, race, dialog-state and type-error findings have not been run against code. Merge choices: out-of-brief or 'not checked' notes were counted as seat votes, and the reason field says so where it decided main-list placement (race, dialog state, replaceAll 500, test gap). No rejections: no seat report disproves another's finding, so no verifier was needed."
+}

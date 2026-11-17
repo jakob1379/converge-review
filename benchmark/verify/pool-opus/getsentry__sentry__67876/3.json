@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the patched src/sentry/integrations/github/integration.py, OAuthLoginView.dispatch binds `request.GET[\"installation_id\"]` into pipeline state (patch lines 97-99) before and regardless of the state check. That check only compares against `pipeline.signature`, which is a fixed md5 of the pipeline view class names (src/sentry/pipeline/base.py:132-133). So a crafted callback URL carrying an attacker's installation_id and code sets both the installation sender and github_authenticated_user that GitHubInstallation then compares (patch lines 149-155, 234-239).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1266213
+}

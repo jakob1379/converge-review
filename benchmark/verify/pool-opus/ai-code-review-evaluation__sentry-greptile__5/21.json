@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In the new fixture static/app/views/dashboards/widgets/tableWidget/fixtures/sampleHTTPRequestTableData.ts (patch lines 2209-2230), every row has `id: ''`, but `meta.fields` and `meta.units` (patch lines 2233-2240) list only 'http.request_method' and 'count(span.duration)'. The columns are built from meta.fields (tableWidgetVisualization.tsx, patch line 2602), so 'id' is never shown.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.4021688
+}

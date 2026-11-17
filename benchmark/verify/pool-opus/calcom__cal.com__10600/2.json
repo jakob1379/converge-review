@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The setup endpoint stores the backup codes with `symmetricEncrypt(JSON.stringify(backupCodes), CALENDSO_ENCRYPTION_KEY)` (apps/web/pages/api/auth/two-factor/totp/setup.ts, patch line 413), and they are read back in plaintext with `symmetricDecrypt` in totp/disable.ts (patch line 369) and next-auth-options.ts (patch lines 645-660). Nothing hashes them, so anyone with the database and the app key can recover them.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0439466
+}

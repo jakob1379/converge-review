@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/javascripts/embed.js:3-10, the patch calls `document.getElementById('discourse-comments')` and then `comments.appendChild(iframe)` with no null check, so a page without that element gets a TypeError. This only happens when the host page is set up wrongly, and the comments would not render with or without a guard.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1514064
+}

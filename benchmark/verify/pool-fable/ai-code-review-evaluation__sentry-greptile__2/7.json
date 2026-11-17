@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The comment at src/sentry/api/paginator.py:179-181 is false both ways: line 182 clamps non-prev offsets with max(0, offset), and for is_prev cursors the unclamped negative offset is sliced at line 184, which Django (pinned 5.2.1, requirements-base.txt:17) rejects with ValueError('Negative indexing is not supported.') rather than handling it. Django's source is not vendored here, so that rejection rests on known QuerySet behaviour; src/sentry/api/base.py:540 only catches BadPaginationError, so a cursor like 0:-5:1 would surface as an unhandled error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4036572
+}

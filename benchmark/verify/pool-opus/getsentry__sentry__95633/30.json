@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Inside the inner try block in queue_consumer.py (patch lines 163-171), only `sentry_sdk.start_transaction` and `self.result_processor(identifier, result)` run, and neither touches `work_queue`. In production the processor is `ResultProcessor.__call__` (result_consumer.py:44-54), which catches every `Exception`, so `except queue.ShutDown: break` can never run and is dead code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1078756
+}

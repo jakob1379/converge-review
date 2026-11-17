@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/assets/javascripts/discourse/models/store.js.es6:197-201 the plural branch calls obj[k].map with no null check, so a null value throws a TypeError. When the sub-collection is missing, _lookupSubType returns undefined, which gives an array of undefined, and the original *_ids key is still deleted every time. The singular branch at lines 203-207 deletes its key only if hydration succeeds.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0494564
+}

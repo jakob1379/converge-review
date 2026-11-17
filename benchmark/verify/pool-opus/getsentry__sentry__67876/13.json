@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds six separate `\"{}?{}\".format(self.setup_path, urlencode({\"code\": \"12345678901234567890\", \"state\": \"<md5>\"}))` blocks to tests/sentry/integrations/github/test_integration.py (patch lines 318-324, 346-351, 372-379, 426-431, 446-456, 464-471). Each one hardcodes its state hash: five use \"9cae5e88803f35ed7970fc131e6e65d3\" and one uses \"ddd023d87a913d5226e2a882c4c4cc05\".",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0942724
+}

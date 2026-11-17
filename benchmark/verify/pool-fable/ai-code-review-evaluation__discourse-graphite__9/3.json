@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The string `# order: after 02-freedom_patches.rb` appears only at config/initializers/i18n.rb:1 and no code in config/ or lib/ parses such a directive; Rails loads config/initializers in sorted filename order, so `i18n.rb` runs after `02-freedom_patches.rb` only because digits sort before letters.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1109252
+}

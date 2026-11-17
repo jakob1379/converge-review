@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In useFeedbackSummary.tsx (patch lines 1602-1621), the hook returns early when isPending or isError is true. In TanStack Query v5, a disabled or idle query with no data has status 'pending', so it hits the isPending branch. The only way to reach data.summary is status 'success', where data is always defined.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.047400700000000004
+}

@@ -1,0 +1,236 @@
+{
+  "findings": [
+    {
+      "path": "packages/features/ee/workflows/api/scheduleEmailReminders.ts",
+      "line": 53,
+      "severity": "Important",
+      "claim": "The cron cancel loop wraps sequential awaited SendGrid cancel requests in one try/catch and queues the row deletes as lazy Prisma promises that only run at the final Promise.all. One failed cancel aborts the loop: none of the queued deletes run, including those whose batch was already cancelled, and later cancelled reminders are not processed that run. A persistently failing row (for example, SendGrid rejecting a repeat cancel) blocks every reminder queued behind it until its scheduledDate passes.",
+      "evidence": "scheduleEmailReminders.ts:53-77: `await client.request(...)` sits inside a for loop under a single try. Deletes are pushed as Prisma__WorkflowReminderClient and awaited only by Promise.all at ~line 74, and the catch only logs. The cron runs every 15 min (.github/workflows/cron-scheduleEmailReminders.yml). Reasoned: SendGrid's response to a repeat cancel was not verified, but the skipped deletes do not depend on it.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Raised independently by both correctness seats with consistent code citations. The abort-and-skip-deletes mechanism follows directly from lazy Prisma promises plus a single try. Per-item try/catch and an awaited delete per item settle it."
+    },
+    {
+      "path": "packages/features/ee/workflows/lib/reminders/emailReminderManager.ts",
+      "line": 224,
+      "severity": "Important",
+      "claim": "Deferred cancellation only sets cancelled=true and relies on the 15-minute cron, which cancels only reminders due within the next hour. A booking cancelled less than about 15 minutes before its reminder's send time (after the last cron pass) still gets the reminder email. Before the patch, cancellation was immediate.",
+      "evidence": "emailReminderManager.ts:224-232 (deferred branch only updates the row). scheduleEmailReminders.ts:44-51 selects cancelled rows with scheduledDate <= now+1h. Cron schedule is '0,15,30,45 * * * *'. Example: cancel at 10:46 for a reminder due at 10:55; the next cron run is at 11:00. Affects the handleCancelBooking.ts:488, bookings.tsx:490, workflows.tsx:378 and workflows.tsx:576 callers. Reasoned.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two correctness seats agree with a concrete timing trace. It reintroduces the exact bug class the branch targets. Cancel immediately when scheduledDate is inside the cron window."
+    },
+    {
+      "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+      "line": 485,
+      "severity": "Important",
+      "claim": "Reminder cleanup is now fire-and-forget: async deleteScheduledEmailReminder/deleteScheduledSMSReminder calls inside forEach are not awaited, where the old code awaited the row deletes via Promise.all. The cancelled=true write or the row delete can be lost when the request ends (serverless freeze), and failures are only console-logged, so the reminder is sent.",
+      "evidence": "Un-awaited calls at handleCancelBooking.ts:485-493, bookings.tsx:488-494, workflows.tsx:376-382 and workflows.tsx:574-580. Pre-patch code awaited `Promise.all(remindersToDelete)` / prismaPromises.concat(remindersToDelete). Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Correctness seat SP rated it Important. OCR noted it as related to its try/catch finding. The loss of awaiting is visible in the diff. Fix: await Promise.all over the calls."
+    },
+    {
+      "path": "packages/features/ee/workflows/lib/reminders/emailReminderManager.ts",
+      "line": 213,
+      "severity": "Important",
+      "claim": "The immediateDelete=true path cancels the SendGrid batch but neither deletes the WorkflowReminder row nor sets cancelled. Surviving rows (for example after a reschedule or a request-reschedule rebook) are later cancelled a second time by the cron or the activeOn path, which can trigger the cron-loop stall.",
+      "evidence": "Seat claim: handleNewBooking.ts:964-975 calls the immediate path; getOriginalRescheduledBooking includes CANCELLED bookings with workflowReminders. Counter-evidence from the fresh verifier: EventManager.ts:290-297 deletes the old booking, and WorkflowReminder.booking is onDelete: Cascade (schema.prisma:637). Workflow deletion (workflows.tsx:220) and step deletion (workflows.tsx:527) cascade via schema.prisma:587/643. No row survives in any current caller.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "A fresh verifier traced every immediate caller and found the parent row deleted with a cascade (schema.prisma:637,643,587; EventManager.ts:290-297), so no double cancel occurs. OCR independently reached the same conclusion. The residual risk (an implicit precondition, or eventManager.reschedule throwing before the delete) is at most one redundant, logged SendGrid call, and is covered as Minor under the immediateDelete-flag entry."
+    },
+    {
+      "path": "packages/features/ee/workflows/lib/reminders/emailReminderManager.ts",
+      "line": 214,
+      "severity": "Important",
+      "claim": "Immediate SendGrid cancels on workflow deletion, step deletion and reschedule may exceed a SendGrid limit on concurrently cancelled or paused batches, which the deferred design appears to exist to avoid. Later cancels would then fail and the emails would be sent.",
+      "evidence": "Advisory seat MP. The immediate path is used at workflows.tsx:214 and workflows.tsx:521 and at handleNewBooking.ts:968. MP states it does not know SendGrid's current limit. Reasoned, depends on an external API.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Unverified: it depends on SendGrid's scheduled-sends cancel/pause limits, which cannot be checked offline. Settle it against the SendGrid v3 'Cancel or pause scheduled sends' docs, or a live account, by cancelling more batches than the documented limit."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/workflows.tsx",
+      "line": 9,
+      "severity": "Important",
+      "claim": "`Prisma` is imported but no longer used, since its only use, Prisma.BatchPayload, was deleted. That breaks unused-imports/no-unused-imports (error). `PrismaPromise` is now a value import but is used only as a type, which breaks @typescript-eslint/consistent-type-imports (error). Line 9 lacks the trailing comma required by prettier (trailingComma es5).",
+      "evidence": "packages/config/eslint-preset.js:22 and :35 set both rules to error. grep for \\bPrisma\\b in workflows.tsx matches only the import. Expected to fail (not run): yarn eslint packages/trpc/server/routers/viewer/workflows.tsx",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "All four seats agree, with config citations. A documented lint standard (CONTRIBUTING.md requires a clean yarn lint)."
+    },
+    {
+      "path": "packages/features/bookings/lib/handleNewBooking.ts",
+      "line": 1,
+      "severity": "Important",
+      "claim": "The `import type { App, Credential, EventTypeCustomInput, Prisma }` was folded into a value import, though all four names are used only as types. That breaks @typescript-eslint/consistent-type-imports (error).",
+      "evidence": "eslint-preset.js:35. Type-only uses: App['categories'] (~79), Credential (~90, ~109), EventTypeCustomInput[] (~349, ~1289), and Prisma.UserGetPayload/JsonValue/PromiseReturnType. Expected to fail (not run): yarn eslint packages/features/bookings/lib/handleNewBooking.ts",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "All four seats agree. A documented lint standard."
+    },
+    {
+      "path": "packages/features/ee/workflows/api/scheduleEmailReminders.ts",
+      "line": 10,
+      "severity": "Important",
+      "claim": "The new `import { Prisma, WorkflowReminder } from \"@calcom/prisma/client\"` imports names used only as types (line 54), which breaks @typescript-eslint/consistent-type-imports (error).",
+      "evidence": "eslint-preset.js:35. The only use is the type annotation at line 54. Expected to fail (not run): yarn eslint packages/features/ee/workflows/api/scheduleEmailReminders.ts",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "All four seats agree. A documented lint standard. It disappears if the cron loop fix removes the typed promise array."
+    },
+    {
+      "path": "packages/features/bookings/lib/handleNewBooking.ts",
+      "line": 964,
+      "severity": "Minor",
+      "claim": "The new try/catch wraps a forEach of un-awaited async calls whose callees already catch their own errors, so log.error in the catch is unreachable.",
+      "evidence": "handleNewBooking.ts:964-975. Callees catch at emailReminderManager.ts:233 and smsReminderManager.ts:187.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Uncontested. Folds into the fire-and-forget fix (await Promise.all inside the try)."
+    },
+    {
+      "path": "packages/features/ee/workflows/lib/reminders/smsReminderManager.ts",
+      "line": 177,
+      "severity": "Minor",
+      "claim": "twilio.cancelSMS and the row delete share one try block. If cancelSMS throws (for example, the message was already sent), the row is not deleted. Old callers deleted the row whatever Twilio returned.",
+      "evidence": "smsReminderManager.ts:177-189. Reasoned.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Low impact: an orphan row for an SMS that has already been handled. ponytail: confirm whether any cleanup removes past SMS reminder rows before changing this. Check: grep the SMS cron for a past-date deleteMany."
+    },
+    {
+      "path": "packages/features/ee/workflows/lib/reminders/emailReminderManager.ts",
+      "line": 204,
+      "severity": "Minor",
+      "claim": "The patch uses prisma.workflowReminder.delete where callers previously used deleteMany. delete throws P2025 when the row is already gone, for example when it races a cascade delete on workflow or step deletion. The error is caught and logged, so the effect is log noise.",
+      "evidence": "emailReminderManager.ts:204-208 and smsReminderManager.ts:182. The verifier confirmed the un-awaited calls race the cascade, and that losing the race only logs an error.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Cosmetic (log noise only, no behavioural impact). ponytail: switch to deleteMany if the log noise shows up in production."
+    },
+    {
+      "path": "packages/features/ee/workflows/lib/reminders/emailReminderManager.ts",
+      "line": 197,
+      "severity": "Minor",
+      "claim": "The boolean immediateDelete makes one function do two unrelated jobs: cancel at SendGrid without touching the DB, or flag in the DB only. The name is misleading because it deletes nothing. The function relies on an undocumented precondition that the caller cascade-deletes the row. Normal reschedule (immediate) and request-reschedule (deferred) also handle the same concept inconsistently.",
+      "evidence": "emailReminderManager.ts:197-235. The SMS twin takes no flag. handleNewBooking.ts:968 uses immediate, while bookings.tsx:490 is deferred after commit 'remove immediate delete for request reschedule'.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory or maintainability only. The verifier showed all current callers are correct. ponytail: rename or split when the next caller is added."
+    },
+    {
+      "path": "packages/features/ee/workflows/api/scheduleEmailReminders.ts",
+      "line": 57,
+      "severity": "Minor",
+      "claim": "The SendGrid scheduled_sends cancel request is duplicated in the cron and in emailReminderManager.ts:214-221, and the copies can drift.",
+      "evidence": "Identical client.request({url: '/v3/user/scheduled_sends', method: 'POST', body: {batch_id, status: 'cancel'}}) at both sites.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory duplication. ponytail: reuse a single cancel helper when touching the cron loop."
+    },
+    {
+      "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+      "line": 487,
+      "severity": "Minor",
+      "claim": "The EMAIL/SMS reminder-deletion dispatch block is copied at 7 call sites, and the patch had to edit every copy.",
+      "evidence": "handleCancelBooking.ts:487, handleNewBooking.ts:967, bookings.tsx:489, workflows.tsx:213, 377, 520, 575.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory refactor, outside this change's fix scope. ponytail: extract a deleteScheduledReminder(reminder) helper next to reminderScheduler.ts."
+    },
+    {
+      "path": "",
+      "line": null,
+      "severity": "Minor",
+      "claim": "No tests cover the new cancel lifecycle (flag on cancel, cron cancels at SendGrid, row deleted) or the reschedule paths.",
+      "evidence": "The patch adds no test files.",
+      "seats": [
+        "superpowers:requesting-code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Tests are added as red tests with the accepted fixes in step 5, which this benchmark run does not execute."
+    },
+    {
+      "path": "packages/trpc/server/routers/viewer/workflows.tsx",
+      "line": 901,
+      "severity": "Minor",
+      "claim": "About 60 lines of whitespace-only re-indentation inside a commented-out /* */ block, unrelated to the fix.",
+      "evidence": "Diff hunk @@ -923,63 +901,63 @@. Comment content is unchanged apart from indentation.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review",
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "reject",
+      "reason": "No behavioural or standards impact (prettier does not format comment contents), and OCR explicitly classed it as not a defect. Reverting adds review surface with no behavioural gain."
+    },
+    {
+      "path": "packages/features/ee/workflows/components/WorkflowStepContainer.tsx",
+      "line": 390,
+      "severity": "Minor",
+      "claim": "An unrelated UI change: isSenderIdNeeded is dropped from the wrapper condition, removing an empty grey box. It is outside the branch's scope.",
+      "evidence": "WorkflowStepContainer.tsx:390. The sender-ID field still renders in its own block at ~line 463.",
+      "seats": [
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "reject",
+      "reason": "All four seats found the change correct and harmless, so scope alone does not justify churn."
+    }
+  ],
+  "coverage": "All four seats reviewed all 10 files in the pinned patch (d1440bb5d2..6048e2a86b); no files were skipped. Untracked harness dotfiles in the worktree (.bashrc, .claude/, etc.) were excluded from the patch because they are not part of the change. Axes that did not run: spec (no spec; intent-level notes only); gate (benchmark mode, no lint/tsc/tests run, so every lint finding is inferred from packages/config/eslint-preset.js and not executed); no cross-family reviewer (all seats share one model family); no red tests or fix rounds (benchmark stops after merge). SendGrid API behaviour (repeat-cancel response, cancel/pause limits, the 10-minute cancel guarantee) was not verified."
+}

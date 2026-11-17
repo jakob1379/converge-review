@@ -1,0 +1,258 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "AuthzClientCryptoProvider.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In concatenatedRSToASN1DER, lines 114-115 call ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) and discard the results. The return statement at lines 117-121 repeats the encoding with new encoders, so lines 114-115 are dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "CryptoIntegration.detectProvider() no longer throws the fail-fast 'Multiple crypto providers loaded' IllegalStateException; it picks the highest order() instead. The Default, Elytron and FIPS1402 providers all return 200, so a tie is decided by ServiceLoader/classpath order. For example, a FIPS deployment with a stray crypto-default jar can run on non-FIPS BouncyCastle without failing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "int order() is added to the public CryptoProvider SPI interface as an abstract method with no default. External implementations stop compiling, and already-compiled ones throw AbstractMethodError when the detectProvider comparator calls order().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Crypto is initialized with AuthzClient.class.getClassLoader() instead of the thread context class loader. CryptoProvider implementations visible only through the context class loader can be missed, and the wrong provider may be selected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "AuthzClient.create now calls CryptoIntegration.init, which sets JVM-global first-caller-wins crypto state. If only the stub provider is visible, it stays pinned for the JVM, and most of its methods throw UnsupportedOperationException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "getBouncyCastleProvider() returns the provider of the default KeyStore type (e.g. SUN for JKS), not a BouncyCastle provider. As a result, BouncyIntegration.PROVIDER is derived incorrectly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": "ASN1Decoder.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "For indefinite-length encoding (0x80), ASN1Decoder.readLength() returns -1, and callers do not handle it. readSequence skips its loop or computes length arithmetic on -1, and readInteger calls read(-1), which throws NegativeArraySizeException instead of IOException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The DER decoder implements general-purpose high-tag-number and indefinite-length decoding. DER ECDSA signatures only need a 0x30 SEQUENCE containing two 0x02 INTEGERs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In DER parsing, a zero-length INTEGER throws NumberFormatException instead of being handled as a parse error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No upgrade/migration or release note is provided for the breaking CryptoProvider SPI change, although PR-CHECKLIST.md requires one.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The ES256, ES384 and ES512 tests in ECDSAAlgorithmTest all use one key from the default-curve KeyPairGenerator.getInstance(\"EC\"). Curve-appropriate key sizes (P-384, P-521) and the DER long-form length paths (length > 127 in ASN1Encoder.writeLength / ASN1Decoder.readLength) are therefore never exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers the new order()-based provider selection logic in CryptoIntegration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "detectProvider instantiates every CryptoProvider via ServiceLoader, so constructor side effects of non-selected providers still occur. For example, the FIPS provider inserts Security providers even when it is not selected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An org.hamcrest:hamcrest test-scope dependency is added but not used. ECDSAAlgorithmTest imports only org.junit.Assert and org.junit.Test.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": "CryptoIntegration.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The ignored-providers debug line passes a runtime-built string as the debugf format string, so a '%' in it would be misinterpreted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The ignored-providers debug message leaves a trailing ', ' in its output.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "concatenatedRSToASN1DER() assumes signature.length == signLength without validating it. A malformed signature can throw ArrayIndexOutOfBoundsException instead of IOException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The ECDSA tests only check a self round-trip, comparing rsConcat to rsConcat2. The DER output is never verified independently (e.g. with Signature.verify), so a symmetric encoder/decoder bug would pass.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "DER parsing ignores trailing bytes after the parsed structure.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": "ASN1Decoder.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "ASN1Decoder tag checks mask the tag with 0x1f, ignoring the class and constructed bits.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commit message's issue link 'closes #33831' is lowercase and not on a separate trailing line, as CONTRIBUTING.md requires ('Closes #1234').",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Untouched code is reformatted with whitespace-only changes at CryptoProvider.java:94, DefaultCryptoProvider.java:186 and FIPS1402Provider.java:203,208,230,234, contrary to CONTRIBUTING.md.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An identical 'return 200' order() override is copy-pasted into DefaultCryptoProvider, WildFlyElytronProvider and FIPS1402Provider because order() has no default implementation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

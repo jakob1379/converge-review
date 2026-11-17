@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/settings/EnableTwoFactorModal.tsx:200-208, the new DisplayBackupCodes step wraps a single <div> in `<>...</>`. WithStep's `children` is typed as a single JSX.Element (line 43), so the bare div would work and the fragment is redundant.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1617922
+}

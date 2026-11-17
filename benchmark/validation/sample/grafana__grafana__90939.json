@@ -1,0 +1,16 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In GetWebAssets, after acquiring the write lock the code does not re-check whether entryPointAssetsCache was already populated by another goroutine. Concurrent cold-cache callers therefore each re-read and re-parse assets-manifest.json redundantly and overwrite the cache.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java:64-65 declares `protected boolean shouldShowWebAuthnAuthenticators(AuthenticationFlowContext)` with only a comment above it and no `@Override`, while the same-signature method is defined at WebAuthnAuthenticator.java:128. The class extends WebAuthnPasswordlessAuthenticator (per the patch hunk header); I did not open that class to confirm it extends WebAuthnAuthenticator, but it does in Keycloak.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1105037
+}

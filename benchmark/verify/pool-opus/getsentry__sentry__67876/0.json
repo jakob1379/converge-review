@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/integrations/github/integration.py:503 the patch reads `integration.metadata[\"sender\"][\"login\"]` with no guard, but build_integration only adds `sender` when `state.get(\"sender\")` is set (integration.py:376-377), and only the webhook path supplies it (webhook.py:204). An active GitHub Integration that is no longer linked to any organization and has no `sender` therefore raises a KeyError (an HTTP 500); installation.py:44 already guards this same key with `if \"sender\" not in integration.metadata`.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1152758
+}

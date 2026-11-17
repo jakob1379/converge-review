@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In AssertEvents.java:483, `substring(3, 5)` returns the last character of the token-type code plus the first character of the grant code. The encoder (patch line 349) builds the prefix as session(2) + tokenType(2: rt/lt) + grant(2), so index 3 is always 't', and none of ac/rt/ci/dg starts with 't'. On top of that, the condition returns false on a match, so the grant checks at lines 145/173/182/244 can never fail; a prefix shorter than 5 characters throws StringIndexOutOfBoundsException.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1233428
+}

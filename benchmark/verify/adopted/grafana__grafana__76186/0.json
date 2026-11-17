@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "After the patch, logger_middleware.go:49-58 no longer adds pluginId/endpoint/uname/dsName/dsUID/traceID. They now come only from m.logger.FromContext(ctx), and ConcreteLogger.FromContext (pkg/infra/log/log.go:203-216) builds them from the ctx providers: the attributes set by ContextualLoggerMiddleware (wired just above LoggerMiddleware at pluginsintegration.go:159-160) and the traceID provider at tracing.go:91. Those fields go through New(), so they come before status/duration. No logger_middleware_test.go or contextual_logger_middleware_test.go exists, and no comment records the ordering requirement.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.149467
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `I18n.fallbacks.ensure_loaded!` to the end of `set_locale` (app/controllers/application_controller.rb:158), and `set_locale` runs on every request through `before_filter :set_locale` (application_controller.rb:36). No controller skips it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0598811
+}

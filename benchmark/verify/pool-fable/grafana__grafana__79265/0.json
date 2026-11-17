@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The dead-binding half of the claim holds; the wire-failure half is unlikely (reasoned from Wire's on-demand solving, not run). pkg/server/wire.go:374-375 still registers `anonstore.ProvideAnonDBStore` and binds `AnonStore`, but `ProvideAnonymousDeviceService` now takes `db.DB` and builds its own store (pkg/services/anonymous/anonimpl/impl.go:36-43), and no other Wire provider consumes `AnonStore` or `*AnonDBStore`, so the unsatisfiable `int64` parameter (anonstore/database.go:52) is never resolved.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.47021120000000005
+}

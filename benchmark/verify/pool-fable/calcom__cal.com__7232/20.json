@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The `WorkflowReminder` model at packages/prisma/schema.prisma:634-645 has no `@@index` at all (only the `@id` and the `@unique` on `referenceId`), and the patch's migration only adds the `cancelled` column, while the new cron query filters on `cancelled: true` plus a `scheduledDate` range (change.patch:127-128).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08794260000000001
+}

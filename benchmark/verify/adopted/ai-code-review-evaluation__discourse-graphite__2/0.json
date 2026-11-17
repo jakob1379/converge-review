@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At app/controllers/topics_controller.rb:105-107, unsubscribe calls TopicUser.find_by(user_id:, topic_id:) and then tu.notification_level with no nil check. Nothing earlier creates the row: ensure_logged_in only checks for a user, and TopicView.new (lib/topic_view.rb) never calls TopicUser.change, create or track_visit. A logged-in user with no TopicUser row for the topic therefore gets a NoMethodError, which surfaces as a 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1373852
+}

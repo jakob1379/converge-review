@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Grafana opens its MySQL connection with clientFoundRows=true (pkg/services/sqlstore/sqlstore.go:287), so RowsAffected() counts rows the UPDATE matched, not only rows it changed. A matching device with unchanged values therefore returns 1, and updateDevice in pkg/services/anonymous/anonimpl/anonstore/database.go:108 does not wrongly return ErrDeviceLimitReached.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1236346
+}

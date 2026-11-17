@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At pkg/api/webassets/webassets.go:54-56, cdn is hard-coded to \"\", so readWebAssetsFromCDN is never called. If that branch could run, the HTTP request would happen while holding the exclusive lock taken at lines 48-49 and kept by defer until the function returns. Because the branch is dead code, this has no effect on behaviour today.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0526983
+}

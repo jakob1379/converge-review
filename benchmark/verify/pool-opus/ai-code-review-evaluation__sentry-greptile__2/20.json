@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `end_timestamp_precise=val[\"end_timestamp_precise\"]` at src/sentry/spans/consumers/process/factory.py:141. That line indexes the field directly, and process_batch (lines 124-148) has no try/except, so a message without the field raises KeyError and fails the whole batch. `trace_id`, `span_id` and `project_id` are already read the same way at lines 136-139, and the SpanEvent schema (sentry-kafka-schemas, not in the repo) presumably requires this field, so only a malformed message would hit it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0857049
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Fallbacks are indeed installed unconditionally by config/initializers/i18n.rb:9 and :24, but that is the patch's intended feature and the claimed harm does not exist. Specs run with I18n.locale = :en (spec/spec_helper.rb:117), where the chain at config/initializers/i18n.rb:17 collapses to [:en] so missing keys still surface, and the only specs mentioning missing translations (spec/integrity/i18n_spec.rb:7,14,21) assert their absence.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.426252
+}

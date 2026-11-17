@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:213-223 the `immediateDelete` branch only posts a SendGrid batch cancel and returns, with no `workflowReminder` delete or `cancelled` update, while the default path at :225-232 soft-flags the row for the cron instead. The callers passing `true` (packages/trpc/server/routers/viewer/workflows.tsx:214 and :521) rely on the following `workflow.deleteMany` / `workflowStep.delete` cascade (:220, :527) to remove the row, and nothing documents that requirement.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4361791
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "docs/guides/templates/kc.adoc:53 appends a fixed `--features=rolling-updates`; the CLI source (ordinal 600, ConfigArgsConfigSource.java:60) replaces `kc.features` from KC_FEATURES (ordinal 500, KcEnvConfigSource.java:38) or keycloak.conf. On a built image, QuarkusProfileConfigResolver.java:13-14 prefers the persisted `kc.features` and update-compatibility skips re-augmentation (Picocli.java:258), so the flag is ignored whenever the build persisted a features value without rolling-updates.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 1.1822818
+}

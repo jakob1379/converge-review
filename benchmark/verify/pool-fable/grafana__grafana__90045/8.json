@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The legacy and unified mocks share one `*mock.Mock` (`ls := legacyStoreMock{m, l}; us := storageMock{m, s}`, pkg/apiserver/rest/dualwriter_mode3_test.go:219-222 and 273-276), and both `legacyStoreMock.Delete`/`DeleteCollection` call `m.Called` under the same method name (pkg/apiserver/rest/storage_mocks_test.go:65-66, 76-77). The non-`Once` expectations `m.On(\"Delete\", ...)` and `m.On(\"DeleteCollection\", ...)` (dualwriter_mode3_test.go:202, 256) therefore also match the async legacy calls, so no unmocked method is hit.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5129221
+}

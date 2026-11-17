@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:56-71 now sorts by order() descending and returns the first provider, with the 'Multiple crypto providers loaded' exception removed; DefaultCryptoProvider.java:83, WildFlyElytronProvider.java:76 and FIPS1402Provider.java:114 all return 200, so the stable sort leaves ties in ServiceLoader order. The FIPS example holds only for auto-detect callers of init() (e.g. Globals.java:44, KeycloakApplication.java:89, AuthzClient.java:95); the Quarkus server sets the provider explicitly from FipsMode at KeycloakRecorder.java:210-215, so it is not affected.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4447804
+}

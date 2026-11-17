@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new test's Device literal (pkg/services/anonymous/anonimpl/anonstore/database_test.go:55-60) sets DeviceID, ClientIP, UserAgent and UpdatedAt but not CreatedAt, so the row is stored with a zero created_at (database.go:121). The test still checks what it means to, because CountDevices and updateDevice filter only on updated_at (database.go:161), and the older tests in the same file leave CreatedAt out too.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1378383
+}

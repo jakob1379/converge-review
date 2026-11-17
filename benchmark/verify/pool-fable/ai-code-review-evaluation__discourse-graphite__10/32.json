@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "spec/fabricators/embeddable_host_fabricator.rb:23-25 runs `cat.update!(read_restricted: true)` in `after_build`, which saves the record even under `Fabricate.build`, and calls `transients[:group].id`, which raises NoMethodError when no group is passed. The patch only moved this block verbatim from category_fabricator.rb, and every existing caller uses `Fabricate(:private_category, group: group)`.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1313707
+}

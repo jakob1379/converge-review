@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/ee/workflows/api/scheduleSMSReminders.ts:190-197 awaits prisma.workflowReminder.update inside the catch with no guard and before the console.log at :198, so a rejection (P2025 from a concurrent delete, or a DB error) propagates out of the for loop at :67, skipping the remaining reminders, the original error log and the 200 response at :201. The 'earlier deleteMany' example is inaccurate, since that runs at :29 before the findMany at :48, but the concurrent-deletion and DB-error paths are real.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1458434
+}

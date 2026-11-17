@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new helper reads the allowlist as a list (option type=Sequence at src/sentry/options/defaults.py:3465) and then checks `all(project_id in allowlist for project_id in project_ids)` (src/sentry/api/helpers/error_upsampling.py:58-63), so each project ID is found by scanning the list rather than by a set lookup. Allowlists and per-query project counts are small, so the cost is negligible.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1253352
+}

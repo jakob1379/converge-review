@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In incident_occurrence.py:160-162, the function makes a copy called `config` and sets its schedule_type to the display value, but line 168 returns `\"config\": monitor_environment.monitor.config`, the original. The modified copy is never used. The patch moved this code unchanged from mark_failed.py, where the old line 572 had the same bug.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1076973
+}

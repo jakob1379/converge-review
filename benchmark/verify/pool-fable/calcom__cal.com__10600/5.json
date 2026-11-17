@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/auth/two-factor/totp/disable.ts:48 only checks that `req.body.backupCode` is truthy, and line 61 then calls `.replaceAll(\"-\", \"\")` on it with no type check, schema validation or try/catch in the handler. A JSON body such as `{\"backupCode\": 123}` therefore throws an uncaught TypeError (a 500) instead of the 400 IncorrectBackupCode, though only for an authenticated user with 2FA enabled, stored backup codes and a correct password.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.19113819999999998
+}

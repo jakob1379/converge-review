@@ -1,0 +1,177 @@
+{
+  "findings": [
+    {
+      "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernameForm.java",
+      "line": 47,
+      "severity": "Critical",
+      "claim": "The patch does not compile. UsernameForm.authenticate calls isConditionalPasskeysEnabled() with no arguments, but commit 3214b188de changed the only declaration to isConditionalPasskeysEnabled(UserModel user) and added no zero-argument overload.",
+      "evidence": "grep -rn isConditionalPasskeysEnabled --include=*.java finds one declaration (UsernamePasswordForm.java:160, which takes a UserModel), calls at UsernamePasswordForm:115 and :137 that pass context.getUser(), and the zero-argument call at UsernameForm:47. Expected failure: './mvnw -pl services -am compile -DskipTests' reports 'cannot be applied to given types'. Not run (benchmark mode).",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "All four seats raised it independently, and the grep result makes it concrete. Compilation is a hard blocker."
+    },
+    {
+      "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java",
+      "line": 160,
+      "severity": "Critical",
+      "claim": "The 'user != null' term in isConditionalPasskeysEnabled reverses the old condition, which was context.getUser() == null. On a normal first login the user is unset, so fillContextForm no longer runs. The page then gets no webauth form, no conditional-UI flag and no AUTH_CHALLENGE_NOTE, which breaks passkey login on the start page of both UsernamePasswordForm and UsernameForm.",
+      "evidence": "Base code ran fillContextForm only in the user==null branch of authenticate and under 'context.getUser() == null &&' in challenge. Head code (:115, :137, :160-161) requires the user to be non-null. The patch's own tests expect the opposite: PasskeysUsernamePasswordFormTest#passwordLoginWithExternalKey asserts //form[@id='webauth'] on a fresh login page (:196), webauthnLoginWithDiscoverableKey (:83) and PasskeysUsernameFormTest#webauthnLoginWithDiscoverableKey (:112) expect auto-login on the first page, and the new *_reauthentication tests fail at their first-login step. Reasoned from the code; not run.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "All four seats raised it, and the base-vs-head condition plus the patch's own test assertions back it. The fix for re-authentication breaks first-factor passkey login."
+    },
+    {
+      "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java",
+      "line": 160,
+      "severity": "Important",
+      "claim": "The new user parameter is only null-checked. The user's credentials are never checked (for example credentialManager().isConfiguredFor(webauthn passwordless type)). During re-authentication in a passkey-enabled realm, a user with no passkey still gets the passkey form. In UsernameForm that user also no longer skips the username step. WebAuthnConditionalUIAuthenticator.shouldShowWebAuthnAuthenticators returning false bypasses the old 'no authenticators, return null' safeguard in WebAuthnAuthenticator.fillContextForm (:103-107).",
+      "evidence": "This contradicts the stated intent of the new test reauthenticationOfUserWithoutPasskey ('Passkeys login should not be available on the page as this user does not have passkey') and the commit message's 'proper user context validation'. Reasoned; no failing test exists yet (see the test-gap finding).",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two correctness and spec seats reached it separately, and the evidence cites the code and the patch's stated intent. The likely fix makes the condition 'user == null || user has a passkey', which also resolves the Critical at line 160."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java",
+      "line": 282,
+      "severity": "Important",
+      "claim": "reauthenticationOfUserWithoutPasskey disables passkeys for the whole realm (setWebAuthnPolicyPasskeysEnabled(FALSE)), so it never covers the scenario its comment describes (passkeys enabled, user has no passkey). That hides the missing per-user check.",
+      "evidence": "Test body at :279-330. The same test with PasskeysEnabled(TRUE) should fail at the //form[@id='webauth'] absence check (~:313) on the patched code. Reasoned; not run.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "This is the red test for the per-user credential finding. Without it, that fix has no guard."
+    },
+    {
+      "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/UsernamePasswordForm.java",
+      "line": 160,
+      "severity": "Important",
+      "claim": "The new UserModel parameter is unneeded. Every caller passes context.getUser(), and the parameter plus its null check cause both Criticals. Proposed fix: revert to a no-argument 'webauthnAuth != null && webauthnAuth.isPasskeysEnabled()'.",
+      "evidence": "The grep from the compile finding. The advisory seat (over-engineering) raised it.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Covered by the two Critical findings at UsernameForm:47 and UsernamePasswordForm:160, which carry the defect itself. The proposed deletion conflicts with the Important per-user credential finding, because the parameter is needed to check whether the user has a passkey. This is an advisory seat, so the correctness-seat evidence rule does not apply."
+    },
+    {
+      "path": "services/src/main/java/org/keycloak/authentication/authenticators/util/AuthenticatorUtils.java",
+      "line": 125,
+      "severity": "Minor",
+      "claim": "setupReauthenticationInUsernamePasswordFormError re-implements AbstractUsernameFormAuthenticator.isUserAlreadySetBeforeUsernamePasswordAuth (:257-260) by parsing the same auth note itself. It widens USER_SET_BEFORE_USERNAME_PASSWORD_AUTH from protected to public (AbstractUsernameFormAuthenticator.java:58) and makes the util package import from browser.",
+      "evidence": "Both copies do Boolean.parseBoolean(authSession.getAuthNote(USER_SET_BEFORE_USERNAME_PASSWORD_AUTH)). The hide-username/disable-registration attribute pair also repeats UsernamePasswordForm:99-101. Not a functional bug.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: the duplication risks drift but is behaviourally correct. Consolidate after the Criticals land, ideally with the util as the single source and the constant non-public."
+    },
+    {
+      "path": "services/src/main/java/org/keycloak/authentication/authenticators/browser/WebAuthnConditionalUIAuthenticator.java",
+      "line": 65,
+      "severity": "Minor",
+      "claim": "shouldShowWebAuthnAuthenticators overrides WebAuthnAuthenticator.shouldShowWebAuthnAuthenticators without @Override, unlike the sibling overrides in the same class (:41, :47).",
+      "evidence": "grep -n Override on the file. If the parent method is renamed, the override silently stops applying.",
+      "seats": [
+        "open-code-review:delegate-review",
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "A one-line, zero-risk change that protects the re-authentication behaviour against a silent break."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java",
+      "line": 290,
+      "severity": "Minor",
+      "claim": "Absence checks at ~:289-295 and ~:310-316 use 'try { assertThat(findElement(..), nullValue()); fail(..) } catch (Exception)'. The assertThat is dead code, and the pattern works only because AssertionError is not an Exception. The rest of the suite uses Assert.assertThrows(NoSuchElementException.class, ...).",
+      "evidence": "Code at those lines. The base PasskeysOrganizationAuthenticationTest uses assertThrows. CONTRIBUTING.md says 'write tests in the same way as we have written our tests'.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Three seats raised it, a documented standard backs it, and the fix is mechanical."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java",
+      "line": null,
+      "severity": "Minor",
+      "claim": "The patch adds a PasswordCredentialModel import that appears unused.",
+      "evidence": "Reasoned by one seat; not compiled.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Unverified. Settle it with a compile using -Xlint or an IDE unused-import check on the test module."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java",
+      "line": 214,
+      "severity": "Minor",
+      "claim": "webauthnLoginWithExternalKey_reauthentication repeats the first half of passwordLoginWithExternalKey (:173-211), and webauthnLoginWithExternalKey_reauthenticationWithPasswordOrPasskey (:338) covers its re-authentication path. The two webauthnLoginWithDiscoverableKey_reauthentication tests are near copies, and the expectLogin TYPE_PASSWORDLESS event block appears about 8 times.",
+      "evidence": "Side-by-side reading of the test methods. About 60 lines could go.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "ponytail: duplication in tests only, with no correctness impact. Revisit once the behavioural fixes settle what the tests must assert."
+    },
+    {
+      "path": "testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/webauthn/passwordless/PasskeysUsernamePasswordFormTest.java",
+      "line": 149,
+      "severity": "Minor",
+      "claim": "Existing Matchers.nullValue() calls at :149 and :165 were switched to a static nullValue() import, which adds diff noise with no effect on behaviour.",
+      "evidence": "Diff hunks at those lines.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Cosmetic churn with no effect on behaviour or standards. Reverting it would be churn of its own."
+    },
+    {
+      "path": null,
+      "line": null,
+      "severity": "Minor",
+      "claim": "Commit hygiene breaches CONTRIBUTING.md. The change is two commits (it requires one squashed commit), the second commit has no Signed-off-by trailer and no 'Closes #' link, and the first commit uses lowercase 'closes' and links two issues.",
+      "evidence": "git log 30f804af45..HEAD --format=%B, checked against CONTRIBUTING.md sections 'Submitting your PR' and 'Developer's Certificate of Origin'.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Process issue to resolve when squashing at merge time, not a code change."
+    },
+    {
+      "path": null,
+      "line": null,
+      "severity": "Minor",
+      "claim": "The change enables passkeys during re-authentication (prompt=login) and changes the identity-first organization flow, but no documentation was updated, as CONTRIBUTING.md 'Includes documentation' expects.",
+      "evidence": "The patch touches no docs. The seat did not check whether existing docs already cover this, so the claim is reasoned.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Unverified. Settle it by grepping the docs/ tree for passkey and re-authentication coverage before merge."
+    }
+  ],
+  "coverage": "Gate: not run (benchmark mode). Nothing was compiled or tested, so every compile and test-failure claim rests on reading the code and grep. Spec axis: there was no spec, and issues #41242 and #41008 were not fetched, so the commit messages and test comments stood in as intent. Standards axis: CONTRIBUTING.md and PR-CHECKLIST.md only. There is no Java style guide (js/CODING_GUIDELINES.md covers JS only). open-code-review:delegate-review skipped the 3 testsuite files (PasskeysOrganizationAuthenticationTest.java, PasskeysUsernameFormTest.java, PasskeysUsernamePasswordFormTest.java) through OCR's default_path filter and read them only as evidence. The other three seats reviewed all 9 files, but read the test files for intent and structure without tracing every Selenium step. mattpocock-skills:code-review did not check OrganizationAuthenticator.java:360, which is outside the patch. superpowers:requesting-code-review considered it and judged it unaffected. Untracked harness dotfiles in the worktree (.bashrc, .claude/ and others) were excluded from the pinned patch. No cross-family reviewer seat was available. No fresh verifier was dispatched, because no Critical or Important finding from a correctness seat was rejected."
+}

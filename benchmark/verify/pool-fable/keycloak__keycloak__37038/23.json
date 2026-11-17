@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The filter is indeed absent in GroupPermissionsV2.java:156-162 (present at UserPermissionsV2.java:123), but it is a no-op: hasPermission evaluates a single ResourcePermission, and DecisionPermissionCollector.java:187-190 only ever emits a Permission for that same requested resource. No cross-resource leakage can result from omitting it; ClientPermissionsV2.java:226 omits it too.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.8155757
+}

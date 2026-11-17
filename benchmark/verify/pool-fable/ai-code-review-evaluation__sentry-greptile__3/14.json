@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/search/events/datasets/discover.py:1046-1050 defines upsampled_count as toInt64(sum(Column(\"sample_weight\"))) with no ifNull/coalesce or zero fallback, and src/sentry/api/helpers/error_upsampling.py:92-95 rewrites count() to it for allowlisted projects. An error stored without a sample rate therefore adds nothing to the sum instead of 1; that such rows hold NULL/0 rather than a default of 1 is Snuba-side behaviour not in this repo, so that half is inferred, not read.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3514364
+}

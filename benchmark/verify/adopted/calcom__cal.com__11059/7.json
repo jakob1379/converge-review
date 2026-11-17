@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At zoho-bigin/lib/CalendarService.ts:93 the patch passes `credentialId` (set to `credential.id` at line 53) as the `userId` argument of `refreshOAuthTokens` (refreshOAuthTokens.ts:3). When credential sync is on, that sends `calcomUserId=<credential id>` (line 11) and skips the null-`userId` guard (line 5), while the other callers (hubspot:188, zohocrm:215, googlecalendar:92) pass `credential.userId`.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1171531
+}

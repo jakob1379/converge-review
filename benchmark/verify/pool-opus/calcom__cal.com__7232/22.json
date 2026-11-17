@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `cancelled Boolean?` with no `@default(false)` (schema.prisma, patch line 406), and the migration runs `ALTER TABLE \"WorkflowReminder\" ADD COLUMN \"cancelled\" BOOLEAN;` with no default (migration.sql, patch line 397). So existing rows and new rows that don't set the field are null. The only reads filter on `cancelled: true` (patch line 127), so null is treated the same as false and nothing behaves wrongly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0555339
+}

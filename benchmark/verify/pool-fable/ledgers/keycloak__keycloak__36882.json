@@ -1,0 +1,221 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`picocli.exit()` is used for the feature-disabled exit code and calls `System.exit()` directly. This hard-terminates the JVM and makes the following `return` unreachable.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "`Picocli.exit()` only calls `System.exit()` conditionally (quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/Picocli.java:203-207): in test launch mode without a rebuild check it returns normally, so the `return` at UpdateCompatibilityCheck.java:49 and UpdateCompatibilityMetadata.java:49 is reachable and needed to stop the command running on. The hard exit outside test mode is the deliberate, pre-existing design (\"hard exit wanted\" comment at Picocli.java:205; same call at UpdateCompatibilityCheck.java:57).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.35415779999999997
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The PR has no changelog or release-note entry for the exit-code renumbering, the new rolling-updates preview feature, or the requirement that update-compatibility now needs --features=rolling-updates.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch touches no file under docs/documentation/release_notes or docs/documentation/upgrading, and docs/documentation/release_notes/topics/26_2_0.adoc has no mention of rolling-updates or update-compatibility. The changes are covered only in the guides (docs/guides/server/update-compatibility.adoc:60-64 and 132-134, docs/guides/templates/kc.adoc:53), and the command is an unreleased preview whose guide already listed exit code 3 for recreate, so the omission is minor.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2879762
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The guide documents exit code 1 for a missing or corrupt metadata file, but the code throws PropertyException, which exits with code 2 (usage error).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The guide lists exit code 1 for a missing or corrupted metadata file (docs/guides/server/update-compatibility.adoc:122-123), but UpdateCompatibilityCheck.java:80 and :90 throw PropertyException for exactly those cases, which ExecutionExceptionHandler.java:44-50 maps via ShortErrorMessageHandler.java:98-101 to exitCodeOnInvalidInput() (no exit-code mapper is set anywhere, so picocli's default USAGE = 2). The patch only added the exit code 4 row and left both the code 1 row and the throw sites untouched.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5599645
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "UpdateCompatibilityCheck.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Tests run only the 'update-compatibility metadata' subcommand with the feature disabled. The separate feature gate in UpdateCompatibilityCheck.run() (lines 46-50) is never exercised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The only feature-disabled test is `testFeatureNotEnabled` at quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/UpdateCommandDistTest.java:46-50, which launches the `metadata` subcommand; every `check` invocation (lines 65, 81, 96, 105) passes `--features=rolling-updates`. So the gate at UpdateCompatibilityCheck.java:46-50 is never hit by a test, and no test asserts exit code `FEATURE_DISABLED` (4) for either command.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3955417
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The exit-code contract was renumbered (recreate 4->3, feature-disabled=4), but no test asserts either value. testFeatureNotEnabled and testIncompatible check only the message text.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch sets RECREATE_UPGRADE_EXIT_CODE = 3 and FEATURE_DISABLED = 4 (CompatibilityResult.java:34-35), but the only exit-code assertion in the update tests is `assertEquals(0, result.exitCode())` at UpdateCommandDistTest.java:75. testFeatureNotEnabled (lines 46-50) and the incompatible-version test (actually named testWrongVersions, lines 86-107, not testIncompatible) call only assertError, which checks message text (CLIResult.java:78-81).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.570614
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The default-strategy test case returns before the rolling-updates feature flag is enabled, so the `null` branch no longer covers the rolling-update path.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The null case does return at operator/src/test/java/org/keycloak/operator/testsuite/integration/UpgradeTest.java:105-107 before the flag is set at :115, but that early return predates the patch and the operator never checks the flag. An unset strategy still selects RecreateOnImageChangeUpgradeLogic (operator/src/main/java/org/keycloak/operator/upgrade/UpgradeLogicFactory.java:37-38), which decides a rolling upgrade on a non-image change, and testCacheMaxCount(null) still asserts eventuallyRollingUpgradeStatus (UpgradeTest.java:93-95).",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0.6204662
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The documentation table describes exit code 4 as 'Rolling Upgrade is not possible'. Exit code 4 is also returned when the feature is disabled, with the message 'Unable to use this command...'. The table therefore conflates a disabled tool with a compatibility verdict and does not cover the metadata command returning 4.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The claim quotes only half of the row: docs/guides/server/update-compatibility.adoc:132-134 reads \"Rolling Upgrade is not possible. The feature `rolling-updates` is disabled.\", so code 4 is explicitly tied to the disabled feature and kept apart from the compatibility verdict on code 3 (lines 128-130). Code 4 has no other meaning (CompatibilityResult.java:35, returned only by the feature guard in UpdateCompatibilityCheck.java:48 and UpdateCompatibilityMetadata.java:48), and the caution at adoc:12-16 already says both commands fail without the feature; what remains is a wording nit.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.3838351000000001
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The CAUTION documentation block (lines 446-450) says the Operator will fail unless the rolling-updates feature is enabled. The operator code does not check this feature, spec.update.strategy is not gated, and the default `<not set>` strategy works without it.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "docs/guides/operator/advanced-configuration.adoc:446-450 (added by the patch) says the Operator fails without `rolling-updates`, but no operator main code reads that feature: UpgradeLogicFactory.java:36-42 picks the logic from spec.update.strategy alone, and neither AlwaysRecreateUpgradeLogic.java:40-43 nor RecreateOnImageChangeUpgradeLogic.java:49-59 checks it or runs update-compatibility. The only ROLLING_UPDATES checks are in the CLI commands UpdateCompatibilityCheck/UpdateCompatibilityMetadata, which the operator never invokes.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.5527736999999999
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "UpdateCompatibilityCheck.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "UpdateCompatibilityCheck.run() line 46 calls Profile.isFeatureEnabled(...) without ensuring Profile is initialized. This throws NullPointerException if Profile.getInstance() is null.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Profile is always initialized before run() on the CLI path: Picocli.parseAndRun sets the parsed command (Picocli.java:176) and calls PropertyMappers.sanitizeDisabledMappers() (Picocli.java:128) before cmd.execute (Picocli.java:129), and that call runs Environment.getCurrentOrCreateFeatureProfile() (PropertyMappers.java:302-306), which configures Profile when it is null (Environment.java:239-246). Profile.getInstance() is therefore non-null at UpdateCompatibilityCheck.java:46.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.5761364
+   }
+  },
+  {
+   "issue": "i10",
+   "path": "UpdateCompatibilityCheck.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The same feature-disabled guard (isFeatureEnabled / printFeatureDisabled / exit(FEATURE_DISABLED) / return) is duplicated in UpdateCompatibilityCheck.run() and UpdateCompatibilityMetadata.run() at lines 46-50 instead of being centralized in AbstractUpdatesCommand.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The identical five-line guard (Profile.isFeatureEnabled(ROLLING_UPDATES) / printFeatureDisabled() / picocli.exit(CompatibilityResult.FEATURE_DISABLED) / return) appears at UpdateCompatibilityCheck.java:46-50 and UpdateCompatibilityMetadata.java:46-50, both added by the patch, while AbstractUpdatesCommand.java:83-85 only centralizes the message helper and has no shared run()/guard.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.2020046
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The documentation macro hard-codes --features=rolling-updates after the user's parameters. This overrides features set via KC_FEATURES or keycloak.conf, and may not take effect on an --optimized image because features are build-time.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "docs/guides/templates/kc.adoc:53 appends a fixed `--features=rolling-updates`; the CLI source (ordinal 600, ConfigArgsConfigSource.java:60) replaces `kc.features` from KC_FEATURES (ordinal 500, KcEnvConfigSource.java:38) or keycloak.conf. On a built image, QuarkusProfileConfigResolver.java:13-14 prefers the persisted `kc.features` and update-compatibility skips re-augmentation (Picocli.java:258), so the flag is ignored whenever the build persisted a features value without rolling-updates.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 1.1822818
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RECREATE_UPGRADE_EXIT_CODE was changed from 4 to 3, which changes the exit code that existing scripts consume.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch changes `RECREATE_UPGRADE_EXIT_CODE` from 4 to 3 and reuses 4 for the new `FEATURE_DISABLED` (quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/compatibility/CompatibilityResult.java:34-35), so `update-compatibility check` now exits 3 instead of 4 when a recreate is needed. However, docs/guides/server/update-compatibility.adoc:128-130 already documented 3 for this case before the patch, and the command is a preview feature, so this aligns code with the documented contract.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.5063478
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

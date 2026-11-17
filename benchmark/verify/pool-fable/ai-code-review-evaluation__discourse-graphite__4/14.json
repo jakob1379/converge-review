@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/jobs/scheduled/poll_feed.rb:29 passes SiteSetting.feed_polling_url straight to Kernel#open (open-uri loaded at line 7) with no scheme or host check, and config/site_settings.yml:356 declares it as a plain string with no validator, so internal and metadata HTTP endpoints, local paths and even \"|cmd\" pipes are reachable. The value is settable only by an admin, and literal file:// URLs are not actually handled by open-uri, so the claim overstates that detail.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3754826
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes `console.error(message);` (change.patch:501). In packages/core/EventManager.ts:592-608 the catch block still builds `message` but never logs or uses it, and returns only failure results.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.049553599999999996
+}

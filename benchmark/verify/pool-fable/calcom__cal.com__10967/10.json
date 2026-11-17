@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:339-370 loops over destinations but passes the whole `event` to `createEvent`, and packages/core/CalendarManager.ts:236 forwards only `credential.id` to the provider (`externalId` is only echoed in the result at :267). Office365 (office365calendar/lib/CalendarService.ts:73-77), Lark (larkcalendar/lib/CalendarService.ts:128-129) and CalDAV (packages/lib/CalendarService.ts:156-165) ignore that argument and take `destinationCalendar[0]`, so every host's credential targets the first host's calendar id \u2014 in practice a failed or mis-targeted create rather than necessarily a successful write to host 1's calendar.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3754179
+}

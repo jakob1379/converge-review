@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new Javadoc for GroupPermissionEvaluator.canManage() (change.patch:340-346) says that in V2 a permission to VIEW or MANAGE groups is enough. GroupPermissionsV2.canManage() does the same with hasPermission(null, VIEW, MANAGE) (change.patch:592-598), and GroupsResource.java:181 uses requireManage() to gate group creation, so an admin with only VIEW can create top-level groups.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.1349647
+}

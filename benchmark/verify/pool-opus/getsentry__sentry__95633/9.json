@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/sentry/uptime/consumers/test_results_consumer.py, the new test ProcessResultThreadQueueParallelKafkaTest.test_thread_queue_parallel_kafka_offset_commit replaces factory.create_with_partitions with a tracking wrapper marked `# type: ignore[method-assign]` (patch lines 1348-1361). It then runs arroyo's StreamProcessor through the private methods `processor._run_once()` in a 5-second loop and `processor._shutdown()` (patch lines 1381-1386).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.0740695
+}

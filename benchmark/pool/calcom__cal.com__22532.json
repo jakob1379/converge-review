@@ -1,0 +1,674 @@
+{
+ "pr_url": "https://github.com/calcom/cal.com/pull/22532",
+ "cost_usd": 0.11538419999999999,
+ "items": [
+  {
+   "id": "c1",
+   "source": "claude-code",
+   "text": "The conditional rendering logic in CredentialActionsDropdown changes behavior for delegation credentials - they now render nothing or a cache-only dropdown if cache exists, which should be verified as intentional"
+  },
+  {
+   "id": "c2",
+   "source": "converge-review",
+   "text": "getCacheStatusByCredentialIds takes max updatedAt without filtering expired rows (expiresAt), so status can show for fully expired cache"
+  },
+  {
+   "id": "c3",
+   "source": "converge-review-replay",
+   "text": "ENV_FILE=\"../.env\" uses a relative path that depends on the directory the script is run from, only working when run from a directory whose parent holds .env"
+  },
+  {
+   "id": "c4",
+   "source": "qodo-extended-v2",
+   "text": "CredentialActionsDropdown's deleteCache mutation does not invalidate connectedCalendars query, so when parent doesn't pass onSuccess/onChanged (like in EventAdvancedTab), the UI displays stale cacheUpdatedAt after cache rows are deleted"
+  },
+  {
+   "id": "c5",
+   "source": "augment",
+   "text": "Handler directly instantiates new CalendarCacheRepository() which bypasses the CalendarCache.init(...) feature-flag logic and its mock when calendar-cache is disabled, causing inconsistent cache status behavior across deployments"
+  },
+  {
+   "id": "c6",
+   "source": "converge-review",
+   "text": "updatedAt and googleChannelId are added to the selectedCalendars select in findUnlockedUserForSession but nothing reads either field, violating 'Only select data you need' rule"
+  },
+  {
+   "id": "c7",
+   "source": "claude-code",
+   "text": "Multi-layer feature (17 files, DB migration, new data-deletion endpoint, UI component replacement) was developed without end-to-end testing against a real Google Calendar integration"
+  },
+  {
+   "id": "c8",
+   "source": "augment",
+   "text": "ENV_FILE=\"../.env\" depends on the caller's current working directory, so running the script from repo root may update the wrong file path"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "No tests were added for deleteCacheHandler, getCacheStatusByCredentialIds, cacheUpdatedAt field, or the dropdown UI"
+  },
+  {
+   "id": "c10",
+   "source": "converge-review",
+   "text": "prisma.credential.findFirst has no select, loading the full Credential row including key (OAuth tokens) only for an existence/ownership check"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review-replay",
+   "text": "A failed ownership check throws a plain Error instead of TRPCError, resulting in 500 INTERNAL_SERVER_ERROR instead of NOT_FOUND or FORBIDDEN"
+  },
+  {
+   "id": "c12",
+   "source": "converge-review",
+   "text": "SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {}) is a no-op/dead write: with empty data Prisma 5.4.2 does not bump @updatedAt, nothing reads SelectedCalendar.updatedAt, and it adds an extra UPDATE round-trip on every webhook/cron fetchAvailabilityAndSetCache run"
+  },
+  {
+   "id": "c13",
+   "source": "claude-code",
+   "text": "The updateManyByCredentialId method is called with empty data {} relying on Prisma @updatedAt to auto-touch the timestamp, which could be confusing to future maintainers"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review",
+   "text": "The deleteCache procedure is missing from CalendarsRouterHandlerCache, breaking router convention"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review",
+   "text": "The cleanup function exits 0 on failure paths"
+  },
+  {
+   "id": "c16",
+   "source": "coderabbit",
+   "text": "Hardcoded 'en-US' locale in Intl.DateTimeFormat instead of using runtime locale from useLocale() i18n.language"
+  },
+  {
+   "id": "c17",
+   "source": "coderabbit",
+   "text": "Unused loop variable 'i' in shell script should be replaced with '_'"
+  },
+  {
+   "id": "c18",
+   "source": "converge-review-replay",
+   "text": "The handler builds new CalendarCacheRepository() directly, bypassing the calendar-cache feature-flag gate and CalendarCache factory, so cache status and 'Delete cached data' appear even when caching is off"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "Cache-status block uses raw text-gray-900/text-gray-500/dark:text-white instead of design-system tokens (text-emphasis, text-subtle)"
+  },
+  {
+   "id": "c20",
+   "source": "converge-review",
+   "text": "The read-only cache-status block is a focusable, selectable DropdownMenuItem that does nothing"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "The tunnel script is unrelated to the cache feature (scope creep)"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "A failed ownership check throws a plain Error, so the client gets INTERNAL_SERVER_ERROR (500) instead of NOT_FOUND/FORBIDDEN"
+  },
+  {
+   "id": "c23",
+   "source": "coderabbit",
+   "text": "sed -i '' syntax is BSD-only and will fail on GNU sed (Linux systems) - should use portable sed -i.bak syntax"
+  },
+  {
+   "id": "c24",
+   "source": "augment",
+   "text": "Throwing a plain Error instead of TRPCError will surface as INTERNAL_SERVER_ERROR in tRPC rather than preserving NOT_FOUND/FORBIDDEN semantics for clients"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "sed -i '' -E is BSD/macOS-only syntax; on GNU sed (Linux) the .env update fails with exit 2 but the script still prints that GOOGLE_WEBHOOK_URL was updated"
+  },
+  {
+   "id": "c26",
+   "source": "converge-review",
+   "text": "The deleteCache input schema is inlined with z.object instead of a deleteCache.schema.ts file"
+  },
+  {
+   "id": "c27",
+   "source": "golden",
+   "text": "logic: macOS-specific sed syntax with empty string after -i flag will fail on Linux systems"
+  },
+  {
+   "id": "c28",
+   "source": "augment",
+   "text": "updateManyByCredentialId(this.credential.id, {}) with empty data could be rejected by Prisma at runtime or become a no-op, so the updatedAt timestamp may not actually change"
+  },
+  {
+   "id": "c29",
+   "source": "augment",
+   "text": "new Intl.DateTimeFormat(\"en-US\", ...) hard-codes the timestamp formatting locale, causing inconsistent date formatting for non-English users compared to other UI parts that use i18n.language/user locale"
+  },
+  {
+   "id": "c30",
+   "source": "converge-review-replay",
+   "text": "sed -i '' -E syntax is BSD/macOS-only and fails silently on GNU sed (Linux), causing the .env update to fail while the script still prints that GOOGLE_WEBHOOK_URL was updated"
+  },
+  {
+   "id": "c31",
+   "source": "coderabbit",
+   "text": "Missing guard against missing/duplicate credentialId values before cache lookup query"
+  },
+  {
+   "id": "c32",
+   "source": "coderabbit",
+   "text": "Mock getCacheStatusByCredentialIds should accept credentialIds parameter to match interface signature"
+  },
+  {
+   "id": "c33",
+   "source": "augment",
+   "text": "sed -i '' is BSD/macOS-specific and fails on GNU sed (Linux), making the script non-portable for Linux contributors"
+  },
+  {
+   "id": "c34",
+   "source": "converge-review-replay",
+   "text": "SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {}) is dead work - with empty data under Prisma 5.4.2 it likely does not bump @updatedAt at all, and nothing reads SelectedCalendar.updatedAt anyway since the UI uses CalendarCache.updatedAt"
+  },
+  {
+   "id": "c35",
+   "source": "converge-review-replay",
+   "text": "dev:cron switches from ts-node to npx tsx, but tsx is not declared as a dependency and not in yarn.lock, causing npx to download it from the registry at run time"
+  },
+  {
+   "id": "c36",
+   "source": "converge-review-replay",
+   "text": "The 'Last updated' timestamp uses hard-coded new Intl.DateTimeFormat('en-US', ...) ignoring the user's locale and profile timezone, while the label next to it goes through t()"
+  },
+  {
+   "id": "c37",
+   "source": "coderabbit",
+   "text": "deleteCache handler only checks credential.userId === user.id, blocking team members from clearing cache for team-owned credentials - needs teamId support in authorization"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review",
+   "text": "DEFAULT NOW() backfills existing CalendarCache rows with migration time, making 'Last updated' wrong for them until next refresh"
+  },
+  {
+   "id": "c39",
+   "source": "cubic-v2",
+   "text": "ENV_FILE is resolved relative to the caller's cwd, so running this from the repo root writes GOOGLE_WEBHOOK_URL to the wrong .env file"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "When an existing tmole process is reused the script reads a possibly stale or missing /tmp/tmole.log"
+  },
+  {
+   "id": "c41",
+   "source": "coderabbit",
+   "text": "credentialId validation should use z.number().int().positive() instead of just z.number()"
+  },
+  {
+   "id": "c42",
+   "source": "converge-review-replay",
+   "text": "The deleteCache input schema is an inline z.object instead of using a deleteCache.schema.ts file, and is not added to the CalendarsRouterHandlerCache type like sibling procedures"
+  },
+  {
+   "id": "c43",
+   "source": "coderabbit",
+   "text": "deleteCacheMutation doesn't invalidate connectedCalendars query after cache deletion, causing stale UI state when onSuccess isn't supplied"
+  },
+  {
+   "id": "c44",
+   "source": "converge-review",
+   "text": "Undocumented behaviour change: 'Remove app' in error/Alert branch is now also hidden when disableConnectionModification is set, preventing users from removing broken credentials in that context"
+  },
+  {
+   "id": "c45",
+   "source": "converge-review",
+   "text": "ENV_FILE=\"../.env\" depends on the caller's working directory"
+  },
+  {
+   "id": "c46",
+   "source": "golden",
+   "text": "The updateManyByCredentialId call uses an empty data object, which prevents Prisma's @updatedAt decorator from updating the updatedAt timestamp. This results in inaccurate cache status tracking, as the timestamp isn't updated when the cache is refreshed. To fix this, explicitly set the updatedAt field."
+  },
+  {
+   "id": "c47",
+   "source": "converge-review",
+   "text": "hasCache ignores disableConnectionModification, so EventAdvancedTab (which passes disableConnectionModification={true}) now shows a destructive 'Delete cached data' item when it previously showed no credential actions"
+  },
+  {
+   "id": "c48",
+   "source": "golden",
+   "text": "Throwing a generic Error for authentication failures results in a 500 response in tRPC. Instead, it should return a structured TRPCError with an appropriate code, such as FORBIDDEN, to accurately reflect the error type."
+  },
+  {
+   "id": "c49",
+   "source": "converge-review",
+   "text": "Imports @calcom/platform-constants which packages/features/package.json does not declare as a dependency"
+  },
+  {
+   "id": "c50",
+   "source": "converge-review-replay",
+   "text": "Undocumented behaviour change: 'Remove app' in the error/Alert branch is now also hidden when disableConnectionModification is set, preventing users from removing broken credentials in that view"
+  },
+  {
+   "id": "c51",
+   "source": "converge-review-replay",
+   "text": "The auto-generated migration header warning says the required column is added 'without a default value' which is misleading since the SQL actually adds DEFAULT NOW()"
+  },
+  {
+   "id": "c52",
+   "source": "converge-review",
+   "text": "Auto-generated migration warning header says column is added 'without a default value' but SQL adds DEFAULT NOW(), making comment stale and misleading"
+  },
+  {
+   "id": "c53",
+   "source": "coderabbit",
+   "text": "Script assumes /tmp/tmole.log exists when tmole is already running, causing false failure if log is missing or stale"
+  },
+  {
+   "id": "c54",
+   "source": "qodo-extended-v2",
+   "text": "updateManyByCredentialId passes an empty data object expecting Prisma's @updatedAt to auto-update the timestamp, but @updatedAt only triggers on update() and upsert(), not updateMany(), making the call a no-op and breaking cache status tracking"
+  },
+  {
+   "id": "c55",
+   "source": "qodo-extended-v2",
+   "text": "test-gcal-webhooks.sh uses ENV_FILE=\"../.env\" which writes outside the repo when run from repo root, and uses macOS-only sed -i '' syntax which fails on Linux/CI environments"
+  },
+  {
+   "id": "c56",
+   "source": "cubic-v2",
+   "text": "Script relies on an undeclared tsx binary, so yarn dev:cron can prompt to install or fetch a package outside the repo's lockfile"
+  },
+  {
+   "id": "c57",
+   "source": "converge-review",
+   "text": "new CalendarCacheRepository() is constructed directly, bypassing CalendarCache.init's feature-flag gate, so cache status and 'Delete cached data' action show even when calendar-cache flag is off"
+  },
+  {
+   "id": "c58",
+   "source": "converge-review",
+   "text": "dev:cron change to tsx is unrelated to the feature"
+  },
+  {
+   "id": "c59",
+   "source": "converge-review",
+   "text": "Cache timestamp is formatted with hard-coded Intl.DateTimeFormat(\"en-US\", ...) ignoring user's locale and profile timezone"
+  },
+  {
+   "id": "c60",
+   "source": "converge-review",
+   "text": "The component takes six props with same six-prop block duplicated at two call sites, violating 'Prefer Composition over Prop Drilling' rule"
+  },
+  {
+   "id": "c61",
+   "source": "converge-review-replay",
+   "text": "updatedAt and googleChannelId are added to the selectedCalendars select in findUnlockedUserForSession but nothing reads either field, yet every session lookup fetches them (breaches 'Only select data you need' rule)"
+  },
+  {
+   "id": "c62",
+   "source": "converge-review",
+   "text": "dev:cron switches from ts-node to npx tsx, but tsx is not declared or in yarn.lock so npx downloads it at runtime"
+  },
+  {
+   "id": "c63",
+   "source": "converge-review",
+   "text": "After the deleteCache mutation succeeds it only calls onSuccess?.(); it never invalidates viewer.calendars.connectedCalendars, causing stale 'Last updated' timestamps"
+  },
+  {
+   "id": "c64",
+   "source": "claude-code",
+   "text": "No tests were added for the new tRPC endpoint or repository method"
+  },
+  {
+   "id": "c65",
+   "source": "coderabbit",
+   "text": "getCacheStatusByCredentialIds should add early return for empty credential lists and deduplicate IDs"
+  },
+  {
+   "id": "c66",
+   "source": "golden",
+   "text": "Date is formatted with hardcoded 'en-US' locale instead of using the user's locale from useLocale, which can lead to incorrect date representation for users in different locales."
+  },
+  {
+   "id": "c67",
+   "source": "converge-review",
+   "text": "The cache delete calls prisma.calendarCache.deleteMany directly from the tRPC handler while cache-status read goes through CalendarCacheRepository; inconsistent layering"
+  },
+  {
+   "id": "c68",
+   "source": "coderabbit",
+   "text": "Add tsx to devDependencies for reproducibility instead of using npx tsx"
+  },
+  {
+   "id": "c69",
+   "source": "converge-review",
+   "text": "The disconnect mutation, toasts, invalidations and confirm dialog are copied from DisconnectIntegration.tsx instead of reusing it, and the copy drops the original's teamId passthrough and isDelegationCredential({credentialId}) guard"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "ENV_FILE=\"../.env\" is resolved relative to the caller's current working directory, so running the script from the repo root writes GOOGLE_WEBHOOK_URL to the wrong .env file, outside the repo.",
+   "path": "test-gcal-webhooks.sh",
+   "members": [
+    "c3",
+    "c8",
+    "c39",
+    "c45",
+    "c55"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The script uses the BSD/macOS-only `sed -i '' -E` syntax, which fails on GNU sed (Linux). When it fails, the .env update does not happen but the script still prints that GOOGLE_WEBHOOK_URL was updated.",
+   "path": null,
+   "members": [
+    "c23",
+    "c25",
+    "c27",
+    "c30",
+    "c33"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The deleteCache handler throws a plain Error when the ownership check fails. tRPC therefore returns INTERNAL_SERVER_ERROR (500) instead of a TRPCError with NOT_FOUND or FORBIDDEN.",
+   "path": null,
+   "members": [
+    "c11",
+    "c22",
+    "c24",
+    "c48"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The handler constructs `new CalendarCacheRepository()` directly, which bypasses the CalendarCache.init feature-flag gate and its mock. As a result, cache status and 'Delete cached data' are shown even when the calendar-cache flag is off.",
+   "path": null,
+   "members": [
+    "c5",
+    "c18",
+    "c57"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "After the deleteCache mutation in CredentialActionsDropdown succeeds, it only calls onSuccess and does not invalidate viewer.calendars.connectedCalendars. Callers that pass no onSuccess, such as EventAdvancedTab, then show a stale cacheUpdatedAt / 'Last updated'.",
+   "path": null,
+   "members": [
+    "c4",
+    "c43",
+    "c63"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {}) is called with empty data. With updateMany in Prisma 5.4.2 this does not bump @updatedAt, nothing reads SelectedCalendar.updatedAt, and the call adds an extra UPDATE on every fetchAvailabilityAndSetCache run.",
+   "path": null,
+   "members": [
+    "c12",
+    "c34",
+    "c28",
+    "c46",
+    "c54"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "updateManyByCredentialId is called with empty data {} and relies implicitly on Prisma @updatedAt to auto-touch the timestamp, which is unclear to readers.",
+   "path": null,
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The cache 'Last updated' timestamp is formatted with a hard-coded `new Intl.DateTimeFormat(\"en-US\", ...)`, which ignores the user's locale (i18n.language from useLocale) and profile timezone.",
+   "path": null,
+   "members": [
+    "c16",
+    "c29",
+    "c36",
+    "c59",
+    "c66"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "findUnlockedUserForSession adds updatedAt and googleChannelId to the selectedCalendars select, but nothing reads either field. Every session lookup still fetches them.",
+   "path": null,
+   "members": [
+    "c6",
+    "c61"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "dev:cron switches from ts-node to `npx tsx`, but tsx is not declared as a dependency and is not in yarn.lock. npx therefore downloads it from the registry at run time.",
+   "path": null,
+   "members": [
+    "c35",
+    "c56",
+    "c62",
+    "c68"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "The dev:cron change to tsx is unrelated to the cache feature.",
+   "path": null,
+   "members": [
+    "c58"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "The tunnel script is unrelated to the cache feature.",
+   "path": null,
+   "members": [
+    "c21"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "When an existing tmole process is reused, the script reads /tmp/tmole.log, which may be stale or missing. This can cause a false failure.",
+   "path": null,
+   "members": [
+    "c40",
+    "c53"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "The migration's auto-generated warning header says the required column is added 'without a default value', but the SQL adds DEFAULT NOW().",
+   "path": null,
+   "members": [
+    "c51",
+    "c52"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "In the error/Alert branch, 'Remove app' is now also hidden when disableConnectionModification is set. Users can no longer remove broken credentials in that view.",
+   "path": null,
+   "members": [
+    "c44",
+    "c50"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The deleteCache input schema is an inline z.object instead of a deleteCache.schema.ts file.",
+   "path": null,
+   "members": [
+    "c26",
+    "c42"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "The deleteCache procedure is missing from the CalendarsRouterHandlerCache type, unlike its sibling procedures.",
+   "path": null,
+   "members": [
+    "c14"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "No tests were added for deleteCacheHandler, getCacheStatusByCredentialIds, the cacheUpdatedAt field, or the dropdown UI.",
+   "path": null,
+   "members": [
+    "c9",
+    "c64"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "getCacheStatusByCredentialIds has no early return for an empty credential list and does not deduplicate or guard credentialIds before the cache lookup query.",
+   "path": null,
+   "members": [
+    "c31",
+    "c65"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "hasCache ignores disableConnectionModification. EventAdvancedTab passes disableConnectionModification={true} and previously showed no credential actions; it now shows a destructive 'Delete cached data' item.",
+   "path": null,
+   "members": [
+    "c47"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "The conditional rendering in CredentialActionsDropdown changes behavior for delegation credentials: they now render nothing, or a cache-only dropdown if a cache exists.",
+   "path": null,
+   "members": [
+    "c1"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "getCacheStatusByCredentialIds takes the max updatedAt without filtering out expired rows (expiresAt), so a status can be shown for a cache that has fully expired.",
+   "path": null,
+   "members": [
+    "c2"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "The multi-layer feature (17 files, DB migration, data-deletion endpoint, UI replacement) was not tested end-to-end against a real Google Calendar integration.",
+   "path": null,
+   "members": [
+    "c7"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "prisma.credential.findFirst has no select, so it loads the full Credential row, including the key (OAuth tokens), only to check existence and ownership.",
+   "path": null,
+   "members": [
+    "c10"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "The cleanup function exits 0 on failure paths.",
+   "path": null,
+   "members": [
+    "c15"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "The loop variable 'i' in the shell script is unused.",
+   "path": null,
+   "members": [
+    "c17"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "The cache-status block uses raw text-gray-900/text-gray-500/dark:text-white classes instead of the design-system tokens (text-emphasis, text-subtle).",
+   "path": null,
+   "members": [
+    "c19"
+   ]
+  },
+  {
+   "id": "i28",
+   "claim": "The read-only cache-status block is a focusable, selectable DropdownMenuItem that does nothing.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i29",
+   "claim": "The mock getCacheStatusByCredentialIds does not accept the credentialIds parameter, so it does not match the interface signature.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i30",
+   "claim": "The deleteCache handler only checks credential.userId === user.id, which blocks team members from clearing the cache for team-owned credentials.",
+   "path": null,
+   "members": [
+    "c37"
+   ]
+  },
+  {
+   "id": "i31",
+   "claim": "The migration's DEFAULT NOW() backfills existing CalendarCache rows with the migration time, so 'Last updated' is wrong for those rows until their next refresh.",
+   "path": null,
+   "members": [
+    "c38"
+   ]
+  },
+  {
+   "id": "i32",
+   "claim": "The credentialId input validation uses z.number() rather than z.number().int().positive().",
+   "path": null,
+   "members": [
+    "c41"
+   ]
+  },
+  {
+   "id": "i33",
+   "claim": "The code imports @calcom/platform-constants, which packages/features/package.json does not declare as a dependency.",
+   "path": "packages/features/package.json",
+   "members": [
+    "c49"
+   ]
+  },
+  {
+   "id": "i34",
+   "claim": "The component takes six props, and the same six-prop block is duplicated at two call sites.",
+   "path": null,
+   "members": [
+    "c60"
+   ]
+  },
+  {
+   "id": "i35",
+   "claim": "The tRPC handler calls prisma.calendarCache.deleteMany directly for cache deletion, while the cache-status read goes through CalendarCacheRepository.",
+   "path": null,
+   "members": [
+    "c67"
+   ]
+  },
+  {
+   "id": "i36",
+   "claim": "The disconnect mutation, toasts, invalidations and confirm dialog are copied from DisconnectIntegration.tsx instead of reusing it. The copy drops the original's teamId passthrough and its isDelegationCredential({credentialId}) guard.",
+   "path": "DisconnectIntegration.tsx",
+   "members": [
+    "c69"
+   ]
+  }
+ ]
+}

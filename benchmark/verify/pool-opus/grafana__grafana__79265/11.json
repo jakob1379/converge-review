@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In CreateOrUpdateDevice (database.go:~107-117), CountDevices runs a SELECT COUNT(*) in its own WithDbSession (database.go:160), and the upsert runs later in a separate WithDbSession (database.go:149). There is no transaction, lock or conditional insert, so concurrent requests or HA instances can all see count < limit and each insert a new device.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1093681
+}

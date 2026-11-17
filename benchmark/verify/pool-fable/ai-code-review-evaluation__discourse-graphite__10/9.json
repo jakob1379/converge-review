@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/embeddable_host.rb:5-8 calls `self.host.sub!` in `before_validation` with no nil guard, and app/controllers/admin/embeddable_hosts_controller.rb:23 assigns `params[:embeddable_host][:host]` directly, so a request omitting `host` leaves it nil and raises NoMethodError before `validates_format_of` can add an error (the `render_json_error` path at line 30 is never reached).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1410553
+}

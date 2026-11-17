@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/topic_embed.rb:64 and :70, any href or src that starts with '/' is rewritten as \"#{prefix}/#{x.sub(/^\\/+/, '')}\". That turns //cdn.example.com/x.png into scheme://host/cdn.example.com/x.png, using the embed URL's own scheme rather than always http, in both the a and img loops.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0484211
+}

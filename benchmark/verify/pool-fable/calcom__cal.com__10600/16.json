@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/auth/lib/next-auth-options.ts:113 throws ThirdPartyIdentityProviderEnabled for any non-CAL user when `!credentials.totpCode`, and the guard at :117 is likewise keyed only on totpCode. Both run before the new backup-code branch at :131, and the login page's \"Lost access\" button clears totpCode (apps/web/pages/auth/login.tsx:125), so an SSO user's backup code is never checked.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.38540260000000004
+}

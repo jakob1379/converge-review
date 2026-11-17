@@ -1,0 +1,237 @@
+{
+ "findings": [
+  {
+   "path": "src/sentry/integrations/services/assignment_source.py",
+   "line": 18,
+   "severity": "Important",
+   "claim": "The dataclass default `queued: datetime = timezone.now()` is evaluated once, when the class is defined at import time. Every AssignmentSource in a process therefore gets the import time, not the time it was queued, and that stale value is serialised into every sync_assignee_outbound task through to_dict().",
+   "evidence": "Python evaluates a dataclass default once, at class creation. superpowers ran a repro with django.utils.timezone stubbed: two instances built 1.5 s apart had the identical timestamp 2026-11-14 08:29:00.514144+00:00 and the script raised AssertionError. ponytail ran a plain-Python equivalent that prints True. OCR proposed a freeze_time test asserting a.queued != b.queued, not run. The existing test_to_dict (test_assignment_source.py:29-38) only asserts queued is not None, so it passes despite the bug. Nothing reads queued today, so there is no current behavioural impact.",
+   "seats": [
+    "open-code-review",
+    "superpowers",
+    "ponytail",
+    "mattpocock"
+   ],
+   "verdict": "fix",
+   "reason": "Raised by 4 seats. Two correctness seats rate it Important; ponytail rates it Minor; normalised to Important. Red test before the fix: OCR's freeze_time per-instance test, run in the Django suite (superpowers' stubbed repro already fails on the pinned code). Smallest fix: field(default_factory=timezone.now). Whether to delete the field instead is the separate appendix finding below.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/integrations/mixins/issues.py",
+   "line": 411,
+   "severity": "Minor",
+   "claim": "The abstract sync_status_outbound gains an `assignment_source: AssignmentSource | None = None` parameter that no caller passes and no implementation reads. It is a dead parameter that advertises loop protection status sync does not have.",
+   "evidence": "grep over src/ finds no call site passing assignment_source to sync_status_outbound. tasks/sync_status_outbound.py:43 still calls should_sync(\"outbound_status\") with no source. The concrete implementations do not declare it: jira:990, jira_server:1090, vsts:266, example:161.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Raised by 4 seats. Smallest fix: revert to `def sync_status_outbound(self, external_issue, is_resolved, project_id, **kwargs):` as ponytail proposes. This also removes the latent ExampleIntegration TypeError in the appendix.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/integrations/tasks/sync_status_outbound.py",
+   "line": 43,
+   "severity": "Minor",
+   "claim": "Status sync cycles are not addressed. Only assignee sync gets the source-integration loop guard; outbound status sync still calls should_sync(\"outbound_status\") with no source.",
+   "evidence": "tasks/sync_status_outbound.py:43 passes no source. Inbound assign/deassign tag the source (utils/sync.py:96-116) and should_sync skips the source integration for assignee only (mixins/issues.py:388-391). This is judged against the inferred intent \"fix(ecosystem): Breaks issue sync cycles\"; there is no spec.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Raised by 3 seats. There is no spec, so it is unknown whether status sync was in scope; ponytail judges it a feature this PR does not build. Closing it would be new functionality, not a minimal fix. Defer with a `ponytail:` comment and settle scope with the PR author or spec.",
+   "list": "main"
+  },
+  {
+   "path": "src/sentry/integrations/services/assignment_source.py",
+   "line": 18,
+   "severity": "Minor",
+   "claim": "The `queued` field is never read anywhere in src/, so it (with its datetime/timezone imports and the test assertion) is dead weight and could be deleted.",
+   "evidence": "ponytail grep: the only uses are the class itself and test_to_dict's `result.get(\"queued\") is not None`.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. Split from the import-time default defect: same field, different claim (dead field versus wrong default).",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/services/assignment_source.py",
+   "line": 16,
+   "severity": "Minor",
+   "claim": "source_name is copied into every task payload but never read; should_sync compares only integration_id.",
+   "evidence": "ponytail grep finds no reader of source_name outside the class (assignment_source.py:16, :23).",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. Over-engineering only, negligible cost.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/services/assignment_source.py",
+   "line": 31,
+   "severity": "Minor",
+   "claim": "from_dict swallows TypeError/ValueError and returns None. should_sync then treats the call as having no source and syncs, so malformed input silently fails open into the cycle this change prevents, with no log or metric.",
+   "evidence": "assignment_source.py:31-35, reasoned. ponytail and OCR judged the None fallback a safe degradation to the old behaviour, since the only producer is to_dict; that is a judgement, not a disproof.",
+   "seats": [
+    "mattpocock",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/services/assignment_source.py",
+   "line": 31,
+   "severity": "Minor",
+   "claim": "from_dict does not type-check queued on the way back in, so it would come back as a str if the Celery serializer became JSON.",
+   "evidence": "Reasoned. superpowers itself notes this is harmless under the current pickle serializer (conf/server.py:739).",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. Conditional on a serializer change.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/mixins/issues.py",
+   "line": 397,
+   "severity": "Minor",
+   "claim": "The abstract sync_assignee_outbound, the method that actually receives assignment_source, does not declare the parameter, while sync_status_outbound does. The abstract contract does not match its call sites.",
+   "evidence": "mattpocock, reasoned from grep. There is no runtime failure because implementations take **kwargs.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. Split from the dead sync_status_outbound parameter finding.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/example/integration.py",
+   "line": 161,
+   "severity": "Minor",
+   "claim": "ExampleIntegration.sync_status_outbound accepts neither assignment_source nor **kwargs, so it would raise TypeError as soon as a caller passes the new parameter.",
+   "evidence": "Reasoned. It is latent because no caller passes the parameter today.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats. It becomes moot if the main-list revert of the dead parameter is applied.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/mixins/issues.py",
+   "line": 390,
+   "severity": "Minor",
+   "claim": "The loop guard compares integration IDs, not external issue IDs. If a group is linked to two issues on the same integration install, an inbound reassignment on one is no longer pushed to the other, which drops a non-loop sync that worked before the patch.",
+   "evidence": "Reasoned. sync_group_assignee_outbound queues one task per linked external issue, and each task's should_sync(\"outbound_assignee\", source) returns False whenever source.integration_id matches, regardless of the external issue. No test covers it. Other seats confirmed only that other integrations still get the sync, which does not address this case.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. It may be intended.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/tasks/sync_assignee_outbound.py",
+   "line": 30,
+   "severity": "Minor",
+   "claim": "The new task kwarg assignment_source_dict and its sender (utils/sync.py:136-144) ship in the same deploy. During a rolling deploy an old worker receiving assignment_source_dict= raises TypeError and that assignee sync is lost.",
+   "evidence": "Reasoned. mattpocock's deploy-safety check covers only the reverse direction (old tasks on new workers, via the None default), so it does not disprove this. The ship-the-parameter-first practice is Sentry's external developer guidance, not documented in-repo.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/services/assignment_source.py",
+   "line": 1,
+   "severity": "Minor",
+   "claim": "A plain value-object dataclass is placed in integrations/services/, whose existing packages (integration/, repository/) are hybrid-cloud RPC services with service.py/impl.py/model.py/serial.py.",
+   "evidence": "`ls src/sentry/integrations/services/`. There is no written rule in the repo, so the seat itself rates it low confidence.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat. It is a convention judgement only.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/integrations/services/test_assignment_source.py",
+   "line": 13,
+   "severity": "Minor",
+   "claim": "Test name typo: test_from_dict_inalid_data should be test_from_dict_invalid_data.",
+   "evidence": "Declaration at test_assignment_source.py:13.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 2 seats.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/integrations/services/test_assignment_source.py",
+   "line": 8,
+   "severity": "Minor",
+   "claim": "test_from_dict_empty_array actually tests an empty dict, not an array, so the name is misleading.",
+   "evidence": "test_assignment_source.py:8.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/integrations/services/test_assignment_source.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test class uses a database-backed TestCase to test a plain dataclass.",
+   "evidence": "superpowers' reading of the test file.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "tests/sentry/models/test_groupassignee.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test covers deassign with a matching source integration; only the assign path has one (test_assignee_sync_outbound_assign_with_matching_source_integration).",
+   "evidence": "superpowers' reading of the tests. ponytail judged it noise because both paths share should_sync; that is a judgement, not a disproof.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  },
+  {
+   "path": "src/sentry/integrations/utils/sync.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No test drives sync_group_assignee_inbound end to end to show the source integration is skipped while a second integration still receives the sync.",
+   "evidence": "superpowers' reading of the tests in the patch.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: 1 seat.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All 4 seats reported reviewing all 7 files in the patch. open-code-review's OCR tool excluded the 2 test files by default_path, but the seat reviewed them manually under the override. Axes that did not run: (1) The gate was not run (benchmark mode), so the review is unanchored and no finding has gate ground truth. (2) There is no spec; spec compliance was judged only against the inferred intent \"fix(ecosystem): Breaks issue sync cycles\". (3) The repo has no documented coding standards (CONTRIBUTING.md only links to external docs.sentry.io/internal); mattpocock substituted enforced in-repo conventions (the celery holds_bad_pickle_object rule, the services/ layout, mypy config) and did not consult the external docs. (4) No seat ran the test suite, mypy or Django; the only executed evidence is superpowers' stubbed-timezone repro and ponytail's plain-Python equivalent for the queued default. (5) superpowers did not compare against Sentry's upstream fix; ponytail did not check GitHub/GitLab integrations, which have no sync_assignee_outbound implementation. (6) No reviewer from another model family held a correctness seat. (7) Rejections: no finding was disproved by the seat reports, so none were rejected and no verifier was needed."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/user.rb:87 assigns `user.email = params[:email]` unchanged, and User has no before_validation hook or email setter (callbacks at user.rb:50-57 are only before_save/after_*), so the new exact-match `BlockedEmail.where(email: email)` in app/models/blocked_email.rb:12 sees the raw value. `Email.downcase` (lib/email.rb:19) is not applied on this path, though it is used elsewhere (e.g. user.rb:127, session_controller.rb:17), so \"unused\" holds only for signup.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2737903
+}

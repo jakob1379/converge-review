@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The loop alias is set on each item view itself, not on a block template: `EachView.createChildView` does `view._keywords[keyword] = content` (vendor/assets/javascripts/development/ember.js:8217-8225) and path lookup reads `this.view._keywords` (ember.js:38808-38809), so `member` resolves in app/assets/javascripts/admin/templates/group_member.hbs:1. The same pattern is already used by share.hbs:13 with share_link.hbs referencing `s`.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0.49814420000000004
+}

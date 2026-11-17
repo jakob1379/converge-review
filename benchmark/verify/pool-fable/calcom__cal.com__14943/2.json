@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/ee/workflows/api/scheduleSMSReminders.ts:178-187 (else branch) and :189-197 (catch block) contain the same prisma.workflowReminder.update call setting retryCount: reminder.retryCount + 1 for reminder.id; both were added by this patch.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08453630000000001
+}

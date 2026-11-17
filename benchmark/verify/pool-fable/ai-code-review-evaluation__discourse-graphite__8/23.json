@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/javascripts/discourse/models/group.js:59 ends the `return Discourse.ajax(...).then(...)` statement with `})` and no semicolon (the sibling removeMember at line 48 has one). .jshintrc does not set `asi`, and `lastsemic: true` (line 81) only exempts a missing semicolon when the closing brace is on the same line, which is not the case here, so W033 applies; the file is not in .jshintignore. Not run through jshint here, judged from the config.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1673998
+}

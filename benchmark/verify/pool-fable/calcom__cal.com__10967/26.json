@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:375-381 sends a destination with no credentialId to every credential whose type matches the integration, calling createEvent(c, event) without an externalId, so CalendarManager.ts:267 returns externalId undefined and EventManager.ts:169 stores externalCalendarId undefined (before the patch it was evt.destinationCalendar?.externalId). The fan-out itself predates the patch, but Google's createEvent now matches on cal.credentialId === credentialId (googlecalendar/lib/CalendarService.ts, patch lines 80-88), finds nothing and writes to each account's \"primary\" calendar.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5761287
+}

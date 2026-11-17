@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/core/EventManager.ts:554-563 still picks a single old reference with `booking.references.find(... \"_calendar\")` and deletes only that event, while this patch makes collective bookings create one calendar reference per host (EventManager.ts:337-357) and loops over all references for updates (EventManager.ts:504). When a reschedule is merged into another booking (`newBookingId` set, e.g. handleNewBooking.ts:1483), the other hosts' old events are never deleted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5641305
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch changes the pre-existing migration db/migrate/20131223171005_create_top_topics.rb:3 from `create_table :top_topics do` to `create_table :top_topics, force: true do`. Rails skips migrations already recorded in schema_migrations, so the edit does nothing there, and wherever the migration does run `force: true` drops any existing top_topics table before recreating it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.08833730000000001
+}

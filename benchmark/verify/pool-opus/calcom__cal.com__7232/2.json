@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The immediateDelete branch in emailReminderManager.ts:209-218 only sends the SendGrid cancel request and then returns. It never deletes the workflowReminder row or sets `cancelled`. When a workflow or step is deleted (workflows.tsx:214, 521), the cascade on workflowStep removes the rows anyway. When a booking is rescheduled (handleNewBooking.ts:968), the original booking is kept, so its reminder rows stay behind with no cleanup.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1922974
+}

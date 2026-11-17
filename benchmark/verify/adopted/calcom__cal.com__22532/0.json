@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The call at CalendarService.ts:1024 and its helper at selectedCalendar.ts:400-405 do work nobody uses. The patch's UI timestamp comes from CalendarCache.updatedAt (connectedCalendars.handler.ts:31-35 \u2192 CredentialActionsDropdown.tsx:69-92), and no code reads SelectedCalendar.updatedAt (schema.prisma:860), even though user.ts:899 now selects it. I did not run this against Prisma, but with empty data Prisma most likely skips the @updatedAt bump, so the comment at line 1023 is probably misleading too.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13402460000000002
+}

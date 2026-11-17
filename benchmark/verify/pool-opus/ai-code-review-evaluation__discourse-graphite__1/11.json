@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The return value of the downsize call at app/controllers/uploads_controller.rb:67 is never checked, so a failed convert is retried until the 5 attempts run out, and the oversized tempfile is then passed to Upload.create_for (line 72). The file is not stored, though: lib/validators/upload_validator.rb:84-86 still rejects files over max_image_size_kb, so the cost is up to 5 wasted ImageMagick runs and no clear error about why it failed.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.093228
+}

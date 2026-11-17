@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds owasp-java-html-sanitizer with the version hard-coded as 20240325.1 at misc/theme-verifier/pom.xml:78, the same value as the owasp.html.sanitizer.version property at root pom.xml:119 (used at lines 561-571), so the two can drift. The module has no parent, so it cannot inherit the property, and commons-io is already hard-coded the same way at line 61; this makes the duplication a minor upkeep issue, not a bug.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.23699309999999998
+}

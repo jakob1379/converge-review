@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/replays/test_project_replay_summarize_breadcrumbs.py:41-43 calls `requests.post(settings.SENTRY_SNUBA + \"/tests/entities/replays/insert\", json=[replay])` with no `timeout` argument; the patch adds this `store_replays` helper (change.patch:5670-5674).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1124067
+}

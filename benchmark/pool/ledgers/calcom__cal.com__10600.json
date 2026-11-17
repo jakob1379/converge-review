@@ -1,0 +1,302 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup code comparison uses indexOf, which is case-sensitive, and only '-' is stripped from the input. Valid codes typed in a different case or with whitespace are rejected, for example uppercase from iOS auto-capitalize. The same comparison appears in disable.ts and BackupCode.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup code consumption is a non-atomic read, decrypt, check, null-slot and write-back, with no transaction, lock or compare-and-swap. Concurrent requests can both accept the same backup code, and last-write-wins can restore a code that was already consumed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup codes are stored as reversible ciphertext via symmetricEncrypt instead of one-way hashes, so they can be recovered if the DB and the app key are exposed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": "BackupCode.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The component exported from BackupCode.tsx is named `TwoFactor` instead of `BackupCode`. It collides with the existing TwoFactor component in DevTools, stack traces and imports.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The object URL created for the backup-codes download is only revoked when a new one is generated. It is never revoked when the modal is closed, reset or unmounted, so the blob leaks.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`req.body.backupCode.replaceAll()` is called on an unvalidated body. A truthy non-string backupCode throws a TypeError and returns 500 instead of 400.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`JSON.parse(symmetricDecrypt(...))` on backupCodes is unguarded. Corrupted data can throw or return a non-array, which crashes the authorize/disable flow with a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests cover login with a backup code, rejection of a reused or wrong code, the missing-codes case, or disabling 2FA with a backup code. The new test only exercises Download, Copy and Close.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": "disable.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The backup-code verification block (key guard, missing-codes guard, decrypt and JSON.parse, strip '-', indexOf) is duplicated in disable.ts:48-64.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `user.twoFactorEnabled &&` check (line 48) and the `else if (user.twoFactorEnabled)` check (line 69) are always true after the early return at line 36. The CALENDSO_ENCRYPTION_KEY check is copied into both branches.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Download control renders a Button (a `<button>`) nested inside an `<a>`, which is invalid nested interactive content.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The shared PasswordField show/hide toggle button has tabIndex={-1}, which removes it from keyboard tab order for every password field.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The e2e assertion `expect(locator.isChecked()).toBeTruthy()` checks a Promise object, which is always truthy, rather than the resolved boolean. It is left unfixed despite an added FIXME.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "onEnable (`utils.viewer.me.invalidate()`) runs only from the backup-codes Close button. Dismissing the dialog via Escape, overlay click or X leaves 2FA enabled in the DB but shown as disabled. Because resetState never runs, reopening shows the stale DisplayBackupCodes step.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`navigator.clipboard.writeText()` is not awaited or error-handled, so the success toast shows even when the write fails. Where navigator.clipboard is undefined (plain-HTTP non-localhost), the click throws.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When totpEmail is present, the login page renders ExternalTotpFooter, so SAML/Google users never see the backup-code entry point.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The authorize guards exempt only totpCode. An SSO (Google/SAML) user submitting a backupCode hits ThirdPartyIdentityProviderEnabled or IncorrectEmailPassword before the backup-code branch runs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Migration timestamp 20230804153419 is older than existing migrations such as 20230828094603, which causes Prisma migration-order drift.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "An error message in the disable endpoint refers to 'backup code login'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new else-if branches for IncorrectBackupCode and MissingBackupCodes duplicate the existing errorMessages map, whose fallback already covers these codes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Users who enabled 2FA before the migration have backupCodes = NULL and are told to generate them in settings, but no regenerate UI or endpoint exists. Once all codes are used, the array is all nulls and the user gets IncorrectBackupCode instead of MissingBackupCodes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The password check (~line 121) runs only when totpCode is falsy, and the backup-code branch never verifies totpCode. A valid backupCode plus any non-empty totpCode therefore authenticates without the password.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i23",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "PasswordField (line 167) is passed an explicit type=\"password\". Because {...props} is spread after the computed type, the show/hide toggle never reveals the value.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The first e2e test never clicks backup-codes-close after OTP verification, so onEnable() is never called before the two-factor-switch is checked.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i25",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new branch throws `new Error(ErrorCode.InternalServerError)` when the encryption key is missing, instead of returning `res.status(500).json` like the rest of the file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i26",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "A redundant fragment wraps a single div.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i27",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`const mockUser: User` lacks the new required backupCodes field, and the type-check script does not include this file.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

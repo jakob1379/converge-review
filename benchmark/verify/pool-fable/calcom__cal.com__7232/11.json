@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/ee/workflows/api/scheduleEmailReminders.ts:34-41 the cron first deletes every EMAIL reminder with scheduledDate <= now regardless of the cancelled flag, and only afterwards (lines 44-74) looks up cancelled reminders to send the SendGrid cancel. Because emailReminderManager.ts now only sets cancelled=true instead of cancelling immediately, a cancelled reminder whose scheduledDate has passed before the cron reaches it is deleted with no cancel request ever sent.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.311865
+}

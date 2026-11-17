@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/integrations/github/integration.py:397-399 binds `installation_id` from GET before the state check at :412, and that state is `pipeline.signature`, a constant md5 of the view class names (src/sentry/pipeline/base.py:132-133). One callback URL therefore supplies both the installation whose `metadata[\"sender\"][\"login\"]` is read (:494-503) and the `code` that sets `github_authenticated_user` (:438); exploiting it needs a victim with a live GitHub pipeline in session, and it links the attacker's own installation rather than hijacking the victim's.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.35774249999999996
+}

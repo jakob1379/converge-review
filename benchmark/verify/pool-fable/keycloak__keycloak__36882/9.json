@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The identical five-line guard (Profile.isFeatureEnabled(ROLLING_UPDATES) / printFeatureDisabled() / picocli.exit(CompatibilityResult.FEATURE_DISABLED) / return) appears at UpdateCompatibilityCheck.java:46-50 and UpdateCompatibilityMetadata.java:46-50, both added by the patch, while AbstractUpdatesCommand.java:83-85 only centralizes the message helper and has no shared run()/guard.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.2020046
+}

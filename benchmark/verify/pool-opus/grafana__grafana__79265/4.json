@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch reads the new `device_limit` key only at pkg/setting/setting.go:1654 (`MustInt64(0)`), and the key appears nowhere in conf/ or docs/. The patch doesn't touch conf/defaults.ini, conf/sample.ini or configuration.md, so nothing documents that 0 means unlimited (the `> 0` check is in anonstore/database.go).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.09979880000000001
+}

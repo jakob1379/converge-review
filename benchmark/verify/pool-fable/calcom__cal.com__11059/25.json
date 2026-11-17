@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:50 indexes appStoreMetadata by app.slug, but the map is keyed by directory name (packages/app-store/apps.metadata.generated.ts:98-146, e.g. googlecalendar, office365video, zoomvideo) while the slugs differ (google-calendar, office365-calendar, msteams, zoom, lark-calendar in each app's _metadata.ts/config.json). For those apps the lookup is undefined and the handler returns 404 at line 53.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.5323875
+}

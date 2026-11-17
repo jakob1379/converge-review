@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "`fetch_error_details` does build node ids from the replay's project id (src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:718), but the `error_ids` it receives come from `query_replay_instance(project_id=project.id, ...)` (line 680; src/sentry/replays/query.py:83-101), which only reads rows for that project. Errors linked from other projects are written as rows under their own project (src/sentry/replays/lib/event_linking.py:137), so they never reach `error_ids` and the node-id step has nothing from other projects to drop.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3093825
+}

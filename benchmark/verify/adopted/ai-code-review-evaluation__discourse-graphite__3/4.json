@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "create_account_controller.js:274-276 adds result.values.email to rejectedEmails whenever result.errors.email is present, so a taken, not_allowed or blocked address is added the same way. Lines 69-74 then fail the field with the generic I18n 'user.email.invalid' text. The list (line 17) is never cleared and lives on the controller prototype, so it lasts until the page reloads. One caveat: the flash at line 273 still shows the server's own message, so it is only the inline field text that is wrong.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1064987
+}

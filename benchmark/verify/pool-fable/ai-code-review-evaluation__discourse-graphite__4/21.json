@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The feed-import and remote-fetch paths are untested: `poll_feed` is only ever mocked (spec/jobs/poll_feed_spec.rb:14,20,26,35), `perform_retrieve` is only ever mocked so `fetch_http` never runs (spec/components/topic_retriever_spec.rb:11,17,23,33,39), and no spec references `TopicEmbed.import_remote`. One sub-claim is wrong: `absolutize_urls` is exercised and asserted through `TopicEmbed.import` at spec/models/topic_embed_spec.rb:33-34.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.3438082
+}

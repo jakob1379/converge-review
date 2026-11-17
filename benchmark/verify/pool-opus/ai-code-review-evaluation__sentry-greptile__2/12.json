@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch deletes the `len(payloads[key]) > self.max_segment_spans` check from `_load_segment_data` (src/sentry/spans/buffer.py:446-453 in the patch), so `self.max_segment_spans` (buffer.py:150,158) is now never read. The only span-count cap left is the Lua `zpopmin` trim to 1000 (add-buffer.lua:209-211), and it only runs when a span is added; sets already over the limit are no longer checked in Python, although the byte-size check still applies.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.13895570000000002
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/ee/workflows/api/scheduleSMSReminders.ts:28 still reads 'delete all scheduled sms reminders where scheduled date is past current date', but the deleteMany at lines 29-45 now uses an OR whose second branch (lines 38-42) deletes any row with retryCount > 1, regardless of date or method.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08953339999999999
+}

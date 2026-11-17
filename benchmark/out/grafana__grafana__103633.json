@@ -1,0 +1,134 @@
+{
+  "findings": [
+    {
+      "path": "pkg/services/authz/rbac/service.go",
+      "line": 116,
+      "severity": "Important",
+      "claim": "Denial-cache key omits identity type; anonymous and render-service identities both have UID \"0\", so a cached anonymous denial denies the render service on the same resource for shortCacheTTL (30s).",
+      "evidence": "userPermDenialCacheKey(ns, checkReq.UserUID, action, name, parent) (cache.go:30) has no IdentityType; anonymous ID \"0\" (pkg/services/anonymous/anonimpl/client.go:114-116), render ID \"0\" (pkg/services/authn/clients/render.go:44-50). Denial read at service.go:117 runs before getIdentityPermissions, so getRendererPermissions' '*' grant is never reached. Proposed red test: Check anonymous:0 on dash1 (denied), then render:0 on dash1, assert Allowed==true (seat-sp/denial_cache_repro_test.go TestRepro_AnonymousDenialBlocksRenderer). Not executed (benchmark mode).",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Two correctness seats independently, concrete source citations for both UID \"0\" identities; breaks rendering/reports fail-closed. Include identity type in key or skip denial cache for non-user types."
+    },
+    {
+      "path": "pkg/services/authz/rbac/cache.go",
+      "line": 30,
+      "severity": "Important",
+      "claim": "userPermDenialCacheKey joins name and parent with '_' while UIDs may contain '_', so distinct (name,parent) pairs collide and one resource's denial denies another the user may access, for 30s.",
+      "evidence": "Allowed UID chars a-zA-Z0-9-_ (pkg/util/shortid_generator.go:33); (\"x_y\",\"\") and (\"x\",\"y_\") produce identical keys. Proposed red test TestRepro_DenialKeyCollision (seat-sp). Also denial keys share the .perm_<uid>_ prefix with userPermCacheKey in the same cache. Not executed.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review",
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Raised by all four seats (correlated, weak evidence) but source-backed. Severity split Important (superpowers) vs Minor (OCR); kept Important per the higher correctness rating since it wrongly denies legitimate access. Fails closed, no escalation. Cheap fix: unambiguous separator/encoding."
+    },
+    {
+      "path": "pkg/services/authz/rbac/service.go",
+      "line": 123,
+      "severity": "Important",
+      "claim": "Removing the permCache read from getUserPermissions/getAnonymousPermissions, plus the per-(user,action,name,parent) denial cache and the NoopCache in-process client, makes DB/permission-decode load scale with distinct denied resources instead of users x actions.",
+      "evidence": "On a cached-perms deny Check always calls permissionStore.GetUserPermissions (service.go:123-153, 370-385); singleflight only merges concurrent identical calls; rbac.go:103 replaces the 30s client LocalCache with NoopCache. N distinct denials per user = N queries per 30s vs 1 on base. Reasoned, no benchmark.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "defer",
+      "reason": "Likely the intended trade-off (fresh grants visible immediately); cannot be made red with a unit test. Settle with a load benchmark of per-item Check over many denied dashboards/folders on base vs head, and an explicit product decision."
+    },
+    {
+      "path": "pkg/services/authz/rbac/service_test.go",
+      "line": 973,
+      "severity": "Minor",
+      "claim": "Test 'Should deny on explicit cache deny entry' cannot fail: it seeds permCache with false (comment says allow) and the fallback fakeStore is empty, so it passes with the denial-cache lookup deleted.",
+      "evidence": "Seeded {\"dashboards:uid:dash1\": false} at ~line 981; checkPermission treats false as deny (service.go:558); setupService fakeStore has no permissions. Check: delete service.go:116-121 and run go test ./pkg/services/authz/rbac -run 'TestService_CacheCheck/Should_deny' \u2014 expected still passes.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "mattpocock-skills:code-review",
+        "open-code-review:delegate-review"
+      ],
+      "verdict": "fix",
+      "reason": "Only guard for the new denial cache is vacuous; seed true or assert store.calls == 0."
+    },
+    {
+      "path": "pkg/services/authz/rbac/service_test.go",
+      "line": 337,
+      "severity": "Minor",
+      "claim": "TestService_getUserPermissions lost its only cacheHit:true case, leaving the cacheHit field and both if tc.cacheHit branches dead; no test asserts the new always-go-to-store contract or the removed anonymous cache read.",
+      "evidence": "Remaining cases (~lines 347, 353) set cacheHit:false; permCache.Set branch (~367) and store.calls==1 branch (~388) unreachable.",
+      "seats": [
+        "superpowers:requesting-code-review",
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "fix",
+      "reason": "Dead test scaffolding; remove field/branches and assert store is always called."
+    },
+    {
+      "path": "pkg/services/authz/rbac/service.go",
+      "line": 342,
+      "severity": "Minor",
+      "claim": "getCachedIdentityPermissions returns an error used only as a hit/miss flag and duplicates the identity-type switch of getIdentityPermissions; callers treat any error (store error, unsupported type) as a miss rather than only cache.ErrNotFound, with if err == nil {hit} else {fallback} flow.",
+      "evidence": "Returns cache.ErrNotFound at 352/354/364; Check (123-136) and List (180-191) only test err == nil. Go Code Review Comments 'Indent Error Flow'/'Handle Errors' adopted via contribute/backend/style-guide.md. No runtime loss: fallback re-surfaces the error.",
+      "seats": [
+        "ponytail:ponytail-review",
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory, no behavioural defect. ponytail: return (map, bool) like cacheWrap.Get and drop the render arm when next touching this code."
+    },
+    {
+      "path": "pkg/services/authz/rbac.go",
+      "line": 239,
+      "severity": "Minor",
+      "claim": "New exported NoopCache type in public authz package has a single in-package call site.",
+      "evidence": "grep -rn NoopCache pkg finds only definition and rbac.go:103. Unchecked whether authlib already ships a no-op cache (module not available offline).",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "defer",
+      "reason": "Advisory visibility/YAGNI. ponytail: unexport as noopCache, or delete if authlib provides one \u2014 check authlib@v0.0.0-20250325095148-d6da9c164a7d."
+    },
+    {
+      "path": "pkg/services/authz/rbac.go",
+      "line": 241,
+      "severity": "Minor",
+      "claim": "NoopCache methods use receiver name 'lc' (LocalCache abbreviation) instead of one reflecting the type, or none since unused.",
+      "evidence": "Lines 241, 245, 249; Go Code Review Comments 'Receiver Names' adopted by contribute/backend/style-guide.md.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented-standard breach on new lines; trivial rename/drop."
+    },
+    {
+      "path": "pkg/services/authz/rbac/service.go",
+      "line": 126,
+      "severity": "Minor",
+      "claim": "Newly added log message 'could not check permission' starts lowercase.",
+      "evidence": "contribute/backend/instrumentation.md Logs > Naming conventions: start log message with a capital letter. Line 127 is new in the patch; line 148 carries the same pre-existing message.",
+      "seats": [
+        "mattpocock-skills:code-review"
+      ],
+      "verdict": "fix",
+      "reason": "Documented-standard breach on an added line; trivial."
+    },
+    {
+      "path": "pkg/services/authz/rbac.go",
+      "line": 160,
+      "severity": "Minor",
+      "claim": "newRemoteRBACClient assigns authzlib.NewClient(...) to a temp variable only to return it.",
+      "evidence": "Patch lines '+ client := authzlib.NewClient(' / '+ return client, nil'.",
+      "seats": [
+        "ponytail:ponytail-review"
+      ],
+      "verdict": "reject",
+      "reason": "Generic code smell outside the advisory mandate (over-engineering) and excluded by the override block; zero behavioural or maintainability cost."
+    }
+  ],
+  "coverage": "Gate not run (benchmark mode: no dependency install, build, tests or linters), so the review is unanchored: every claim is reasoned, none executed. All four seats reviewed all four patch files (pkg/services/authz/rbac.go, pkg/services/authz/rbac/cache.go, pkg/services/authz/rbac/service.go, pkg/services/authz/rbac/service_test.go); OCR's path filter excluded service_test.go but the seat reviewed it by hand. Untracked sandbox dotfiles in the worktree (.bashrc, .claude/, etc.) are not part of the PR and were excluded from the patch. Spec axis did not run (no spec). Standards axis used CONTRIBUTING.md and contribute/backend/*.md (no AGENTS.md/CLAUDE.md in repo). No seat could inspect the authlib module source (not in local module cache), so authlib's client-side cache/error handling and whether it ships a no-op cache are unchecked. Hot-path per-item Check usage was not measured. No cross-family reviewer seat was available. Rounds 2+, fixes and red tests not run per benchmark overrides."
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "app/assets/javascripts/admin/templates/group.hbs:22 uses the keyword form `{{each member in members itemView=\"group-member\"}}`, and the vendored Ember sets `hash.keyword` for that form (vendor/assets/javascripts/development/ember.js:8413) and binds the item view's context to `_parentView.context` (ember.js:7997-7998). So `automatic` in group_member.hbs:1 resolves against the admin-group controller proxying the group, not the member, and the remove link is hidden for automatic groups.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4353796
+}

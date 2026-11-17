@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "config/initializers/i18n.rb:17 does return only [locale, site default, :en], but no ancestor fallback is lost: Discourse locales use underscores (config/locales/server.pt_BR.yml, zh_CN, zh_TW), while i18n 0.7.0 (Gemfile.lock:126) derives parents by splitting on '-' (from knowledge of the gem; its source is not vendored here). So the removed `config.i18n.fallbacks = true` never mapped pt_BR to pt, and pt/pt_BR is the only base/regional pair shipped.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2697331
+}

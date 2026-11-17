@@ -1,0 +1,60 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The public GET /groups/:name/members endpoint now defaults to limit=50 for every group, but the public route and template have no pagination controls, so members after the 50th cannot be reached.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the group member row itemView, {{#unless automatic}} resolves against the member (Discourse.User) rather than the group, so `automatic` is undefined and the remove link is shown for automatic groups.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'cannot remove members from automatic groups' controller spec sends xhr :put to remove_member, but the route is DELETE; it passes only because controller specs skip routing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The limit and offset params on the members endpoint are not validated or clamped: negative values reach SQL and cause errors, and limit has no upper cap.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The usernames input is not cleared after an add operation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

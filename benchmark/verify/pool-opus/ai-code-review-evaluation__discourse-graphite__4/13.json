@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/topic_embed.rb (patch lines 382-393), absolutize_urls has two nearly identical loops: one over `a` rewriting `href` and one over `img` rewriting `src`. Only the selector and attribute name differ, so the duplication is real, though behaviour is correct.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.147828
+}

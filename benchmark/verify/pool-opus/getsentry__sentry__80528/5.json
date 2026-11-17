@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At src/sentry/monitors/logic/incidents.py:44-49 (patch lines 220-236), when threshold > 1 the code slices the check-in history to `[:failure_issue_threshold]` and returns early only if one of those check-ins is OK. It never checks that the slice holds `failure_issue_threshold` check-ins, so an OK/ACTIVE monitor environment whose only check-in is its first failure gets status ERROR and a MonitorIncident. This code was moved unchanged from `mark_failed_threshold` in mark_failed.py, so the behaviour existed before the patch.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.140362
+}

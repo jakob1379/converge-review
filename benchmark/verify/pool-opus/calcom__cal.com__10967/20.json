@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "When merging, packages/core/EventManager.ts:554 still uses `booking.references.find(...)` and deletes only that one old event (lines 556-563). The patch makes collective bookings create one calendar reference per host (createAllCalendarEvents loop) and updates all of them with `.filter` at lines ~491-492, so the other hosts' old events are never deleted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2183409
+}

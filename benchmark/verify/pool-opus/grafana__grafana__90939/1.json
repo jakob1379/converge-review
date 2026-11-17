@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/api/webassets/webassets.go:69 sets `entryPointAssetsCache = result` even when the fetch failed and result is nil, so a valid entry gets overwritten. That happens in Dev mode, which always refetches, or when a second caller takes the lock after a successful fill, because there is no re-check after Lock at line 48. The assignment existed before this patch, which only added the mutex around it.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.045969800000000005
+}

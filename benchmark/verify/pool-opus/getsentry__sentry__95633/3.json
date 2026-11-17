@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In SimpleQueueProcessingStrategy.submit(), src/sentry/remote_subscriptions/consumers/queue_consumer.py calls add_offset then complete_offset once when result is None (~lines 302-303) and again in the except block (~lines 320-325). The two pairs differ only in whether they use the local variables or message.value.partition/offset, so this is duplicated logic.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.216384
+}

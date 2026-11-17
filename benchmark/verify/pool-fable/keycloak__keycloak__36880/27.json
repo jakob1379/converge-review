@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/base/src/test/java/org/keycloak/tests/admin/authz/fgap/PermissionClientTest.java:25 statically imports JUnit 4 `org.junit.Assert.fail` (used at e.g. lines 136, 143, 346), while the same file imports JUnit 5 `org.junit.jupiter.api.Assertions`/`AfterEach`/`Test` at lines 39-41 and calls `Assertions.assertEquals` at lines 259, 313, 321. The import is added by the patch (change.patch:743).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1203884
+}

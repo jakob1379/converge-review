@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new org-scope assertion in insightsBooking.integration-test.ts compares fixed ids inside ANY(...) arrays, and those arrays are built in insightsBooking.ts:150-168 from team.ts:192 (findAllByParentId) and membership.ts:409 (findAllByTeamIds). Neither query has an orderBy, so row order is not guaranteed. The test it replaces made the same assumption with `in: [...]` arrays, so the patch only carried the existing flakiness over.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1304609
+}

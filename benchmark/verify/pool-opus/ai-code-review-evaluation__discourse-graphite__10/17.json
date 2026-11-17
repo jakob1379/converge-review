@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The validation regex at app/models/embeddable_host.rb:2 allows `(:[0-9]{1,5})?`, and the before_validation hook at lines 6-7 strips only the scheme and path, so `example.com:8080` is saved with its port. record_for_host (lines 344-347) compares `lower(host)` against `URI(...).host`, which never includes a port, so a host saved with a port can never match.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.171645
+}

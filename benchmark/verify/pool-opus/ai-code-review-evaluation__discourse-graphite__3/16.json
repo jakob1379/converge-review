@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In the vendored Ember (app/assets/javascripts/external_development/ember.js:10201-10202), the @each proxy is set up whenever '@each' is watched. Its arrayWillChange/arrayDidChange call propertyWillChange/propertyDidChange(this._content, '@each') on every content change (ember.js:13213, 13231), so pushObject of a string recomputes the property that create_account_controller.js:96 makes depend on 'rejectedEmails.@each'.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.139818
+}

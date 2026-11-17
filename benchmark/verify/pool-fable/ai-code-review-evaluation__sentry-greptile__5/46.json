@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/workflow_engine/endpoints/validators/base/detector.py:64 reads `validated_data.get(\"detector_type\", instance.group_type).slug`, but the serializer field is `type` (line 35, with `validate_type` at line 39) and no validator defines a `detector_type` field, so the lookup always falls back to the existing type. That line is unchanged context in the patch (change.patch:891), not an added line.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1566837
+}

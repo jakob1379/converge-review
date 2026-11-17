@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In config/initializers/i18n.rb:82 the patch makes the fallback chain depend on the per-site, runtime-changeable `SiteSetting.default_locale`. The process-wide `@cache` in lib/freedom_patches/translate_accelerator.rb:71-76 still keys only on `\"#{key}#{config.locale}#{config.backend.object_id}\"`, so a cached fallback string can be served to another site, or kept after an admin changes the setting, until LRU eviction. Calls with arguments skip the cache at line 69 and resolve fallbacks live, so the same key can come back in a different language.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0636906
+}

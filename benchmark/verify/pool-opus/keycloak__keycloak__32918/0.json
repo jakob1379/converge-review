@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OrganizationCacheTest.java:381 and :425 register `testRealm().identityProviders().get(\"alias\")::remove`, but the providers were created as \"idp-alias-\" + i. TestCleanup.java:66-70 swallows the exception from removing the missing \"alias\", and AbstractKeycloakTest.java:229-255 keeps the realm between test methods, so the providers stay for later tests in the class. One correction: the test deletes idp-alias-1 itself, so 20 of the 21 remain, not 21.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1282755
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "spec/models/topic_embed_spec.rb:34 does use `.should be_true`, but Gemfile.lock:360-365 pins rspec 2.14.1 / rspec-expectations 2.14.4, where `be_true` is not deprecated (deprecation arrived in 2.99, removal in 3.0). The matcher is also the repo-wide convention (about 270 uses of the be_true/be true pattern across 75 spec files), so no deprecation problem exists in this code.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.20661469999999998
+}

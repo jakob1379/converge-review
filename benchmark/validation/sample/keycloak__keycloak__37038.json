@@ -1,0 +1,60 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requireManageMembers() Javadoc references canManage() when it should reference canManageMembership(GroupModel).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.getGroupIdsWithViewPermission() passes groupResource.getId() to hasPermission() and adds it to the result. That is the authorization resource ID, not the group ID (groupResource.getName()). hasPermission() resolves by name, so the per-group lookup fails, and the returned IDs do not match group IDs used in user filtering and counts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Per-group resources are created without a type, because getOrCreateResource() never calls setType. As a result, findByType(server, 'Groups', ...) returns only the all-groups type resource and not the per-group resources.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.canManage() (no-arg) falls back to hasPermission(null, VIEW, MANAGE). An admin with only all-groups VIEW permission therefore passes requireManage(). This lets them create top-level groups and move groups to top level in GroupsResource.addTopLevelGroup, which is guarded only by requireManage().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No migration adds the Groups type resource and the new scopes to realms whose admin-permissions client already exists, because init() returns early in that case.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main"
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

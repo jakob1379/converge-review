@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch switches the span-buf:s:* keys from sets to sorted sets (src/sentry/spans/buffer.py:197 `p.zadd`, plus zcard/zunionstore in add-buffer.lua), but the module docstring is unchanged and still says \"span-buf:s:* -- the actual set keys\" at src/sentry/spans/buffer.py:58 and \"Add the ingested span's payload to the set under `set_key`\" at buffer.py:39.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.09907869999999999
+}

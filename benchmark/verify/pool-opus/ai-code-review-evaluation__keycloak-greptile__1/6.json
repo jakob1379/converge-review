@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "UsernamePasswordForm.java:160-161 makes `isConditionalPasskeysEnabled(user)` return `webauthnAuth != null && isPasskeysEnabled() && user != null`, so the user is only null-checked. During re-authentication (user set, lines 92-117 and 137-139), `fillContextForm` therefore always turns on ENABLE_WEBAUTHN_CONDITIONAL_UI and the WebAuthn challenge (WebAuthnConditionalUIAuthenticator.java:43; WebAuthnAuthenticator.java:85-121, where the conditional subclass's `shouldShowWebAuthnAuthenticators` returns false at :65-67, so the user's WebAuthn credentials are never looked up). A realm with passkeys enabled therefore shows the passkey form to a user who has no passkey.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.248262
+}

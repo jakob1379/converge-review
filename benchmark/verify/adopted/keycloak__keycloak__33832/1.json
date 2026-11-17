@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `int order();` with no default at CryptoProvider.java:44, and the new `.sorted(Comparator.comparingInt(CryptoProvider::order).reversed())` in CryptoIntegration.detectProvider (change.patch:713) calls it. External implementations therefore stop compiling, an old compiled one throws AbstractMethodError once two or more providers are found, and the patch adds no docs or upgrade note. One caveat: a lone old provider never reaches the comparator, and two providers already failed before this patch with IllegalStateException (patch:718-720), so the runtime crash is not new; the compile break and missing upgrade note are.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0950068
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Once close() sets shutdown_event (queue_consumer.py:364), the wait at queue_consumer.py:304 returns at once, so _commit_loop makes at most one more commit and exits. That last commit runs inside close() during the revoke, before the partitions are released. The 5s join at queue_consumer.py:365 only matters if commit_function blocks for more than 5s, which nothing in this code does. A separate real risk is that the shared pool's OffsetTracker keeps offsets for revoked partitions, but that has nothing to do with the join timeout.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2685051
+}

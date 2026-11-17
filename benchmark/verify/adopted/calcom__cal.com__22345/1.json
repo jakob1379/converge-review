@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "getAuthorizationConditions() (insightsBooking.ts:83-88) always returns a Prisma.Sql object, because every path in buildAuthorizationConditions (:125-143) and its helpers (:145-208) returns NOTHING_CONDITION or a built Prisma.sql. That object is always truthy, so getBaseConditions returns at :73 or :75, and the branches at :76-79 can never run.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.08692440000000001
+}

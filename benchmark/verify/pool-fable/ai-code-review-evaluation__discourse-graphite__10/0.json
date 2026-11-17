@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/embeddable_host.rb:5-8 runs `self.host.sub!(/\\/.*$/, '')` in before_validation, removing everything from the first '/' on its line, so the `(\\/.*)?` group in the format regex at app/models/embeddable_host.rb:2 can never match anything when validation runs. Any '/' left on a later line of a multi-line value fails the regex anyway, since nothing before the group matches a newline.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.11410610000000002
+}

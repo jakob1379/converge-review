@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The V1-only gate is real (services/.../permissions/AdminPermissions.java:77), but it removes no cleanup that worked before. With neither feature on, `authz` is null (MgmtPermissions.java:85) so `realmResourceServer()` returns null (MgmtPermissions.java:251) and the delete paths return early (ClientPermissions.java:190, RolePermissions.java:88, GroupPermissions.java:462); with V2 on, the listener already looked in the admin-permissions client's resource server (MgmtPermissionsV2.java:52-54), not the realm-management one that holds V1 data.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 1.0628508
+}

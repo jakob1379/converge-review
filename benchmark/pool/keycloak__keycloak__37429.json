@@ -1,0 +1,539 @@
+{
+ "pr_url": "https://github.com/keycloak/keycloak/pull/37429",
+ "cost_usd": 0.1057217,
+ "items": [
+  {
+   "id": "c1",
+   "source": "cubic-v2",
+   "text": "Admin UI message uses Java MessageFormat syntax ({0}, {2,choice,...}) but the Admin UI uses i18next which won't resolve these placeholders, causing raw placeholder text to appear in validation error messages"
+  },
+  {
+   "id": "c2",
+   "source": "coderabbit",
+   "text": "Traditional Chinese characters used in Simplified Chinese locale file (messages_zh_CN.properties) - totpStep1 at line 112 contains Traditional Chinese characters (\u624b\u6a5f, \u5b89\u88dd, \u61c9\u7528\u7a0b\u5f0f) instead of Simplified Chinese equivalents (\u624b\u673a, \u5b89\u88c5, \u5e94\u7528\u7a0b\u5e8f)"
+  },
+  {
+   "id": "c3",
+   "source": "claude-code",
+   "text": "The normalizeValue method has special cases for specific keys (templateHelp, optimizeLookupHelp, linkExpirationFormatter, error-invalid-multivalued-size, and email RTL styles) that bypass parts of sanitization and should be verified for completeness and correctness"
+  },
+  {
+   "id": "c4",
+   "source": "converge-review",
+   "text": "Read failures of file or derived _en counterpart throw raw RuntimeException instead of MojoExecutionException; file also read second time although contents already in memory"
+  },
+  {
+   "id": "c5",
+   "source": "converge-review",
+   "text": "Anchors matched by position against English string, so valid translation that reorders links is flagged; ANCHOR_PATTERN </?a[^>]*> also matches <abbr>, <area>, <audio> giving misleading 'anchor' messages"
+  },
+  {
+   "id": "c6",
+   "source": "claude-code",
+   "text": "Typo in method name 'santizeAnchors' (should be 'sanitizeAnchors')"
+  },
+  {
+   "id": "c7",
+   "source": "claude-code",
+   "text": "Two new dependencies added with hardcoded versions instead of being managed via a BOM"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review-replay",
+   "text": "owasp-java-html-sanitizer version 20240325.1 is hard-coded in pom.xml:75-85 and duplicates the root pom.xml:119 owasp.html.sanitizer.version property, allowing version drift"
+  },
+  {
+   "id": "c9",
+   "source": "converge-review",
+   "text": "Check compares value to sanitizer's re-serialized output rather than 'nothing was removed', so equivalent markup (<br/>, </ b>, < p>) fails the build"
+  },
+  {
+   "id": "c10",
+   "source": "claude-code",
+   "text": "Instance fields POLICY_SOME_HTML, POLICY_NO_HTML, HTML_TAGS use constant naming convention but aren't declared as static final"
+  },
+  {
+   "id": "c11",
+   "source": "qodo-extended-v2",
+   "text": "In account-ui, error-invalid-multivalued-size was changed from i18next-style {{0}} placeholders to MessageFormat/ICU-style {0} + {2,choice,...}, but account-ui uses plain i18next interpolation, so this string will render with raw {0}/{2,choice,...} instead of substituted values"
+  },
+  {
+   "id": "c12",
+   "source": "golden",
+   "text": "The totpStep1 value uses Traditional Chinese terms in the Simplified Chinese file (zh_CN), which is likely incorrect for this locale. Please verify the locale\u2011appropriate translation."
+  },
+  {
+   "id": "c13",
+   "source": "coderabbit",
+   "text": "Inconsistent placeholder spacing after <br /> in Georgian locale (messages_ka.properties) - lines 172, 174, 451, 452 use <br />{0} while other locales use <br /> {0}"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review-replay",
+   "text": "error-invalid-multivalued-size in admin-ui was rewritten from i18next placeholders ({{0}}/{{1}}/{{2}}) to Java MessageFormat ({0}/{1}/{2} plus choice syntax), but i18next does not interpolate single-brace placeholders and has no choice syntax, so the admin console shows the raw template"
+  },
+  {
+   "id": "c15",
+   "source": "converge-review-replay",
+   "text": "error-invalid-multivalued-size in account-ui has the same {{N}} -> {N}/choice rewrite problem - i18next will render the template literally since it uses default delimiters with no i18next-icu dependency"
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "Common prefix/suffix trimming that builds 'Illegal HTML' message never caps start+end at shorter string length; when prefix and suffix overlap, substring throws StringIndexOutOfBoundsException, aborting the Mojo with stack trace and skipping remaining keys/files"
+  },
+  {
+   "id": "c17",
+   "source": "qodo-extended-v2",
+   "text": "The totpStep1 replacement in messages_zh_CN.properties (Simplified Chinese locale) uses Traditional Chinese characters (\u624b\u6a5f, \u5b89\u88dd, \u61c9\u7528\u7a0b\u5f0f) instead of the required Simplified Chinese (\u624b\u673a, \u5b89\u88c5, \u5e94\u7528\u7a0b\u5e8f), making it inconsistent with the rest of the file and incorrect for the zh_CN locale"
+  },
+  {
+   "id": "c18",
+   "source": "golden",
+   "text": "The anchor sanitization logic has a potential issue where it consumes English matcher groups without proper validation. If the translated text has more anchor tags than the English text, this could lead to incorrect validation results."
+  },
+  {
+   "id": "c19",
+   "source": "converge-review-replay",
+   "text": "The 'Didn't find anchor tag \u2026 in original string' error at line 157 omits the key and the file, making it impossible to locate build failures across ~160-180 bundles"
+  },
+  {
+   "id": "c20",
+   "source": "coderabbit",
+   "text": "commons-text dependency version 1.13.0 is outdated and should be updated to 1.15.0"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "Lithuanian totpStep1/loginTotpStep1 replaced with Italian text 'Installa una delle seguenti applicazioni sul tuo cellulare:'; Lithuanian users see Italian on OTP setup page"
+  },
+  {
+   "id": "c22",
+   "source": "converge-review",
+   "text": "error-invalid-multivalued-size rewritten from i18next {{0}}/{{1}}/{{2}} to Java MessageFormat {0}..{2,choice,...}; React console renders raw template instead of interpolated values because bundle is loaded by plain i18next with default {{ }} interpolation and no ICU plugin"
+  },
+  {
+   "id": "c23",
+   "source": "converge-review",
+   "text": "POLICY_SOME_HTML, POLICY_NO_HTML and HTML_TAGS are constant-named package-private instance fields rebuilt per file, inconsistent with private static final ANCHOR_PATTERN"
+  },
+  {
+   "id": "c24",
+   "source": "converge-review",
+   "text": "'Didn't find anchor tag ... in original string' message omits key and file, unlike 'Illegal HTML' message at L111; build failure cannot be located across ~160 bundles"
+  },
+  {
+   "id": "c25",
+   "source": "converge-review",
+   "text": "All tests are positive detections; no test asserts valid bundle yields zero messages, and duplicate-keys assertion loosened from contains to hasItem"
+  },
+  {
+   "id": "c26",
+   "source": "augment",
+   "text": "The error message 'Didn't find anchor tag ...' doesn't include the message key or file, making it hard to locate the failing translation in large bundles"
+  },
+  {
+   "id": "c27",
+   "source": "cubic-v2",
+   "text": "Theme verifier anchor check only rejects extra/different anchor tags but doesn't fail when a translation drops a required source anchor, allowing translations to lose clickable links while still passing verification"
+  },
+  {
+   "id": "c28",
+   "source": "augment",
+   "text": "In verifySafeHtml(), IO failures are rethrown as RuntimeException, while verify() otherwise reports IO problems as MojoExecutionException - exception types should be consistent for easier plugin failure interpretation"
+  },
+  {
+   "id": "c29",
+   "source": "converge-review",
+   "text": "For allowlisted keys the whole {N,choice,...} block is replaced with '...' before sanitizing, so HTML inside translator-supplied choice branch passes the check"
+  },
+  {
+   "id": "c30",
+   "source": "coderabbit",
+   "text": "owasp-java-html-sanitizer dependency version 20240325.1 is outdated and should be updated to 20260313.1"
+  },
+  {
+   "id": "c31",
+   "source": "converge-review",
+   "text": "OWASP sanitizer version 20240325.1 is hard-coded, duplicating root pom.xml owasp.html.sanitizer.version; will drift on next bump"
+  },
+  {
+   "id": "c32",
+   "source": "converge-review",
+   "text": "Email bundle detection uses file.getAbsolutePath().contains('email') and English path derivation uses replaceAll over absolute path, so checkout directory containing 'email' or 'resources-community' changes behaviour for every file"
+  },
+  {
+   "id": "c33",
+   "source": "converge-review",
+   "text": "Sanitize/unescape/strip-comment/trim-diff pipeline and commons-text dependency could be replaced by OWASP's HtmlChangeListener"
+  },
+  {
+   "id": "c34",
+   "source": "augment",
+   "text": "Lithuanian bundle has totpStep1 set to Italian text ('Installa una delle seguenti\u2026') which is a copy/paste mismatch - same issue appears in the login bundle"
+  },
+  {
+   "id": "c35",
+   "source": "coderabbit",
+   "text": "Typo in method name: santizeAnchors should be sanitizeAnchors"
+  },
+  {
+   "id": "c36",
+   "source": "converge-review-replay",
+   "text": "Simplified Chinese totpStep1 contains Traditional Chinese text (\u624b\u6a5f and \u61c9\u7528\u7a0b\u5f0f are Traditional forms) instead of Simplified Chinese"
+  },
+  {
+   "id": "c37",
+   "source": "converge-review",
+   "text": "Fixture value 'Some <div>tag</div' has malformed closing tag (missing '>')"
+  },
+  {
+   "id": "c38",
+   "source": "converge-review-replay",
+   "text": "Lithuanian loginTotpStep1 was replaced with Italian text, so Lithuanian users see Italian on the OTP setup page"
+  },
+  {
+   "id": "c39",
+   "source": "converge-review-replay",
+   "text": "Lithuanian totpStep1 was replaced with Italian text ('Installa una delle seguenti applicazioni sul tuo cellulare:') instead of Lithuanian"
+  },
+  {
+   "id": "c40",
+   "source": "converge-review",
+   "text": "getEnglishValue uses MissingResourceException for control flow; bundleEnglish.containsKey(key) ? getString(key) : '' would work in one line"
+  },
+  {
+   "id": "c41",
+   "source": "augment",
+   "text": "The prefix/suffix trimming (start/end) can yield overlapping indices which would throw StringIndexOutOfBoundsException and abort verification - needs an overlap/bounds guard"
+  },
+  {
+   "id": "c42",
+   "source": "qodo-extended-v2",
+   "text": "In Lithuanian locale files (account and login), the totpStep1/loginTotpStep1 key is replaced with Italian text ('Installa una delle seguenti applicazioni sul tuo cellulare:') instead of Lithuanian, causing Lithuanian users to see Italian instructions for TOTP setup"
+  },
+  {
+   "id": "c43",
+   "source": "coderabbit",
+   "text": "Placeholder format mismatch in error-invalid-multivalued-size message - uses {0}, {1}, {2} and choice syntax instead of i18next-standard {{...}} interpolation, causing the Admin UI to display validation message literally instead of interpolating values"
+  },
+  {
+   "id": "c44",
+   "source": "golden",
+   "text": "The method name 'santizeAnchors' should be 'sanitizeAnchors' (missing 'i')."
+  },
+  {
+   "id": "c45",
+   "source": "coderabbit",
+   "text": "Wrong language in Lithuanian login bundle (messages_lt.properties) - loginTotpStep1 at line 71 contains Italian text instead of Lithuanian"
+  },
+  {
+   "id": "c46",
+   "source": "converge-review-replay",
+   "text": "Read failures in verifySafeHtml at lines 70 and 79 throw raw RuntimeException instead of MojoExecutionException, and a bundle with no _en twin crashes the mojo instead of reporting a validation error"
+  },
+  {
+   "id": "c47",
+   "source": "coderabbit",
+   "text": "Pattern HTML_TAGS should be static final to avoid recompilation per instance"
+  },
+  {
+   "id": "c48",
+   "source": "coderabbit",
+   "text": "PolicyFactory instances POLICY_SOME_HTML and POLICY_NO_HTML should be static final for performance and clarity"
+  },
+  {
+   "id": "c49",
+   "source": "converge-review",
+   "text": "Simplified Chinese totpStep1 replaced with Traditional Chinese text (\u624b\u6a5f, \u61c9\u7528\u7a0b\u5f0f)"
+  },
+  {
+   "id": "c50",
+   "source": "golden",
+   "text": "The translation is in Italian instead of Lithuanian. This should be translated to Lithuanian to match the file's locale (messages_lt.properties)."
+  },
+  {
+   "id": "c51",
+   "source": "golden",
+   "text": "Field HTML_TAGS should be declared as 'private static final' following Java naming conventions for constants"
+  },
+  {
+   "id": "c52",
+   "source": "coderabbit",
+   "text": "Wrong language in Lithuanian bundle (messages_lt.properties) - totpStep1 at line 101 contains Italian text instead of Lithuanian"
+  },
+  {
+   "id": "c53",
+   "source": "converge-review",
+   "text": "New translator-facing rules (HTML only where English has HTML; only br/p/strong/b; anchors identical to English) are not documented"
+  },
+  {
+   "id": "c54",
+   "source": "claude-code",
+   "text": "The santizeAnchors method modifies value via replaceFirst while iterating matches, which could have subtle edge cases with repeated identical anchors"
+  },
+  {
+   "id": "c55",
+   "source": "cubic-v2",
+   "text": "Lithuanian translation file messages_lt.properties contains Italian text instead of Lithuanian - line 101 has 'Installa una delle seguenti applicazioni sul tuo cellulare' which is Italian, not Lithuanian"
+  },
+  {
+   "id": "c56",
+   "source": "converge-review",
+   "text": "santizeAnchors (typo) and getEnglishValue take unused key parameter; 'numberic' typo at L94"
+  },
+  {
+   "id": "c57",
+   "source": "augment",
+   "text": "messages_zh_CN.properties entry uses Traditional Chinese characters (\u624b\u6a5f, \u61c9\u7528\u7a0b\u5f0f) which is inconsistent with the zh_CN (Simplified) locale"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In admin-ui, error-invalid-multivalued-size was rewritten from i18next {{0}}/{{1}}/{{2}} placeholders to Java MessageFormat {0}..{2,choice,...} syntax. The Admin UI loads it with plain i18next and no ICU plugin, so the raw template text is shown instead of interpolated values.",
+   "path": null,
+   "members": [
+    "c1",
+    "c14",
+    "c22",
+    "c43"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "In account-ui, error-invalid-multivalued-size was changed from i18next {{N}} placeholders to MessageFormat {N}/choice syntax. account-ui uses default i18next interpolation without i18next-icu, so the string renders with raw placeholders.",
+   "path": null,
+   "members": [
+    "c11",
+    "c15"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "totpStep1 in the Simplified Chinese locale file messages_zh_CN.properties uses Traditional Chinese characters (\u624b\u6a5f, \u5b89\u88dd, \u61c9\u7528\u7a0b\u5f0f) instead of Simplified forms (\u624b\u673a, \u5b89\u88c5, \u5e94\u7528\u7a0b\u5e8f).",
+   "path": "messages_zh_CN.properties",
+   "members": [
+    "c2",
+    "c12",
+    "c17",
+    "c36",
+    "c49",
+    "c57"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "In the Lithuanian bundles messages_lt.properties (account totpStep1 and login loginTotpStep1), the value was replaced with the Italian text 'Installa una delle seguenti applicazioni sul tuo cellulare:' instead of Lithuanian.",
+   "path": "messages_lt.properties",
+   "members": [
+    "c21",
+    "c34",
+    "c38",
+    "c39",
+    "c42",
+    "c45",
+    "c50",
+    "c52",
+    "c55"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "normalizeValue has special cases for specific keys (templateHelp, optimizeLookupHelp, linkExpirationFormatter, error-invalid-multivalued-size, email RTL styles) that bypass parts of sanitization.",
+   "path": null,
+   "members": [
+    "c3"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "In verifySafeHtml, failures reading the file or its derived _en counterpart are rethrown as raw RuntimeException instead of MojoExecutionException, which is inconsistent with the rest of verify().",
+   "path": null,
+   "members": [
+    "c4",
+    "c28",
+    "c46"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "Anchors are matched by position against the English string, so a valid translation that reorders links is flagged. In addition, ANCHOR_PATTERN </?a[^>]*> also matches <abbr>, <area> and <audio>.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "The method name 'santizeAnchors' is misspelled; it should be 'sanitizeAnchors'.",
+   "path": null,
+   "members": [
+    "c6",
+    "c35",
+    "c44"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The new dependencies, including owasp-java-html-sanitizer 20240325.1, have hard-coded versions in the module pom.xml. This duplicates the root pom.xml owasp.html.sanitizer.version property instead of being managed centrally, which allows version drift.",
+   "path": "pom.xml",
+   "members": [
+    "c7",
+    "c8",
+    "c31"
+   ]
+  },
+  {
+   "id": "i10",
+   "claim": "The check compares the value to the sanitizer's re-serialized output instead of checking that nothing was removed. As a result, equivalent markup such as <br/>, </ b> or < p> fails the build.",
+   "path": null,
+   "members": [
+    "c9"
+   ]
+  },
+  {
+   "id": "i11",
+   "claim": "POLICY_SOME_HTML, POLICY_NO_HTML and HTML_TAGS use constant naming but are non-static instance fields rebuilt per instance. This is inconsistent with the private static final ANCHOR_PATTERN.",
+   "path": null,
+   "members": [
+    "c10",
+    "c23",
+    "c47",
+    "c48",
+    "c51"
+   ]
+  },
+  {
+   "id": "i12",
+   "claim": "In messages_ka.properties, lines 172, 174, 451 and 452 use '<br />{0}' without a space, while other locales use '<br /> {0}'.",
+   "path": "messages_ka.properties",
+   "members": [
+    "c13"
+   ]
+  },
+  {
+   "id": "i13",
+   "claim": "The common prefix/suffix trimming that builds the 'Illegal HTML' message does not cap start+end at the shorter string length. Overlapping indices make substring throw StringIndexOutOfBoundsException and abort the Mojo.",
+   "path": null,
+   "members": [
+    "c16",
+    "c41"
+   ]
+  },
+  {
+   "id": "i14",
+   "claim": "Anchor sanitization consumes English matcher groups without validating counts, so a translation with more anchor tags than the English text can produce incorrect validation results.",
+   "path": null,
+   "members": [
+    "c18"
+   ]
+  },
+  {
+   "id": "i15",
+   "claim": "The 'Didn't find anchor tag \u2026 in original string' error message omits the message key and file, unlike the 'Illegal HTML' message.",
+   "path": null,
+   "members": [
+    "c19",
+    "c24",
+    "c26"
+   ]
+  },
+  {
+   "id": "i16",
+   "claim": "The commons-text dependency version 1.13.0 is outdated compared with 1.15.0.",
+   "path": null,
+   "members": [
+    "c20"
+   ]
+  },
+  {
+   "id": "i17",
+   "claim": "All tests are positive detections, and no test asserts that a valid bundle yields zero messages. The duplicate-keys assertion was loosened from contains to hasItem.",
+   "path": null,
+   "members": [
+    "c25"
+   ]
+  },
+  {
+   "id": "i18",
+   "claim": "The theme verifier anchor check does not fail when a translation drops an anchor present in the source, so translations can lose links and still pass.",
+   "path": null,
+   "members": [
+    "c27"
+   ]
+  },
+  {
+   "id": "i19",
+   "claim": "For allowlisted keys, the whole {N,choice,...} block is replaced with '...' before sanitizing, so HTML inside a translator-supplied choice branch passes the check.",
+   "path": null,
+   "members": [
+    "c29"
+   ]
+  },
+  {
+   "id": "i20",
+   "claim": "The owasp-java-html-sanitizer dependency version 20240325.1 is outdated compared with 20260313.1.",
+   "path": null,
+   "members": [
+    "c30"
+   ]
+  },
+  {
+   "id": "i21",
+   "claim": "Email bundle detection uses file.getAbsolutePath().contains('email'), and English path derivation uses replaceAll over the absolute path. A checkout directory containing 'email' or 'resources-community' therefore changes behaviour for every file.",
+   "path": null,
+   "members": [
+    "c32"
+   ]
+  },
+  {
+   "id": "i22",
+   "claim": "The sanitize/unescape/strip-comment/trim-diff pipeline and the commons-text dependency duplicate functionality available through OWASP's HtmlChangeListener.",
+   "path": null,
+   "members": [
+    "c33"
+   ]
+  },
+  {
+   "id": "i23",
+   "claim": "The test fixture value 'Some <div>tag</div' has a malformed closing tag missing '>'.",
+   "path": null,
+   "members": [
+    "c37"
+   ]
+  },
+  {
+   "id": "i24",
+   "claim": "getEnglishValue uses MissingResourceException for control flow instead of checking bundleEnglish.containsKey(key).",
+   "path": null,
+   "members": [
+    "c40"
+   ]
+  },
+  {
+   "id": "i25",
+   "claim": "The new translator-facing HTML rules (HTML only where English has HTML; only br/p/strong/b; anchors identical to English) are not documented.",
+   "path": null,
+   "members": [
+    "c53"
+   ]
+  },
+  {
+   "id": "i26",
+   "claim": "santizeAnchors modifies value via replaceFirst while iterating matches, which can misbehave with repeated identical anchors.",
+   "path": null,
+   "members": [
+    "c54"
+   ]
+  },
+  {
+   "id": "i27",
+   "claim": "santizeAnchors and getEnglishValue take an unused key parameter, and 'numberic' is misspelled at L94.",
+   "path": null,
+   "members": [
+    "c56"
+   ]
+  }
+ ]
+}

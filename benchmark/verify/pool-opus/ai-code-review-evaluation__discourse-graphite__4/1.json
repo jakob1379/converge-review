@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/post.rb:133, `cook` returns `raw` unchanged when cook_method is raw_html, so the sanitizing pipeline is skipped. TopicEmbed.import (topic_embed.rb, patch lines 342/356) stores RSS content that poll_feed.rb only passes through CGI.unescapeHTML, plus Readability output limited by tag and attribute lists only, which keeps hrefs such as javascript:; I inferred that from the gem's tag/attribute options because the gem source isn't in the repo. The before_save at post.rb:321 cooks every later save or edit through the same raw path, and embed/best.html.erb renders the result with `raw post.cooked`.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0.18413549999999998
+}

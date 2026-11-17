@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The new authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/AuthzClientCryptoProvider.java:103-110 does System.arraycopy(signature, 0, r, 1, len) and System.arraycopy(signature, len, s, 1, len) with no check that signature.length == signLength, so a short signature throws an unchecked index-out-of-bounds exception rather than IOException (and a long one is silently truncated). The practical effect is small: it mirrors the existing BCECDSACryptoProvider.java:28-35, and the caller at core/src/main/java/org/keycloak/crypto/ECDSASignatureVerifierContext.java:32 catches Exception and wraps it in VerificationException.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.27182419999999996
+}

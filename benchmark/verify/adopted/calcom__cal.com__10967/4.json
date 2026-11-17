@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At handleCancelBooking.ts:449-461 the recurring branch sits inside the new `for (const reference of bookingCalendarReference)` loop (line 423), but it never uses `reference`. It loops over `bookingToDelete.user.credentials`, the organizer's, and calls `.find` to take only the first `_calendar` ref of each updated booking (line 454). So it repeats the same deletes once per reference, and other hosts' copies of the series are never deleted.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.2320741
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The claim gets the hook's name wrong: useTraceItemAttributeKeys is not new and already has a spec (useTraceItemAttributeKeys.spec.tsx). The hook this patch adds is useGetTraceItemAttributeKeys (static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx:55), and it has no useGetTraceItemAttributeKeys.spec.tsx. Its queryString\u2192substringMatch path (lines 46, 65-71) is never tested, because the existing spec only reaches it through useTraceItemAttributeKeys, which calls getTraceItemAttributeKeys() with no argument (useTraceItemAttributeKeys.tsx queryFn).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1962033
+}

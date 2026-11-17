@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The seven new `test_thread_queue_parallel*` methods sit on `ProcessResultSerialTest` (tests/sentry/uptime/consumers/test_results_consumer.py:1586-1587, 1689-2005) and the only other subclass is `ProcessResultParallelTest` (2008-2009), so the shared `ProcessResultTest` suite never runs with `strategy_processing_mode = \"thread-queue-parallel\"`. The test-side annotation at line 74 is still `Literal[\"batched-parallel\", \"parallel\", \"serial\"]`, although the factory's own annotation was extended (src/sentry/remote_subscriptions/consumers/result_consumer.py:108).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5067973
+}

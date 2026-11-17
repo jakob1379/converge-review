@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:62-66 looks up credentials by `userId` + `appId` only, and the request schema (lines 9-15) has no `teamId`, so team credentials (created with `teamId` and no `userId` in packages/app-store/_utils/oauth/createOAuthAppCredential.ts:47-54) are never matched or updated. This looks like deliberate user-only scoping rather than a bug, since packages/app-store/_utils/oauth/refreshOAuthTokens.ts:4-5 also restricts sync to credentials with a `userId`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.535412
+}

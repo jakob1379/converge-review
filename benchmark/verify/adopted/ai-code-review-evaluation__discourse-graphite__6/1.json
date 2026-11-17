@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Gemfile.lock:22 pins active_model_serializers 0.8.3, which decides whether to include an attribute only by calling `include_<attr>?`. `include_website_name` at app/serializers/user_serializer.rb:153 has no trailing '?', so nothing ever calls it and `website_name` (declared at :43) is always serialized, as nil when there is no website.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.06729979999999999
+}

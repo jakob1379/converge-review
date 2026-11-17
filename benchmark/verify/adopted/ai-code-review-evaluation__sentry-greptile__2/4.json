@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.get_result (paginator.py:844-911 after the patch) repeats BasePaginator.get_result (paginator.py:136-215) step for step, with only the comments removed. The one new part is the `enable_advanced_features and cursor.offset < 0` branch, and its else-branch is the same start_offset/stop slice as lines 182-184; get_item_key and value_from_cursor are also copied from Paginator (lines 221-227), so nothing in it is optimized.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1394889
+}

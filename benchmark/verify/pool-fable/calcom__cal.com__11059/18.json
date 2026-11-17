@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/pages/api/webhook/app-credential.ts:25 indexes req.headers with process.env.CALCOM_WEBHOOK_HEADER_NAME unnormalised, and Node lowercases incoming header keys, so a mixed-case name never matches and the handler returns 403 (line 28). It fails closed, and .env.example:238 already says the name \"Should be in lowercase\".",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.45475019999999994
+}

@@ -1,0 +1,203 @@
+{
+ "pr_url": "https://github.com/calcom/cal.com/pull/22345",
+ "cost_usd": 0.0505042,
+ "items": [
+  {
+   "id": "c1",
+   "source": "golden",
+   "text": "Fetching userIdsFromOrg only when teamsFromOrg.length > 0 can exclude org-level members for orgs without child teams; consider deriving from teamIds (which includes orgId) or removing the guard so org-only orgs still include member user bookings."
+  },
+  {
+   "id": "c2",
+   "source": "coderabbit",
+   "text": "Integration tests for 'should build team scope conditions' and 'should build org scope conditions' (lines 295-343) only verify SQL structure with toEqual(Prisma.sql`...`) but never execute the queries against Postgres. The ANY(...) array binding syntax is never tested at runtime, so regressions in array binding or fragment generation would pass undetected."
+  },
+  {
+   "id": "c3",
+   "source": "claude-code",
+   "text": "Constructor parameter type was changed from InsightsBookingServiceOptions (discriminated union requiring teamId when scope: 'team') to InsightsBookingServicePublicOptions (flat type with teamId?: number), which loses compile-time enforcement that teamId is provided for team scope. While runtime zod validation catches this, the failure mode is silent empty results instead of a compile error. This is inconsistent with InsightsRoutingService which still uses the strict discriminated union type."
+  },
+  {
+   "id": "c4",
+   "source": "converge-review-replay",
+   "text": "The new InsightsBookingServicePublicOptions (lines 29-34) hand-duplicates the zod schema and flattens the discriminated union, allowing invalid combinations like {scope: 'team', userId, orgId} with no teamId to compile, which then fails safeParse at runtime and silently returns empty results (1=0)"
+  },
+  {
+   "id": "c5",
+   "source": "coderabbit",
+   "text": "Test fixtures created at lines 445-466 (userEventType and userBooking) are only cleaned up after assertions. If the query or expectation fails, those rows stay in the integration database and can contaminate later test cases. Should wrap in try/finally for cleanup."
+  },
+  {
+   "id": "c6",
+   "source": "coderabbit",
+   "text": "In getAuthorizationConditions for org scope (lines 157-168), returning empty array when teamsFromOrg.length === 0 drops the userId lookup for orgs that only have direct org memberships. teamIds already contains options.orgId, so org admins miss members' personal bookings. Should always query MembershipRepository.findAllByTeamIds using teamIds."
+  },
+  {
+   "id": "c7",
+   "source": "augment",
+   "text": "userIdsFromOrg becomes empty when teamsFromOrg.length === 0, which would exclude org-member personal bookings for orgs that have no child teams - need to verify if this scenario is possible and whether org-scope auth should still include org-level memberships"
+  },
+  {
+   "id": "c8",
+   "source": "converge-review",
+   "text": "Tests assert exact Prisma.Sql structure rather than query results, leaving the org/team `= ANY(${array})` paths and array-parameter binding against int columns untested, and the precedence bug undetected"
+  },
+  {
+   "id": "c9",
+   "source": "golden",
+   "text": "In getBaseConditions(), the else if (filterConditions) and final else branches are unreachable. This is because getAuthorizationConditions() always returns a non-null Prisma.Sql object, making authConditions always truthy, which means only the first two if/else if conditions are ever evaluated."
+  },
+  {
+   "id": "c10",
+   "source": "augment",
+   "text": "Arrays used in ANY(...) (e.g. teamIds / uniqueUserIds) come from DB queries without explicit ordering, so the bound array order and resulting Prisma.sql shape may be non-deterministic, making SQL-fragment equality assertions brittle and causing inconsistent condition caching across identical inputs"
+  },
+  {
+   "id": "c11",
+   "source": "converge-review",
+   "text": "New hand-written InsightsBookingServicePublicOptions duplicates the zod schema and flattens the discriminated union, allowing invalid combinations like `{scope: \"team\", userId, orgId}` without teamId to compile but fail at runtime with silent empty results instead of a compile error"
+  },
+  {
+   "id": "c12",
+   "source": "coderabbit",
+   "text": "InsightsBookingServicePublicOptions type at line 29 makes teamId optional for all scopes, but the schema correctly requires teamId only for scope: 'team'. This allows code like {scope: 'team', userId: 1, orgId: 1} to compile without teamId, then fails validation silently at runtime, setting this.options to null and returning no results instead of catching the error at compile time. Should use z.input<typeof insightsBookingServiceOptionsSchema> or a discriminated union type instead."
+  },
+  {
+   "id": "c13",
+   "source": "converge-review-replay",
+   "text": "In getBaseConditions(), the 'else if (filterConditions)' branch and the final 'else return NOTHING_CONDITION' can never execute because getAuthorizationConditions() always returns a truthy Prisma.Sql value, making these dead code paths"
+  },
+  {
+   "id": "c14",
+   "source": "converge-review-replay",
+   "text": "The patch deletes the 'Caching' describe block test, but the memoisation code it covered (cachedAuthConditions / cachedFilterConditions in insightsBooking.ts ~49-50 and ~83-95) still exists and is now untested"
+  },
+  {
+   "id": "c15",
+   "source": "claude-code",
+   "text": "SQL operator precedence bug: buildOrgAuthorizationCondition and buildTeamAuthorizationCondition produce top-level OR expressions without outer parentheses. When getBaseConditions() returns these directly (line 75, no filters), callers composing with AND get incorrect precedence - AND binds tighter than OR, so team bookings bypass additional filters entirely. Fix: wrap the return at line 75 with parens around authConditions, or add outer parens in the reduce calls."
+  },
+  {
+   "id": "c16",
+   "source": "converge-review",
+   "text": "Org-scope test assertion depends on the order of ids inside ANY(...) arrays, but the source repositories (findAllByParentId, MembershipRepository.findAllByTeamIds) have no orderBy, making the toEqual assertion flaky"
+  },
+  {
+   "id": "c17",
+   "source": "converge-review",
+   "text": "The `else if (filterConditions)` and final `else return NOTHING_CONDITION` branches in getBaseConditions are unreachable because getAuthorizationConditions() always returns a truthy Prisma.Sql"
+  },
+  {
+   "id": "c18",
+   "source": "cubic-v2",
+   "text": "getAuthorizationConditions() always returns a Prisma.Sql object (never null/undefined), so authConditions is always truthy and the else if (filterConditions) and else branches are unreachable dead code - should simplify to just two branches or add explicit nullability path if intended"
+  },
+  {
+   "id": "c19",
+   "source": "converge-review",
+   "text": "getBaseConditions()/getAuthorizationConditions()/getFilterConditions() can return a top-level OR fragment without outer parentheses, causing incorrect operator precedence when composed with AND predicates - rows matching the first OR condition bypass additional filters like date/status, inflating insights counts"
+  },
+  {
+   "id": "c20",
+   "source": "claude-code",
+   "text": "Dead code: since authConditions is always a Prisma.Sql object (never null), the else if (filterConditions) and else branches (lines 76-80) are unreachable dead code"
+  },
+  {
+   "id": "c21",
+   "source": "converge-review",
+   "text": "The same AND/OR reduce fold is hand-written three times (lines 119-122, 171-174, 204-207) instead of using Prisma.join or a direct ternary"
+  },
+  {
+   "id": "c22",
+   "source": "cubic-v2",
+   "text": "Org-scope assertion is order-dependent even though the service fetches team/member IDs without orderBy, so the test can fail nondeterministically on valid SQL"
+  }
+ ],
+ "issues": [
+  {
+   "id": "i1",
+   "claim": "In getAuthorizationConditions for org scope, userIdsFromOrg is fetched only when teamsFromOrg.length > 0. For orgs with no child teams, org-level members' personal bookings are excluded, even though teamIds already includes orgId.",
+   "path": null,
+   "members": [
+    "c1",
+    "c6",
+    "c7"
+   ]
+  },
+  {
+   "id": "i2",
+   "claim": "The integration tests for team and org scope conditions only compare the generated Prisma.Sql structure with toEqual and never run the queries against Postgres. The ANY(...) array-parameter binding paths are therefore untested at runtime.",
+   "path": null,
+   "members": [
+    "c2",
+    "c8"
+   ]
+  },
+  {
+   "id": "i3",
+   "claim": "The hand-written InsightsBookingServicePublicOptions type flattens the zod discriminated union and makes teamId optional for all scopes. A team-scope call without teamId compiles, fails safeParse at runtime and silently returns empty results; this is also inconsistent with InsightsRoutingService's strict union type.",
+   "path": null,
+   "members": [
+    "c3",
+    "c4",
+    "c11",
+    "c12"
+   ]
+  },
+  {
+   "id": "i4",
+   "claim": "The test fixtures userEventType and userBooking are cleaned up only after the assertions, not in try/finally. A failing query or expectation leaves those rows in the integration database.",
+   "path": null,
+   "members": [
+    "c5"
+   ]
+  },
+  {
+   "id": "i5",
+   "claim": "In getBaseConditions(), the `else if (filterConditions)` and final `else return NOTHING_CONDITION` branches are unreachable. This is because getAuthorizationConditions() always returns a truthy Prisma.Sql.",
+   "path": null,
+   "members": [
+    "c9",
+    "c13",
+    "c17",
+    "c18",
+    "c20"
+   ]
+  },
+  {
+   "id": "i6",
+   "claim": "The org-scope test assertion depends on the order of ids inside ANY(...) arrays. Those ids come from repository queries (findAllByParentId, MembershipRepository.findAllByTeamIds) without orderBy, so the SQL-fragment equality is nondeterministic.",
+   "path": null,
+   "members": [
+    "c10",
+    "c16",
+    "c22"
+   ]
+  },
+  {
+   "id": "i7",
+   "claim": "The 'Caching' describe block test was deleted, but the memoisation code it covered (cachedAuthConditions / cachedFilterConditions) remains and is now untested.",
+   "path": "insightsBooking.ts",
+   "members": [
+    "c14"
+   ]
+  },
+  {
+   "id": "i8",
+   "claim": "buildOrgAuthorizationCondition/buildTeamAuthorizationCondition produce top-level OR expressions without outer parentheses, and getBaseConditions() returns them directly. When callers compose them with AND, operator precedence lets rows matching the first OR branch bypass additional filters.",
+   "path": null,
+   "members": [
+    "c15",
+    "c19"
+   ]
+  },
+  {
+   "id": "i9",
+   "claim": "The same AND/OR reduce fold is hand-written three times instead of using Prisma.join or a direct expression.",
+   "path": null,
+   "members": [
+    "c21"
+   ]
+  }
+ ]
+}

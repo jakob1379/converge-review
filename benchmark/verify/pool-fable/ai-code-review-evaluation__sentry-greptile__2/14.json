@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/scripts/spans/add-buffer.lua:62-64 trims the set with ZPOPMIN, which drops the lowest scores, and the score is end_timestamp_precise (src/sentry/spans/buffer.py:197-199), so a root span that ends before more than 1000 of its children is evicted. Lines 66-70 then set/keep the has_root_span flag from the hrs key or is_root_span alone, never checking whether the root payload survived the trim.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.4048579
+}

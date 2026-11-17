@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/post_creator.rb:216 (patch line 627) copies @opts[:cook_method] straight onto the post, and app/models/post.rb has no check that the value is one of Post.cook_methods (only PostValidator at :40). However, users can't set it: PostsController#create_params (app/controllers/posts_controller.rb:226-253) does not allow cook_method, and the only caller (app/models/topic_embed.rb:22) passes the constant Post.cook_methods[:raw_html].",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.203293
+}

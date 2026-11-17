@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch shrinks the `.small-action-desc` padding from 4em to `0 1.5%` (common/base/topic-post.scss:280) and turns `.small-action` into a flex row with `.topic-avatar` beside the desc. The mobile rule `.custom-message { margin-left: -40px }` (mobile/topic-post.scss:520-522) was written to cancel the old 4em padding and was not updated, so it now pulls the custom message about 40px left, over the avatar icon.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0863871
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/dialog/AddGuestsDialog.tsx, onSuccess (patch L89-94) resets the emails but not isInvalidEmail, and onOpenChange={setIsOpenDialog} (L114) clears neither the emails nor the error; since the dialog stays mounted in BookingListItem, both come back when it is reopened. Also, handleAdd returns silently when the list is empty (L102-104), and the uniqueness check uses a plain `new Set(emails)` (L79-82), so it is case-sensitive.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1387705
+}

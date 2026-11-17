@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds `FromContext` at pkg/plugins/log/ifaces.go:22-23 with a comment word-for-word identical to `New`'s at ifaces.go:7 (only the method name differs). It says nothing about attributes being pulled from the `context.Context` via the registered `ctxLogProviders`, which is what the implementation does at pkg/infra/log/log.go:203-217.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1710055
+}

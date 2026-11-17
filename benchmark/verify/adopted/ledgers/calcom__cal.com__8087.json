@@ -1,0 +1,264 @@
+{
+ "findings": [
+  {
+   "path": "packages/app-store/index.ts",
+   "line": 3,
+   "severity": "Important",
+   "claim": "Each appStore entry is written as `import(\"./x\")` in an object literal, and these run when the literal is evaluated. All 28 app packages still load on the first import of @calcom/app-store. The change makes the imports async but not lazy, so the goal implied by the branch name is not delivered, and every call site had to become async for no gain.",
+   "evidence": "Three seats reproduced this with Node. open-code-review: store.mjs {a: import(a), b: import(b)}; awaiting only s.a still prints 'b loaded'. ponytail: a 3-file script prints 'a loaded' then 'b loaded'. superpowers: importing idx.mjs evaluates the app module before any key is accessed. mattpocock reasoned it from JS semantics. Proposed fix from all seats: thunks `key: () => import(\"./x\")` with `await appStore[key]?.()` at the call sites. ponytail notes the `?.` is needed because payment dirName can be undefined.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "All four seats raised it, and three gave runnable Node repros, which can serve as the red test. mattpocock rates it Minor if the PR only meant to make the API async, but no spec says so and the branch name says load, so it is normalised to Important. Spans lines 1-33 (seats cite 1-31, 1-33 and 3-30). Alternative resolution from ponytail: revert the PR if laziness is not wanted.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/app-store/index.ts:3-30 sets every key to a bare `import(\"./x\")` inside the `appStore` object literal. Each of those calls starts loading its module as soon as index.ts is evaluated, so all 28 apps still load when the package is first imported. Callers such as getCalendar.ts:17 only `await` a promise that has already started, so loading becomes asynchronous but not lazy; deferring it needs thunks (`() => import(...)`).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0763946
+   }
+  },
+  {
+   "path": "packages/app-store/vital/lib/reschedule.ts",
+   "line": 125,
+   "severity": "Important",
+   "claim": "The patch changed `bookingRefsFiltered.forEach(...)` to `forEach(async ...)` with `await getCalendar` inside. The surrounding try/catch with logger.error can no longer catch getCalendar failures. They become unlogged unhandled promise rejections, which can crash the process under Node's default --unhandled-rejections=throw. Deletion also no longer starts synchronously before the function continues.",
+   "evidence": "getCalendar ends in `new CalendarService(credential)`. The CalDAV constructor (packages/lib/CalendarService.ts:95) runs JSON.parse(symmetricDecrypt(...)), which throws on a bad or rotated key. Before the patch, that throw was synchronous inside the try. mattpocock's mechanism repro: `node -e 'try{[1].forEach(async()=>{throw new Error(\"ctor failed\")})}catch(e){console.log(\"caught\")}'` never prints 'caught' and exits 1. No repo-level test has been run. Proposed fix: `await Promise.all(bookingRefsFiltered.map(async ...))` or for...of with await inside the try.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Raised by all four seats; three rate it Important (superpowers rates it Minor, noting deleteEvent was already fire-and-forget). The mechanism is shown by a Node one-liner, but no repo-level test exists yet. Step 5 must produce a red test, for example a credential whose CalendarService constructor throws. Until then the claim is reasoned. Range 124-139.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At packages/app-store/vital/lib/reschedule.ts:125-128 the callback is now `forEach(async ...)` with `await getCalendar(...)`, and getCalendar (packages/app-store/_utils/getCalendar.ts:9-22) is now async and ends in `new CalendarService(credential)`. A constructor or app-import failure therefore becomes a rejected promise that `forEach` ignores, so the try/catch at lines 124-139 never logs it. Before the patch that throw was synchronous and was caught there.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.0746792
+   }
+  },
+  {
+   "path": "packages/app-store/wipemycalother/lib/reschedule.ts",
+   "line": 125,
+   "severity": "Important",
+   "claim": "This is the same `forEach(async ...)` change as in vital/lib/reschedule.ts. The surrounding try/catch no longer catches getCalendar failures, which become unlogged unhandled rejections that can crash the process.",
+   "evidence": "This is the same code and the same constructor throw path as the vital reschedule finding. The same Node one-liner shows the mechanism.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Raised by all four seats (superpowers rates it Minor, the others Important). It is reasoned at repo level, and step 5 needs a red test before fixing. Range 124-139.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At packages/app-store/wipemycalother/lib/reschedule.ts:125-128 the patch makes the forEach callback async and awaits getCalendar. getCalendar is now async (packages/app-store/_utils/getCalendar.ts:9), so a failed dynamic app import or a throw from the `new CalendarService(credential)` constructor (line 22) becomes a rejected promise that forEach discards. The try/catch at lines 124-139 used to catch these errors synchronously and log them; now they skip logger.error and surface as unhandled rejections.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.08382419999999999
+   }
+  },
+  {
+   "path": "packages/trpc/server/routers/viewer/bookings.tsx",
+   "line": 553,
+   "severity": "Important",
+   "claim": "In the requestReschedule mutation, `forEach` became `forEach(async ...)` with `await getCalendar`. Before, a synchronous getCalendar throw failed the mutation before emails were sent and the DB was updated. Now the mutation carries on silently and the error is a detached unhandled rejection.",
+   "evidence": "This is the same constructor throw path as in the reschedule files, with no surrounding try. tRPC previously turned the synchronous throw into an error response. All seats agree that calendar deleteEvent/deleteMeeting were already fire-and-forget before the patch, so only the getCalendar failure path regressed. Reasoned; the Node one-liner shows the mechanism.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail",
+    "superpowers"
+   ],
+   "verdict": "fix",
+   "reason": "Raised by all four seats. Severity is split: mattpocock and ponytail say Important, open-code-review and superpowers say Minor. It is normalised to Important because the regression lets the mutation proceed after a failure and carries the same process-crash risk as the reschedule finding. Step 5 needs a red test; until then it is reasoned. Range 553-556.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At bookings.tsx:553-556 the patch changed the loop to `forEach(async ...)` with `await getCalendar(...)`, and getCalendar is now async (_utils/getCalendar.ts:9-22), so a CalendarService constructor throw becomes a rejected promise that nothing catches; the emails (570) and webhooks (606-618) still go out. One part of the claim is wrong: the DB update at bookings.tsx:475 already happened before this loop even before the patch, so only the emails and webhooks were previously cut short.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0.11695849999999999
+   }
+  },
+  {
+   "path": "packages/core/CalendarManager.ts",
+   "line": 28,
+   "severity": "Minor",
+   "claim": "getCalendarCredentials calls getCalendar without await, so the exported return items now carry `calendar: Promise<Calendar | null>`. This changes the exported type. A future caller that reads item.calendar directly gets a truthy Promise that slips past `if (!calendar)` checks.",
+   "evidence": "The only reader is getConnectedCalendars (line 47/48), which awaits it inside its try. External callers (apps/web/pages/api/availability/calendar.ts:83, packages/trpc/server/routers/viewer.tsx:340 and :415) pass the items straight through. Nothing breaks today. open-code-review notes a side benefit: constructor errors are now caught by the try in getConnectedCalendars.",
+   "seats": [
+    "mattpocock",
+    "open-code-review",
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Three seats agree it is correct today and only an awkward shape and a future hazard. Defer with a `ponytail:` comment. Revisit when the index.ts thunk fix lands: ponytail suggests storing the thunk or having getConnectedCalendars call getCalendar itself.",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/core/CalendarManager.ts:28 calls the now-async getCalendar without await, so each item's `calendar` is a Promise<Calendar | null>. The only reader, getConnectedCalendars (CalendarManager.ts:48), awaits it, and the external callers (viewer.tsx:340/415, availability/calendar.ts:83) only pass the items to getConnectedCalendars, so this is a latent type change rather than a current bug.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0.1480093
+   }
+  },
+  {
+   "path": "packages/core/CalendarManager.ts",
+   "line": 28,
+   "severity": "Minor",
+   "claim": "getCalendarCredentials calls getCalendar for every credential, including those whose app.variant !== \"calendar\", and discards the result. Those promises are never awaited, so any rejection from them becomes an unhandled rejection. Previously such a failure threw synchronously into the caller.",
+   "evidence": "superpowers points to lines 27-29 and notes that calling getCalendar for discarded credentials predates the patch. Reasoned.",
+   "seats": [
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. Not fixed. Related to the Promise-in-field finding but a distinct claim, about unhandled rejections rather than type shape.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/app-store/index.ts",
+   "line": 3,
+   "severity": "Minor",
+   "claim": "If an app package throws while loading, its eagerly started import() promise rejects with no handler attached until some request awaits that key. This becomes an unhandled rejection at startup, which can kill the process, instead of an ordinary import error the importer could catch.",
+   "evidence": "superpowers repro: idx2.mjs {bad: import(\"./bad.mjs\")}, where bad.mjs throws; the process exits 1 and never prints 'still alive'. Whether Next.js installs its own unhandledRejection handler is unverified. open-code-review raised the same side effect as reasoned only.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. Not fixed. Likely resolved by the thunk fix to the main-list laziness finding.",
+   "list": "appendix"
+  },
+  {
+   "path": "apps/docs/pages/developer/app-store.mdx",
+   "line": 43,
+   "severity": "Minor",
+   "claim": "The developer docs (lines 43 and 56) still tell contributors to import their app statically and add it under appStore. The new convention is `appname: import(\"./appname\")`. Following the docs reintroduces the eager pattern; it still works, because awaiting a non-promise is harmless.",
+   "evidence": "mattpocock grepped the docs for packages/app-store/index.ts.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat (advisory). Not fixed. The docs should be updated once the final index.ts shape (thunks or not) is settled.",
+   "list": "appendix"
+  },
+  {
+   "path": "CONTRIBUTING.md",
+   "line": null,
+   "severity": "Minor",
+   "claim": "CONTRIBUTING.md requires a full production build and `yarn lint` before committing. Neither has been verified for this patch. The type-level changes (`await appStore[...]` on a union of module-namespace promises, narrowing with `\"lib\" in calendarApp`) look type-correct when read but have not been compiled.",
+   "evidence": "mattpocock marks this advisory and unverified because build and lint were out of scope. superpowers also notes that tsc was not run.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat. Not fixed. The project gate (build, lint, tsc) would settle it, but the gate was not run in benchmark mode.",
+   "list": "appendix"
+  },
+  {
+   "path": ".",
+   "line": null,
+   "severity": "Minor",
+   "claim": "No tests were added or updated for the changed async contract of getCalendar and getVideoAdapters.",
+   "evidence": "mattpocock spec section, 'Missing'. superpowers notes as context, outside its findings, that there are no tests for these paths before or after the patch.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat raised it as a finding. Patch-wide, with no single file. Not fixed. The red tests required by step 5 for the main-list fixes will partly address it.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": 477,
+   "severity": "Minor",
+   "claim": "Scope note: the old-behaviour branch was rewritten from forEach to a sequential for...of with await getCalendar, so getCalendar calls now run one after another instead of in parallel.",
+   "evidence": "mattpocock, lines 477-483.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "reject",
+   "reason": "The raising seat says the rewrite is fine, is needed so apiDeletes is filled before it is awaited, and that the serialisation cost is negligible because the imports are already in flight. ponytail and superpowers also endorse this rewrite as minimal and correct. No defect remains.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": 589,
+   "severity": "Minor",
+   "claim": "Duplicated code: the `paymentApp = await appStore[dirName]; if (!(\"lib\" in ... \"PaymentService\"))` block is repeated in handleCancelBooking.ts:589, bookings.tsx:967, deletePayment.ts:16 and handlePayment.ts:26. This is Shotgun Surgery in effect.",
+   "evidence": "mattpocock smell baseline, labelled a judgement call. The seat states the duplication predates the PR.",
+   "seats": [
+    "mattpocock"
+   ],
+   "verdict": "reject",
+   "reason": "The raising seat states it predates the PR, which only touches each copy. It is a generic code smell, which the override block excludes. Logged as pre-existing.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": 458,
+   "severity": "Minor",
+   "claim": "Pre-existing: `forEach(async ...)` pushes into apiDeletes after an await, so those deletes race the later Promise.all and are never awaited. The patch adds an `await getCalendar` inside this callback.",
+   "evidence": "Both raising seats (open-code-review, lines 458-468; superpowers, lines 458-469) state the bug predates the patch.",
+   "seats": [
+    "open-code-review",
+    "superpowers"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: two seats. Pre-existing, so it is a non-blocking ledger entry and not fixed in this loop.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/app-store/index.ts",
+   "line": 2,
+   "severity": "Minor",
+   "claim": "The dead comment `// example: import(\"./example\")` points to ./example, but the folder is _example (the old comment said ./_example).",
+   "evidence": "ponytail.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat (advisory). Not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/app-store/index.ts",
+   "line": 30,
+   "severity": "Minor",
+   "claim": "Diff noise: sylapsvideo was moved to the end of the map for no reason. No behaviour change.",
+   "evidence": "ponytail.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat (advisory). Not fixed.",
+   "list": "appendix"
+  },
+  {
+   "path": "packages/core/CalendarManager.ts",
+   "line": 31,
+   "severity": "Minor",
+   "claim": "Diff noise: a stray blank line was added in getCalendarCredentials. No behaviour change.",
+   "evidence": "ponytail.",
+   "seats": [
+    "ponytail"
+   ],
+   "verdict": "defer",
+   "reason": "Appendix: one seat (advisory). Not fixed.",
+   "list": "appendix"
+  }
+ ],
+ "coverage": "Files skipped: none. All four seats (mattpocock, open-code-review, ponytail, superpowers) report reviewing all 12 files in the patch. Axes that did not run: (1) The gate was not run (benchmark mode), so the review is unanchored: no build, tsc, lint or tests were executed by the orchestrator or any seat, and type-correctness of the awaited module unions is unverified. (2) There is no spec; every seat inferred intent from the branch name techdebt/async-app-store-load and the commit message, so the severity of the laziness finding depends on that inference. (3) Standards: there is no AGENTS.md, CLAUDE.md or .cursorrules. Only mattpocock checked CONTRIBUTING.md, the ESLint preset (which has no no-floating-promises or no-misused-promises rule, so tooling does not catch forEach(async)) and the app-store developer docs. (4) Not checked by any seat: Next.js/webpack chunk-splitting of the import() calls; whether Next.js installs its own unhandledRejection handler; and apps/api, which is absent from the checkout (likely a submodule), so any synchronous external callers of getCalendar or appStore[...] there are unverified. (5) The main-list red tests are not yet produced: the forEach(async) findings rest on a Node mechanism one-liner and reasoning, not on a repo-level failing test. The laziness finding has runnable Node repros in the seats' scratchpads. Steps 5-6 (fixes, scoped re-review) were not performed, so nothing has converged."
+}

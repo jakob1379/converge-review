@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "docs/guides/operator/advanced-configuration.adoc:446-450 (added by the patch) says the Operator fails without `rolling-updates`, but no operator main code reads that feature: UpgradeLogicFactory.java:36-42 picks the logic from spec.update.strategy alone, and neither AlwaysRecreateUpgradeLogic.java:40-43 nor RecreateOnImageChangeUpgradeLogic.java:49-59 checks it or runs update-compatibility. The only ROLLING_UPDATES checks are in the CLI commands UpdateCompatibilityCheck/UpdateCompatibilityMetadata, which the operator never invokes.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5527736999999999
+}

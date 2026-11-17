@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The new routes at config/routes.rb:49-50 sit directly inside `resources :groups do ... end`, not in a `member do` block, so Rails generates `/admin/groups/:group_id/members` and supplies params[:group_id]. That matches `params.require(:group_id)` in add_members and remove_member in app/controllers/admin/groups_controller.rb; the non-admin `get 'members'` route at config/routes.rb:271-272 uses the same pattern with `find_group(:group_id)`.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0.31747099999999995
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/ee/workflows/components/WorkflowStepContainer.tsx:439 has the literal `placeholder=\"Verification code\"` and line 456 the literal button label `Verify`, while neighbouring strings use `t(...)` (e.g. `t(\"send_code\")`, `t(\"number_verified\")`). Both literals already existed before the patch, which only re-indents that block (change.patch:284/301 removed, 238/265 re-added).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.1513178
+}

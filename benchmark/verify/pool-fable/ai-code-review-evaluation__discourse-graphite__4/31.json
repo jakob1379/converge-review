@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "lib/topic_retriever.rb:27-28 calls `$redis.setnx(retrieved_key, \"1\")` and then a separate `$redis.expire(retrieved_key, 60)`, so a crash or Redis error between them leaves the key with no TTL and `retrieved_recently?` returns true indefinitely for that URL. Only staff (`no_throttle`, app/jobs/regular/retrieve_topic.rb:17) bypass it, so \"permanently\" holds for ordinary users until the key is deleted by hand.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.12173449999999998
+}

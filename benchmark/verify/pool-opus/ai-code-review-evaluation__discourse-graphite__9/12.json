@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/initializers/i18n.rb:5 and :9 (patch lines 70 and 74) use `send(:include, ...)` to mix Pluralization into I18n::Backend::Simple and Fallbacks into `I18n.backend.class`. However, this is the extension method the i18n gem documents, so calling it 'fragile across gem upgrades' is a style concern, not a defect.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.053894
+}

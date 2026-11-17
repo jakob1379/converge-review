@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch adds bare awaits on dynamic import() promises with no try/catch, for example packages/app-store/_utils/getCalendar.ts:15 (`await appStore[...]`), getVideoAdapters in packages/core/videoClient.ts, and the payment lookups in packages/lib/payment/handlePayment.ts and deletePayment.ts. This is a minor issue because a missing module would also have crashed the old static imports at load time, and index.ts starts every import() immediately.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1194406
+}

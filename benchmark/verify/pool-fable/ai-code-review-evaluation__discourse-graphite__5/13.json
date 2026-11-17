@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `.d-header .contents` a flex container and removes the floats (app/assets/stylesheets/common/base/header.scss:14-19, 35-40), but the flex item for the title is the classless Ember wrapper div of `{{header-extra-info}}` (templates/header.hbs:94; components/header-extra-info.js.es6:1 sets no tagName), not `.extra-info-wrapper`, whose `overflow: hidden` (desktop/topic-post.scss:518-519) therefore no longer constrains width. With no `min-width: 0` or flex rule anywhere for that item, the nowrap `.topic-link` (desktop/topic-post.scss:532-538) holds it at full title width, so `.panel` is squeezed or overflows; derived from CSS flex rules, not observed in a browser.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.5592606
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "In misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:151-155 the Matcher is bound to the original immutable String, so reassigning `value` does not disturb iteration. Matches are visited left to right and every earlier identical anchor has already been removed, so `replaceFirst` always removes exactly the currently matched occurrence; repeated identical anchors are handled correctly.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.5502824000000001
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In handleNewBooking.ts:966-971, both callees are `async` (emailReminderManager.ts:197, smsReminderManager.ts:177), so they never throw synchronously. Their calls are not awaited, and each callee wraps its own body in try/catch that logs the error. `workflowReminders` is always present because it is included at line 772, so `forEach` cannot throw either, and nothing can reach the catch at line 974.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.1507487
+}

@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "Before the patch, the Alert (error) branch only checked `!connectedCalendar.delegationCredentialId`. It now passes `disableConnectionModification` to CredentialActionsDropdown (SelectedCalendarsSettingsWebWrapper.tsx:130), and `canDisconnect = !delegationCredentialId && !disableConnectionModification` (CredentialActionsDropdown.tsx:68), so 'Remove app' is hidden in that view, which EventAdvancedTab.tsx:375 sets to true.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.15061970000000002
+}

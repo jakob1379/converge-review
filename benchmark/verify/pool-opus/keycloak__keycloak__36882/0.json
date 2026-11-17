@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "Picocli.exit (quarkus/runtime/src/main/java/org/keycloak/quarkus/runtime/cli/Picocli.java:203-207) calls System.exit only when the exit code is non-OK and either the launch mode is not test or a rebuild check is running. In test launch mode, and when a test subclass overrides exit (PicocliTest.java:85), the method returns normally, so the `return` at UpdateCompatibilityCheck.java:49 and in UpdateCompatibilityMetadata is reachable and needed. The same exit pattern was already used at UpdateCompatibilityCheck.java:57 before this patch.",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0.11400509999999998
+}

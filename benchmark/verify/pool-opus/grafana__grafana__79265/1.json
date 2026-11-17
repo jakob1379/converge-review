@@ -1,0 +1,7 @@
+{
+ "verdict": "refuted",
+ "reason": "The only caller of updateDevice is CreateOrUpdateDevice, and it calls it only when `count >= s.deviceLimit` (database.go, patch lines 122-130). In that case, zero affected rows (patch line 108) means the device is new or expired and has no active slot, so it cannot be added because the limit is reached. Returning ErrDeviceLimitReached is the intended behaviour, and the TestIntegrationBeyondDeviceLimit test checks for it.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.10579000000000001
+}

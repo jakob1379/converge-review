@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "connectedCalendars.handler.ts:473 calls `new CalendarCacheRepository()` directly instead of going through the flag check in CalendarCache.init (calendar-cache.ts:22-28), which returns CalendarCacheRepositoryMock (empty status) when the 'calendar-cache' flag is off. So any CalendarCache rows still in the database give a cacheUpdatedAt, and CredentialActionsDropdown.tsx:119 then shows the cache status and 'Delete cached data' even with the flag off. deleteCache.handler.ts:522 also calls prisma without checking the flag.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.1526518
+}

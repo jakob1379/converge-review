@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch rewires pkg/expr/sql/parser.go:23 to call the stub NewInMemoryDB(). That stub's RunCommands always returns errors.New(\"not implemented\") (pkg/expr/sql/db.go:16-17), and NewSQLCommand turns any TablesList error into errutil.BadRequest(\"sql-invalid-sql\", \"error reading SQL command\") (pkg/expr/sql_command.go:30-35). Valid SQL that comes in through nodes.go:160 (UnmarshalSQLCommand), which has no feature-flag check, therefore fails as invalid SQL instead of with a clear 'disabled' error.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.23800289999999996
+}

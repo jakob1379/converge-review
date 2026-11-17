@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:35-40, `booking.user` is loaded with all its scalar fields, including name, email, timeZone and locale. Then at :58-68, `prisma.user.findFirstOrThrow({ where: { id: booking.userId || 0 } })` fetches those same four fields again, which costs an extra database query.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0.13823459999999999
+}

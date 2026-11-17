@@ -1,0 +1,7 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/features/auth/lib/next-auth-options.ts:139-156 the code reads user.backupCodes, decrypts it, finds the code with indexOf, sets that slot to null and writes the array back with a plain prisma.user.update keyed only on id. There is no transaction and no check that the stored value is unchanged, so concurrent logins with the same code all pass, and two concurrent logins with different codes can each overwrite the other's nulled slot.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0.0540858
+}
