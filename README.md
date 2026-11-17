@@ -93,6 +93,8 @@ Details: [findings](benchmark/docs/findings.md) and [experiment 005](benchmark/d
 
 ## Install
 
+Or simply tell your agent to install https://github.com/jakob1379/converge-review.
+
 ### Nix
 
 Copy the skill and its four seat skills into `~/.claude/skills`:
