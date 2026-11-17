@@ -134,3 +134,7 @@ Copy [`skills/converge-review`](skills/converge-review) into `~/.claude/skills/`
 ### Development shell
 
 `nix develop` gives Claude Code, Codex, `ocr`, `python3`, `uv` and `git`.
+
+## License
+
+MIT, see [`LICENSE`](LICENSE). The upstream benchmark, the five target repositories and the four seat skills keep their own licences.
