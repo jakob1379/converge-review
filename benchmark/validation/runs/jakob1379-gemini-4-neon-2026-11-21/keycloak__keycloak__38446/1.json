@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodesFormAuthenticator (services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java:80-88) checks allCodesUsed() and calls removeStoredCredentialById() on the credential from RecoveryAuthnCodesUtils.getCredential() (server-spi/src/main/java/org/keycloak/models/utils/RecoveryAuthnCodesUtils.java:56-62), which prefers federated user-storage credentials over stored ones, whereas UserCredentialManager.removeStoredCredentialById() (model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:114-117,298-305) only deletes from userLocalStorage()/userFederatedStorage() and never removes the user-storage provider's copy. Because UserCredentialManager.isValid() (model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:58-79) falls back to local CredentialProviders when the federated validator rejects an input while getCredential() unconditionally returns the federated credential first, the authenticator can inspect or remove a different credential than the one that validated when both exist.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

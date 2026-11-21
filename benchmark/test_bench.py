@@ -75,3 +75,54 @@ class IngestTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+FAKE_ACP = r'''#!/usr/bin/env python3
+import json, os, sys
+log = open(os.environ["FAKE_ACP_LOG"], "a", buffering=1)
+def send(m):
+    print(json.dumps({"jsonrpc": "2.0", **m}), flush=True)
+for line in sys.stdin:
+    m = json.loads(line)
+    log.write(line)
+    if "method" not in m:
+        continue
+    if m["method"] == "session/new":
+        send({"id": m["id"], "result": {"sessionId": "s1", "cwd": m["params"]["cwd"]}})
+    elif m["method"] == "session/prompt":
+        opts = [{"optionId": "yes", "kind": "allow_once"}, {"optionId": "no", "kind": "reject_once"}]
+        for n, kind in ((901, "read"), (902, "edit")):
+            send({"id": n, "method": "session/request_permission", "params": {"toolCall": {"kind": kind}, "options": opts}})
+            log.write(sys.stdin.readline())
+        send({"method": "session/update", "params": {"update": {"sessionUpdate": "agent_message_chunk",
+              "content": {"type": "text", "text": '{"verdict": "confirmed",'}}}})
+        send({"method": "session/update", "params": {"update": {"sessionUpdate": "agent_message_chunk",
+              "content": {"type": "text", "text": ' "impact": "trivial"}'}}}})
+        send({"id": m["id"], "result": {"stopReason": "end_turn", "usage": {"totalTokens": 7}}})
+    else:
+        send({"id": m["id"], "result": {}})
+'''
+
+
+class GeminiBackendTest(unittest.TestCase):
+    def test_reads_reply_allows_reads_and_rejects_edits(self):
+        import os
+        import types
+        from unittest import mock
+
+        import verify
+        d = Path(tempfile.mkdtemp())
+        (d / "agy_acp_server").write_text(FAKE_ACP)
+        (d / "agy_acp_server").chmod(0o755)
+        env = {"PATH": f"{d}:{os.environ['PATH']}", "FAKE_ACP_LOG": str(d / "log")}
+        args = types.SimpleNamespace(model="gemini-4-neon", effort="high", timeout=1)
+        with mock.patch.dict(os.environ, env):
+            text, meta = verify.ask_gemini("task", d, d / "change.patch", args)
+        self.assertEqual(json.loads(text), {"verdict": "confirmed", "impact": "trivial"})
+        self.assertEqual(meta["usage"], {"totalTokens": 7})
+        self.assertEqual(meta["permission_requests"], [{"kind": "read", "allowed": True}, {"kind": "edit", "allowed": False}])
+        sent = [json.loads(ln) for ln in (d / "log").read_text().splitlines()]
+        answers = {m["id"]: m["result"]["outcome"]["optionId"] for m in sent if m.get("id") in (901, 902)}
+        self.assertEqual(answers, {901: "yes", 902: "no"})
+        config = {m["params"]["configId"]: m["params"]["value"] for m in sent if m.get("method") == "session/set_config_option"}
+        self.assertEqual(config, {"model": "gemini-4-neon", "thinking_level": "high"})

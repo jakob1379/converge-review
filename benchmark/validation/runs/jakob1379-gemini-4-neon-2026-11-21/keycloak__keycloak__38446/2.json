@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:125-130, createRecoveryCodesCredential returns after logging when updateCredential() returns true without calling recoveryCodeCredentialProvider.createCredential() (which deletes existing stored credentials at services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:39-40) or otherwise removing local recovery-code credentials. Because model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:66-79 falls through to local CredentialInputValidator providers after the federated validator, RecoveryAuthnCodesCredentialProvider.isValid() (services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:99-118) still validates old codes from any leftover local credential.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

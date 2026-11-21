@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java, POLICY_SOME_HTML (lines 58-61), POLICY_NO_HTML (line 63), and HTML_TAGS (line 139) use UPPER_SNAKE_CASE constant naming but are package-private non-static instance fields rebuilt on every instantiation (e.g., per file in ThemeVerifierMojo.java:51). This is inconsistent with ANCHOR_PATTERN at VerifyMessageProperties.java:145, which is declared private static final.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

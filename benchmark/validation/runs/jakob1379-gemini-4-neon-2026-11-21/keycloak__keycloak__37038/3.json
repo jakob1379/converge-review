@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.canManage() returns hasPermission(null, AdminPermissionsSchema.VIEW, AdminPermissionsSchema.MANAGE) at services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:70, so an admin with only all-groups VIEW permission passes GroupPermissions.requireManage() (services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java:279-283). Because GroupsResource.addTopLevelGroup is guarded solely by auth.groups().requireManage() at services/src/main/java/org/keycloak/services/resources/admin/GroupsResource.java:180-202, a view-only admin can create top-level groups and move existing groups to the top level.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

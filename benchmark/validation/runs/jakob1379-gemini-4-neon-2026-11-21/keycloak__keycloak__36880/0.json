@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java:225 and services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java:250, both private hasPermission overloads wrap the single non-null scope string with Arrays.asList(scope) only for membership checks, where List.of(scope) (already used at line 266) could be used.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}
