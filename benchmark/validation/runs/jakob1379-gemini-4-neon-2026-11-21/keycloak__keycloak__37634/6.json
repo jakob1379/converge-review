@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "server-spi-private/src/main/java/org/keycloak/models/Constants.java:207 defines GRANT_TYPE as a direct alias of OAuth2Constants.GRANT_TYPE, and the patch mixes both: OAuth2GrantType.java:102 reads OAuth2Constants.GRANT_TYPE from formParams while OAuth2GrantTypeBase.java:109, ResourceOwnerPasswordCredentialsGrantType.java:134, PreAuthorizedCodeGrantType.java:82, StandardTokenExchangeProvider.java:237, and TokenManager.java:248 write Constants.GRANT_TYPE to clientSessionCtx.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

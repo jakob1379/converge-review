@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "When recovery codes are stored via the new user-storage path in server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:115-130, authentication delegates to the storage provider's CredentialInputValidator.isValid in model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:58-76, bypassing local single-use removal in services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:98-111 while services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java:71-92 never consumes a used code or tracks replay. Neither server-spi/src/main/java/org/keycloak/credential/CredentialInputValidator.java:34-41 nor server-spi/src/main/java/org/keycloak/credential/CredentialInputUpdater.java:24-48 documents that providers must atomically consume recovery codes during validation.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "In server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:120-128, getOrCreateResource() creates per-group resources via resourceStore.create(...) and updates scopes without ever calling resource.setType(resourceType), unlike init() at AdminPermissionsSchema.java:271-276 which sets type='Groups' on the all-groups resource. Consequently, resourceStore.findByType(server, AdminPermissionsSchema.GROUPS_RESOURCE_TYPE, ...) in services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:121 (querying r.type = :type via JPAResourceStore.java:206-229) matches only the all-groups type resource and omits all per-group resources.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

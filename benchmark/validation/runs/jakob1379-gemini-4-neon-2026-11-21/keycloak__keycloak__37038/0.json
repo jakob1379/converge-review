@@ -1,0 +1,25 @@
+{
+ "verdict": "refuted",
+ "reason": "In services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:132-135, the requireManageMembers(GroupModel) Javadoc already references canManageMembership(GroupModel), not canManage(). Moreover, the implementation in services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissions.java:376-380 delegates to canManageMembers(group), so the Javadoc should reference canManageMembers(GroupModel) rather than canManageMembership(GroupModel).",
+ "introduced_by_patch": false,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}
