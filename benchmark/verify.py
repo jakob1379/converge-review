@@ -115,7 +115,7 @@ def ask_gemini(task, wt, patch, args):
             sid = call("session/new", {"cwd": str(wt), "mcpServers": []})["sessionId"]
             call("session/set_model", {"sessionId": sid, "modelId": f"{args.model}-{args.effort}"})
             # Antigravity cannot read files outside cwd, so the patch goes in as embedded context.
-            diff = {"type": "resource", "resource": {"uri": patch.as_uri(), "mimeType": "text/x-diff", "text": patch.read_text()}}
+            diff = {"type": "resource", "resource": {"uri": patch.resolve().as_uri(), "mimeType": "text/x-diff", "text": patch.read_text()}}
             done = call("session/prompt", {"sessionId": sid, "prompt": [{"type": "text", "text": SYSTEM + "\n\n" + task}, diff]})
         finally:
             timer.cancel()
