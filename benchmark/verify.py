@@ -12,6 +12,7 @@ finding that was not confirmed moved to the appendix.
 import argparse
 import itertools
 import json
+import re
 import subprocess
 import tempfile
 import threading
@@ -23,6 +24,7 @@ from bench import MANIFEST, REPOS, WORK, git
 VERDICTS = {"confirmed", "refuted", "unverifiable"}
 IMPACTS = {"blocks-merge", "worth-fixing", "trivial"}
 READ_KINDS = {"read", "search", "think"}
+NO_ACCESS = re.compile(r"outside (of )?the (allowed|workspace)|access to \S+ is denied|(cannot|can't|could not|unable to) (read|access|open|view)", re.I)
 SYSTEM = ("You verify one code-review claim against source code. You report a verdict; you do not fix anything, "
           "edit files, or review anything beyond the one claim.")
 TASK = """Verify one code-review claim. The repository is checked out in the current directory at the head of the
@@ -111,9 +113,10 @@ def ask_gemini(task, wt, patch, args):
                 "fs": {"readTextFile": False, "writeTextFile": False}, "terminal": False}})
             call("authenticate", {"methodId": "oauth-personal"})
             sid = call("session/new", {"cwd": str(wt), "mcpServers": []})["sessionId"]
-            call("session/set_config_option", {"sessionId": sid, "configId": "model", "value": args.model})
-            call("session/set_config_option", {"sessionId": sid, "configId": "thinking_level", "value": args.effort})
-            done = call("session/prompt", {"sessionId": sid, "prompt": [{"type": "text", "text": SYSTEM + "\n\n" + task}]})
+            call("session/set_model", {"sessionId": sid, "modelId": f"{args.model}-{args.effort}"})
+            # Antigravity cannot read files outside cwd, so the patch goes in as embedded context.
+            diff = {"type": "resource", "resource": {"uri": patch.as_uri(), "mimeType": "text/x-diff", "text": patch.read_text()}}
+            done = call("session/prompt", {"sessionId": sid, "prompt": [{"type": "text", "text": SYSTEM + "\n\n" + task}, diff]})
         finally:
             timer.cancel()
             p.kill()
@@ -130,6 +133,8 @@ def verify_one(f, dest, wt, patch, args):
         v = json.loads(text[text.index("{"): text.rindex("}") + 1])
         if v["verdict"] not in VERDICTS or v["impact"] not in IMPACTS or not isinstance(v["introduced_by_patch"], bool):
             raise ValueError(f"bad verdict {v}")
+        if v["verdict"] == "unverifiable" and NO_ACCESS.search(v.get("reason", "")):
+            raise ValueError(f"verifier could not read the files: {v['reason']}")
     except (subprocess.TimeoutExpired, ValueError, KeyError, TypeError, OSError) as e:
         dest.with_suffix(".failed.txt").write_text(f"{type(e).__name__}: {e}\n")
         return

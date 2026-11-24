@@ -349,9 +349,9 @@ codex exec --model <model> -c model_reasoning_effort="high" --sandbox read-only 
 
 A Gemini pass is its own run directory, for example `validation/runs/<org>-<gemini model>-<YYYY-MM-DD>/`.
 `verify.py --cli gemini` drives Antigravity's ACP server (`agy_acp_server`, JSON-RPC over stdio): one fresh server
-and session per finding, signed in with the cached Google login (`authenticate` with `oauth-personal`), `--model`
-and `--effort` set as the session's `model` and `thinking_level` options. Run it exactly as steps 7 to 11, with
-`--cli gemini --model gemini-4-neon`.
+and session per finding, signed in with the cached Google login (`authenticate` with `oauth-personal`), and the
+model set with `session/set_model` to `<--model>-<--effort>`, for example `gemini-4-neon-xhigh`. Run it exactly as
+steps 7 to 11, with `--cli gemini --model gemini-4-neon --effort xhigh`.
 
 Differences from the Claude runs, besides those listed for Codex:
 
@@ -361,3 +361,7 @@ Differences from the Claude runs, besides those listed for Codex:
    Tools that Antigravity runs without asking are not restricted by `verify.py`; the dirty-checkout check after
    each PR is the guard against edits.
 3. `usage` is the `usage` (or `_meta`) of the `session/prompt` result, as Antigravity returned it.
+4. Antigravity cannot read files outside the session's working directory, which is the checkout, so the patch is
+   also sent as an embedded `resource` block in the prompt. The path in the task text is the resource's URI.
+5. A reply that is `unverifiable` because the verifier could not read the files (`NO_ACCESS` in `verify.py`) is a
+   failed call, kept as `<n>.failed.txt` and re-run, not a verdict. This applies to every backend.

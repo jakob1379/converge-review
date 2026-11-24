@@ -104,6 +104,23 @@ for line in sys.stdin:
 '''
 
 
+class NoAccessTest(unittest.TestCase):
+    def test_a_verifier_that_could_not_read_the_files_fails_instead_of_judging(self):
+        import types
+        from unittest import mock
+
+        import verify
+        d = Path(tempfile.mkdtemp())
+        args = types.SimpleNamespace(cli="gemini", model="m", effort="e")
+        finding = {"claim": "c", "path": "a.py", "line": 1}
+        for name, reason in (("blocked", "change.patch is outside the allowed workspace directories"),
+                             ("honest", "Whether 1.15.0 exists needs Maven Central, not this repository")):
+            reply = json.dumps({"verdict": "unverifiable", "reason": reason, "introduced_by_patch": True, "impact": "trivial"})
+            with mock.patch.object(verify, "ask_gemini", return_value=(reply, {})):
+                verify.verify_one(finding, d / f"{name}.json", d, d / "change.patch", args)
+        self.assertEqual(sorted(p.name for p in d.iterdir()), ["blocked.failed.txt", "honest.json"])
+
+
 class GeminiBackendTest(unittest.TestCase):
     def test_reads_reply_allows_reads_and_rejects_edits(self):
         import os
@@ -115,7 +132,8 @@ class GeminiBackendTest(unittest.TestCase):
         (d / "agy_acp_server").write_text(FAKE_ACP)
         (d / "agy_acp_server").chmod(0o755)
         env = {"PATH": f"{d}:{os.environ['PATH']}", "FAKE_ACP_LOG": str(d / "log")}
-        args = types.SimpleNamespace(model="gemini-4-neon", effort="high", timeout=1)
+        (d / "change.patch").write_text("diff --git a/x b/x\n")
+        args = types.SimpleNamespace(model="gemini-4-neon", effort="xhigh", timeout=1)
         with mock.patch.dict(os.environ, env):
             text, meta = verify.ask_gemini("task", d, d / "change.patch", args)
         self.assertEqual(json.loads(text), {"verdict": "confirmed", "impact": "trivial"})
@@ -124,5 +142,7 @@ class GeminiBackendTest(unittest.TestCase):
         sent = [json.loads(ln) for ln in (d / "log").read_text().splitlines()]
         answers = {m["id"]: m["result"]["outcome"]["optionId"] for m in sent if m.get("id") in (901, 902)}
         self.assertEqual(answers, {901: "yes", 902: "no"})
-        config = {m["params"]["configId"]: m["params"]["value"] for m in sent if m.get("method") == "session/set_config_option"}
-        self.assertEqual(config, {"model": "gemini-4-neon", "thinking_level": "high"})
+        model = [m["params"]["modelId"] for m in sent if m.get("method") == "session/set_model"]
+        self.assertEqual(model, ["gemini-4-neon-xhigh"])
+        prompt = next(m["params"]["prompt"] for m in sent if m.get("method") == "session/prompt")
+        self.assertEqual(prompt[1]["resource"]["text"], "diff --git a/x b/x\n")
