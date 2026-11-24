@@ -1,6 +1,12 @@
 # Gemini 4 Neon verification run, 2026-11-21 to 2026-11-23
 
-Status: **complete.** All 181 sampled issues across the 48 ledgers have a verdict, and `run.py external` compares all
+Status: **invalid: Gemini never saw the patch.** `ask_gemini` at `093b974` set the session's working directory to
+the checkout and did not pass the patch, and Antigravity refuses to read files outside it. No reason in this run
+quotes a line of `change.patch`; 10 of the 11 `unverifiable` verdicts say the patch could not be read. Kept as a
+record of a patch-blind verifier, not as the Gemini check; the re-run with the patch is
+`validation/runs/jakob1379-gemini-4-neon-xhigh-2026-11-24/`.
+
+Run status: **complete.** All 181 sampled issues across the 48 ledgers have a verdict, and `run.py external` compares all
 181. The Google AI Pro quota ran out several times; the run was resumed across four quota windows by re-running the
 unchanged step 9 command, which re-runs only the issues without a verdict.
 
