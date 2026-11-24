@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/topics_controller.rb:105, TopicUser.find_by returns nil when the logged-in user has no topic_users row for the topic (TopicView.new at line 99 does not create one), and app/controllers/topics_controller.rb:107 immediately calls tu.notification_level without a nil check. Because NoMethodError is not rescued in TopicsController or ApplicationController, this raises an unhandled exception and returns a 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

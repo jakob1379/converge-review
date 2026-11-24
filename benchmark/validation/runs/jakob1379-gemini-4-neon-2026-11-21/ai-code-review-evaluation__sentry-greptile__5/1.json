@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In static/app/views/dashboards/widgetCard/chart.tsx:164-174, when organization.features includes 'use-table-widget-visualization', TableWidgetVisualization is rendered with hardcoded columns={[]} and empty tableData ({data: [], meta: {fields: {}, units: {}}}), ignoring both result and loading. In static/app/views/dashboards/widgets/tableWidget/tableWidgetVisualization.tsx:87-98, this passes empty columnOrder and data to GridEditable, so the table always renders empty with no columns or rows.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

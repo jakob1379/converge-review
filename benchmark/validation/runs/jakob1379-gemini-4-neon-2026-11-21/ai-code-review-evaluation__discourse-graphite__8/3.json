@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/groups_controller.rb:22-26, `GroupsController#members` converts `params[:limit]` and `params[:offset]` directly with `.to_i` and passes them unvalidated to `.limit(limit).offset(offset)` on PostgreSQL, so negative values raise SQL errors and `limit` has no upper bound.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

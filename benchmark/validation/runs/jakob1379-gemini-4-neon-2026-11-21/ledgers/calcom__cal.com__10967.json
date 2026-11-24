@@ -1,0 +1,217 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In EventManager (around line 118-119), mainHostDestinationCalendar is destructured from `evt.destinationCalendar ?? []`, then `.integration` is read without a guard. When evt.destinationCalendar is null or empty this throws a TypeError, which breaks the Google Meet to Daily fallback.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/core/EventManager.ts:118-119, `mainHostDestinationCalendar` is destructured from `evt.destinationCalendar ?? []` and `.integration` is accessed without optional chaining or a null check. Because `evt.destinationCalendar` can be `null` or empty (packages/types/Calendar.d.ts:171, packages/features/bookings/lib/handleNewBooking.ts:1068-1072), `mainHostDestinationCalendar` is `undefined` and throws a `TypeError` when `evt.location === MeetLocationType` instead of falling back to Daily.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Several places destructure the first element of an array (`[first] = array`) and access its properties without guarding against undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "Cannot read /tmp/claude-1000/-home-jsg--t3-scratch-2026-11-14-finish-the-converge-review-benchmark-318e477c/64eabaac-b853-4cc6-93cd-49ad0704a562/scratchpad/gemini-work/calcom__cal.com__10967.verify/change.patch because it is outside the allowed workspace directories for view_file, and run_command and search/listing tools are unavailable, so the unnamed changed files cannot be identified or inspected.",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     },
+     {
+      "kind": "fetch",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "GoogleCalendarService",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In GoogleCalendarService updateEvent (line ~256) and deleteEvent (line ~317), the fallback `destinationCalendar.find(cal => cal.externalId === externalCalendarId)` runs only when externalCalendarId is falsy, so it never matches. As a result, updateEvent sends an undefined calendarId, and deleteEvent falls back to 'primary' instead of the booking's destination calendar.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts:254-256 (updateEvent) and 315-317 (deleteEvent), the fallback `event.destinationCalendar?.find((cal) => cal.externalId === externalCalendarId)?.externalId` only executes when `externalCalendarId` is falsy, so the comparison against `cal.externalId` never matches a valid calendar ID. Consequently, `updateEvent` passes `calendarId: undefined` at line 261 and `deleteEvent` always falls back to `defaultCalendarId` (`\"primary\"`) at line 322 instead of using the booking's destination calendar.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "organizations/create.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The organization slug condition in organizations/create.handler.ts (line ~151) is inverted from `!IS_TEAM_BILLING_ENABLED && { slug }` to `IS_TEAM_BILLING_ENABLED ? { slug } : {}`. With billing on, the org gets a slug before payment; with billing off, neither slug nor requestedSlug is set, causing NoOrganizationSlugError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/organizations/create.handler.ts:151-153, both `slug` and `metadata.requestedSlug` are gated on `IS_TEAM_BILLING_ENABLED ? ... : {}`. When billing is enabled the org receives a `slug` immediately before payment, and when billing is disabled neither `slug` nor `requestedSlug` is set, causing `NoOrganizationSlugError` in packages/trpc/server/routers/viewer/organizations/createTeams.handler.ts:67-69.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Calendar interface now requires createEvent(event, credentialId), but some implementations (Lark, Office365, packages/lib CalendarService) still declare createEvent(event) without credentialId. packages/lib CalendarService also selects only the first destination calendar at line 156.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/types/Calendar.d.ts:221 defines Calendar.createEvent(event: CalendarEvent, credentialId: number), whereas LarkCalendarService (packages/app-store/larkcalendar/lib/CalendarService.ts:125), Office365CalendarService (packages/app-store/office365calendar/lib/CalendarService.ts:72), and BaseCalendarService (packages/lib/CalendarService.ts:125) still declare createEvent(event: CalendarEvent) without credentialId. BaseCalendarService also selects only the first entry via `const [mainHostDestinationCalendar] = event.destinationCalendar ?? []` at packages/lib/CalendarService.ts:156 (as do Lark at line 128 and Office365 at line 73), causing non-first destination calendars to use the wrong externalId instead of matching credentialId.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "EventManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In EventManager updateAllCalendarEvents (lines ~511-542), credential can remain undefined when reference.credentialId points to a missing credential and the DB fallback finds nothing. updateEvent(credential, ...) is then called and throws, which turns the update into a failure result for every calendar in the booking.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/core/EventManager.ts:511-542, when reference.credentialId is not in this.calendarCredentials and the DB lookup returns null or lacks app.slug, credential remains undefined and line 542 unconditionally calls updateEvent(credential, ...). Inside packages/core/CalendarManager.ts:314, updateEvent dereferences credential.appName and rejects with a TypeError, which causes Promise.all(result) at packages/core/EventManager.ts:590 to reject and fail the update for the whole booking (and because Promise.all is not awaited, it even bypasses the catch block at line 591).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i19",
+   "path": "handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When cancelling a recurring booking, the series-delete block sits inside the per-reference loop but does not depend on the reference. It deletes the series N times using only the first calendar reference, so other hosts' copies are never deleted.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/bookings/lib/handleCancelBooking.ts:423-468, the recurring series-delete block (lines 444-468) sits inside `for (const reference of bookingCalendarReference)` (line 423) without referencing `reference` or the looked-up `calendarCredential`/`calendar` (lines 428-443). Instead, on every iteration it iterates only `bookingToDelete.user.credentials` (lines 449-450) and selects only the first calendar reference via `updBooking.references.find(...)` (line 454), causing N duplicate deletion passes for the first reference while never deleting other hosts' calendar copies.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

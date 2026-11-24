@@ -1,0 +1,29 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/remote_subscriptions/consumers/result_consumer.py:249-259, create_thread_queue_parallel_worker wraps Arroyo's commit callable in commit_offsets and passes it as commit_function to SimpleQueueProcessingStrategy. SimpleQueueProcessingStrategy starts a background daemon thread running _commit_loop (src/sentry/remote_subscriptions/consumers/queue_consumer.py:270-291) that calls self.commit_function(committable) at line 287 rather than committing from poll() on the StreamProcessor thread, concurrently touching KafkaConsumer's unlocked stage_offsets/commit state with the main loop and rebalance callbacks.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  },
+  {
+   "kind": "fetch",
+   "allowed": false
+  },
+  {
+   "kind": "fetch",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

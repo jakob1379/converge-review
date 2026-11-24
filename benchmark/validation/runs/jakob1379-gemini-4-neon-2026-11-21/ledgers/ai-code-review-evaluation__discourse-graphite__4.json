@@ -1,0 +1,381 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In TopicEmbed.import, the 'Imported from' footer interpolates url unescaped into a single-quoted <a href='#{url}'> in raw HTML. Because the post uses cook_method raw_html, the sanitizer never runs, so a crafted embed_url allows HTML/JS injection (stored XSS).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/topic_embed.rb:13, url is interpolated unescaped into single-quoted <a href='#{url}'>#{url}</a>, and app/models/topic_embed.rb:22 creates the post with cook_method: Post.cook_methods[:raw_html], causing Post#cook at app/models/post.rb:133 to return raw unsanitized HTML that is rendered raw in templates. Because Ruby's URI(url) permits single quotes and attribute characters (e.g. in a query or fragment on embeddable_host via app/controllers/embed_controller.rb:9), a crafted embed_url breaks out of the href attribute and injects event-handler attributes (stored XSS).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The raw_html cook method returns raw unchanged and skips sanitization. Remote content is stored as cooked HTML verbatim: RSS HTML that is only CGI.unescapeHTML'd, and Readability output that keeps javascript: hrefs. Later edits of such posts are also cooked raw.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Post#cook (app/models/post.rb:130-133) returns raw verbatim when cook_method is :raw_html, skipping PrettyText sanitization for both RSS content from CGI.unescapeHTML (app/jobs/scheduled/poll_feed.rb:35-36) and Readability output whitelisting href/src names without scheme validation (app/models/topic_embed.rb:22,47-51). Because PostRevisor#update_post (lib/post_revisor.rb:66-83) preserves cook_method and Post's before_save calls cook(raw, ...) (app/models/post.rb:319-322), later edits of those posts are also stored unsanitized.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "embed/best.html.erb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "embed/best.html.erb uses '<%- end if %>' instead of '<%- end %>'. The stray postfix 'if' makes the block's closing conditional on the next buffer append, or is invalid syntax.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "app/views/embed/best.html.erb:6 closes the `if`/`else` block from lines 2-5 with `<%- end if %>` instead of `<%- end %>`. In Ruby/ERB, `end if` is not a valid closing keyword: depending on ERB compilation (Erubis emitting a newline vs. a semicolon), the stray `if` either turns the `if`/`else` block into a postfix `if` conditioned on the next `@output_buffer.safe_concat` call (lines 7-8) or raises a `SyntaxError`.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The embed iframe passes request.referer, a full URL, as postMessage's targetOrigin instead of an origin (scheme://host[:port]). The parent page therefore does not receive the resize messages.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "While app/views/layouts/embed.html.erb:11 does pass request.referer (a full URL validated in app/controllers/embed_controller.rb:26) as targetOrigin to parent.postMessage, the HTML specification requires postMessage to parse targetOrigin as a URL and compare only its origin (ignoring path, query, and fragment). Consequently, the parent page still receives the discourse-resize messages.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "import_remote fetches the URL without validating its format or scheme first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "TopicEmbed.import_remote (app/models/topic_embed.rb:44-53) passes url directly to open(url).read at app/models/topic_embed.rb:48 without validating its format or scheme first, while the http/https check only runs afterward inside TopicEmbed.import (app/models/topic_embed.rb:11). Even through TopicRetriever#fetch_http (lib/topic_retriever.rb:52), TopicRetriever#invalid_host? (lib/topic_retriever.rb:14-18) only checks URI(@embed_url).host without restricting the scheme, leaving non-HTTP schemes and Kernel#open misuse unguarded.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "PollFeed calls i.content.scrub, but RSS 2.0 items with only <description> have nil content (SimpleRSS exposes content:encoded as content_encoded). This raises NoMethodError, and with retry: false and no per-item rescue it aborts the whole feed poll.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/jobs/scheduled/poll_feed.rb:35, PollFeed unconditionally calls CGI.unescapeHTML(i.content.scrub) on each SimpleRSS item, which raises NoMethodError on nil for RSS 2.0 items with only <description> or <content:encoded> (exposed by SimpleRSS as content_encoded). With sidekiq_options retry: false at app/jobs/scheduled/poll_feed.rb:12 and no per-item rescue in the loop at app/jobs/scheduled/poll_feed.rb:31-37, this aborts the entire feed poll.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "fetch",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i32",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The throttle calls setnx and then expire as two separate calls. A failure between them leaves a key with no TTL, so retrieval of that URL is blocked permanently.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In lib/topic_retriever.rb:27-28, retrieved_recently? calls $redis.setnx(retrieved_key, \"1\") and $redis.expire(retrieved_key, 60) as two separate non-atomic Redis calls. If a failure occurs between them, the key remains without a TTL and subsequent throttled calls to retrieve (lib/topic_retriever.rb:9) permanently skip perform_retrieve for that URL.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is no guard for a missing #discourse-comments container, so appendChild throws when it does not exist.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/assets/javascripts/embed.js:5, `comments` is fetched via `document.getElementById('discourse-comments')`, and app/assets/javascripts/embed.js:12 unconditionally calls `comments.appendChild(iframe)` without checking for `null`, which throws a `TypeError` when `#discourse-comments` is missing.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i35",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The spec uses the deprecated RSpec matcher be_true instead of be true.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "This repository pins RSpec 2.14 (rspec 2.14.1 and rspec-expectations 2.14.3/2.14.4) in Gemfile_rails4.lock:293-298 and Gemfile.lock:360-365, where be_true is not deprecated (deprecation was introduced in RSpec 2.99 and removal in 3.0). Using be_true is standard across the existing test suite (e.g., spec/models/user_spec.rb:128).",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i38",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "opts=nil is followed by opts = opts || {} instead of using opts={}, and there are no spaces around '='.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "The claim specifies no file or line, the patch file change.patch is outside the allowed workspace directories for view_file, and shell/subagent tools are blocked, so the patched code cannot be located or inspected.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i41",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Deleting an imported post or topic breaks the embed permanently because TopicEmbed rows are never cleaned up. A missing post makes PostRevisor.new(nil).revise! raise, and a trashed topic keeps returning its id, so comments return 404.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Neither Topic#trash! (app/models/topic.rb:31-35), Post#trash! (app/models/post.rb:72-75), nor PostDestroyer#staff_destroyed (lib/post_destroyer.rb:51-106) cleans up TopicEmbed rows, so a deleted post causes embed.post to return nil and PostRevisor.new(post).revise! (app/models/topic_embed.rb:32-36) to raise NoMethodError at lib/post_revisor.rb:27. Likewise, TopicEmbed.topic_id_for_embed (app/models/topic_embed.rb:78-80) still returns a trashed topic's id to EmbedController#best (app/controllers/embed_controller.rb:10-13), causing TopicView.new to raise Discourse::NotFound (404) at lib/topic_view.rb:300 for non-staff users.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

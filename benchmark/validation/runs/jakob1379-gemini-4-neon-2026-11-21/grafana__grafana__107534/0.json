@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "applyTemplateVariables is called in runShardSplitQuery (public/app/plugins/datasource/loki/shardQuerySplitting.ts:52), again in runSplitQuery (public/app/plugins/datasource/loki/querySplitting.ts:299), and again in DataSourceWithBackend.query() via super.query() (public/app/plugins/datasource/loki/datasource.ts:351-352, packages/grafana-runtime/src/utils/DataSourceWithBackend.ts:185) while preserving request.scopedVars and request.filters. Because addFilterAsLabelFilter (public/app/plugins/datasource/loki/modifyQuery.ts:511-538) unconditionally appends label filter clauses without deduplication, ad-hoc filters on parsed queries are duplicated (2x on time-split, 3x on shard-split) and template variables are re-interpolated.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

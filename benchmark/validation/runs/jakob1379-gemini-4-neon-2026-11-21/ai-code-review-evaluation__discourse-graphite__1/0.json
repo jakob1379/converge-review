@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/optimized_image.rb:145-151, self.downsize is defined twice, so the second 3..4-argument definition at app/models/optimized_image.rb:149-151 overwrites the 4..5-argument definition at app/models/optimized_image.rb:145-147. Consequently, the 5-argument call OptimizedImage.downsize(path, path, 100, 100, opts) in app/jobs/regular/resize_emoji.rb:14 raises ArgumentError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

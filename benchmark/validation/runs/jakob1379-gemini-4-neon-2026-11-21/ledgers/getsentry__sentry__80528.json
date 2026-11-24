@@ -1,0 +1,37 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "incident_occurrence.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "get_monitor_environment_context() in incident_occurrence.py copies the monitor config and replaces schedule_type with its human-readable display value, but returns monitor_environment.monitor.config (the original, line 168) instead of the modified copy. The schedule_type transformation therefore never reaches the event context.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/monitors/logic/incident_occurrence.py:160-162, get_monitor_environment_context() copies monitor_environment.monitor.config into local variable config and replaces config[\"schedule_type\"] with get_schedule_type_display(), but line 168 returns \"config\": monitor_environment.monitor.config instead of config. Consequently, the modified copy is discarded and the raw integer schedule_type reaches event_data[\"contexts\"][\"monitor\"] (line 85), as also reflected by the pre-existing assertion \"schedule_type\": 2 in tests/sentry/monitors/logic/test_mark_failed.py:114.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

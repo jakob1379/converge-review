@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "The same EMAIL/SMS reminder-deletion if/else-if dispatch block appears at 7 call sites: packages/features/bookings/lib/handleCancelBooking.ts:487-491, packages/features/bookings/lib/handleNewBooking.ts:967-971, packages/trpc/server/routers/viewer/bookings.tsx:489-493, and four places in packages/trpc/server/routers/viewer/workflows.tsx (lines 213-217, 377-381, 520-524, and 575-579). The duplication predates this patch, which only added the third immediateDelete argument at 3 of the 7 existing sites (handleNewBooking.ts:968 and workflows.tsx:214,521).",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

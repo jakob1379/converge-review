@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/anonymous/anonimpl/impl.go:87, tagDeviceUI caches the device key via localCache.SetDefault before calling CreateOrUpdateDevice at impl.go:93-95 and returns any error (including ErrDeviceLimitReached) without evicting the key. Subsequent requests from the rejected device hit localCache.Get at impl.go:83-85, causing TagDevice to return nil and Anonymous.Authenticate (pkg/services/anonymous/anonimpl/client.go:44-47) to allow access until the 29-minute cache TTL (impl.go:42) expires.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

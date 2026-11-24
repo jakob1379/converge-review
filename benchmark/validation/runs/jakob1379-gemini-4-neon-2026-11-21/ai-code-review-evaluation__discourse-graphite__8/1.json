@@ -1,0 +1,21 @@
+{
+ "verdict": "refuted",
+ "reason": "In app/assets/javascripts/admin/templates/group.hbs:21, the keyword form {{each member in members itemView=\"group-member\"}} sets options.hash.keyword = \"member\" (vendor/assets/javascripts/development/ember.js:8404-8412), which causes collectionHelper (vendor/assets/javascripts/development/ember.js:7997-7998) to bind the itemView's _context to _parentView.context (AdminGroupController, an Em.ObjectController proxying the Discourse.Group) while putting the Discourse.User in _keywords.member (vendor/assets/javascripts/development/ember.js:8222-8224). Therefore {{#unless automatic}} in app/assets/javascripts/admin/templates/group_member.hbs:1 resolves automatic against the group controller, not the member.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

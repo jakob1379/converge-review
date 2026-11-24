@@ -1,0 +1,45 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/jobs/scheduled/poll_feed.rb:35, PollFeed unconditionally calls CGI.unescapeHTML(i.content.scrub) on each SimpleRSS item, which raises NoMethodError on nil for RSS 2.0 items with only <description> or <content:encoded> (exposed by SimpleRSS as content_encoded). With sidekiq_options retry: false at app/jobs/scheduled/poll_feed.rb:12 and no per-item rescue in the loop at app/jobs/scheduled/poll_feed.rb:31-37, this aborts the entire feed poll.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "fetch",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

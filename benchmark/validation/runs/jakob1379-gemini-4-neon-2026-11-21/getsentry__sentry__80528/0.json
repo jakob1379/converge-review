@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/monitors/logic/incident_occurrence.py:160-162, get_monitor_environment_context() copies monitor_environment.monitor.config into local variable config and replaces config[\"schedule_type\"] with get_schedule_type_display(), but line 168 returns \"config\": monitor_environment.monitor.config instead of config. Consequently, the modified copy is discarded and the raw integer schedule_type reaches event_data[\"contexts\"][\"monitor\"] (line 85), as also reflected by the pre-existing assertion \"schedule_type\": 2 in tests/sentry/monitors/logic/test_mark_failed.py:114.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

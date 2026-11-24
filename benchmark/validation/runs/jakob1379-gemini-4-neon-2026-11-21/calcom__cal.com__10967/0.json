@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/core/EventManager.ts:118-119, `mainHostDestinationCalendar` is destructured from `evt.destinationCalendar ?? []` and `.integration` is accessed without optional chaining or a null check. Because `evt.destinationCalendar` can be `null` or empty (packages/types/Calendar.d.ts:171, packages/features/bookings/lib/handleNewBooking.ts:1068-1072), `mainHostDestinationCalendar` is `undefined` and throws a `TypeError` when `evt.location === MeetLocationType` instead of falling back to Daily.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

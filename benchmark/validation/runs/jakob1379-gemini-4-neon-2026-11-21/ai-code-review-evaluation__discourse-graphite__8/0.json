@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupsController#members in app/controllers/groups_controller.rb:22-26 defaults to limit=50 and offset=0 for every group, and Discourse.Group#findMembers in app/assets/javascripts/discourse/models/group.js:10-30 requests a single page with those defaults. The public route (app/assets/javascripts/discourse/routes/group-members.js.es6:8-12) only calls model.findMembers() once and its template (app/assets/javascripts/discourse/templates/group/members.hbs:1-22) has no pagination or load-more controls, so members past the 50th cannot be reached.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

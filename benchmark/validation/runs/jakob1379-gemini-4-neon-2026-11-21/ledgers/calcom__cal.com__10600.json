@@ -1,0 +1,157 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup code comparison uses indexOf, which is case-sensitive, and only '-' is stripped from the input. Valid codes typed in a different case or with whitespace are rejected, for example uppercase from iOS auto-capitalize. The same comparison appears in disable.ts and BackupCode.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both packages/features/auth/lib/next-auth-options.ts:144 and apps/web/pages/api/auth/two-factor/totp/disable.ts:61 match lowercase hex codes (generated at apps/web/pages/api/auth/two-factor/totp/setup.ts:61) using case-sensitive backupCodes.indexOf(...replaceAll(\"-\", \"\")), so inputs with uppercase letters or whitespace are rejected. Note that the duplicate comparison is in next-auth-options.ts rather than apps/web/components/auth/BackupCode.tsx:16-25, which only renders the unnormalized TextField (with uppercase placeholder \"XXXXX-XXXXX\").",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `user.twoFactorEnabled &&` check (line 48) and the `else if (user.twoFactorEnabled)` check (line 69) are always true after the early return at line 36. The CALENDSO_ENCRYPTION_KEY check is copied into both branches.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/api/auth/two-factor/totp/disable.ts:36-38, the handler returns early when !user.twoFactorEnabled, making the user.twoFactorEnabled checks at apps/web/pages/api/auth/two-factor/totp/disable.ts:48 and :69 always true. In addition, the !process.env.CALENDSO_ENCRYPTION_KEY guard is duplicated in both branches at apps/web/pages/api/auth/two-factor/totp/disable.ts:49-52 and :80-83.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The e2e assertion `expect(locator.isChecked()).toBeTruthy()` checks a Promise object, which is always truthy, rather than the resolved boolean. It is left unfixed despite an added FIXME.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "The patch file change.patch is outside the allowed workspace directories for view_file and command/search tools are unavailable, so with no file location given in the claim it is not possible to read the patch or search all e2e test files (none of the 26 sampled e2e files under apps/web/playwright, packages/app-store/routing-forms, or packages/embeds/embed-core contained locator.isChecked()).",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`navigator.clipboard.writeText()` is not awaited or error-handled, so the success toast shows even when the write fails. Where navigator.clipboard is undefined (plain-HTTP non-localhost), the click throws.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "Cannot read change.patch or git metadata (.git:1 points outside the allowed workspace directories), shell and search tools are unavailable, and the claim provides no file location, so neither the diff nor the referenced call site can be verified.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When totpEmail is present, the login page renders ExternalTotpFooter, so SAML/Google users never see the backup-code entry point.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/auth/login.tsx:178-186, when totpEmail is present (populated for Google/SAML 2FA redirects from loginWithTotp in packages/features/auth/lib/next-auth-options.ts:36-37), footerText renders ExternalTotpFooter (apps/web/pages/auth/login.tsx:135-143) instead of TwoFactorFooter. Because the only lost_access button that calls setTwoFactorLostAccess(true) to render <BackupCode /> (apps/web/pages/auth/login.tsx:221) is inside TwoFactorFooter (apps/web/pages/auth/login.tsx:120-131), SAML/Google users never see the backup-code entry point.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

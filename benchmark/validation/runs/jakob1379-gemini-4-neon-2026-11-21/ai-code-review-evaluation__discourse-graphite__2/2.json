@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "TopicsController#unsubscribe (app/controllers/topics_controller.rb:98-116) mutates tu.notification_level and calls tu.save! (line 113) directly instead of TopicUser.change, which leaves notifications_changed_at and notifications_reason_id unset (app/models/topic_user.rb:87-90) and skips the MessageBus notification_level_change publish (app/models/topic_user.rb:111-113). Because TopicUser.update_last_read auto-tracks whenever tu.notifications_reason_id is null (app/models/topic_user.rb:160-167), subsequent reading can overwrite the user's unsubscribed notification level back to tracking.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

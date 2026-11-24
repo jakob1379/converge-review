@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "Neither Topic#trash! (app/models/topic.rb:31-35), Post#trash! (app/models/post.rb:72-75), nor PostDestroyer#staff_destroyed (lib/post_destroyer.rb:51-106) cleans up TopicEmbed rows, so a deleted post causes embed.post to return nil and PostRevisor.new(post).revise! (app/models/topic_embed.rb:32-36) to raise NoMethodError at lib/post_revisor.rb:27. Likewise, TopicEmbed.topic_id_for_embed (app/models/topic_embed.rb:78-80) still returns a trashed topic's id to EmbedController#best (app/controllers/embed_controller.rb:10-13), causing TopicView.new to raise Discourse::NotFound (404) at lib/topic_view.rb:300 for non-staff users.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

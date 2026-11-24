@@ -1,0 +1,69 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "to_dict() uses asdict(), which leaves queued as a datetime object. Serializing the dict to JSON as task kwargs can raise TypeError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "Access to change.patch is denied outside the workspace, command/subagent tools are blocked, and no search tool is available, so the unlocated to_dict()/queued code and patch diff cannot be inspected (src/sentry/conf/server.py:740-742 sets CELERY_TASK_SERIALIZER to pickle, but any JSON-serialized task kwargs caller could not be located).",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Both parameters (attribute, sync_source) of the default should_sync implementation are unused and flagged by Ruff.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In src/sentry/integrations/mixins/issues.py:66-67, IssueBasicIntegration.should_sync indeed leaves both attribute and sync_source unused (as a base-class default overridden at src/sentry/integrations/mixins/issues.py:382), but the claim that they are flagged by Ruff is false: this repository does not install or configure Ruff (.pre-commit-config.yaml:45, setup.cfg:87, pyproject.toml, and requirements-dev.txt use flake8), and Ruff's default rules do not enable ARG002.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

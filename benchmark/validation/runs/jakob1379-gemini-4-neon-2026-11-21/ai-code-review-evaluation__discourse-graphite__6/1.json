@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/serializers/user_serializer.rb:43 and app/serializers/user_serializer.rb:105-111, `:website_name` is serialized as an attribute but omitted from `untrusted_attributes` (unlike `:website`), and neither `website_name` nor `include_website_name` (app/serializers/user_serializer.rb:137-155, which also lacks a trailing `?`) checks `scope.restrict_user_fields?(object)`. As a result, TL0 users' website host/path is still exposed to anonymous viewers despite `UserGuardian#restrict_user_fields?` (lib/guardian/user_guardian.rb:58-60), and is even rendered on the profile page (app/assets/javascripts/discourse/templates/user/user.hbs:69-76).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

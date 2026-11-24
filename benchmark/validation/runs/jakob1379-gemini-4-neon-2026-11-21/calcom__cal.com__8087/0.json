@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/bookings/lib/handleCancelBooking.ts:460-470, the recurring-booking cancellation path uses an unawaited async .forEach callback that awaits calendar?.deleteEvent(...) at line 466 and pushes the resolved value deletedEvent into apiDeletes at line 467 rather than a promise. Consequently, await Promise.all(prismaPromises.concat(apiDeletes)) at packages/features/bookings/lib/handleCancelBooking.ts:652 does not wait for those calendar deletions to complete.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

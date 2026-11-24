@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/assets/stylesheets/common/foundation/mixins.scss:117-123 defines @mixin align-items emitting -ms-flex-align on line 120, -ms-align-items on line 121, and standard align-items on line 122. No version of IE or Edge ever supported -ms-align-items (IE10/11 use -ms-flex-align and IE11/Edge support unprefixed align-items), making line 121 dead CSS output.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

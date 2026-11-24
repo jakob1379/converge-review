@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "While runShardSplitQuery calls datasource.applyTemplateVariables once on the initial target (public/app/plugins/datasource/loki/shardQuerySplitting.ts:52), it then executes 4 sharded sub-requests via runSplitQuery (public/app/plugins/datasource/loki/shardQuerySplitting.ts:163), which calls datasource.applyTemplateVariables again for each sub-request's target (public/app/plugins/datasource/loki/querySplitting.ts:299). With 1 initial call plus 4 sub-request calls, applyTemplateVariables is called 5 times, so the assertion at public/app/plugins/datasource/loki/shardQuerySplitting.test.ts:112 is correct.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

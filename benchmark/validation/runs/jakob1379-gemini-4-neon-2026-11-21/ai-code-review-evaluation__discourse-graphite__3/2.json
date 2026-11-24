@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "EmailValidator#validate_each in lib/validators/email_validator.rb:3-16 only checks SiteSetting.email_domains_whitelist, SiteSetting.email_domains_blacklist, and BlockedEmail.should_block?, performing no email format validation (such as Email.is_valid? in lib/email.rb:9-16). Because app/models/user.rb:46-47 only validates :email with presence, uniqueness, and email: true, malformed addresses like sam@sam or sam are accepted under default settings.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/buffer.py:196-199,434 and src/sentry/scripts/spans/add-buffer.lua:45-64, span-buf:s:* keys (previously Redis SETs, still described as set keys in buffer.py:57) are now operated on exclusively with ZSET commands (zadd, zscan, zcard, zunionstore, zpopmin) under the unchanged span-buf:s:* and span-buf:q:* key prefixes with no migration, prefix bump, or dual-read. During a rolling deploy, mixed SET/ZSET operations on the same keys will raise Redis WRONGTYPE errors (crashing ingestion and the flusher in src/sentry/spans/consumers/process/flusher.py:114-163) and prevent spans stored in existing SET keys from being flushed.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

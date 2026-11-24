@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/api/endpoints/organization_auditlogs.py:71 unconditionally evaluates `request.user.is_superuser or organization_context.member.has_global_access` without checking if `organization_context.member` is `None` (it is typed `RpcOrganizationMember | None` at src/sentry/organizations/services/organization/model.py:346). While `request.user.is_superuser` short-circuits for superusers, non-superuser callers without org membership that pass `OrganizationAuditPermission`\u2014such as legacy org `ApiKey` (src/sentry/api/authentication.py:272), `OrgAuthToken` (src/sentry/api/authentication.py:492), and SentryApp proxy users (src/sentry/auth/access.py:917-918)\u2014hit an `AttributeError` on every GET request.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

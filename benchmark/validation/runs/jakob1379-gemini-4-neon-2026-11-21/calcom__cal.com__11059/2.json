@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:25-27, any missing/falsy refresh_token is overwritten with the literal string \"refresh_token\". Callers then overwrite and persist the stored refresh_token via prisma.credential.update in packages/app-store/office365calendar/lib/CalendarService.ts:263-272 (where refresh_token is optional at line 56) and packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:104,120-124.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

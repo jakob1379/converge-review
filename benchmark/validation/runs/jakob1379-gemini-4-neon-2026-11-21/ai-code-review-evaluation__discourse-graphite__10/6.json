@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/models/embeddable_host.rb:2 validates :host with /\\A[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?\\Z/i, which requires a dot followed by 2-5 ASCII letters and therefore rejects localhost, IP addresses, and TLDs longer than 5 characters such as .museum. Because Admin::EmbeddableHostsController#update calls host.save with validations (app/controllers/admin/embeddable_hosts_controller.rb:9-12,27), any migrated row with such a host fails validation on later edit.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

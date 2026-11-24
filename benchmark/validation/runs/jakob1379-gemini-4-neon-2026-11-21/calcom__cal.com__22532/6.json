@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/features/calendar-cache/calendar-cache.repository.mock.ts:27 defines async getCacheStatusByCredentialIds() with no parameters, whereas packages/features/calendar-cache/calendar-cache.repository.interface.ts:30-32 declares getCacheStatusByCredentialIds(credentialIds: number[]). Although TypeScript allows implementing an interface method with fewer parameters and all other methods in CalendarCacheRepositoryMock omit parameters the same way, the mock's own signature does not accept credentialIds.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

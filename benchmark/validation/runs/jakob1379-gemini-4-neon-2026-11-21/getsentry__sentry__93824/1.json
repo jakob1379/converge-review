@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py:53,105, SpanFlusher spawns workers via multiprocessing.get_context(\"spawn\").Process, which produces multiprocessing.context.SpawnProcess instances (a sibling of multiprocessing.context.Process under BaseProcess, not a subclass). Consequently, the isinstance(process, multiprocessing.Process) guard in _ensure_processes_alive at src/sentry/spans/consumers/process/flusher.py:254-255 always evaluates to False, so hung or unhealthy processes are never killed before _create_process_for_shards starts replacements at line 259.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

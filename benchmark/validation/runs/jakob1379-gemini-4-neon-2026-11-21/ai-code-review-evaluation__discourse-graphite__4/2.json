@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/embed/best.html.erb:6 closes the `if`/`else` block from lines 2-5 with `<%- end if %>` instead of `<%- end %>`. In Ruby/ERB, `end if` is not a valid closing keyword: depending on ERB compilation (Erubis emitting a newline vs. a semicolon), the stray `if` either turns the `if`/`else` block into a postfix `if` conditioned on the next `@output_buffer.safe_concat` call (lines 7-8) or raises a `SyntaxError`.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}
