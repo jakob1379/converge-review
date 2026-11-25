@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:126-131, when d.Storage.Update returns an error, line 129 calls d.recordLegacyDuration(true, mode3Str, options.Kind, method, startStorage) instead of d.recordStorageDuration, whereas the success path at line 132 calls d.recordStorageDuration.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

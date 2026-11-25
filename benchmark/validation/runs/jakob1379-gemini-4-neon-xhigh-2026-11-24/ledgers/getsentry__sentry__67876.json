@@ -1,0 +1,61 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The user-match check reads integration.metadata[\"sender\"][\"login\"] without a guard. Integrations whose metadata lacks a 'sender' key (build_integration only adds it conditionally, and older or pre-existing integrations may not have it) raise a KeyError, which produces an HTTP 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/integrations/github/integration.py:501-505, GitHubInstallation.dispatch directly accesses integration.metadata[\"sender\"][\"login\"] without guarding for missing keys. Because build_integration only sets metadata[\"sender\"] when state.get(\"sender\") is truthy (src/sentry/integrations/github/integration.py:376-377) and ensure_integration overwrites metadata during normal pipeline completion without sender (src/sentry/integrations/pipeline.py:32-42), any active Integration lacking \"sender\" raises an unhandled KeyError resulting in an HTTP 500.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "safe_urlopen() and get_user_info() (which calls raise_for_status()) are outside exception handling. Network errors or non-2xx responses during the token exchange or user fetch cause an unhandled 500 instead of the error() page.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In OAuthLoginView.dispatch, safe_urlopen() (src/sentry/integrations/github/integration.py:423) sits outside the try/except at lines 425-429, and get_user_info() (src/sentry/integrations/github/integration.py:434), which calls resp.raise_for_status() (src/sentry/identity/github/provider.py:16), has no exception handling at all. Because neither Pipeline.current_step() nor PipelineAdvancerView catches requests exceptions, network errors or non-2xx responses from the user fetch propagate as an unhandled 500 instead of rendering the error() page.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

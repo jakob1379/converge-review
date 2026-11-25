@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "js/apps/account-ui/maven-resources/theme/keycloak.v3/account/messages/messages_en.properties:188 defines error-invalid-multivalued-size with MessageFormat syntax (Attribute {0} must have at least {1} and at most {2} {2,choice,0#values|1#value|1<values}.) instead of i18next {{N}} placeholders used by the other error-* keys and existing community translations. Because js/apps/account-ui/src/i18n.ts:25-47 initializes i18next with default interpolation and no i18next-icu plugin (nor is it in js/apps/account-ui/package.json), setUserProfileServerError in js/libs/ui-shared/src/user-profile/utils.ts:62-84 renders the string with raw placeholders.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

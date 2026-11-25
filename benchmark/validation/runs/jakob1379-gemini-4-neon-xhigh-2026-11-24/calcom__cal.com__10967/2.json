@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts:254-261 and 314-322, the ternary fallback `event.destinationCalendar?.find((cal) => cal.externalId === externalCalendarId)?.externalId` is only reached when `externalCalendarId` is falsy (e.g., null/undefined from callers like CalendarManager.ts:325 or EventManager.ts:506), so it never matches a calendar's `externalId`; `updateEvent` therefore passes `calendarId: undefined` to `calendar.events.update`, and `deleteEvent` falls back to `defaultCalendarId` ('primary').",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

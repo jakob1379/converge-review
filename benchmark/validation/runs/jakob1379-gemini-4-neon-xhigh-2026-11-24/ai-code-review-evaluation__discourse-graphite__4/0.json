@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/topic_embed.rb:13, TopicEmbed.import interpolates url unescaped into <a href='#{url}'>#{url}</a> and creates the post with cook_method: Post.cook_methods[:raw_html] (app/models/topic_embed.rb:22), causing Post#cook (app/models/post.rb:133) to return raw directly without sanitization. Because Ruby's URI() permits RFC 2396 characters such as ', =, (, ), and #, a crafted embed_url like http://host/path#'onmouseover='alert(1) passes URI validation and Nokogiri fragment parsing to inject executable event-handler attributes into post.cooked (rendered unescaped in app/views/embed/best.html.erb:19 and app/assets/javascripts/discourse/templates/post.js.handlebars:69).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

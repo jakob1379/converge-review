@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.get_item_key in src/sentry/api/paginator.py:838-840 passes getattr(item, self.key) directly to math.floor/math.ceil, which raises TypeError when OrganizationAuditLogsEndpoint.get (src/sentry/api/endpoints/organization_auditlogs.py:73-83) uses it with order_by='-datetime' on AuditLogEntry.datetime (a DateTimeField at src/sentry/models/auditlogentry.py:69). In contrast, DateTimePaginator.get_item_key at src/sentry/api/paginator.py:233-236 converts the datetime to a numeric epoch timestamp first.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

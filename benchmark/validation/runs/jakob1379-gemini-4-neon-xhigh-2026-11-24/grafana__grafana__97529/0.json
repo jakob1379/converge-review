@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/server/module_server_test.go:35-38 skips TestIntegrationWillRunInstrumentationServerWhenTargetHasNoHttpServer when dbType == \"postgres\" instead of fixing it, removing postgres CI coverage for storage-server startup and /metrics. The eager s.Init(ctx) added in pkg/storage/unified/resource/server.go:258-262 now triggers DB initialization at startup, exposing the postgres failure in Drone (where pkg/server/module_server_test.go:71-75 hardcodes db_host to \"localhost\" rather than reading the host from connection_string/POSTGRES_HOST as in pkg/services/sqlstore/sqlutil/sqlutil.go:124-137), and skipping the test masks it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

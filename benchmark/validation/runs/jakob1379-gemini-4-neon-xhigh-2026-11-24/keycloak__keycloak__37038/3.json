@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "GroupPermissionsV2.java:65-71 implements canManage() by calling hasPermission(null, AdminPermissionsSchema.VIEW, AdminPermissionsSchema.MANAGE), which evaluates the all-groups resource and returns true if the caller holds only the VIEW scope (GroupPermissionsV2.java:130-165). Because GroupPermissions.requireManage() delegates to canManage() (GroupPermissions.java:279-283) and GroupsResource.addTopLevelGroup() is guarded solely by auth.groups().requireManage() (GroupsResource.java:180-210), an admin with only all-groups VIEW permission can create top-level groups and move existing groups to top level.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "When recovery codes are stored in user storage via CredentialHelper.createRecoveryCodesCredential (server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:115-131), validation in UserCredentialManager.isValid (model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:59-79) delegates directly to the UserStorageProvider's CredentialInputValidator.isValid and skips RecoveryAuthnCodesCredentialProvider.isValid (services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:99-116), while RecoveryAuthnCodesFormAuthenticator (services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java:70-92) never consumes the used code. Neither the SPI interfaces (server-spi/src/main/java/org/keycloak/credential/CredentialInputValidator.java:27-37) nor the new helpers document that providers must consume used codes, as reflected by the patch's own BackwardsCompatibilityUserStorage.isValid (testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java:326-340) leaving codes reusable.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/stylesheets/common/foundation/mixins.scss:125-131, @mixin order($val) passes $val directly to -webkit-box-ordinal-group (line 126) and -moz-box-ordinal-group (line 127) without offsetting by +1. Since legacy box-ordinal-group is 1-based (initial value 1, requiring positive integers per the 2009 Flexbox draft and legacy WebKit) while order is 0-based, values are off by one relative to unstyled siblings and 0 is invalid.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

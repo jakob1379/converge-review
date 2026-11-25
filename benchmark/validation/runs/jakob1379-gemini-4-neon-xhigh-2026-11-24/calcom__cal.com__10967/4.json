@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/types/Calendar.d.ts:221 now declares createEvent(event: CalendarEvent, credentialId: number), whereas packages/app-store/larkcalendar/lib/CalendarService.ts:125, packages/app-store/office365calendar/lib/CalendarService.ts:72, and packages/lib/CalendarService.ts:125 still declare createEvent(event: CalendarEvent) without credentialId. Because they ignore credentialId, packages/lib/CalendarService.ts:156 (along with Lark at line 128 and Office365 at line 73) destructures only the first element of event.destinationCalendar, breaking multi-host collective event creation for non-primary hosts on those calendar integrations.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

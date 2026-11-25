@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In checkIfIsAvailable at packages/trpc/server/routers/viewer/slots.ts:106-127, dayjs(date.start).add(utcOffset, \"minutes\") is constructed four times (lines 110, 114, 118, 119) and dayjs(date.end).add(utcOffset, \"minutes\") twice (lines 114, 123) inside dateOverrides.find instead of computing the shifted start and end once per override.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

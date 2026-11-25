@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/routes.rb:440-441 maps GET routes to topics#unsubscribe and app/controllers/topics_controller.rb:32 skips check_xhr for :unsubscribe, so Rails's protect_from_forgery (app/controllers/application_controller.rb:21) does not enforce CSRF protection on it. In app/controllers/topics_controller.rb:98-116, TopicsController#unsubscribe validates visibility via TopicView and directly mutates and saves TopicUser.notification_level without any CSRF check or signed token, allowing cross-site GET requests (e.g., via an <img> tag) to alter a logged-in user's topic notification level.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:20-25, the migration reads the legacy embeddable_hosts setting, splits it on newlines, and interpolates each host directly into raw SQL via VALUES ('#{h}', ...) at line 25 without quoting or parameter binding. Because host_list has no validator in lib/site_setting_extension.rb:420-430, a stored value containing a single quote causes a SQL syntax error that aborts the migration (and permits SQL injection).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/calendar-cache/calendar-cache.repository.mock.ts:27, getCacheStatusByCredentialIds() declares no parameters, unlike ICalendarCacheRepository.getCacheStatusByCredentialIds(credentialIds: number[]) in packages/features/calendar-cache/calendar-cache.repository.interface.ts:30-32. TypeScript still allows omitting unused parameters when implementing an interface (matching the other methods in CalendarCacheRepositoryMock), so this only fails type-checking if invoked directly on a CalendarCacheRepositoryMock-typed instance.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

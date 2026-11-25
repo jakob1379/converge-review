@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts:106-127, the newly added dateOverrides.find callback rebuilds dayjs(date.start).add(utcOffset, \"minutes\") four times (lines 110, 114, 118, and 119) and dayjs(date.end).add(utcOffset, \"minutes\") twice (lines 114 and 123) instead of computing each shifted timestamp once per override.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

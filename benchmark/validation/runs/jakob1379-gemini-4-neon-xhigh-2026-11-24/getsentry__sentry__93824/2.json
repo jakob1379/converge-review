@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py:53,105, flusher processes are created via multiprocessing.get_context('spawn').Process (SpawnProcess), which is a sibling of multiprocessing.context.Process under BaseProcess, so isinstance(process, multiprocessing.Process) in join() at flusher.py:346-347 is always False and process.terminate() is never called. However, this isinstance check in join() was pre-existing before the patch (previously isinstance(self.process, multiprocessing.Process)).",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/zoho-bigin/lib/CalendarService.ts:53,62,85-94, biginAuth extracts credential.id into credentialId and refreshAccessToken passes credentialId as the third argument to refreshOAuthTokens. Because packages/app-store/_utils/oauth/refreshOAuthTokens.ts:3,11 expects userId as its third parameter and posts it as calcomUserId to CALCOM_CREDENTIAL_SYNC_ENDPOINT, the sync endpoint receives the credential ID instead of credential.userId.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:125-130, when user.credentialManager().updateCredential returns true, createRecoveryCodesCredential only logs and skips recoveryCodeCredentialProvider.createCredential (which deletes existing local credentials in services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:39-40). Because model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:75-76 falls back to local CredentialInputValidators like RecoveryAuthnCodesCredentialProvider.isValid when user storage rejects a code, any previously stored local recovery codes remain valid for authentication.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

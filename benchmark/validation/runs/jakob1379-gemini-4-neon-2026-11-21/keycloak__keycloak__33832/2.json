@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "In crypto/default/src/main/java/org/keycloak/crypto/def/BCECDSACryptoProvider.java:28-35 (as well as crypto/fips1402/src/main/java/org/keycloak/crypto/fips/BCFIPSECDSACryptoProvider.java:28-35 and crypto/elytron/src/main/java/org/keycloak/crypto/elytron/ElytronECDSACryptoProvider.java:37-44), concatenatedRSToASN1DER() copies len = signLength / 2 bytes twice via System.arraycopy without checking signature.length, so a shorter malformed signature throws ArrayIndexOutOfBoundsException instead of the declared IOException. Callers such as core/src/main/java/org/keycloak/crypto/ECDSASignatureVerifierContext.java:27-35 catch Exception and wrap it in VerificationException, and the underlying ECDSACryptoProvider implementations are pre-existing code.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

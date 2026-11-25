@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py:337-347, when the deadline expires (remaining_time <= 0), the break at lines 340-341 exits the loop before process.terminate() at lines 346-347 runs for the current and remaining processes. As a result, those flusher processes are left running when join() returns during shutdown or rebalance.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

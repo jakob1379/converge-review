@@ -1,0 +1,21 @@
+{
+ "verdict": "refuted",
+ "reason": "Although app/assets/javascripts/admin/routes/admin-embedding.js.es6:3 calls this.store.find('embedding') without an id, Discourse's Store#find in app/assets/javascripts/discourse/models/store.js.es6:64-73 only returns a _resultSet collection when typeof findArgs === \"object\". When findArgs is omitted (undefined), it takes the else branch at line 70 and calls self._hydrate(type, result[Ember.String.underscore(type)], result), resolving to a single hydrated embedding record fetched via app/assets/javascripts/admin/adapters/embedding.js.es6:4-6.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

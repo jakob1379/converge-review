@@ -1,0 +1,33 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/jobs/scheduled/poll_feed.rb:35, PollFeed unconditionally calls i.content.scrub with no nil check or per-item rescue inside rss.items.each (lines 31-37) and sets sidekiq_options retry: false at line 12. Because simple-rss maps RSS <description> and <content:encoded> to description and content_encoded rather than content, RSS 2.0 items without a <content> tag have nil i.content, raising NoMethodError and aborting the entire feed poll.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "fetch",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

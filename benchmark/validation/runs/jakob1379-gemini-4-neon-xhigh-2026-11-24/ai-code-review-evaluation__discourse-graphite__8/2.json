@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In spec/controllers/admin/groups_controller_spec.rb:114-116, the 'cannot remove members from automatic groups' test calls `xhr :put, :remove_member`, whereas config/routes.rb:49-50 maps `DELETE members` to `groups#remove_member` (and `PUT members` to `groups#add_members`). Because Rails controller specs dispatch directly to the named action without enforcing HTTP verb routing, the spec passes despite using the wrong verb.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

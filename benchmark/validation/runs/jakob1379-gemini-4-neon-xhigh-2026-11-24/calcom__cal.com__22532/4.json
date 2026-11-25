@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "apps/web/package.json:11 changes dev:cron from ts-node to `npx tsx cron-tester.ts`, while tsx is not declared in apps/web/package.json or root package.json and has no entry in yarn.lock (between tsutils at yarn.lock:45184 and tty-browserify at yarn.lock:45196). Consequently, npx has no locally installed tsx binary and downloads it unpinned from the registry at run time.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

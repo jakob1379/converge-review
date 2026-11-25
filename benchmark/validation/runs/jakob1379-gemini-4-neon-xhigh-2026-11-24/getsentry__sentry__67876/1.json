@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In OAuthLoginView.dispatch, safe_urlopen() (src/sentry/integrations/github/integration.py:423) sits outside the try/except at lines 425-429, and get_user_info() (src/sentry/integrations/github/integration.py:434), which calls resp.raise_for_status() (src/sentry/identity/github/provider.py:16), has no exception handling at all. Because neither Pipeline.current_step() nor PipelineAdvancerView catches requests exceptions, network errors or non-2xx responses from the user fetch propagate as an unhandled 500 instead of rendering the error() page.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

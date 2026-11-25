@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/AssertEvents.java:483, isAccessTokenId extracts the grant shortcut using items[0].substring(3, 5), whereas DefaultTokenContextEncoderProvider.java:78-81 encodes and decodes the 6-character prefix as sessionType (0, 2), tokenType (2, 4), and grantType at substring(4, 6).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

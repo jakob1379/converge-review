@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch replaces shared site-setting lookups with hardcoded 10 MB literals in three separate places: app/assets/javascripts/discourse/lib/utilities.js:182, app/assets/javascripts/discourse/lib/utilities.js:246, and app/controllers/uploads_controller.rb:55. Because these client and server values are unshared literals, they can drift apart if updated in only one place.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

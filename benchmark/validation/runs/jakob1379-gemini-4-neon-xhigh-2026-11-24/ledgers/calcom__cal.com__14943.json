@@ -1,0 +1,89 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "scheduleSMSReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The catch block awaits an unguarded prisma.workflowReminder.update to increment retryCount. That update can throw, for example P2025 when the row was deleted concurrently or by the earlier deleteMany. The error then escapes the for loop, which skips the remaining reminders and the original error log and aborts the cron run.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts:189-199, the catch block awaits an unguarded prisma.workflowReminder.update before console.log at line 198. If that update throws (e.g., P2025 after a concurrent deletion or a DB error), the exception skips the original error log, escapes the for loop at lines 67-200, and aborts the cron handler without processing the remaining reminders.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": "scheduleSMSReminders.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The deleteMany OR branch { retryCount: { gt: 1 } } has no method: WorkflowMethods.SMS filter (and no scheduled:false filter). The SMS cron therefore deletes EMAIL, WHATSAPP and already-scheduled WorkflowReminder rows with retryCount > 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/ee/workflows/api/scheduleSMSReminders.ts:29-45, method: WorkflowMethods.SMS is placed inside the first OR branch (line 33), leaving the second OR branch { retryCount: { gt: 1 } } (lines 38-42) without a method or scheduled: false filter. As a result, deleteMany matches and deletes any WorkflowReminder row with retryCount > 1 across EMAIL, WHATSAPP, and already-scheduled rows, though currently only scheduleSMSReminders.ts increments retryCount.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The WhatsApp cron uses the same twilio.scheduleSMS path and has the same retry-forever problem, but it does not use retryCount even though the column exists on every WorkflowReminder.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "packages/features/ee/workflows/api/scheduleWhatsappReminders.ts:90-113 calls twilio.scheduleSMS without incrementing retryCount when scheduling returns falsy or throws, and its deleteMany/findMany queries at packages/features/ee/workflows/api/scheduleWhatsappReminders.ts:23-42 never reference retryCount even though packages/prisma/schema.prisma:1000 adds retryCount to every WorkflowReminder.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

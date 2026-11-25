@@ -1,0 +1,117 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil on the sort key without converting it, but for audit logs ordered by -datetime the key is a datetime object. This raises TypeError, so every non-empty page with ?optimized_pagination=true returns 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/api/endpoints/organization_auditlogs.py:73-83, requests with ?optimized_pagination=true (for superusers or members with global access) paginate AuditLogEntry (where datetime is a DateTimeField at src/sentry/models/auditlogentry.py:69) with OptimizedCursorPaginator and order_by=\"-datetime\". OptimizedCursorPaginator.get_item_key (src/sentry/api/paginator.py:838-840) passes that datetime directly to math.floor/math.ceil when build_cursor invokes key() on any non-empty result set (src/sentry/utils/cursors.py:130,141,191), raising an unhandled TypeError (500).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "paginator.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "When enable_advanced_features is True and cursor.offset < 0, OptimizedCursorPaginator.get_result passes the negative offset directly into queryset slicing. Django rejects negative QuerySet indexing, and paginate() only catches BadPaginationError, so the error surfaces as a 500. The comment saying Django handles negative slicing is incorrect, and a crafted cursor (e.g. '0:-5:0') from users who pass the gate can trigger this.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/api/paginator.py:876-882, OptimizedCursorPaginator.get_result falsely claims Django handles negative slicing and passes cursor.offset (< 0) directly into queryset[start_offset:stop], which raises ValueError on Django QuerySets (BaseQuerySet does not override __getitem__). Because Cursor.from_string (src/sentry/utils/cursors.py:51-59) accepts negative offsets like '0:-5:0', OrganizationAuditLogsEndpoint enables this path with enable_advanced_features=True (src/sentry/api/endpoints/organization_auditlogs.py:70-83), and Endpoint.paginate only catches BadPaginationError (src/sentry/api/base.py:525-542), the unhandled ValueError surfaces as a 500.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The gate uses has_global_access, which is true for all members of open-membership orgs, so the comment's 'authorized administrators' is misleading and the advanced paginator is exposed far more widely than intended.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "The endpoint is already gated by OrganizationAuditPermission (src/sentry/api/endpoints/organization_auditlogs.py:40, src/sentry/api/bases/organization.py:110-124), which restricts GET access to active superusers or callers with org:write (only manager/owner roles per src/sentry/conf/server.py:2177-2276), so regular members of open-membership orgs are rejected before reaching line 71. Moreover, organization_context.member.has_global_access (src/sentry/api/endpoints/organization_auditlogs.py:71) reads the legacy OrganizationMember.has_global_access BooleanField(default=True) (src/sentry/models/organizationmember.py:216), not the open-membership-based request.access.has_global_access property.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "span-buf:s:* keys change from Redis SET to ZSET in the same key namespace with no migration, prefix bump, or dual-read. During a rolling deploy this causes WRONGTYPE errors and loss of spans stored in old SET keys.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch switches `span-buf:s:{project_and_trace}:{span_id}` operations from SET to ZSET in place (`p.zadd` at src/sentry/spans/buffer.py:196-199, `p.zscan` at src/sentry/spans/buffer.py:434, and `zcard`/`zunionstore`/`zpopmin` at src/sentry/scripts/spans/add-buffer.lua:45-64) without changing the key prefix, migrating existing keys, or handling `WRONGTYPE`/dual-reads. During a deploy with existing SET keys still queued in `span-buf:q:*`, `zadd`/`zcard`/`zscan` raise Redis `WRONGTYPE` errors (crashing `SpanFlusher` and preventing old SET segments from being read and flushed).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

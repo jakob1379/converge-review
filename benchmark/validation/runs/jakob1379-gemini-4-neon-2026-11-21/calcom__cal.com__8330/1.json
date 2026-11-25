@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts:138-151, checkIfIsAvailable uses workingHours.find() to return false whenever any workingHour entry for slotStartTime.day() has start < workingHour.startTime || end > workingHour.endTime, instead of requiring the slot to fall within at least one range. Because getWorkingHours in packages/lib/availability.ts:62-119 emits multiple entries sharing a weekday for split daily schedules and for schedules overflowing across UTC midnight, valid slots inside one range are rejected by another range on that weekday.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

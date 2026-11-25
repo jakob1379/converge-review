@@ -1,0 +1,201 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": "zoho-bigin/lib/CalendarService.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In zoho-bigin/lib/CalendarService.ts, refreshOAuthTokens is passed credentialId (credential.id) as its third argument, which is userId. The sync endpoint therefore receives the wrong calcomUserId.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/zoho-bigin/lib/CalendarService.ts:53,62,85-94, credential.id is assigned to credentialId and passed as the third argument to refreshOAuthTokens, whereas packages/app-store/_utils/oauth/refreshOAuthTokens.ts:3,11 expects userId and sends it as calcomUserId to CALCOM_CREDENTIAL_SYNC_ENDPOINT.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The webhook secret is compared with !== instead of a constant-time comparison.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/api/webhook/app-credential.ts:24-26, the incoming webhook secret header is compared directly against process.env.CALCOM_WEBHOOK_SECRET using !== rather than a constant-time comparison such as crypto.timingSafeEqual.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "parseRefreshTokenResponse sets a missing refresh_token to the literal string 'refresh_token'. Callers such as office365calendar and Zoom then persist it over the real stored refresh token.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:25-27, any missing/falsy refresh_token is overwritten with the literal string \"refresh_token\". Callers then overwrite and persist the stored refresh_token via prisma.credential.update in packages/app-store/office365calendar/lib/CalendarService.ts:263-272 (where refresh_token is optional at line 56) and packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:104,120-124.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": "googlecalendar/lib/CalendarService.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "googlecalendar/lib/CalendarService.ts stores the entire parseRefreshTokenResponse safeParse wrapper ({success, data, ...}) as Credential.key instead of its .data. The next googleCredentialSchema.parse(credential.key) then throws.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:16-29, parseRefreshTokenResponse returns the Zod safeParse result object ({ success: true, data }) rather than .data, and packages/app-store/googlecalendar/lib/CalendarService.ts:97-101 saves that wrapper directly into Credential.key. On subsequent loads, packages/app-store/googlecalendar/lib/CalendarService.ts:75 calls googleCredentialSchema.parse(credential.key), which throws because packages/app-store/googlecalendar/lib/googleCredentialSchema.ts:3-9 requires top-level scope, token_type, expiry_date, access_token, and refresh_token fields.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The credential's invalid flag is never reset when the credential is updated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/api/webhook/app-credential.ts:72-80, prisma.credential.update only updates `key: keys` and never resets `invalid: false` (likewise OAuth refresh updates such as packages/app-store/googlecalendar/lib/CalendarService.ts:98-101 only update `key`). Because invalid credentials are skipped for availability checks in packages/core/getCalendarsEvents.ts:14-17 and flagged in the UI, a previously invalidated credential remains permanently marked invalid even after fresh keys are synced.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "parseRefreshTokenResponse throws on parse failure and never returns success: false. The !success branches in Salesforce getClient and Zoom are therefore dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:21-23, parseRefreshTokenResponse throws an Error whenever !refreshTokenResponse.success, so it can never return success: false. Consequently, the !accessTokenParsed.success branch in packages/app-store/salesforce/lib/CalendarService.ts:90-94 and the !parsedToken.success branch in packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:104-110 are unreachable dead code.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

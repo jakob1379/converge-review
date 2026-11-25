@@ -1,0 +1,21 @@
+{
+ "verdict": "unverifiable",
+ "reason": "Access to change.patch is denied outside the workspace, command/subagent tools are blocked, and no search tool is available, so the unlocated to_dict()/queued code and patch diff cannot be inspected (src/sentry/conf/server.py:740-742 sets CELERY_TASK_SERIALIZER to pickle, but any JSON-serialized task kwargs caller could not be located).",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

@@ -1,0 +1,61 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "to_dict() uses asdict(), which leaves queued as a datetime object. Serializing the dict to JSON as task kwargs can raise TypeError.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "While AssignmentSource.to_dict() leaves queued as a datetime object (src/sentry/integrations/services/assignment_source.py:18,27-28), Sentry configures Celery to use pickle rather than JSON serialization (src/sentry/conf/server.py:739-741), and neither sync_assignee_outbound (src/sentry/integrations/tasks/sync_assignee_outbound.py:15-21) nor its apply_async call (src/sentry/integrations/utils/sync.py:136-145) overrides the serializer to JSON. Both pickle and Sentry's holds_bad_pickle_object check (src/sentry/celery.py:28-55) allow datetime values, so passing to_dict() as task kwargs does not raise TypeError.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Both parameters (attribute, sync_source) of the default should_sync implementation are unused and flagged by Ruff.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "While both `attribute` and `sync_source` are unused in the default `IssueBasicIntegration.should_sync` stub (`src/sentry/integrations/mixins/issues.py:66-67`), this repository does not use or configure Ruff at all (`.pre-commit-config.yaml:22-50` and `requirements-dev.txt:21-26` use `flake8` instead, and there is no Ruff config in `pyproject.toml`). Moreover, neither Ruff's default rules nor this repo's `flake8` configuration (`setup.cfg:95-103`) flags unused method parameters.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/auth/login.tsx:178-182, when twoFactorRequired and totpEmail are truthy (used for SAML/Google 2FA redirects via loginWithTotp in packages/features/auth/lib/next-auth-options.ts:37-38,609-610), footerText renders ExternalTotpFooter (lines 135-143) instead of TwoFactorFooter (lines 103-133). Because the \"Lost access\" button that calls setTwoFactorLostAccess(true) only exists in TwoFactorFooter (lines 120-131), SAML/Google users have no way to reach <BackupCode /> at line 221.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

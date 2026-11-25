@@ -1,0 +1,177 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the mode-3 unit tests, legacyStoreMock and storageMock share one mock.Mock. As a result, 'legacy' expectations are satisfied by storage calls, success-case setupLegacyFn blocks are duplicate or no-op, and nothing verifies that reads skip legacy or that legacy is written. No AssertExpectations or AssertNotCalled calls are made, and no test waits for the goroutine.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3_test.go:51-54 (and similarly at lines 110-113, 165-168, 219-222, 272-275, 329-332), every test passes the same *mock.Mock instance to both legacyStoreMock and storageMock, so setupLegacyFn expectations in TestMode3_Create (lines 30-42) and TestMode3_Update (lines 310-315) either satisfy Storage calls directly or duplicate setupStorageFn on the same mock. None of the tests call AssertExpectations or AssertNotCalled, nor do they wait for the background goroutines launched for legacy writes in pkg/apiserver/rest/dualwriter_mode3.go:50,108,134,161.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In DualWriterMode3.Delete, the success path passes the object name instead of options.Kind as the kind label to recordStorageDuration. This creates a new histogram series per deleted object and differs from the other methods. The same pattern exists in dualwriter_mode1.go.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:106, DualWriterMode3.Delete passes name instead of options.Kind as the third argument to recordStorageDuration, which populates the 'kind' label of the DualWriterStorageDuration HistogramVec (pkg/apiserver/rest/metrics.go:23,59-62) and differs from the error path at line 103 and all other methods. The same pattern appears in pkg/apiserver/rest/dualwriter_mode1.go:155, where DualWriterMode1.Delete passes name to recordLegacyDuration.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In Mode3 Update, when Storage.Update fails, the duration is recorded with recordLegacyDuration instead of recordStorageDuration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:126-131, when d.Storage.Update returns an error, line 129 calls d.recordLegacyDuration(true, mode3Str, options.Kind, method, startStorage) instead of d.recordStorageDuration, whereas the success path at line 132 calls d.recordStorageDuration.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Delete calls klog.NewContext(ctx, d.Log) instead of passing the enriched log variable, so the name, kind and method fields are not propagated to downstream loggers. The same bug exists in mode 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:96-97, Delete enriches d.Log into log with name, kind, and method but then calls klog.NewContext(ctx, d.Log) instead of passing log, regressing the prior klog.NewContext(ctx, log) call. The identical bug is also present in pkg/apiserver/rest/dualwriter_mode1.go:145-146.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Mode3 Update passes the caller's original objInfo to Legacy.Update in a goroutine. UpdatedObject is therefore re-applied against legacy's own old object after the request has ended, which can produce a different object than unified storage stored.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:126-143, DualWriterMode3.Update passes the caller's original objInfo directly to d.Legacy.Update inside an unawaited goroutine (line 139) instead of wrapping the Storage.Update result in updateWrapper. Because LegacyStorage.Update implementations such as pkg/registry/apis/playlist/legacy_storage.go:141-146 fetch legacy's own old object and call objInfo.UpdatedObject(ctx, old), the update logic (such as patches, SSA, or transformers) is re-applied against legacy's state after Update returns and can produce a different object than unified storage stored.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Legacy write failures in the async goroutines are not logged; only an is_error histogram label is recorded.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/apiserver/rest/dualwriter_mode3.go (lines 50-57, 108-114, 134-141, and 161-167), the async goroutines for Create, Delete, Update, and DeleteCollection never log errors returned by d.Legacy calls, replacing the previous log.Error calls with only d.recordLegacyDuration/d.recordStorageDuration. Those helpers in pkg/apiserver/rest/metrics.go (lines 54-62) only observe the duration on the Prometheus histogram with the is_error label.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

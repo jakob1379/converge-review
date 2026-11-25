@@ -1,0 +1,25 @@
+{
+ "verdict": "refuted",
+ "reason": "Although FallbackLocaleList#[] (config/initializers/i18n.rb:12-24) replaces I18n::Locale::Fallbacks with [locale, SiteSetting.default_locale.to_sym, :en], Discourse only supports underscore-separated regional locales like pt_BR (config/locales/server.pt_BR.yml:7, config/application.rb:82, lib/freedom_patches/translate_accelerator.rb:13-17). Standard I18n::Locale::Fallbacks in i18n 0.7.0 (Gemfile.lock:126) splits locale tags only on hyphens via I18n::Locale::Tag::Simple, so it never provided base-language ancestor fallbacks for any supported Discourse regional locale, and hyphenated locales are rejected by available_locales enforcement.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

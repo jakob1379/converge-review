@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/booking/BookingListItem.tsx:193-200,356-360, the new add_members action exposes AddGuestsDialog on all confirmed bookings passing only bookingId without seatReferenceUid or any seats guard, and packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts:3-6 accepts only bookingId and guests. Consequently, packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:92-106 updates prisma.booking by id: bookingId only, adding guests directly to the shared Booking.attendees on seats events without seat-level scoping.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

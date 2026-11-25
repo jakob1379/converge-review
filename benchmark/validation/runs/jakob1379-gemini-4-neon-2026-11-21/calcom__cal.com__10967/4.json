@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/types/Calendar.d.ts:221 defines Calendar.createEvent(event: CalendarEvent, credentialId: number), whereas LarkCalendarService (packages/app-store/larkcalendar/lib/CalendarService.ts:125), Office365CalendarService (packages/app-store/office365calendar/lib/CalendarService.ts:72), and BaseCalendarService (packages/lib/CalendarService.ts:125) still declare createEvent(event: CalendarEvent) without credentialId. BaseCalendarService also selects only the first entry via `const [mainHostDestinationCalendar] = event.destinationCalendar ?? []` at packages/lib/CalendarService.ts:156 (as do Lark at line 128 and Office365 at line 73), causing non-first destination calendars to use the wrong externalId instead of matching credentialId.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

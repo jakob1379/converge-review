@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/sentry/replays/test_project_replay_summarize_breadcrumbs.py:41-43, the newly added store_replays helper calls requests.post(settings.SENTRY_SNUBA + \"/tests/entities/replays/insert\", json=[replay]) without specifying a timeout argument. Although this matches other Snuba test helpers in src/sentry/testutils/cases.py, omitting timeout can cause the test request to hang indefinitely if Snuba is unresponsive.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

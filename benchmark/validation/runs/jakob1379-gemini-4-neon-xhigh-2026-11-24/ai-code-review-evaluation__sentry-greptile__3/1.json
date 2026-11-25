@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/endpoints/organization_events_stats.py:220-222, `_get_event_stats` passes the outer `dataset` and raw `request` (whose `request.GET.get('query', '')` is read in src/sentry/api/helpers/error_upsampling.py:135) instead of its `scoped_dataset` and `query` parameters. Because dashboard-split subqueries in src/sentry/api/endpoints/organization_events_stats.py:362-395 and 417-445 call `_get_event_stats` with `discover` and rewritten queries while the outer `dataset` is a metrics dataset, `_should_apply_sample_weight_transform` (src/sentry/api/helpers/error_upsampling.py:103-127) always returns `False` and skips upsampling.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

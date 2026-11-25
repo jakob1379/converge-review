@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "config/routes.rb:440-441 exposes topics#unsubscribe as GET routes, and app/controllers/topics_controller.rb:32,98-116 skips check_xhr and directly mutates and saves TopicUser.notification_level without any signed token. Because Rails' protect_from_forgery (app/controllers/application_controller.rb:20) does not verify GET requests, a third-party page can trigger notification-level changes via a cross-site GET such as an <img> tag for a logged-in user.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

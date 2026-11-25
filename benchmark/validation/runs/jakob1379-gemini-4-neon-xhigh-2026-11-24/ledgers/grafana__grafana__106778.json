@@ -1,0 +1,61 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "FilterView.tsx",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In FilterView.tsx, inside rules.map(...), the 'grafana' branch renders <GrafanaRuleListItem> without key={key>. The sibling branches (DataSourceRuleLoader, UnknownRuleListItem) and the removed GrafanaRuleLoader pass the key.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In public/app/features/alerting/unified/rule-list/FilterView.tsx:157-162, the 'grafana' branch inside rules.map(...) renders <GrafanaRuleListItem> without key={key}. Both sibling branches (<DataSourceRuleLoader> at FilterView.tsx:165 and <UnknownRuleListItem> at FilterView.tsx:168-173) and the removed <GrafanaRuleLoader> pass key={key}.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "useIsRuleEditable calls featureDiscoveryApi.endpoints.discoverDsFeatures.useQuery() before checking whether rule is undefined.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In public/app/features/alerting/unified/hooks/useIsRuleEditable.ts:23-25, useIsRuleEditable calls featureDiscoveryApi.endpoints.discoverDsFeatures.useQuery({ rulesSourceName }) unconditionally without skipping when rule is undefined, only checking if (!rule) later at line 43. This patch exposes that path on every Grafana rule list item because RuleActionsButtons.V2.tsx:53 and AlertRuleMenu.tsx:58 now call useRulerRuleAbility/useRulerRuleAbilities with rule undefined (invoking useIsRuleEditable at public/app/features/alerting/unified/hooks/useAbilities.ts:237).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

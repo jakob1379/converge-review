@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "Neither ensure_loaded! (lib/freedom_patches/translate_accelerator.rb:62-65) nor load_locale (lib/freedom_patches/translate_accelerator.rb:46-60) normalizes locale before checking @loaded_locales.include?(locale) (lines 48, 64) or appending @loaded_locales << locale (line 58). Because :en != 'en' in Ruby, passing the same locale as both a Symbol and a String bypasses the include? check, triggers a redundant load of the locale's YAML files, and appends a duplicate entry to @loaded_locales.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

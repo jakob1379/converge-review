@@ -1,0 +1,21 @@
+{
+ "verdict": "refuted",
+ "reason": "Although app/views/layouts/embed.html.erb:11 passes request.referer (a full URL) as targetOrigin to parent.postMessage, the HTML specification for window.postMessage parses targetOrigin as a URL and compares only its origin (scheme://host[:port]), ignoring any path, query, or fragment. Passing a full URL therefore does not prevent the parent page from receiving the resize messages.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

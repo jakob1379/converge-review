@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/api/webassets/webassets.go:41-49, GetWebAssets checks entryPointAssetsCache under RLock, releases RLock, and acquires the write lock without re-checking entryPointAssetsCache. Consequently, concurrent callers that observe a nil cache before the write lock each proceed to read and parse assets-manifest.json at pkg/api/webassets/webassets.go:60 and overwrite entryPointAssetsCache at pkg/api/webassets/webassets.go:69.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

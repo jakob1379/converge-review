@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/search/events/datasets/discover.py:1041-1052, SnQLFunction(\"upsampled_count\", ...) omits private=True (defaulting to False), so BaseQueryBuilder.resolve_function (src/sentry/search/events/builder/base.py:737-738) and DiscoverFunction.is_accessible (src/sentry/search/events/fields.py:1515-1534) allow any caller to invoke upsampled_count() directly without functions_acl, bypassing the allowlist and error-query checks in src/sentry/api/helpers/error_upsampling.py:13-140. Because DiscoverQueryBuilder.load_config (src/sentry/search/events/builder/discover.py:65-71) uses DiscoverDatasetConfig for Discover, Transactions, Events, and IssuePlatform, this exposes a query emitting Column(\"sample_weight\") on datasets that do not have that column.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch modifies User email validations in app/models/user.rb:46-47 to use EmailValidator (which adds blocked-email checking), but spec/models/user_spec.rb (lines 21-22 and 488-566) is completely untouched. The new spec/components/validators/email_validator_spec.rb:1-23 only calls EmailValidator#validate_each directly in isolation rather than testing User model validation.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

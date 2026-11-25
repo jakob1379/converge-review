@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/core/EventManager.ts:118-119, the patch replaces optional chaining (`evt.destinationCalendar?.integration`) with `const [mainHostDestinationCalendar] = evt.destinationCalendar ?? []` followed by an unguarded `mainHostDestinationCalendar.integration !== \"google_calendar\"`. Because callers such as packages/features/bookings/lib/handleNewBooking.ts:1063-1067 and confirm.handler.ts:175-179 set `destinationCalendar` to `null` or `[]` when no calendar is configured, `mainHostDestinationCalendar` is `undefined` and throws a TypeError when `evt.location === MeetLocationType` instead of falling back to Daily.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

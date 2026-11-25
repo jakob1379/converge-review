@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:55-73, detectProvider() removed the IllegalStateException on multiple providers and returns foundProviders.get(0) after sorting by order() descending without checking for ties. Because DefaultCryptoProvider (crypto/default/src/main/java/org/keycloak/crypto/def/DefaultCryptoProvider.java:83-85), WildFlyElytronProvider (crypto/elytron/src/main/java/org/keycloak/crypto/elytron/WildFlyElytronProvider.java:76-78), and FIPS1402Provider (crypto/fips1402/src/main/java/org/keycloak/crypto/fips/FIPS1402Provider.java:114-116) all return 200, a tie is silently decided by ServiceLoader classpath order with ignored providers only logged at debug level.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

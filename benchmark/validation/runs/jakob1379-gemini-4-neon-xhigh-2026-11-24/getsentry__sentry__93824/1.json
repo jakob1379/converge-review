@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/spans/consumers/process/flusher.py:53,105, worker processes are created via multiprocessing.get_context(\"spawn\").Process (returning SpawnProcess, a sibling of multiprocessing.context.Process under BaseProcess), so isinstance(process, multiprocessing.Process) at src/sentry/spans/consumers/process/flusher.py:254 is always False. As a result, process.kill() at line 255 is never executed before _create_process_for_shards() starts a replacement at line 259, whereas the pre-PR code called self.process.kill() unconditionally.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

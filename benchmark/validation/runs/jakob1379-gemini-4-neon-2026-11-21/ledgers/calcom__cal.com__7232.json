@@ -1,0 +1,101 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The async functions deleteScheduledEmailReminder and deleteScheduledSMSReminder are called inside forEach loops without await. The call sites include handleCancelBooking.ts, handleNewBooking.ts, bookings.tsx and workflows.tsx. Because of this, reminder cancellation or DB updates may not complete before the request ends, and rejections are lost.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both deleteScheduledEmailReminder (packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:197) and deleteScheduledSMSReminder (packages/features/ee/workflows/lib/reminders/smsReminderManager.ts:177) are async functions doing Prisma DB updates/deletes and SendGrid/Twilio API calls, and are invoked without await inside forEach loops at packages/features/bookings/lib/handleCancelBooking.ts:485-493, packages/features/bookings/lib/handleNewBooking.ts:966-972, packages/trpc/server/routers/viewer/bookings.tsx:488-494, and packages/trpc/server/routers/viewer/workflows.tsx:212-218,376-382,519-525,574-580. Because the returned promises are discarded, reminder cancellations and DB updates may not complete before the request ends (though both helpers wrap their bodies in try/catch and log errors rather than rejecting).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "emailReminderManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In deleteScheduledEmailReminder (emailReminderManager.ts), the immediateDelete=true branch cancels the SendGrid scheduled send and then returns. It neither deletes the workflowReminder DB row nor marks it cancelled, which leaves orphaned rows.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "While deleteScheduledEmailReminder (packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:213-223) returns after cancelling in SendGrid without touching the DB row, it does not leave orphaned rows. Every caller passing immediateDelete=true immediately deletes the parent Workflow, WorkflowStep, or Booking (packages/trpc/server/routers/viewer/workflows.tsx:214-220, 521-527; packages/features/bookings/lib/handleNewBooking.ts:967 with packages/core/EventManager.ts:288), which automatically removes the WorkflowReminder rows via onDelete: Cascade (packages/prisma/schema.prisma:587, 635, 641).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The EMAIL/SMS reminder-deletion dispatch block is duplicated at 7 call sites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The same EMAIL/SMS reminder-deletion if/else-if dispatch block appears at 7 call sites: packages/features/bookings/lib/handleCancelBooking.ts:487-491, packages/features/bookings/lib/handleNewBooking.ts:967-971, packages/trpc/server/routers/viewer/bookings.tsx:489-493, and four places in packages/trpc/server/routers/viewer/workflows.tsx (lines 213-217, 377-381, 520-524, and 575-579). The duplication predates this patch, which only added the third immediateDelete argument at 3 of the 7 existing sites (handleNewBooking.ts:968 and workflows.tsx:214,521).",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/storage/unified/resource/server.go:258-262, NewResourceServer returns (nil, err) when s.Init(ctx) fails without calling cancel() (from line 229) or s.lifecycle.Stop, leaving callers with no server handle to stop. Because Init now runs s.search.init(ctx) before s.initWatcher() (server.go:304-311), a failure in initWatcher after search.init succeeds leaks the search watch goroutine (pkg/storage/unified/resource/search.go:203-213) and its SQL poller goroutine (pkg/storage/unified/sql/backend.go:558-577), which only stops when backend.Stop calls b.cancel() (backend.go:119-122).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

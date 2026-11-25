@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/core/EventManager.ts:118-119, `const [mainHostDestinationCalendar] = evt.destinationCalendar ?? []` is followed by an unguarded `mainHostDestinationCalendar.integration !== \"google_calendar\"`, which throws a TypeError whenever `evt.destinationCalendar` is null, undefined, or empty (the exact case the Google Meet fallback is meant to handle). While the other `[mainHostDestinationCalendar]` destructurings in the patch guard with `?.` or a truthiness check, this site introduces an unguarded undefined dereference.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

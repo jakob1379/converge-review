@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:16-29, parseRefreshTokenResponse returns the Zod safeParse result object ({ success: true, data }) rather than .data, and packages/app-store/googlecalendar/lib/CalendarService.ts:97-101 saves that wrapper directly into Credential.key. On subsequent loads, packages/app-store/googlecalendar/lib/CalendarService.ts:75 calls googleCredentialSchema.parse(credential.key), which throws because packages/app-store/googlecalendar/lib/googleCredentialSchema.ts:3-9 requires top-level scope, token_type, expiry_date, access_token, and refresh_token fields.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

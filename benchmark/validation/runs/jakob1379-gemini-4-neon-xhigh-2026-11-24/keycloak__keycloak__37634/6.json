@@ -1,0 +1,21 @@
+{
+ "verdict": "refuted",
+ "reason": "While Constants.GRANT_TYPE aliases OAuth2Constants.GRANT_TYPE (Constants.java:206-207), the usage is consistent rather than inconsistent: OAuth2GrantType.Context reads the OAuth2 HTTP form parameter via formParams.getFirst(OAuth2Constants.GRANT_TYPE) (OAuth2GrantType.java:102), whereas every ClientSessionContext write (e.g., TokenManager.java:248, OAuth2GrantTypeBase.java:109) and its reader (DefaultTokenContextEncoderProvider.java:57) consistently use Constants.GRANT_TYPE per its documented role as a ClientSessionContext note key.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

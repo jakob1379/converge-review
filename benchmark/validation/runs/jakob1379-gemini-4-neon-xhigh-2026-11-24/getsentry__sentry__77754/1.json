@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "While both `attribute` and `sync_source` are unused in the default `IssueBasicIntegration.should_sync` stub (`src/sentry/integrations/mixins/issues.py:66-67`), this repository does not use or configure Ruff at all (`.pre-commit-config.yaml:22-50` and `requirements-dev.txt:21-26` use `flake8` instead, and there is no Ruff config in `pyproject.toml`). Moreover, neither Ruff's default rules nor this repo's `flake8` configuration (`setup.cfg:95-103`) flags unused method parameters.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

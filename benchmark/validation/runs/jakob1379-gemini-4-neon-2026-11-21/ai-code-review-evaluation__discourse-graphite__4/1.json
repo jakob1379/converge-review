@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "Post#cook (app/models/post.rb:130-133) returns raw verbatim when cook_method is :raw_html, skipping PrettyText sanitization for both RSS content from CGI.unescapeHTML (app/jobs/scheduled/poll_feed.rb:35-36) and Readability output whitelisting href/src names without scheme validation (app/models/topic_embed.rb:22,47-51). Because PostRevisor#update_post (lib/post_revisor.rb:66-83) preserves cook_method and Post's before_save calls cook(raw, ...) (app/models/post.rb:319-322), later edits of those posts are also stored unsanitized.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

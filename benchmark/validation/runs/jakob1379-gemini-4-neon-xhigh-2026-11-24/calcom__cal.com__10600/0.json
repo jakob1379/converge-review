@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "Backup codes are generated as lowercase hex in apps/web/pages/api/auth/two-factor/totp/setup.ts:61, and both packages/features/auth/lib/next-auth-options.ts:144 and apps/web/pages/api/auth/two-factor/totp/disable.ts:61 compare them via case-sensitive indexOf after only stripping '-' with replaceAll(\"-\", \"\"), rejecting uppercase or whitespace input (note that apps/web/components/auth/BackupCode.tsx:17-26 is the unnormalized input field rather than a comparison site).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

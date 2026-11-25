@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/core/EventManager.ts:511-542, when reference.credentialId is not in this.calendarCredentials and the prisma.credential.findUnique fallback finds no credential (or no app.slug), credential remains undefined and updateEvent(credential, ...) is still called unconditionally at line 542. Inside packages/core/CalendarManager.ts:314, credential.appName throws a TypeError, rejecting Promise.all(result) at packages/core/EventManager.ts:590 (in fact bypassing the catch block at lines 591-609 because Promise.all is returned without await) and failing the update for the whole booking.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

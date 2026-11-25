@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In model/infinispan/src/main/java/org/keycloak/models/cache/infinispan/GroupAdapter.java:256, 262, and 268, all three paginated getSubGroupsStream(...) overloads dereference modelSupplier.get() without a null check (unlike getSubGroupsCount() at GroupAdapter.java:274-275), even though getGroupModel() (GroupAdapter.java:298-300) returns null when the cached group has been deleted concurrently from the database. This throws a NullPointerException reachable via GET /admin/realms/{realm}/groups/{id}/children, which resolves the cached GroupAdapter in GroupsResource.java:149 and calls group.getSubGroupsStream(search, exact, -1, -1) in services/src/main/java/org/keycloak/services/resources/admin/GroupResource.java:180.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

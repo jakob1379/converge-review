@@ -1,0 +1,12 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/webhook/app-credential.ts:24-27, the newly added webhook handler compares the incoming header value directly against process.env.CALCOM_WEBHOOK_SECRET using !== rather than a constant-time comparison such as crypto.timingSafeEqual.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

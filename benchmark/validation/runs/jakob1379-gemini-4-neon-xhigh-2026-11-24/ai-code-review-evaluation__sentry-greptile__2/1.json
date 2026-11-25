@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/paginator.py:876-882, OptimizedCursorPaginator.get_result falsely claims Django handles negative slicing and passes cursor.offset (< 0) directly into queryset[start_offset:stop], which raises ValueError on Django QuerySets (BaseQuerySet does not override __getitem__). Because Cursor.from_string (src/sentry/utils/cursors.py:51-59) accepts negative offsets like '0:-5:0', OrganizationAuditLogsEndpoint enables this path with enable_advanced_features=True (src/sentry/api/endpoints/organization_auditlogs.py:70-83), and Endpoint.paginate only catches BadPaginationError (src/sentry/api/base.py:525-542), the unhandled ValueError surfaces as a 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

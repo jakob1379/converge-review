@@ -1,0 +1,29 @@
+{
+ "verdict": "refuted",
+ "reason": "While app/views/layouts/embed.html.erb:11 does pass request.referer (a full URL validated in app/controllers/embed_controller.rb:26) as targetOrigin to parent.postMessage, the HTML specification requires postMessage to parse targetOrigin as a URL and compare only its origin (ignoring path, query, and fragment). Consequently, the parent page still receives the discourse-resize messages.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

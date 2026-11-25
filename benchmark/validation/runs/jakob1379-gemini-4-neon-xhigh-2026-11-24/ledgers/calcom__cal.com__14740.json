@@ -1,0 +1,177 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "addGuests.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In addGuests.handler.ts, the team permission check uses `isTeamAdmin(...) && isTeamOwner(...)` where `||` is intended. This reduces it to an owner-only check, so team ADMINs who are not the organizer or an attendee get FORBIDDEN even though the variable is named isTeamAdminOrOwner.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:46-48, isTeamAdminOrOwner combines isTeamAdmin(...) and isTeamOwner(...) with && instead of ||, and since isTeamAdmin checks ADMIN or OWNER while isTeamOwner checks only OWNER (packages/lib/server/queries/teams/index.ts:264-293), the expression only passes for team owners. Consequently, team ADMINs who are neither the organizer nor an attendee hit the FORBIDDEN error at addGuests.handler.ts:54-56.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i2",
+   "path": "addGuests.handler.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The BLACKLISTED_GUEST_EMAILS check lowercases the blacklist but compares it against the raw guest email, with no toLowerCase or extractBaseEmail normalization. Blacklisted addresses therefore pass when submitted with different casing or a plus-alias.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:70-78, blacklistedGuestEmails is lowercased but compared directly via !blacklistedGuestEmails.includes(guest) against raw emails validated only with z.string().email() (addGuests.schema.ts:5). Because neither toLowerCase() nor extractBaseEmail() is applied (unlike handleNewBooking.ts:729-730), blacklisted addresses pass when submitted with uppercase characters or a plus-alias.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "sendAddGuestsEmails does not respect the hideCalendarNotes setting, so hidden notes can be sent to attendees.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/emails/email-manager.ts:525-550, sendAddGuestsEmails passes calendarEvent directly to AttendeeScheduledEmail and AttendeeAddGuestsEmail (lines 542-544) without clearing additionalNotes when calendarEvent.hideCalendarNotes is true (unlike sendScheduledEmails at line 119), and neither template nor BaseScheduledEmail checks hideCalendarNotes. Additionally, its caller in packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:124-147 omits hideCalendarNotes and forwards booking.description (where additionalNotes are persisted) directly into evt.description, exposing hidden notes to attendees.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In onError, the toast message is the template string `${code}: ${t(msg)}`, which is never falsy. The unable_to_add_guests fallback is therefore never used, and users see raw 'CODE: key' strings.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/components/dialog/AddGuestsDialog.tsx:42-45, onError constructs message as the template literal `${err.data?.code}: ${t(err.message)}`, which always contains ': ' and is never falsy, so the `|| t(\"unable_to_add_guests\")` fallback is never reached. Users therefore always see raw tRPC code prefixes and untranslated keys/messages (for example, 'FORBIDDEN: you_do_not_have_permission' from packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:55, which has no entry in apps/web/public/static/locales/en/common.json).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i21",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new action updates by bookingId only, without seat-level scoping, so on seats events guests are added to the shared booking instead of the current seat.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/components/booking/BookingListItem.tsx:193-200 and 357-361, the new add_members action is exposed on seated bookings and passes only bookingId (unlike reschedule/cancel at lines 173 and 221 which pass seatReferenceUid). In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:52-56 and 92-106 (with input schema addGuests.schema.ts:3-6), any seat attendee passes authorization and prisma.booking.update inserts guests directly onto the shared Booking by id without seat-level scoping or BookingSeat handling, then updates the shared calendar event and emails all attendees on the booking.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i31",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The MultiEmail component reassigns its function parameter `value`.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/ui/form/MultiEmail.tsx:12-14, MultiEmail destructures `value` as a function parameter and reassigns it via `value = value || []` on line 14. Reassigning a destructured local parameter does not mutate caller props and is a minor style issue that could use a default parameter or local `const`.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

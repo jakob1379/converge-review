@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "The endpoint is already gated by OrganizationAuditPermission (src/sentry/api/endpoints/organization_auditlogs.py:40, src/sentry/api/bases/organization.py:110-124), which restricts GET access to active superusers or callers with org:write (only manager/owner roles per src/sentry/conf/server.py:2177-2276), so regular members of open-membership orgs are rejected before reaching line 71. Moreover, organization_context.member.has_global_access (src/sentry/api/endpoints/organization_auditlogs.py:71) reads the legacy OrganizationMember.has_global_access BooleanField(default=True) (src/sentry/models/organizationmember.py:216), not the open-membership-based request.access.has_global_access property.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

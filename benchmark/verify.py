@@ -4,14 +4,18 @@
     ./verify.py --ledgers replay/adopted --out verify/adopted
 
 Per PR: check out the PR head under work/ ($BENCH_WORK overrides it), write the patch, run one read-only agent per
-finding (`claude -p`, or `codex exec` with --cli codex), remove the checkout. Resumes: a finding with a result is skipped. Writes <out>/<pr>/<n>.json per finding and, once a PR is
+finding (`claude -p`, `codex exec` with --cli codex, or Antigravity's ACP server with --cli gemini), remove the
+checkout. Resumes: a finding with a result is skipped. Writes <out>/<pr>/<n>.json per finding and, once a PR is
 complete, <out>/ledgers/<pr>.json: the input ledger with a "verifier" entry per main-list finding and every
 finding that was not confirmed moved to the appendix.
 """
 import argparse
+import itertools
 import json
+import re
 import subprocess
 import tempfile
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -19,6 +23,8 @@ from bench import MANIFEST, REPOS, WORK, git
 
 VERDICTS = {"confirmed", "refuted", "unverifiable"}
 IMPACTS = {"blocks-merge", "worth-fixing", "trivial"}
+READ_KINDS = {"read", "search", "think"}
+NO_ACCESS = re.compile(r"outside (of )?the (allowed|workspace)|access to \S+ is denied|(cannot|can't|could not|unable to) (read|access|open|view)", re.I)
 SYSTEM = ("You verify one code-review claim against source code. You report a verdict; you do not fix anything, "
           "edit files, or review anything beyond the one claim.")
 TASK = """Verify one code-review claim. The repository is checked out in the current directory at the head of the
@@ -68,16 +74,67 @@ def ask_codex(task, wt, patch, args):
         return last.read_text(), {"cost_usd": 0, "usage": json.loads(usage[-1]) if usage else None}
 
 
+def ask_gemini(task, wt, patch, args):
+    with subprocess.Popen(["agy_acp_server"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL, text=True, cwd=wt) as p:
+        timer = threading.Timer(args.timeout * 60, p.kill)
+        timer.start()
+        ids, chunks, tools = itertools.count(1), [], []
+
+        def send(msg):
+            p.stdin.write(json.dumps({"jsonrpc": "2.0", **msg}) + "\n")
+            p.stdin.flush()
+
+        def call(method, params):
+            n = next(ids)
+            send({"id": n, "method": method, "params": params})
+            for line in p.stdout:
+                m = json.loads(line)
+                if m.get("id") == n and "method" not in m:
+                    if "error" in m:
+                        raise ValueError(f"{method}: {m['error']}")
+                    return m["result"]
+                if m.get("method") == "session/update":
+                    u = m["params"]["update"]
+                    if u.get("sessionUpdate") == "agent_message_chunk" and u["content"].get("type") == "text":
+                        chunks.append(u["content"]["text"])
+                elif m.get("method") == "session/request_permission":
+                    kind = m["params"]["toolCall"].get("kind")
+                    want = "allow_once" if kind in READ_KINDS else "reject_once"
+                    option = next(o["optionId"] for o in m["params"]["options"] if o["kind"] == want)
+                    tools.append({"kind": kind, "allowed": want == "allow_once"})
+                    send({"id": m["id"], "result": {"outcome": {"outcome": "selected", "optionId": option}}})
+                elif "id" in m and "method" in m:
+                    send({"id": m["id"], "error": {"code": -32601, "message": "not supported"}})
+            raise TimeoutError(f"ACP server exited during {method}")
+
+        try:
+            call("initialize", {"protocolVersion": 1, "clientCapabilities": {
+                "fs": {"readTextFile": False, "writeTextFile": False}, "terminal": False}})
+            call("authenticate", {"methodId": "oauth-personal"})
+            sid = call("session/new", {"cwd": str(wt), "mcpServers": []})["sessionId"]
+            call("session/set_model", {"sessionId": sid, "modelId": f"{args.model}-{args.effort}"})
+            # Antigravity cannot read files outside cwd, so the patch goes in as embedded context.
+            diff = {"type": "resource", "resource": {"uri": patch.resolve().as_uri(), "mimeType": "text/x-diff", "text": patch.read_text()}}
+            done = call("session/prompt", {"sessionId": sid, "prompt": [{"type": "text", "text": SYSTEM + "\n\n" + task}, diff]})
+        finally:
+            timer.cancel()
+            p.kill()
+        return "".join(chunks), {"cost_usd": 0, "usage": done.get("usage") or done.get("_meta"), "permission_requests": tools}
+
+
 def verify_one(f, dest, wt, patch, args):
     if dest.exists():
         return
     where = ":".join(str(x) for x in (f.get("path"), f.get("line")) if x) or "location not given"
     task = TASK.format(patch=patch, where=where, claim=f["claim"], evidence=f.get("evidence") or "none")
     try:
-        text, meta = (ask_codex if args.cli == "codex" else ask_claude)(task, wt, patch, args)
+        text, meta = {"claude": ask_claude, "codex": ask_codex, "gemini": ask_gemini}[args.cli](task, wt, patch, args)
         v = json.loads(text[text.index("{"): text.rindex("}") + 1])
         if v["verdict"] not in VERDICTS or v["impact"] not in IMPACTS or not isinstance(v["introduced_by_patch"], bool):
             raise ValueError(f"bad verdict {v}")
+        if v["verdict"] == "unverifiable" and NO_ACCESS.search(v.get("reason", "")):
+            raise ValueError(f"verifier could not read the files: {v['reason']}")
     except (subprocess.TimeoutExpired, ValueError, KeyError, TypeError, OSError) as e:
         dest.with_suffix(".failed.txt").write_text(f"{type(e).__name__}: {e}\n")
         return
@@ -129,7 +186,7 @@ def main():
     ap.add_argument("--only", nargs="*", help="PR ids")
     ap.add_argument("--pr-jobs", type=int, default=2)
     ap.add_argument("--jobs", type=int, default=4, help="verifiers in parallel within one PR")
-    ap.add_argument("--cli", choices=("claude", "codex"), default="claude")
+    ap.add_argument("--cli", choices=("claude", "codex", "gemini"), default="claude")
     ap.add_argument("--model", default="claude-opus-5-5")
     ap.add_argument("--effort", default="high")
     ap.add_argument("--timeout", type=int, default=20, help="minutes per finding")

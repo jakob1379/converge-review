@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/ui/form/MultiEmail.tsx:12-14, MultiEmail destructures `value` as a function parameter and reassigns it via `value = value || []` on line 14. Reassigning a destructured local parameter does not mutate caller props and is a minor style issue that could use a default parameter or local `const`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "GitHubInstallation.dispatch at src/sentry/integrations/github/integration.py:501-505 directly indexes integration.metadata[\"sender\"][\"login\"] (line 503) without any guard or KeyError handling. Because GitHubIntegrationProvider.build_integration (src/sentry/integrations/github/integration.py:376-377) only populates \"sender\" conditionally and pre-existing or pipeline-created integrations lack it, missing keys raise an unhandled KeyError resulting in an HTTP 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

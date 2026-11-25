@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "TopicEmbed.import_remote (app/models/topic_embed.rb:44-53) passes url directly to open(url).read at app/models/topic_embed.rb:48 without validating its format or scheme first, while the http/https check only runs afterward inside TopicEmbed.import (app/models/topic_embed.rb:11). Even through TopicRetriever#fetch_http (lib/topic_retriever.rb:52), TopicRetriever#invalid_host? (lib/topic_retriever.rb:14-18) only checks URI(@embed_url).host without restricting the scheme, leaving non-HTTP schemes and Kernel#open misuse unguarded.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

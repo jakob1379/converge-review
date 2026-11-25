@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/zoho-bigin/lib/CalendarService.ts:53,62,85-94, credential.id is assigned to credentialId and passed as the third argument to refreshOAuthTokens, whereas packages/app-store/_utils/oauth/refreshOAuthTokens.ts:3,11 expects userId and sends it as calcomUserId to CALCOM_CREDENTIAL_SYNC_ENDPOINT.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

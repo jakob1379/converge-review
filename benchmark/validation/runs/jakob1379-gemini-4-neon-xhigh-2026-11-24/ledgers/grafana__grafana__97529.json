@@ -1,0 +1,153 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The patch skips the only postgres integration test of storage-server startup and /metrics instead of fixing it. This removes coverage for a supported backend and hides the startup failure that eager Init exposes.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/server/module_server_test.go:35-38 skips TestIntegrationWillRunInstrumentationServerWhenTargetHasNoHttpServer when dbType == \"postgres\" instead of fixing it, removing postgres CI coverage for storage-server startup and /metrics. The eager s.Init(ctx) added in pkg/storage/unified/resource/server.go:258-262 now triggers DB initialization at startup, exposing the postgres failure in Drone (where pkg/server/module_server_test.go:71-75 hardcodes db_host to \"localhost\" rather than reading the host from connection_string/POSTGRES_HOST as in pkg/services/sqlstore/sqlutil/sqlutil.go:124-137), and skipping the test masks it.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The function-wide cacheMu lock was removed from BuildIndex, so concurrent callers (e.g. a Search request and handleEvent via getOrCreateIndex) can build the same key at once. The last writer wins, one built index goes untracked or its documents are lost, and file-backed indexes can be created concurrently in the same directory.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/storage/unified/search/bleve.go:72-141, BuildIndex no longer holds cacheMu across the build and only locks around b.cache[key] = idx (bleve.go:137-139), while getOrCreateIndex (pkg/storage/unified/resource/search.go:287-307) has no locking between GetIndex and build. Concurrent Search and handleEvent callers can therefore run BuildIndex simultaneously for the same key, racing on bleve.New(dir, mapper) (bleve.go:96-98) for file-backed indexes and overwriting b.cache[key] so the losing index goes untracked and any writes to it are lost.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Eager Init runs inside the wire graph for every Grafana process on context.Background() with no deadline. A DB or search failure or hang now blocks Grafana startup.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch eagerly calls s.Init(ctx) in resource.NewResourceServer (pkg/storage/unified/resource/server.go:258-262) using a context.Background()-derived context with no deadline (pkg/storage/unified/resource/server.go:229-235). Because unified.ProvideUnifiedStorageClient is wired into wireBasicSet via apiserver.ProvideService and enters the default SQL branch even for the default legacy storage_type (pkg/server/wire.go:216, pkg/services/apiserver/service.go:143, pkg/storage/unified/client.go:42,95), any DB or search init failure or hang now aborts or blocks Grafana server startup during server.Initialize (pkg/cmd/grafana-server/commands/cli.go:108).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "There is an untracked TODO about the RV short-circuit optimization.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/storage/unified/search/bleve.go:100 has the untracked comment '// TODO, check last RV so we can see if the numbers have changed' with no issue reference, referring to the resourceVersion short-circuit documented at pkg/storage/unified/search/bleve.go:79-80. The patch directly introduces this TODO comment by replacing a prior b.log.Info statement on those lines.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When Init fails, NewResourceServer returns (nil, err) without calling cancel() or lifecycle.Stop. This leaks the context, and if search.init succeeded before initWatcher failed, it also leaks the search watch goroutine and its sql poller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/storage/unified/resource/server.go:258-262, NewResourceServer returns (nil, err) when s.Init(ctx) fails without calling cancel() (from line 229) or s.lifecycle.Stop, leaving callers with no server handle to stop. Because Init now runs s.search.init(ctx) before s.initWatcher() (server.go:304-311), a failure in initWatcher after search.init succeeds leaks the search watch goroutine (pkg/storage/unified/resource/search.go:203-213) and its SQL poller goroutine (pkg/storage/unified/sql/backend.go:558-577), which only stops when backend.Stop calls b.cancel() (backend.go:119-122).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/organization/cache/OrganizationCacheTest.java:303, testCacheIDPByOrg registers cleanup using the hardcoded literal \"alias\" instead of the alias variable defined at line 300, leaking org-idp-0 through org-idp-9 as unlinked realm-level IDPs after cleanup. Although pre-existing, this patch exposes the leak because the newly added testCacheIDPForLogin (lines 404 and 414) asserts exact FetchMode.REALM_ONLY and FetchMode.ALL IDP counts on the shared test realm and fails if testCacheIDPByOrg runs before it.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

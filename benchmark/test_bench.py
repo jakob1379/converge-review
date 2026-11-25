@@ -75,3 +75,74 @@ class IngestTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+FAKE_ACP = r'''#!/usr/bin/env python3
+import json, os, sys
+log = open(os.environ["FAKE_ACP_LOG"], "a", buffering=1)
+def send(m):
+    print(json.dumps({"jsonrpc": "2.0", **m}), flush=True)
+for line in sys.stdin:
+    m = json.loads(line)
+    log.write(line)
+    if "method" not in m:
+        continue
+    if m["method"] == "session/new":
+        send({"id": m["id"], "result": {"sessionId": "s1", "cwd": m["params"]["cwd"]}})
+    elif m["method"] == "session/prompt":
+        opts = [{"optionId": "yes", "kind": "allow_once"}, {"optionId": "no", "kind": "reject_once"}]
+        for n, kind in ((901, "read"), (902, "edit")):
+            send({"id": n, "method": "session/request_permission", "params": {"toolCall": {"kind": kind}, "options": opts}})
+            log.write(sys.stdin.readline())
+        send({"method": "session/update", "params": {"update": {"sessionUpdate": "agent_message_chunk",
+              "content": {"type": "text", "text": '{"verdict": "confirmed",'}}}})
+        send({"method": "session/update", "params": {"update": {"sessionUpdate": "agent_message_chunk",
+              "content": {"type": "text", "text": ' "impact": "trivial"}'}}}})
+        send({"id": m["id"], "result": {"stopReason": "end_turn", "usage": {"totalTokens": 7}}})
+    else:
+        send({"id": m["id"], "result": {}})
+'''
+
+
+class NoAccessTest(unittest.TestCase):
+    def test_a_verifier_that_could_not_read_the_files_fails_instead_of_judging(self):
+        import types
+        from unittest import mock
+
+        import verify
+        d = Path(tempfile.mkdtemp())
+        args = types.SimpleNamespace(cli="gemini", model="m", effort="e")
+        finding = {"claim": "c", "path": "a.py", "line": 1}
+        for name, reason in (("blocked", "change.patch is outside the allowed workspace directories"),
+                             ("honest", "Whether 1.15.0 exists needs Maven Central, not this repository")):
+            reply = json.dumps({"verdict": "unverifiable", "reason": reason, "introduced_by_patch": True, "impact": "trivial"})
+            with mock.patch.object(verify, "ask_gemini", return_value=(reply, {})):
+                verify.verify_one(finding, d / f"{name}.json", d, d / "change.patch", args)
+        self.assertEqual(sorted(p.name for p in d.iterdir()), ["blocked.failed.txt", "honest.json"])
+
+
+class GeminiBackendTest(unittest.TestCase):
+    def test_reads_reply_allows_reads_and_rejects_edits(self):
+        import os
+        import types
+        from unittest import mock
+
+        import verify
+        d = Path(tempfile.mkdtemp())
+        (d / "agy_acp_server").write_text(FAKE_ACP)
+        (d / "agy_acp_server").chmod(0o755)
+        env = {"PATH": f"{d}:{os.environ['PATH']}", "FAKE_ACP_LOG": str(d / "log")}
+        (d / "change.patch").write_text("diff --git a/x b/x\n")
+        args = types.SimpleNamespace(model="gemini-4-neon", effort="xhigh", timeout=1)
+        with mock.patch.dict(os.environ, env):
+            text, meta = verify.ask_gemini("task", d, d / "change.patch", args)
+        self.assertEqual(json.loads(text), {"verdict": "confirmed", "impact": "trivial"})
+        self.assertEqual(meta["usage"], {"totalTokens": 7})
+        self.assertEqual(meta["permission_requests"], [{"kind": "read", "allowed": True}, {"kind": "edit", "allowed": False}])
+        sent = [json.loads(ln) for ln in (d / "log").read_text().splitlines()]
+        answers = {m["id"]: m["result"]["outcome"]["optionId"] for m in sent if m.get("id") in (901, 902)}
+        self.assertEqual(answers, {901: "yes", 902: "no"})
+        model = [m["params"]["modelId"] for m in sent if m.get("method") == "session/set_model"]
+        self.assertEqual(model, ["gemini-4-neon-xhigh"])
+        prompt = next(m["params"]["prompt"] for m in sent if m.get("method") == "session/prompt")
+        self.assertEqual(prompt[1]["resource"]["text"], "diff --git a/x b/x\n")

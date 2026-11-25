@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/ui/form/MultiEmail.tsx:12-14, MultiEmail destructures value in its parameter list and reassigns it on line 14 (`value = value || [];`), and the same pattern appears in packages/features/form-builder/Components.tsx:234-237. Because value is a local destructured binding, reassigning it does not mutate caller props and is purely a style/lint nit.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

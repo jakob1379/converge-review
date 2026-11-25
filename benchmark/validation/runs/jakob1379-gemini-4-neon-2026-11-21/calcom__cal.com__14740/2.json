@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/emails/email-manager.ts:525-550, sendAddGuestsEmails passes calendarEvent unmodified to AttendeeScheduledEmail (line 542) and AttendeeAddGuestsEmail (line 544) without clearing additionalNotes when hideCalendarNotes is true, unlike sendScheduledEmails (line 119) and sendScheduledSeatsEmails (line 267). Neither template nor BaseScheduledEmail (packages/emails/src/templates/BaseScheduledEmail.tsx:82) or getAdditionalNotes (packages/lib/CalEventParser.ts:57-64) checks hideCalendarNotes, so additionalNotes can be included in attendee emails.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/slots.ts:141-143, checkIfIsAvailable computes both start and end from slotStartTime instead of using slotEndTime (defined at packages/trpc/server/routers/viewer/slots.ts:99). Because end equals start, a slot starting within working hours whose end time exceeds workingHour.endTime is not rejected by the end > workingHour.endTime check.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

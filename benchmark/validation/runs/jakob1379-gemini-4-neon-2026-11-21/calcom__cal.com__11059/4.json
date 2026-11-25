@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/webhook/app-credential.ts:72-80, prisma.credential.update only updates `key: keys` and never resets `invalid: false` (likewise OAuth refresh updates such as packages/app-store/googlecalendar/lib/CalendarService.ts:98-101 only update `key`). Because invalid credentials are skipped for availability checks in packages/core/getCalendarsEvents.ts:14-17 and flagged in the UI, a previously invalidated credential remains permanently marked invalid even after fresh keys are synced.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

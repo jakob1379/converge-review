@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "Async deleteScheduledEmailReminder (packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:197) and deleteScheduledSMSReminder (packages/features/ee/workflows/lib/reminders/smsReminderManager.ts:177) are called inside unawaited forEach loops in packages/features/bookings/lib/handleCancelBooking.ts:485-493, packages/features/bookings/lib/handleNewBooking.ts:966-972, packages/trpc/server/routers/viewer/bookings.tsx:488-494, and packages/trpc/server/routers/viewer/workflows.tsx:212-218,376-382,519-525,574-580. Because this patch moved the previously awaited Prisma reminder deletions/updates into those unawaited helpers and added the new loop in handleNewBooking.ts:964-975, reminder cancellations and DB updates may not finish before the request ends, and errors cannot be caught by callers (the helpers also swallow exceptions with console.log).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

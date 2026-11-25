@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:70-78, blacklistedGuestEmails lowercases entries from process.env.BLACKLISTED_GUEST_EMAILS, but line 77 checks !blacklistedGuestEmails.includes(guest) against the raw guest email validated only by z.string().email() in packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts:5 without toLowerCase() or extractBaseEmail(). Consequently, blacklisted addresses submitted with different casing or a plus-alias bypass the filter.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

@@ -1,0 +1,161 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requireManageMembers() Javadoc references canManage() when it should reference canManageMembership(GroupModel).",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "In services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionEvaluator.java:132-135, the Javadoc for requireManageMembers(GroupModel) does not reference canManage()\u2014it already references canManageMembership(GroupModel). Moreover, it should reference canManageMembers(GroupModel), not canManageMembership(GroupModel), as GroupPermissions.java:376-380 delegates to canManageMembers(group).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.getGroupIdsWithViewPermission() passes groupResource.getId() to hasPermission() and adds it to the result. That is the authorization resource ID, not the group ID (groupResource.getName()). hasPermission() resolves by name, so the per-group lookup fails, and the returned IDs do not match group IDs used in user filtering and counts.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:121-124, getGroupIdsWithViewPermission() passes groupResource.getId() to hasPermission() and adds it to granted, even though hasPermission() looks up resources by name (GroupPermissionsV2.java:141) and group resources store the group ID in resource.getName() while resource.getId() is a generated authorization resource UUID (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:109,121 and JPAResourceStore.java:63-70). Consequently, per-group lookups fail in hasPermission() and any returned resource UUIDs do not match group IDs expected by user counts and filtering in UsersResource.java:398,425,430,448-451 and BruteForceUsersResource.java:147-150.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Per-group resources are created without a type, because getOrCreateResource() never calls setType. As a result, findByType(server, 'Groups', ...) returns only the all-groups type resource and not the per-group resources.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In AdminPermissionsSchema.java:120-128, getOrCreateResource() creates per-group resources via resourceStore.create() and updates their scopes without ever calling resource.setType(resourceType), leaving type null, whereas init() sets type to \"Groups\" on the all-groups resource at AdminPermissionsSchema.java:273-274. Consequently, resourceStore.findByType(server, AdminPermissionsSchema.GROUPS_RESOURCE_TYPE, ...) in GroupPermissionsV2.java:121 only matches the all-groups type resource and misses all per-group resources.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "GroupPermissionsV2.canManage() (no-arg) falls back to hasPermission(null, VIEW, MANAGE). An admin with only all-groups VIEW permission therefore passes requireManage(). This lets them create top-level groups and move groups to top level in GroupsResource.addTopLevelGroup, which is guarded only by requireManage().",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupPermissionsV2.java:65-71 implements canManage() by calling hasPermission(null, AdminPermissionsSchema.VIEW, AdminPermissionsSchema.MANAGE), which evaluates the all-groups resource and returns true if the caller holds only the VIEW scope (GroupPermissionsV2.java:130-165). Because GroupPermissions.requireManage() delegates to canManage() (GroupPermissions.java:279-283) and GroupsResource.addTopLevelGroup() is guarded solely by auth.groups().requireManage() (GroupsResource.java:180-210), an admin with only all-groups VIEW permission can create top-level groups and move existing groups to top level.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "No migration adds the Groups type resource and the new scopes to realms whose admin-permissions client already exists, because init() returns early in that case.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch adds GROUPS_RESOURCE_TYPE and three new scopes to AdminPermissionsSchema (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:56,69-71,79), but AdminPermissionsSchema.init() returns early when realm.getAdminPermissionsClient() != null (AdminPermissionsSchema.java:246-252) before creating scopes and resource-type resources (AdminPermissionsSchema.java:264-279). No migration in DefaultMigrationManager (model/storage-private/src/main/java/org/keycloak/storage/datastore/DefaultMigrationManager.java:83-126) or in this patch backfills them for existing admin-permissions clients, leaving GroupPermissionsV2.hasPermission() (services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:144-147) to pass a null resource to policyStore.findByResource().",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

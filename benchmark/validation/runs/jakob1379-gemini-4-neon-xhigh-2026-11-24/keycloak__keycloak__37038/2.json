@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In AdminPermissionsSchema.java:120-128, getOrCreateResource() creates per-group resources via resourceStore.create() and updates their scopes without ever calling resource.setType(resourceType), leaving type null, whereas init() sets type to \"Groups\" on the all-groups resource at AdminPermissionsSchema.java:273-274. Consequently, resourceStore.findByType(server, AdminPermissionsSchema.GROUPS_RESOURCE_TYPE, ...) in GroupPermissionsV2.java:121 only matches the all-groups type resource and misses all per-group resources.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

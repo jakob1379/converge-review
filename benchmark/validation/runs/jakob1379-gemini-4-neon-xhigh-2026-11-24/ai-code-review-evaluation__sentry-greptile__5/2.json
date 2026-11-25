@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py:50-60, validate_timestamp (line 52) and validate_age (line 58) check truthiness of self.initial_data.get(\"age\") and self.initial_data.get(\"timestamp\"), treating 0 as absent. Consequently, age=0 combined with timestamp=0 passes validation completely (while age=0 with a non-zero timestamp bypasses validate_timestamp though validate_age still rejects it).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

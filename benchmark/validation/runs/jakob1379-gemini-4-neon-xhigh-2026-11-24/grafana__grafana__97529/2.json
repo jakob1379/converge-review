@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch eagerly calls s.Init(ctx) in resource.NewResourceServer (pkg/storage/unified/resource/server.go:258-262) using a context.Background()-derived context with no deadline (pkg/storage/unified/resource/server.go:229-235). Because unified.ProvideUnifiedStorageClient is wired into wireBasicSet via apiserver.ProvideService and enters the default SQL branch even for the default legacy storage_type (pkg/server/wire.go:216, pkg/services/apiserver/service.go:143, pkg/storage/unified/client.go:42,95), any DB or search init failure or hang now aborts or blocks Grafana server startup during server.Initialize (pkg/cmd/grafana-server/commands/cli.go:108).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

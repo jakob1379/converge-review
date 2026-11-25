@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/storage/unified/search/bleve.go:72-141, BuildIndex only locks b.cacheMu around the unconditional b.cache[key] = idx write at lines 137-139, and getOrCreateIndex in pkg/storage/unified/resource/search.go:287-307 (called concurrently by Search at lines 147 and 158 and handleEvent at line 237) has no per-key synchronization. Concurrent builds for the same key overwrite each other in b.cache\u2014leaving one index untracked and potentially losing updates written by handleEvent at pkg/storage/unified/resource/search.go:257\u2014and can invoke bleve.New(dir, mapper) concurrently on the same directory at pkg/storage/unified/search/bleve.go:96-98 when size > b.opts.FileThreshold.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

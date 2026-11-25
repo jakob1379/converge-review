@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:25-27 sets `refreshTokenResponse.data.refresh_token = \"refresh_token\"` whenever `refresh_token` is falsy or omitted (which is allowed by `refreshTokenResponseSchema` at packages/app-store/office365calendar/lib/CalendarService.ts:56 and by `minimumTokenResponseSchema`). Callers then overwrite and persist it over the real stored refresh token via `prisma.credential.update` in packages/app-store/office365calendar/lib/CalendarService.ts:263-272 and packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:104,120-124.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

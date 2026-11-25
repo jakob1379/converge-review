@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "Admin::EmbeddingController#update (app/controllers/admin/embedding_controller.rb:9-11) ignores params and only runs the same render_serialized call as #show (lines 5-7) without persisting anything. Both the PUT route (config/routes.rb:139) and the unreferenced saveChanges action calling update({}) (app/assets/javascripts/admin/controllers/admin-embedding.js.es6:5-7, unused in app/assets/javascripts/admin/templates/embedding.hbs) are dead code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/controllers/groups_controller.rb:22-26, `limit = (params[:limit] || 50).to_i` and `offset = params[:offset].to_i` are passed directly to `.limit(limit).offset(offset)` without lower-bound validation or an upper cap, so negative values generate invalid negative SQL `LIMIT`/`OFFSET` clauses in PostgreSQL and arbitrary positive `limit` values are uncapped. The patch rewrote these lines and removed the `if group.automatic?` guard, exposing all groups to this unvalidated input.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:9-11, the migration directly indexes execute(...)[0]['id'] on the PG::Result returned by the PostgreSQL adapter without checking whether any rows were returned (unlike the cmd_tuples > 0 guard used on lines 18-20). When no matching embed_category row exists in site_settings (such as on fresh installs, test databases, or sites without a customized embed_category), PG::Result#[0] raises IndexError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

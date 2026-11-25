@@ -1,0 +1,33 @@
+{
+ "findings": [
+  {
+   "issue": "i5",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/features/bookings/lib/handleCancelBooking.ts, `apiDeletes.push(deletedEvent)` pushes the resolved value rather than a promise. The later `Promise.all(prismaPromises.concat(apiDeletes))` therefore does not wait for those deletions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/bookings/lib/handleCancelBooking.ts:460-470, the recurring-booking cancellation path uses an unawaited async .forEach callback that awaits calendar?.deleteEvent(...) at line 466 and pushes the resolved value deletedEvent into apiDeletes at line 467 rather than a promise. Consequently, await Promise.all(prismaPromises.concat(apiDeletes)) at packages/features/bookings/lib/handleCancelBooking.ts:652 does not wait for those calendar deletions to complete.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

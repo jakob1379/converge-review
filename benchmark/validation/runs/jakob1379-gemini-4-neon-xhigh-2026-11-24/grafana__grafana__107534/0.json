@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch calls datasource.applyTemplateVariables(query, request.scopedVars, request.filters) in public/app/plugins/datasource/loki/querySplitting.ts:299 and public/app/plugins/datasource/loki/shardQuerySplitting.ts:52 (which delegates to runSplitQuery at shardQuerySplitting.ts:163), while keeping scopedVars and filters on subRequest into LokiDatasource.runQuery -> super.query (datasource.ts:349-351), where packages/grafana-runtime/src/utils/DataSourceWithBackend.ts:185 calls applyTemplateVariables again. Because applyTemplateVariables invokes addAdHocFilters (datasource.ts:1127) and addFilterAsLabelFilter (modifyQuery.ts:510) appends label filter clauses without deduplication, filters and template variables are applied twice on the time-split path and three times on the shard path, duplicating filters in the generated LogQL.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:46-48, `isTeamAdminOrOwner` combines `await isTeamAdmin(...)` and `await isTeamOwner(...)` with `&&` instead of `||`. Because `isTeamAdmin` matches ADMIN or OWNER while `isTeamOwner` matches only OWNER (packages/lib/server/queries/teams/index.ts:264-294), team ADMINs who are neither organizer nor attendee evaluate to false and get a FORBIDDEN error at addGuests.handler.ts:54-56.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

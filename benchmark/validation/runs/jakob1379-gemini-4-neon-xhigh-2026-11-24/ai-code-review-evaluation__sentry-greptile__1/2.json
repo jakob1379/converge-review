@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/paginator.py:877-882, when enable_advanced_features is true and cursor.offset < 0, OptimizedCursorPaginator.get_result slices the Django QuerySet directly with the negative start_offset (queryset[start_offset:stop]), which raises ValueError because Django QuerySets forbid negative indexing. Neither get_result nor Endpoint.paginate (src/sentry/api/base.py:525-540, which only catches BadPaginationError) converts this error, so an uncaught exception from a cursor like 0:-10:0 returns HTTP 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/serializers/user_serializer.rb:43,105-111,137-155, `:website_name` is serialized as an attribute but omitted from `untrusted_attributes` (unlike `:website`), and neither `website_name` nor `include_website_name` checks `scope.restrict_user_fields?(object)`. As a result, TL0 users' website host/path is exposed to anonymous viewers in both the API payload and user profile template, whereas previously it was derived client-side from the restricted `model.website`.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

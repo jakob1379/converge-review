@@ -1,0 +1,97 @@
+{
+ "findings": [
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Check returns a denial immediately from permDenialCache but ignores denials in the permission cache so that new grants are picked up. Once a denial is stored in permDenialCache, any permission granted afterward is blocked for up to the cache TTL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/authz/rbac/service.go:116-121, Check immediately returns Allowed: false on a permDenialCache hit, whereas pkg/services/authz/rbac/service.go:123-136 only short-circuits permCache hits when allowed is true so denials fall through to the database. Because pkg/services/authz/rbac/service.go:153-155 stores DB denials in permDenialCache for shortCacheTTL (30s, configured at pkg/services/authz/rbac/service.go:85) with no invalidation in pkg/services/authz/rbac/cache.go, any permission granted afterward for that request is blocked until the cache TTL expires.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TestService_getUserPermissions no longer has a cacheHit:true case, so the cacheHit field and both 'if tc.cacheHit' branches are dead. No test asserts the always-go-to-store behavior or the removed anonymous cache read.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/authz/rbac/service_test.go:333-395, removing the cacheHit:true case from TestService_getUserPermissions leaves the cacheHit field (line 337) always false and both 'if tc.cacheHit' branches (lines 367-369 and 388-390) dead. No test directly asserts that getUserPermissions always queries the store when permCache is populated (TestService_CacheCheck at lines 947-972 only exercises outdated-cache fallback through Check without asserting store calls), and no test covers the removed cache read in getAnonymousPermissions (pkg/services/authz/rbac/service.go:419-437).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The newly added log message 'could not check permission' starts with a lowercase letter, which violates the convention that messages start with a capital letter.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Although pkg/services/authz/rbac/service.go:127 adds a lowercase log message `could not check permission`, no capitalization convention exists in contribute/backend/style-guide.md or .golangci.yml, and every existing log message in pkg/services/authz/rbac/service.go (including the identical pre-existing line at pkg/services/authz/rbac/service.go:148) and pkg/services/authz/rbac/cache.go starts with a lowercase letter.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

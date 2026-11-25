@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "OptimizedCursorPaginator.get_item_key (src/sentry/api/paginator.py:838-840) passes getattr(item, self.key) directly to math.floor/math.ceil without converting datetimes, whereas OrganizationAuditLogsEndpoint.get (src/sentry/api/endpoints/organization_auditlogs.py:70-83) uses it with order_by=\"-datetime\" on AuditLogEntry.datetime (src/sentry/models/auditlogentry.py:69, a DateTimeField). For any non-empty page hitting that branch, build_cursor calls get_item_key and raises an unhandled TypeError, resulting in a 500 response.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

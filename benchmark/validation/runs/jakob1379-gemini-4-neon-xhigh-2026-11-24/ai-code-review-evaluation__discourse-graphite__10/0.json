@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:9-11, the migration directly indexes execute(...)[0]['id'] on the PG::Result without checking cmd_tuples/ntuples first (unlike lines 18-20). When no matching embed_category row exists in site_settings (e.g., fresh installs, test DBs, or sites without embedding configured), PG::Result#[0] raises IndexError and aborts the migration.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

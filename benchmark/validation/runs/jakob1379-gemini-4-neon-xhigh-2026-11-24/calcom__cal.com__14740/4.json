@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/booking/BookingListItem.tsx:193-200 and 357-361, the new add_members action is exposed on seated bookings and passes only bookingId (unlike reschedule/cancel at lines 173 and 221 which pass seatReferenceUid). In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:52-56 and 92-106 (with input schema addGuests.schema.ts:3-6), any seat attendee passes authorization and prisma.booking.update inserts guests directly onto the shared Booking by id without seat-level scoping or BookingSeat handling, then updates the shared calendar event and emails all attendees on the booking.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

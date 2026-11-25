@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "app/views/embed/best.html.erb:6 closes the header conditional with '<%- end if %>' instead of '<%- end %>'. Depending on whether the ERB compiler emits a newline or semicolon after the statement, the stray trailing 'if' either parses as a postfix conditional on the subsequent buffer append (reordering execution) or raises a Ruby SyntaxError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

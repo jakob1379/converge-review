@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:126-143, DualWriterMode3.Update passes the caller's original objInfo directly to d.Legacy.Update inside an unawaited goroutine (line 139) instead of wrapping the Storage.Update result in updateWrapper. Because LegacyStorage.Update implementations such as pkg/registry/apis/playlist/legacy_storage.go:141-146 fetch legacy's own old object and call objInfo.UpdatedObject(ctx, old), the update logic (such as patches, SSA, or transformers) is re-applied against legacy's state after Update returns and can produce a different object than unified storage stored.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/authz/rbac/service.go:116-121, Check immediately returns Allowed: false on a permDenialCache hit before consulting permCache or the database, whereas lines 123-136 ignore denials in permCache so new grants fall through to getIdentityPermissions. Because denials are written to permDenialCache at pkg/services/authz/rbac/service.go:153-155 with shortCacheTTL (30s, lines 31 and 85) and never invalidated, any permission granted afterward for that key is blocked until the TTL expires.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

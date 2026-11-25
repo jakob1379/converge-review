@@ -347,8 +347,21 @@ codex exec --model <model> -c model_reasoning_effort="high" --sandbox read-only 
 
 ## Gemini
 
-A separate Gemini pass is welcome as its own run directory, for example
-`validation/runs/<org>-<gemini model>-<YYYY-MM-DD>/`. `verify.py` has no Gemini backend: `--cli` accepts `claude`
-or `codex` only. A Gemini pass needs a backend added to `verify.py` first, in its own pull request, using the same
-`SYSTEM` and `TASK` text and recording `cli`, `model` and `effort` the same way. We review that change before any
-Gemini run, and the run's `RUN.md` lists its protocol differences as above.
+A Gemini pass is its own run directory, for example `validation/runs/<org>-<gemini model>-<YYYY-MM-DD>/`.
+`verify.py --cli gemini` drives Antigravity's ACP server (`agy_acp_server`, JSON-RPC over stdio): one fresh server
+and session per finding, signed in with the cached Google login (`authenticate` with `oauth-personal`), and the
+model set with `session/set_model` to `<--model>-<--effort>`, for example `gemini-4-neon-xhigh`. Run it exactly as
+steps 7 to 11, with `--cli gemini --model gemini-4-neon --effort xhigh`.
+
+Differences from the Claude runs, besides those listed for Codex:
+
+1. ACP has no system-prompt field, so the system prompt is prepended to the task, as for Codex.
+2. The session runs in Antigravity's default permission mode. Every permission request for a tool whose kind is
+   not `read`, `search` or `think` is rejected; each request is recorded in the verdict as `permission_requests`.
+   Tools that Antigravity runs without asking are not restricted by `verify.py`; the dirty-checkout check after
+   each PR is the guard against edits.
+3. `usage` is the `usage` (or `_meta`) of the `session/prompt` result, as Antigravity returned it.
+4. Antigravity cannot read files outside the session's working directory, which is the checkout, so the patch is
+   also sent as an embedded `resource` block in the prompt. The path in the task text is the resource's URI.
+5. A reply that is `unverifiable` because the verifier could not read the files (`NO_ACCESS` in `verify.py`) is a
+   failed call, kept as `<n>.failed.txt` and re-run, not a verdict. This applies to every backend.

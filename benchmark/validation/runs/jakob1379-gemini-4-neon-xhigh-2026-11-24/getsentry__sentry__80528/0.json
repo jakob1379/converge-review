@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/monitors/logic/incident_occurrence.py:160-162, get_monitor_environment_context() copies monitor_environment.monitor.config and overwrites config[\"schedule_type\"] with get_schedule_type_display(), but line 168 returns monitor_environment.monitor.config instead of the modified config copy. However, this bug already existed verbatim in src/sentry/monitors/logic/mark_failed.py before the patch merely relocated the function.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch makes `.small-action` a flex container at app/assets/stylesheets/common/base/topic-post.scss:263-265, which renders `float: left` on its direct child `.topic-avatar` (topic-post.scss:270, rendered at app/assets/javascripts/discourse/templates/components/small-action.hbs:1) ignored and dead. Note that `.avatar` (topic-post.scss:298) and `button` (topic-post.scss:309) are nested inside the non-flex block `.small-action-desc` (small-action.hbs:2-12), so only `.topic-avatar`'s float is actually dead.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

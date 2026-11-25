@@ -1,0 +1,213 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In fetch_error_details, error_ids are zipped with events.values() from nodestore get_multi(). That dict does not preserve input order: it dedupes ids, merges cached items after fetched ones, and omits missing entries. As a result, error IDs get paired with the wrong event data.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:107-118, fetch_error_details zips error_ids with events.values() returned by nodestore.backend.get_multi(node_ids). NodeStorage.get_multi (src/sentry/nodestore/base.py:181,199-205) deduplicates ids and merges cached entries after fetched ones via items.update(cache_items), and DjangoNodeStorage._get_bytes_multi (src/sentry/nodestore/django/backend.py:48-49) omits missing rows without preserving input order, causing event_id to be paired with the wrong event data.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When the use-table-widget-visualization feature flag is enabled, TableWidgetVisualization is rendered with columns=[] and empty tableData. The actual results and loading state are ignored, so the table is always blank.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In static/app/views/dashboards/widgetCard/chart.tsx:164-174, when `organization.features.includes('use-table-widget-visualization')` is true, `TableWidgetVisualization` is rendered with hardcoded `columns={[]}` and empty `tableData` (`data: [], meta: {fields: {}, units: {}}`), ignoring `result.data`, `result.meta`, `fields`, and `loading`. Inside static/app/views/dashboards/widgets/tableWidget/tableWidgetVisualization.tsx:92-105, this passes empty `data` and `columnOrder` arrays directly to `GridEditable`, leaving the table always blank.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The age/timestamp mutual-exclusion validators in BrowserReportSerializer use the truthiness of self.initial_data.get(...). A value of 0 is therefore treated as absent, and age=0 combined with timestamp passes validation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py:50-60, validate_timestamp (line 52) and validate_age (line 58) check truthiness of self.initial_data.get(\"age\") and self.initial_data.get(\"timestamp\"), treating 0 as absent. Consequently, age=0 combined with timestamp=0 passes validation completely (while age=0 with a non-zero timestamp bypasses validate_timestamp though validate_age still rejects it).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Both age and timestamp are required=False with only field-level validators, so a report with neither field is accepted. The docstrings say one of them must be present.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py:47-48, both `age` and `timestamp` are defined with `required=False`, and `BrowserReportSerializer` only implements field-level `validate_timestamp` and `validate_age` (lines 50-60) without an object-level `validate()` method. Because DRF skips field validators when optional fields are omitted, a report containing neither field passes validation despite the docstrings at lines 51 and 57.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i12",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The useGetTraceItemAttributeValues call defaults to page filters instead of using the provided projectIds prop.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In static/app/views/insights/pages/transactionNameSearchBar.tsx:54-57, TransactionNameSearchBar calls useGetTraceItemAttributeValues without passing its projectIds prop (lines 29 and 36), so useGetTraceItemAttributeValues falls back to selection.projects from page filters at static/app/views/explore/hooks/useGetTraceItemAttributeValues.tsx:100. This omission pre-existed in the previous useTraceItemAttributeValues call and the patch only renamed the hook and removed unused arguments.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i38",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The requests.post call to Snuba in tests has no timeout.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/sentry/replays/test_project_replay_summarize_breadcrumbs.py:41-43, the newly added store_replays helper calls requests.post(settings.SENTRY_SNUBA + \"/tests/entities/replays/insert\", json=[replay]) without specifying a timeout argument. Although this matches other Snuba test helpers in src/sentry/testutils/cases.py, omitting timeout can cause the test request to hang indefinitely if Snuba is unresponsive.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i46",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The refactor changes behaviour: it drops staleTime:0/retry:false, makes isLoading reflect isFetching, and discards responseJSON in the thrown Error. It also makes useMemos recompute every render because projectIds is a fresh array, builds options twice, and leaves the search parameter with no caller.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In static/app/views/explore/hooks/useTraceItemAttributeKeys.tsx:50-61, switching from useApiQuery to useQuery drops staleTime:0 and retry:false (defaulting to 3 retries) and returns isLoading: isFetching, while static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx:84-86 catches RequestError and rethrows a plain Error stringifying e, discarding responseJSON. Additionally, useTraceItemAttributeKeys.tsx:26-42 derives an unmemoized projectIds array via projects.map() that invalidates both useMemos when projects is defined, builds query options in both useTraceItemAttributeKeys.tsx:31 and useGetTraceItemAttributeKeys.tsx:66, and leaves the search/queryString parameter at useGetTraceItemAttributeKeys.tsx:34,65 unused by its only caller at useTraceItemAttributeKeys.tsx:53.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

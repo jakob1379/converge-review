@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/storage/unified/resource/server.go:229-262, NewResourceServer creates a deadline-free context from context.Background() and eagerly runs s.Init(ctx), which executes DB initialization/migrations/ping (pkg/storage/unified/sql/backend.go:80-99), search index building (pkg/storage/unified/resource/search.go:167-212), and watcher queries, returning any error. Because unified.ProvideUnifiedStorageClient (pkg/storage/unified/client.go:101 -> pkg/storage/unified/sql/server.go:77) is unconditionally wired into server.Initialize via pkg/server/wire.go:169, pkg/registry/backgroundsvcs/background_services.go:69, and pkg/services/apiserver/service.go:142 (including for the default legacy storage_type), a DB or search error or hang fails or blocks Grafana startup.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

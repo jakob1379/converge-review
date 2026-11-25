@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/organizations/create.handler.ts:151-153, both `slug` and `metadata.requestedSlug` are gated on `IS_TEAM_BILLING_ENABLED ? ... : {}`. When billing is enabled the org receives a `slug` immediately before payment, and when billing is disabled neither `slug` nor `requestedSlug` is set, causing `NoOrganizationSlugError` in packages/trpc/server/routers/viewer/organizations/createTeams.handler.ts:67-69.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

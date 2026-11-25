@@ -1,0 +1,61 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "pkg/server/wire.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "pkg/server/wire.go (lines 374-375) still registers anonstore.ProvideAnonDBStore and binds AnonStore. ProvideAnonDBStore now requires an int64 parameter that no Wire provider supplies, and ProvideAnonymousDeviceService builds its own store instead of receiving AnonStore, so wire generation fails or the binding is dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/server/wire.go:374-375 still registers anonstore.ProvideAnonDBStore and binds anonstore.AnonStore to *anonstore.AnonDBStore, even though the patch changed ProvideAnonDBStore (pkg/services/anonymous/anonimpl/anonstore/database.go:52) to require an unprovided int64 deviceLimit parameter. Because ProvideAnonymousDeviceService (pkg/services/anonymous/anonimpl/impl.go:36-43) now takes db.DB and constructs the store directly instead of injecting anonstore.AnonStore, the Wire binding is dead in OSS and will fail Wire generation for any consumer that requests AnonStore.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i7",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "tagDeviceUI writes the device ID to localCache before calling CreateOrUpdateDevice and does not evict it on ErrDeviceLimitReached. Later requests from a rejected device hit the cache, TagDevice returns nil, and the device bypasses the limit until the cache entry expires.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In pkg/services/anonymous/anonimpl/impl.go:87, tagDeviceUI inserts the device key into localCache (29m TTL, impl.go:42) before calling CreateOrUpdateDevice at impl.go:93 and returns on error without evicting it. Subsequent requests from a rejected device hit the cache at impl.go:83-85, causing TagDevice to return nil and Anonymous.Authenticate (pkg/services/anonymous/anonimpl/client.go:44-58) to grant access until the entry expires.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,89 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The unsubscribe endpoint is a GET route whose action changes and saves TopicUser.notification_level without CSRF protection or a signed token, so a third-party page (e.g. via <img src=.../unsubscribe>) can change a logged-in user's notification level for any topic they can see.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "config/routes.rb:440-441 maps GET routes to topics#unsubscribe and app/controllers/topics_controller.rb:32 skips check_xhr for :unsubscribe, so Rails's protect_from_forgery (app/controllers/application_controller.rb:21) does not enforce CSRF protection on it. In app/controllers/topics_controller.rb:98-116, TopicsController#unsubscribe validates visibility via TopicView and directly mutates and saves TopicUser.notification_level without any CSRF check or signed token, allowing cross-site GET requests (e.g., via an <img> tag) to alter a logged-in user's topic notification level.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In TopicsController#unsubscribe, TopicUser.find_by can return nil when the user has no topic_users row for the topic. The next line calls tu.notification_level without a nil check, which raises and returns a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/controllers/topics_controller.rb:105, `TopicUser.find_by(user_id: current_user.id, topic_id: params[:topic_id])` returns `nil` if the logged-in user has no `topic_users` row for the topic (neither `TopicView.new` at line 99 nor any filter creates one). Line 107 then calls `tu.notification_level` without a nil check, raising an unhandled `NoMethodError` and returning a 500.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i20",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "TopicsController#unsubscribe calls tu.save! directly instead of TopicUser.change. As a result, notifications_reason_id/notifications_changed_at are not set and the MessageBus notification_level_change publish is skipped, so update_last_read auto-tracking can later overwrite the user's choice.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "TopicsController#unsubscribe (app/controllers/topics_controller.rb:98-116) mutates tu.notification_level and calls tu.save! directly (line 113) instead of TopicUser.change (app/models/topic_user.rb:77-114), skipping notifications_changed_at/notifications_reason_id updates (lines 87-90) and the MessageBus notification_level_change publish (lines 112-114). Because notifications_reason_id can remain NULL, TopicUser.update_last_read (app/models/topic_user.rb:160-167) can later overwrite notification_level back to :tracking.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

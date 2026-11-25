@@ -1,0 +1,269 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In account-ui, error-invalid-multivalued-size was changed from i18next {{N}} placeholders to MessageFormat {N}/choice syntax. account-ui uses default i18next interpolation without i18next-icu, so the string renders with raw placeholders.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "js/apps/account-ui/maven-resources/theme/keycloak.v3/account/messages/messages_en.properties:188 defines error-invalid-multivalued-size with MessageFormat syntax (Attribute {0} must have at least {1} and at most {2} {2,choice,0#values|1#value|1<values}.) instead of i18next {{N}} placeholders used by the other error-* keys and existing community translations. Because js/apps/account-ui/src/i18n.ts:25-47 initializes i18next with default interpolation and no i18next-icu plugin (nor is it in js/apps/account-ui/package.json), setUserProfileServerError in js/libs/ui-shared/src/user-profile/utils.ts:62-84 renders the string with raw placeholders.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "messages_lt.properties",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the Lithuanian bundles messages_lt.properties (account totpStep1 and login loginTotpStep1), the value was replaced with the Italian text 'Installa una delle seguenti applicazioni sul tuo cellulare:' instead of Lithuanian.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both Lithuanian message bundles contain the Italian string 'Installa una delle seguenti applicazioni sul tuo cellulare:' instead of Lithuanian at themes/src/main/resources-community/theme/base/account/messages/messages_lt.properties:101 (totpStep1) and themes/src/main/resources-community/theme/base/login/messages/messages_lt.properties:71 (loginTotpStep1), while surrounding keys in both files are in Lithuanian.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The method name 'santizeAnchors' is misspelled; it should be 'sanitizeAnchors'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "unverifiable",
+    "reason": "The claim does not specify a file location, access to change.patch and the external .git worktree metadata is denied as outside the allowed workspace directories, and shell/search/subagent tools are unavailable or blocked, preventing inspection of the patched files.",
+    "introduced_by_patch": false,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i11",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "POLICY_SOME_HTML, POLICY_NO_HTML and HTML_TAGS use constant naming but are non-static instance fields rebuilt per instance. This is inconsistent with the private static final ANCHOR_PATTERN.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java, POLICY_SOME_HTML (lines 58-61), POLICY_NO_HTML (line 63), and HTML_TAGS (line 139) use UPPER_SNAKE_CASE constant naming but are package-private non-static instance fields rebuilt on every instantiation (e.g., per file in ThemeVerifierMojo.java:51). This is inconsistent with ANCHOR_PATTERN at VerifyMessageProperties.java:145, which is declared private static final.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The commons-text dependency version 1.13.0 is outdated compared with 1.15.0.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/pom.xml:80-85 declares org.apache.commons:commons-text at version 1.13.0 (misc/theme-verifier/pom.xml:83), added for HTML entity unescaping in misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:93,130. Version 1.13.0 is outdated compared with the released 1.15.0 version (which also updates transitive commons-lang3 past CVE-2025-48924), though impact is limited to this non-deployed build-time Maven plugin.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The theme verifier anchor check does not fail when a translation drops an anchor present in the source, so translations can lose links and still pass.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:150-162, santizeAnchors only loops while matcher.find() matches anchors in the translated value and never checks whether englishMatcher.find() still has unmatched anchors remaining from englishValue. Because verifySafeHtml at lines 88-112 performs no other anchor presence check, a translation that drops an anchor tag from the source still passes verification.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The sanitize/unescape/strip-comment/trim-diff pipeline and the commons-text dependency duplicate functionality available through OWASP's HtmlChangeListener.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:92-112 (with matching unescape at :130) calls single-arg policy.sanitize(value), unescapes HTML4 via StringEscapeUtils.unescapeHtml4, strips '<!-- -->', and diffs trimmed substrings solely to detect and report stripped HTML, which is the only usage of commons-text added in misc/theme-verifier/pom.xml:80-85. OWASP's PolicyFactory.sanitize(String, HtmlChangeListener, CTX) already reports discarded tags and attributes directly through HtmlChangeListener, making both this pipeline and the commons-text dependency redundant.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "ContextualLoggerMiddleware dereferences req.PluginContext without nil checks in QueryData, CallResource, CheckHealth, and CollectMetrics (pkg/services/pluginsintegration/clientmiddleware/contextual_logger_middleware.go:39-57), whereas LoggerMiddleware and other middlewares guard against nil req (pkg/services/pluginsintegration/clientmiddleware/logger_middleware.go:63,77,90,104). Impact is limited because client.Decorator rejects nil requests before running middlewares (pkg/plugins/manager/client/decorator.go:25-60), so this only panics if ContextualLoggerMiddleware is invoked directly outside Decorator.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

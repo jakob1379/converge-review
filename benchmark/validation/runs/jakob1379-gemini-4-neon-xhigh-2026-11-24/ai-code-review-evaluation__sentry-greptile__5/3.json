@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/issues/endpoints/browser_reporting_collector.py:47-48, both `age` and `timestamp` are defined with `required=False`, and `BrowserReportSerializer` only implements field-level `validate_timestamp` and `validate_age` (lines 50-60) without an object-level `validate()` method. Because DRF skips field validators when optional fields are omitted, a report containing neither field passes validation despite the docstrings at lines 51 and 57.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

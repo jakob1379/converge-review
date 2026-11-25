@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3_test.go:51-54 (and similarly at lines 110-113, 165-168, 219-222, 272-275, 329-332), every test passes the same *mock.Mock instance to both legacyStoreMock and storageMock, so setupLegacyFn expectations in TestMode3_Create (lines 30-42) and TestMode3_Update (lines 310-315) either satisfy Storage calls directly or duplicate setupStorageFn on the same mock. None of the tests call AssertExpectations or AssertNotCalled, nor do they wait for the background goroutines launched for legacy writes in pkg/apiserver/rest/dualwriter_mode3.go:50,108,134,161.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

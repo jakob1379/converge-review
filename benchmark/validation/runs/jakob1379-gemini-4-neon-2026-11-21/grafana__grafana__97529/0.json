@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "TestIntegrationWillRunInstrumentationServerWhenTargetHasNoHttpServer in pkg/server/module_server_test.go:35-38 skips postgres with a TODO comment instead of fixing the test (where addStorageServerToConfig at pkg/server/module_server_test.go:75-79 hardcodes db_host to localhost, unlike MySQL). Because NewResourceServer now eagerly calls s.Init(ctx) at pkg/storage/unified/resource/server.go:258-262 during storage-server startup, skipping postgres removes CI coverage for a supported backend and masks the startup failure exposed by eager Init.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

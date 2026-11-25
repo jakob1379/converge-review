@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/core/EventManager.ts:511-542, when reference.credentialId is not in this.calendarCredentials and the DB lookup returns null or lacks app.slug, credential remains undefined and line 542 unconditionally calls updateEvent(credential, ...). Inside packages/core/CalendarManager.ts:314, updateEvent dereferences credential.appName and rejects with a TypeError, which causes Promise.all(result) at packages/core/EventManager.ts:590 to reject and fail the update for the whole booking (and because Promise.all is not awaited, it even bypasses the catch block at line 591).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

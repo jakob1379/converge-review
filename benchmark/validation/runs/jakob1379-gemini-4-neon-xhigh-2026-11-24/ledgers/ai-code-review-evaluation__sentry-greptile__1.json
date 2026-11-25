@@ -1,0 +1,93 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "OptimizedCursorPaginator.get_item_key calls math.floor/math.ceil directly on the sort key. With order_by='-datetime' in the audit logs endpoint, that key is a datetime, so a TypeError is raised. DateTimePaginator avoids this by converting to an epoch timestamp first.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/api/paginator.py:838-840, OptimizedCursorPaginator.get_item_key passes getattr(item, self.key) directly to math.floor/math.ceil, unlike DateTimePaginator.get_item_key at src/sentry/api/paginator.py:233-236 which first converts it via float(value.strftime(\"%s.%f\")) * self.multiplier. Because src/sentry/api/endpoints/organization_auditlogs.py:76-83 uses OptimizedCursorPaginator with order_by=\"-datetime\" on AuditLogEntry (where datetime is a DateTimeField at src/sentry/models/auditlogentry.py:69), paginating any non-empty result raises a TypeError.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "organization_auditlogs.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The enable_advanced check in the audit logs endpoint accesses organization_context.member.has_global_access without a None check. member is None for callers without membership, such as superusers, API keys/org auth tokens, legacy org ApiKeys and internal-integration proxy users, so an AttributeError is raised.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At src/sentry/api/endpoints/organization_auditlogs.py:71, the patch adds `enable_advanced = request.user.is_superuser or organization_context.member.has_global_access` without checking if `organization_context.member` is `None` (typed `RpcOrganizationMember | None` at src/sentry/organizations/services/organization/model.py:298). Although superusers short-circuit on `request.user.is_superuser`, non-member callers with `org:write` such as `OrgAuthToken` (src/sentry/api/authentication.py:456-484), legacy `ApiKey` (src/sentry/api/authentication.py:258-286), and SentryApp/internal-integration proxy users (src/sentry/auth/access.py:1007-1027) have `request.user.is_superuser == False` and `organization_context.member is None`, causing an `AttributeError` on every GET request.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When enable_advanced_features is true, OptimizedCursorPaginator.get_result passes a user-supplied negative cursor.offset directly into queryset[start_offset:stop]. Django QuerySets do not support negative indexing, so a crafted cursor (e.g. 0:-10:0) raises an error that is not converted to BadPaginationError and results in a 500.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/api/paginator.py:877-882, when enable_advanced_features is true and cursor.offset < 0, OptimizedCursorPaginator.get_result slices the Django QuerySet directly with the negative start_offset (queryset[start_offset:stop]), which raises ValueError because Django QuerySets forbid negative indexing. Neither get_result nor Endpoint.paginate (src/sentry/api/base.py:525-540, which only catches BadPaginationError) converts this error, so an uncaught exception from a cursor like 0:-10:0 returns HTTP 500.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

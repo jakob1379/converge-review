@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "In static/app/views/explore/hooks/useTraceItemAttributeKeys.tsx:50-61, switching from useApiQuery to useQuery drops staleTime:0 and retry:false (defaulting to 3 retries) and returns isLoading: isFetching, while static/app/views/explore/hooks/useGetTraceItemAttributeKeys.tsx:84-86 catches RequestError and rethrows a plain Error stringifying e, discarding responseJSON. Additionally, useTraceItemAttributeKeys.tsx:26-42 derives an unmemoized projectIds array via projects.map() that invalidates both useMemos when projects is defined, builds query options in both useTraceItemAttributeKeys.tsx:31 and useGetTraceItemAttributeKeys.tsx:66, and leaves the search/queryString parameter at useGetTraceItemAttributeKeys.tsx:34,65 unused by its only caller at useTraceItemAttributeKeys.tsx:53.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

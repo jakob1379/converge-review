@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/storage/unified/search/bleve.go:72-141, BuildIndex no longer holds cacheMu across the build and only locks around b.cache[key] = idx (bleve.go:137-139), while getOrCreateIndex (pkg/storage/unified/resource/search.go:287-307) has no locking between GetIndex and build. Concurrent Search and handleEvent callers can therefore run BuildIndex simultaneously for the same key, racing on bleve.New(dir, mapper) (bleve.go:96-98) for file-backed indexes and overwriting b.cache[key] so the losing index goes untracked and any writes to it are lost.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

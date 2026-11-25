@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "While config/initializers/i18n.rb:9 does use send(:include, I18n::Backend::Fallbacks), this repository explicitly supports and runs required CI builds on Ruby 2.0.0 (.travis.yml:23, README.md:28). Because Module#include is private in Ruby 2.0.0, calling .include directly would raise NoMethodError, so send(:include, ...) is required rather than a problem.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

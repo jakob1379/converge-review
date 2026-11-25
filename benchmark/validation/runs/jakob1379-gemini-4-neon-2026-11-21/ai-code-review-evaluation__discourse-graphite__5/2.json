@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/stylesheets/common/base/topic-post.scss:263-270, .small-action uses @include flexbox() while its direct flex-item child .topic-avatar (app/assets/javascripts/discourse/templates/components/small-action.hbs:1) still sets float: left, which is ignored on flex items. Note that .avatar (topic-post.scss:298) and button (topic-post.scss:309) are nested inside the non-flex block container .small-action-desc (small-action.hbs:2-11), so their float declarations remain active rather than dead.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

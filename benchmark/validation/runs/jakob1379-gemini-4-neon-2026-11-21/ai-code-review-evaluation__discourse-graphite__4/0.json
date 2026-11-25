@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/topic_embed.rb:13, url is interpolated unescaped into single-quoted <a href='#{url}'>#{url}</a>, and app/models/topic_embed.rb:22 creates the post with cook_method: Post.cook_methods[:raw_html], causing Post#cook at app/models/post.rb:133 to return raw unsanitized HTML that is rendered raw in templates. Because Ruby's URI(url) permits single quotes and attribute characters (e.g. in a query or fragment on embeddable_host via app/controllers/embed_controller.rb:9), a crafted embed_url breaks out of the href attribute and injects event-handler attributes (stored XSS).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

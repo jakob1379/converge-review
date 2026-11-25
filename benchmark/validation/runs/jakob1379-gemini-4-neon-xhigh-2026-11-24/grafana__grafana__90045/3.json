@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go:96-97, Delete enriches d.Log into log with name, kind, and method but then calls klog.NewContext(ctx, d.Log) instead of passing log, regressing the prior klog.NewContext(ctx, log) call. The identical bug is also present in pkg/apiserver/rest/dualwriter_mode1.go:145-146.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

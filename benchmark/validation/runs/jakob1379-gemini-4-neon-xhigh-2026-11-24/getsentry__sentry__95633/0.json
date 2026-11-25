@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "ResultsStrategyFactory.create_thread_queue_parallel_worker passes arroyo's commit callable via commit_offsets into SimpleQueueProcessingStrategy (src/sentry/remote_subscriptions/consumers/result_consumer.py:244-259), which spawns a daemon thread self.commit_thread that invokes self.commit_function(committable) from _commit_loop rather than poll() on the StreamProcessor thread (src/sentry/remote_subscriptions/consumers/queue_consumer.py:270-287). Because arroyo's StreamProcessor and KafkaConsumer maintain unlocked offset/staging state accessed on the consumer thread during poll(), commit_offsets(), and rebalance callbacks, calling commit from the background thread causes concurrent unlocked access.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "fetch",
+   "allowed": false
+  },
+  {
+   "kind": "fetch",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

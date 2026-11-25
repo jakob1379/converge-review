@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "app/assets/javascripts/admin/templates/group.hbs:21 uses the keyword form `{{each member in members itemView=\"group-member\"}}`, so Ember's collectionHelper (vendor/assets/javascripts/development/ember.js:7997-7998) binds the itemView's `_context` to `_parentView.context` (the AdminGroupController / group) rather than `content`, while exposing the Discourse.User only via the `member` keyword (ember.js:8223-8225). Thus `{{#unless automatic}}` in app/assets/javascripts/admin/templates/group_member.hbs:1 resolves against the group controller and hides the remove link for automatic groups.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,33 @@
+{
+ "findings": [
+  {
+   "issue": "i4",
+   "path": "pkg/expr/sql/db.go",
+   "line": null,
+   "severity": "Minor",
+   "claim": "TablesList now uses the stub NewInMemoryDB(), whose RunCommands returns a generic 'not implemented' error. Upstream code reports this as 'invalid SQL' / sql-invalid-sql, so valid SQL expressions fail with a validation error instead of an explicit 'disabled' error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "pkg/expr/sql/parser.go:23-29 calls NewInMemoryDB().RunCommands, whose stub in pkg/expr/sql/db.go:16-18 always returns errors.New(\"not implemented\"). On the default buildCMDNode path (pkg/expr/nodes.go:159-160, when FlagExpressionParser is off), UnmarshalSQLCommand calls NewSQLCommand (pkg/expr/sql_command.go:30-36), which logs \"invalid sql query\" and returns errutil.BadRequest(\"sql-invalid-sql\", ...) for any TablesList error instead of a disabled/not-implemented error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

@@ -1,0 +1,25 @@
+{
+ "verdict": "refuted",
+ "reason": "Although app/assets/javascripts/admin/routes/admin-embedding.js.es6:3 calls `this.store.find('embedding')` without an id, Discourse's custom store in app/assets/javascripts/discourse/models/store.js.es6:64-73 only returns a `_resultSet` collection when `typeof findArgs === \"object\"` (line 67). Because `findArgs` is `undefined`, execution takes the `else` branch at line 70 and calls `_hydrate` on `result['embedding']` (fetched from `/admin/customize/embedding` via app/assets/javascripts/admin/adapters/embedding.js.es6:4-6), resolving to a single model record rather than a collection.",
+ "introduced_by_patch": false,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

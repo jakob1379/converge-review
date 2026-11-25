@@ -1,0 +1,69 @@
+{
+ "findings": [
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The hand-written InsightsBookingServicePublicOptions type flattens the zod discriminated union and makes teamId optional for all scopes. A team-scope call without teamId compiles, fails safeParse at runtime and silently returns empty results; this is also inconsistent with InsightsRoutingService's strict union type.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/lib/server/service/insightsBooking.ts:29-34,58, InsightsBookingServicePublicOptions flattens insightsBookingServiceOptionsSchema (lines 10-27) and makes teamId optional for all scopes, so a team-scope call without teamId compiles, fails safeParse at lines 62-63 (setting this.options = null), and silently returns NOTHING_CONDITION (1=0) at lines 43,125-128. By contrast, packages/lib/server/service/insightsRouting.ts:29,52 uses the strict z.infer discriminated union InsightsRoutingServiceOptions in its constructor.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The org-scope test assertion depends on the order of ids inside ANY(...) arrays. Those ids come from repository queries (findAllByParentId, MembershipRepository.findAllByTeamIds) without orderBy, so the SQL-fragment equality is nondeterministic.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/lib/server/service/__tests__/insightsBooking.integration-test.ts:332-343, the org-scope integration test uses toEqual on a Prisma.sql fragment containing ordered ANY(...) arrays for teamIds and userIds. Those arrays are built without sorting in packages/lib/server/service/insightsBooking.ts:150-169 from TeamRepository.findAllByParentId (packages/lib/server/repository/team.ts:185-198) and MembershipRepository.findAllByTeamIds (packages/lib/server/repository/membership.ts:402-420), neither of which specifies an orderBy clause, making the array order and test equality nondeterministic.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "high"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

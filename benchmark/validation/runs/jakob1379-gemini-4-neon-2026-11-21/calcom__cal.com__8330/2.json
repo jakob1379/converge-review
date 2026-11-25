@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/slots.ts:114, `dayjs(date.start).add(utcOffset, \"minutes\") === dayjs(date.end).add(utcOffset, \"minutes\")` compares two newly created Dayjs object references with `===` and is always false. Consequently, the zero-length ('unavailable all day') override branch at packages/trpc/server/routers/viewer/slots.ts:114-116 never executes, and a slot starting at the override start time falls through to `return true` at packages/trpc/server/routers/viewer/slots.ts:134 instead of being rejected.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "other",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "high"
+}

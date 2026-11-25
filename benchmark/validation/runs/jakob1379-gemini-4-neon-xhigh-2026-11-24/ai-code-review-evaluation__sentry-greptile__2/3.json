@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch switches `span-buf:s:{project_and_trace}:{span_id}` operations from SET to ZSET in place (`p.zadd` at src/sentry/spans/buffer.py:196-199, `p.zscan` at src/sentry/spans/buffer.py:434, and `zcard`/`zunionstore`/`zpopmin` at src/sentry/scripts/spans/add-buffer.lua:45-64) without changing the key prefix, migrating existing keys, or handling `WRONGTYPE`/dual-reads. During a deploy with existing SET keys still queued in `span-buf:q:*`, `zadd`/`zcard`/`zscan` raise Redis `WRONGTYPE` errors (crashing `SpanFlusher` and preventing old SET segments from being read and flushed).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}
