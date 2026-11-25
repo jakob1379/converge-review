@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "Post#cook (app/models/post.rb:130-137) returns raw unchanged when cook_method is :raw_html, skipping PrettyText sanitization; Jobs::PollFeed (app/jobs/scheduled/poll_feed.rb:35-36) passes CGI.unescapeHTML'd RSS HTML and TopicEmbed.import_remote (app/models/topic_embed.rb:48-52) passes ruby-readability output allowing href attributes without scheme filtering into TopicEmbed.import (app/models/topic_embed.rb:22) with cook_method: :raw_html. Subsequent edits via PostRevisor#update_post (lib/post_revisor.rb:70-87) leave cook_method unchanged, so Post's before_save callback (app/models/post.rb:319-322) continues cooking edited content raw.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

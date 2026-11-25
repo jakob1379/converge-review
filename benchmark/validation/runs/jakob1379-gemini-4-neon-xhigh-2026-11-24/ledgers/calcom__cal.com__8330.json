@@ -1,0 +1,121 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the working-hours check in checkIfIsAvailable, `end` is computed from slotStartTime instead of slotEndTime, so start and end are identical. A slot that starts inside working hours but runs past workingHour.endTime is not rejected.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/slots.ts:141-143, checkIfIsAvailable computes both start and end from slotStartTime instead of using slotEndTime (defined at packages/trpc/server/routers/viewer/slots.ts:99). Because end equals start, a slot starting within working hours whose end time exceeds workingHour.endTime is not rejected by the end > workingHour.endTime check.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The working-hours check uses workingHours.find(day matches && slot outside range), so it rejects a slot that is outside any one range for that weekday instead of requiring it to be inside some range. Days with split hours or hours split at UTC midnight lose valid slots.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/slots.ts:138-151, checkIfIsAvailable uses workingHours.find() to return false whenever any workingHour matching slotStartTime.day() does not contain the slot, requiring a slot to fall within every range for that weekday rather than at least one. Because packages/lib/availability.ts:74-121 emits multiple disjoint WorkingHours entries for the same weekday when a user has split hours or hours that cross UTC midnight, valid slots on those days are rejected.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`dayjs(date.start) === dayjs(date.end)` compares object references and is always false. The zero-length ('unavailable all day') date override branch therefore never runs.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At packages/trpc/server/routers/viewer/slots.ts:114, `dayjs(date.start).add(utcOffset, \"minutes\") === dayjs(date.end).add(utcOffset, \"minutes\")` compares two newly created Dayjs objects by reference, so the condition is always false and the zero-length date override rejection branch at line 115 never runs. As a result, slots starting at or straddling the override timestamp fail the subsequent boundary checks (lines 117-125) and wrongly return `true` as available at line 134.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the override check, dayjs(date.start).add(utcOffset, 'minutes') and the equivalent for end are rebuilt four times instead of computing the shifted start/end once per override.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/slots.ts:106-127, the newly added dateOverrides.find callback rebuilds dayjs(date.start).add(utcOffset, \"minutes\") four times (lines 110, 114, 118, and 119) and dayjs(date.end).add(utcOffset, \"minutes\") twice (lines 114 and 123) instead of computing each shifted timestamp once per override.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

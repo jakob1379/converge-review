@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "scripts/test-gcal-webhooks.sh:68 uses BSD/macOS `sed -i '' -E`, which fails on GNU sed (treating `''` as an empty script and the substitution expression as a filename) without updating `$ENV_FILE`. Because the script has no `set -e` or exit-status check, it still prints the success message at scripts/test-gcal-webhooks.sh:73.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

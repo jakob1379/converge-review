@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "While src/sentry/testutils/factories.py:353 checks `if client_sample_rate:`, 0 and 0.0 are not valid error sampling rates in Sentry: src/sentry/event_manager.py:786 strictly requires `0 < client_sample_rate <= 1` and rejects 0 as invalid (also tested in tests/sentry/event_manager/test_event_manager.py:3103-3104), so omitting `sample_rate` for 0/0.0 matches production behavior.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

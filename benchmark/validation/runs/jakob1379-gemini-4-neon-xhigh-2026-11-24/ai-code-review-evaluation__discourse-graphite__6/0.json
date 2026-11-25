@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/serializers/user_serializer.rb:153-155, the patch defines `def include_website_name` without a trailing `?`, whereas ActiveModel::Serializer (v0.8.3) requires `include_<attr>?` predicates (as used throughout UserSerializer). Because `include_website_name?` is undefined, the method is never invoked and `:website_name` (app/serializers/user_serializer.rb:43) is always serialized, returning `nil` (JSON `null`) via `return if website_host.nil?` at app/serializers/user_serializer.rb:140 when no website is set.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

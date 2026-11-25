@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/paginator.py:838-840, OptimizedCursorPaginator.get_item_key passes getattr(item, self.key) directly to math.floor/math.ceil, unlike DateTimePaginator.get_item_key at src/sentry/api/paginator.py:233-236 which first converts it via float(value.strftime(\"%s.%f\")) * self.multiplier. Because src/sentry/api/endpoints/organization_auditlogs.py:76-83 uses OptimizedCursorPaginator with order_by=\"-datetime\" on AuditLogEntry (where datetime is a DateTimeField at src/sentry/models/auditlogentry.py:69), paginating any non-empty result raises a TypeError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

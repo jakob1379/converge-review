@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "The patch defines `self.downsize` twice in `OptimizedImage` (app/models/optimized_image.rb:145 and app/models/optimized_image.rb:149), so the second 3..4-argument definition overwrites the first in Ruby. As a result, existing 5-argument callers like `Jobs::ResizeEmoji#execute` (app/jobs/regular/resize_emoji.rb:14) will raise `ArgumentError`.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

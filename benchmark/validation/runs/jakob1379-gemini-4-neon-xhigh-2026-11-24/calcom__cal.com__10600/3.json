@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/settings/EnableTwoFactorModal.tsx:276-280, the backup-codes-copy button's onClick handler invokes navigator.clipboard.writeText() without awaiting or handling rejections and immediately calls showToast(..., \"success\") on line 279. It also does not guard against navigator.clipboard being undefined in non-secure contexts, which throws a TypeError on click.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:150-162, `santizeAnchors` only iterates over `matcher.find()` on the translated `value` and never checks after the loop whether `englishMatcher.find()` still has unmatched anchor tags from `englishValue`. As a result, a translation that drops one or all anchor tags present in the English source records no error in `messages` and passes `verifySafeHtml()`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

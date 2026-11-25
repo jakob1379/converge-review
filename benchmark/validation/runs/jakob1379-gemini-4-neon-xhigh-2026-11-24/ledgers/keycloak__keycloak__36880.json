@@ -1,0 +1,33 @@
+{
+ "findings": [
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "ClientPermissionsV2 uses Arrays.asList() for single-element lists where List.of() could be used.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In services/src/main/java/org/keycloak/services/resources/admin/permissions/ClientPermissionsV2.java:225 and :250, both private hasPermission overloads create a single-element list via Arrays.asList(scope) for non-null AdminPermissionsSchema scope constants, where List.of(scope) could be used (as already done on line 268).",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

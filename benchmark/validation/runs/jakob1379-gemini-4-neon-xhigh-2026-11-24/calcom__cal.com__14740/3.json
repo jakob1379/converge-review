@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/components/dialog/AddGuestsDialog.tsx:42-45, onError constructs message as the template literal `${err.data?.code}: ${t(err.message)}`, which always contains ': ' and is never falsy, so the `|| t(\"unable_to_add_guests\")` fallback is never reached. Users therefore always see raw tRPC code prefixes and untranslated keys/messages (for example, 'FORBIDDEN: you_do_not_have_permission' from packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:55, which has no entry in apps/web/public/static/locales/en/common.json).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

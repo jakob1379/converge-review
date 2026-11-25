@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/AssertEvents.java:483, isAccessTokenId checks `if (items[0].substring(3, 5).equals(expectedGrantShortcut)) return false;` without negation, so it returns false when the extracted substring matches expectedGrantShortcut and falls through to accept non-matching values when the UUID part matches.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

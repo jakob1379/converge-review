@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "While AssignmentSource.to_dict() leaves queued as a datetime object (src/sentry/integrations/services/assignment_source.py:18,27-28), Sentry configures Celery to use pickle rather than JSON serialization (src/sentry/conf/server.py:739-741), and neither sync_assignee_outbound (src/sentry/integrations/tasks/sync_assignee_outbound.py:15-21) nor its apply_async call (src/sentry/integrations/utils/sync.py:136-145) overrides the serializer to JSON. Both pickle and Sentry's holds_bad_pickle_object check (src/sentry/celery.py:28-55) allow datetime values, so passing to_dict() as task kwargs does not raise TypeError.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/sentry/workflow_engine/processors/test_detector.py:177, test_state_results_multi_group passes {\"group_1\": 6, \"group_2\": 10} in data_packet, but lines 190-192 build occurrence_2 with value=6; this only passes because build_mock_occurrence_and_event at lines 244-275 never uses its value parameter.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

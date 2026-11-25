@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "runShardSplitQuery calls applyTemplateVariables once on the initial target (public/app/plugins/datasource/loki/shardQuerySplitting.ts:52), and splitQueriesByStreamShard then delegates each of the 4 shard sub-requests to runSplitQuery (public/app/plugins/datasource/loki/shardQuerySplitting.ts:163), which calls applyTemplateVariables again on each sub-request target (public/app/plugins/datasource/loki/querySplitting.ts:299). That totals 5 calls, so the assertion at public/app/plugins/datasource/loki/shardQuerySplitting.test.ts:112 is correct.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

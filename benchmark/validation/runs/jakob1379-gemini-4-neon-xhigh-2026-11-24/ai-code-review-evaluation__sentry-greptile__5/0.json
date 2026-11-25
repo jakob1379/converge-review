@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/replays/endpoints/project_replay_summarize_breadcrumbs.py:107-118, fetch_error_details zips error_ids with events.values() returned by nodestore.backend.get_multi(node_ids). NodeStorage.get_multi (src/sentry/nodestore/base.py:181,199-205) deduplicates ids and merges cached entries after fetched ones via items.update(cache_items), and DjangoNodeStorage._get_bytes_multi (src/sentry/nodestore/django/backend.py:48-49) omits missing rows without preserving input order, causing event_id to be paired with the wrong event data.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

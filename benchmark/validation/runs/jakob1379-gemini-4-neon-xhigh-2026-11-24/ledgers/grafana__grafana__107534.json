@@ -1,0 +1,61 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Ad-hoc filters and template variables are applied more than once per query. applyTemplateVariables is called in runSplitQuery and runShardSplitQuery, and again in DataSourceWithBackend.query() via super.query(). That is twice on the time-split path and three times on the shard path. Because addAdHocFilters/addFilterAsLabelFilter appends filter clauses without deduplication, the filters are duplicated in the LogQL.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch calls datasource.applyTemplateVariables(query, request.scopedVars, request.filters) in public/app/plugins/datasource/loki/querySplitting.ts:299 and public/app/plugins/datasource/loki/shardQuerySplitting.ts:52 (which delegates to runSplitQuery at shardQuerySplitting.ts:163), while keeping scopedVars and filters on subRequest into LokiDatasource.runQuery -> super.query (datasource.ts:349-351), where packages/grafana-runtime/src/utils/DataSourceWithBackend.ts:185 calls applyTemplateVariables again. Because applyTemplateVariables invokes addAdHocFilters (datasource.ts:1127) and addFilterAsLabelFilter (modifyQuery.ts:510) appends label filter clauses without deduplication, filters and template variables are applied twice on the time-split path and three times on the shard path, duplicating filters in the generated LogQL.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": "shardQuerySplitting.test.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test assertion at line 112 expects applyTemplateVariables to be called 5 times. runShardSplitQuery interpolates each initial target only once before splitting, and the test has one target, so the expected count should be 1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "runShardSplitQuery calls applyTemplateVariables once on the initial target (public/app/plugins/datasource/loki/shardQuerySplitting.ts:52), and splitQueriesByStreamShard then delegates each of the 4 shard sub-requests to runSplitQuery (public/app/plugins/datasource/loki/shardQuerySplitting.ts:163), which calls applyTemplateVariables again on each sub-request target (public/app/plugins/datasource/loki/querySplitting.ts:299). That totals 5 calls, so the assertion at public/app/plugins/datasource/loki/shardQuerySplitting.test.ts:112 is correct.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

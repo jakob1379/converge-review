@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "packages/lib/server/service/insightsBooking.ts:29-34 adds InsightsBookingServicePublicOptions with teamId?: number across all scopes and uses it in the constructor (line 58), so a team-scope call omitting teamId compiles, fails insightsBookingServiceOptionsSchema.safeParse (lines 62-63) to set this.options = null, and returns NOTHING_CONDITION (1=0) at lines 125-128. By contrast, InsightsRoutingService keeps the strict zod-inferred union InsightsRoutingServiceOptions in its constructor at packages/lib/server/service/insightsRouting.ts:29,52.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

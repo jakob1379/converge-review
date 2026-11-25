@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/authz/rbac/service.go:116-121, Check immediately returns Allowed: false on a permDenialCache hit, whereas pkg/services/authz/rbac/service.go:123-136 only short-circuits permCache hits when allowed is true so denials fall through to the database. Because pkg/services/authz/rbac/service.go:153-155 stores DB denials in permDenialCache for shortCacheTTL (30s, configured at pkg/services/authz/rbac/service.go:85) with no invalidation in pkg/services/authz/rbac/cache.go, any permission granted afterward for that request is blocked until the cache TTL expires.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

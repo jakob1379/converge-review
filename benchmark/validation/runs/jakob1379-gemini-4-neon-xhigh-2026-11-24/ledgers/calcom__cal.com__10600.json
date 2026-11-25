@@ -1,0 +1,145 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backup code comparison uses indexOf, which is case-sensitive, and only '-' is stripped from the input. Valid codes typed in a different case or with whitespace are rejected, for example uppercase from iOS auto-capitalize. The same comparison appears in disable.ts and BackupCode.tsx.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Backup codes are generated as lowercase hex in apps/web/pages/api/auth/two-factor/totp/setup.ts:61, and both packages/features/auth/lib/next-auth-options.ts:144 and apps/web/pages/api/auth/two-factor/totp/disable.ts:61 compare them via case-sensitive indexOf after only stripping '-' with replaceAll(\"-\", \"\"), rejecting uppercase or whitespace input (note that apps/web/components/auth/BackupCode.tsx:17-26 is the unnormalized input field rather than a comparison site).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The `user.twoFactorEnabled &&` check (line 48) and the `else if (user.twoFactorEnabled)` check (line 69) are always true after the early return at line 36. The CALENDSO_ENCRYPTION_KEY check is copied into both branches.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/api/auth/two-factor/totp/disable.ts:36-38, the handler returns early when !user.twoFactorEnabled, making user.twoFactorEnabled always true at lines 48 and 69. Additionally, the !process.env.CALENDSO_ENCRYPTION_KEY guard is duplicated in both branches at lines 49-52 and 80-83.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The e2e assertion `expect(locator.isChecked()).toBeTruthy()` checks a Promise object, which is always truthy, rather than the resolved boolean. It is left unfixed despite an added FIXME.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "At apps/web/playwright/login.2fa.e2e.ts:53, `locator.isChecked()` returns an unawaited Promise passed directly to `expect(...).toBeTruthy()`, which always evaluates as truthy, and the patch only adds a FIXME at apps/web/playwright/login.2fa.e2e.ts:50-51 without fixing it. The patch also exposes this bug because apps/web/components/settings/EnableTwoFactorModal.tsx:135 now defers `onEnable()` until the backup-codes dialog is closed, leaving the switch unchecked at that assertion.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`navigator.clipboard.writeText()` is not awaited or error-handled, so the success toast shows even when the write fails. Where navigator.clipboard is undefined (plain-HTTP non-localhost), the click throws.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/components/settings/EnableTwoFactorModal.tsx:276-280, the backup-codes-copy button's onClick handler invokes navigator.clipboard.writeText() without awaiting or handling rejections and immediately calls showToast(..., \"success\") on line 279. It also does not guard against navigator.clipboard being undefined in non-secure contexts, which throws a TypeError on click.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When totpEmail is present, the login page renders ExternalTotpFooter, so SAML/Google users never see the backup-code entry point.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In apps/web/pages/auth/login.tsx:178-182, when twoFactorRequired and totpEmail are truthy (used for SAML/Google 2FA redirects via loginWithTotp in packages/features/auth/lib/next-auth-options.ts:37-38,609-610), footerText renders ExternalTotpFooter (lines 135-143) instead of TwoFactorFooter (lines 103-133). Because the \"Lost access\" button that calls setTwoFactorLostAccess(true) only exists in TwoFactorFooter (lines 120-131), SAML/Google users have no way to reach <BackupCode /> at line 221.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

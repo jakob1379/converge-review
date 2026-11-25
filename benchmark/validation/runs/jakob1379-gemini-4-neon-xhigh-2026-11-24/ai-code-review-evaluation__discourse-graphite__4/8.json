@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "While spec/models/topic_embed_spec.rb:34 uses `.should be_true`, this repository uses rspec 2.14.1 and rspec-expectations 2.14.3/2.14.4 (Gemfile_rails4.lock:293-298, Gemfile.lock:360-365), where `be_true` is not deprecated (it was deprecated in RSpec 2.99 and removed in RSpec 3.0) and matches existing specs such as spec/models/user_spec.rb:132.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

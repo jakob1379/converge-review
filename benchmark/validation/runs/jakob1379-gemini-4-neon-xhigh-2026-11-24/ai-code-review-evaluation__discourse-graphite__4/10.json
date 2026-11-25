@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "Neither Topic, Post, nor PostDestroyer cleans up TopicEmbed rows on deletion/trashing, so TopicEmbed.import (app/models/topic_embed.rb:32-36) loads embed.post as nil under Trashable's default_scope and crashes in PostRevisor#should_revise? (lib/post_revisor.rb:26) when content changes. Likewise, TopicEmbed.topic_id_for_embed (app/models/topic_embed.rb:78-80) keeps returning the trashed topic's ID to EmbedController#best (app/controllers/embed_controller.rb:10-13), causing TopicView#check_and_raise_exceptions (lib/topic_view.rb:259-263,300) to raise Discourse::NotFound (404) for non-staff visitors.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

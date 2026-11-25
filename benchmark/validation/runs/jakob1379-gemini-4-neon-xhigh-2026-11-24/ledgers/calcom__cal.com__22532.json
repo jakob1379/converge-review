@@ -1,0 +1,253 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The script uses the BSD/macOS-only `sed -i '' -E` syntax, which fails on GNU sed (Linux). When it fails, the .env update does not happen but the script still prints that GOOGLE_WEBHOOK_URL was updated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "scripts/test-gcal-webhooks.sh:68 uses BSD/macOS `sed -i '' -E`, which fails on GNU sed (treating `''` as an empty script and the substitution expression as a filename) without updating `$ENV_FILE`. Because the script has no `set -e` or exit-status check, it still prints the success message at scripts/test-gcal-webhooks.sh:73.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "After the deleteCache mutation in CredentialActionsDropdown succeeds, it only calls onSuccess and does not invalidate viewer.calendars.connectedCalendars. Callers that pass no onSuccess, such as EventAdvancedTab, then show a stale cacheUpdatedAt / 'Last updated'.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/apps/components/CredentialActionsDropdown.tsx:42-50, deleteCacheMutation only calls showToast and onSuccess?.() without invalidating utils.viewer.calendars.connectedCalendars (unlike disconnectMutation at lines 61-64). SelectedCalendarsSettingsWebWrapper.tsx:71-78,124-131 forwards props.onChanged as onSuccess using data from connectedCalendars.useQuery (lines 153-161), and EventAdvancedTab.tsx:372-384 renders SelectedCalendarsSettingsWebWrapper without onChanged, leaving cacheUpdatedAt and 'Last updated' stale after cache deletion.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i6",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {}) is called with empty data. With updateMany in Prisma 5.4.2 this does not bump @updatedAt, nothing reads SelectedCalendar.updatedAt, and the call adds an extra UPDATE on every fetchAvailabilityAndSetCache run.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/app-store/googlecalendar/lib/CalendarService.ts:1024, fetchAvailabilityAndSetCache calls SelectedCalendarRepository.updateManyByCredentialId(this.credential.id, {}), which invokes prisma.selectedCalendar.updateMany with empty data in packages/lib/server/repository/selectedCalendar.ts:400-405; with Prisma 5.4.2 (packages/prisma/package.json) this does not bump @updatedAt on SelectedCalendar (packages/prisma/schema.prisma:860) and adds a redundant database call on every run. Furthermore, the cache status UI reads CalendarCache.updatedAt via packages/trpc/server/routers/viewer/calendars/connectedCalendars.handler.ts:28-36 and packages/features/calendar-cache/calendar-cache.repository.ts:173-188, and nothing reads SelectedCalendar.updatedAt even where selected in packages/lib/server/repository/user.ts:899.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "other",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "fetch",
+      "allowed": false
+     },
+     {
+      "kind": "fetch",
+      "allowed": false
+     },
+     {
+      "kind": "fetch",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i8",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The cache 'Last updated' timestamp is formatted with a hard-coded `new Intl.DateTimeFormat(\"en-US\", ...)`, which ignores the user's locale (i18n.language from useLocale) and profile timezone.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/apps/components/CredentialActionsDropdown.tsx:88-94, the `cache_last_updated` timestamp is formatted with `new Intl.DateTimeFormat(\"en-US\", { dateStyle: \"short\", timeStyle: \"short\" })`, hard-coding the locale instead of using `i18n.language` from `useLocale()` (only `t` is destructured on line 37) and omitting any `timeZone` option for the user's profile timezone.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "dev:cron switches from ts-node to `npx tsx`, but tsx is not declared as a dependency and is not in yarn.lock. npx therefore downloads it from the registry at run time.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "apps/web/package.json:11 changes dev:cron from ts-node to `npx tsx cron-tester.ts`, while tsx is not declared in apps/web/package.json or root package.json and has no entry in yarn.lock (between tsutils at yarn.lock:45184 and tty-browserify at yarn.lock:45196). Consequently, npx has no locally installed tsx binary and downloads it unpinned from the registry at run time.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i24",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "prisma.credential.findFirst has no select, so it loads the full Credential row, including the key (OAuth tokens), only to check existence and ownership.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/trpc/server/routers/viewer/calendars/deleteCache.handler.ts:17-26, prisma.credential.findFirst is called without a select clause and the result is only checked for truthiness, so Prisma fetches the entire Credential row including the key JSON column (OAuth tokens) defined in packages/prisma/schema.prisma:222-226.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i29",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The mock getCacheStatusByCredentialIds does not accept the credentialIds parameter, so it does not match the interface signature.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/calendar-cache/calendar-cache.repository.mock.ts:27, getCacheStatusByCredentialIds() declares no parameters, unlike ICalendarCacheRepository.getCacheStatusByCredentialIds(credentialIds: number[]) in packages/features/calendar-cache/calendar-cache.repository.interface.ts:30-32. TypeScript still allows omitting unused parameters when implementing an interface (matching the other methods in CalendarCacheRepositoryMock), so this only fails type-checking if invoked directly on a CalendarCacheRepositoryMock-typed instance.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

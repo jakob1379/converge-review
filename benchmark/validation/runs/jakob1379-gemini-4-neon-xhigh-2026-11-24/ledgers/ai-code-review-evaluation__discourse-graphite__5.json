@@ -1,0 +1,97 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The align-items mixin emits `-ms-align-items`, which is not a real CSS property in any IE/Edge version. IE10/11 use `-ms-flex-align`, which the mixin already emits on line 120, so the `-ms-align-items` line is dead output.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/assets/stylesheets/common/foundation/mixins.scss:117-123, the newly added align-items mixin emits -ms-align-items on line 121 alongside -ms-flex-align on line 120 and align-items on line 122. No version of IE or Edge ever supported -ms-align-items (IE10/11 recognize -ms-flex-align and IE11+/Edge use standard align-items), making line 121 dead CSS output.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i4",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The order mixin passes `$val` directly to `-webkit-box-ordinal-group` and `-moz-box-ordinal-group`. Those legacy properties are 1-based, while `order` is 0-based, so ordering in older WebKit/Firefox is off by one, and a value of 0 is invalid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/assets/stylesheets/common/foundation/mixins.scss:125-131, @mixin order($val) passes $val directly to -webkit-box-ordinal-group (line 126) and -moz-box-ordinal-group (line 127) without offsetting by +1. Since legacy box-ordinal-group is 1-based (initial value 1, requiring positive integers per the 2009 Flexbox draft and legacy WebKit) while order is 0-based, values are off by one relative to unstyled siblings and 0 is invalid.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "`.small-action` is now a flex container, yet its children (`.topic-avatar`, `.avatar`, `button`) still use `float: left`/`float: right`. Floats are ignored on flex items, so these declarations, such as float:left on `.topic-avatar`, are dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The patch makes `.small-action` a flex container at app/assets/stylesheets/common/base/topic-post.scss:263-265, which renders `float: left` on its direct child `.topic-avatar` (topic-post.scss:270, rendered at app/assets/javascripts/discourse/templates/components/small-action.hbs:1) ignored and dead. Note that `.avatar` (topic-post.scss:298) and `button` (topic-post.scss:309) are nested inside the non-flex block `.small-action-desc` (small-action.hbs:2-12), so only `.topic-avatar`'s float is actually dead.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

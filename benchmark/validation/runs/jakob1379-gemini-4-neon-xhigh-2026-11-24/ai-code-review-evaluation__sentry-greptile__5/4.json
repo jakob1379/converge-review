@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In static/app/views/insights/pages/transactionNameSearchBar.tsx:54-57, TransactionNameSearchBar calls useGetTraceItemAttributeValues without passing its projectIds prop (lines 29 and 36), so useGetTraceItemAttributeValues falls back to selection.projects from page filters at static/app/views/explore/hooks/useGetTraceItemAttributeValues.tsx:100. This omission pre-existed in the previous useTraceItemAttributeValues call and the patch only renamed the hook and removed unused arguments.",
+ "introduced_by_patch": false,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,153 @@
+{
+ "findings": [
+  {
+   "issue": "i3",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In ensure_loaded!, the lazy initialization `@loaded_locales ||= []` is not protected by LOAD_MUTEX. Concurrent threads read and write @loaded_locales without synchronization, which can cause lost writes or double loading.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In lib/freedom_patches/translate_accelerator.rb:62-65, ensure_loaded! initializes `@loaded_locales ||= []` (line 63) and checks `@loaded_locales.include?(locale)` (line 64) outside LOAD_MUTEX, which is only acquired inside load_locale (lines 47-59). Concurrent threads calling ensure_loaded! when @loaded_locales is nil can overwrite the array after another thread has appended a locale at line 58, losing the recorded locale and causing double loading, and unsynchronized reads at line 64 race with appends at line 58.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i7",
+   "path": "lib/freedom_patches/translate_accelerator.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Locales are not normalized to one type (Symbol or String) before the @loaded_locales include? check and insertion. Because :en != 'en', the same locale passed as a String and as a Symbol produces duplicate entries and redundant loads.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Neither ensure_loaded! (lib/freedom_patches/translate_accelerator.rb:62-65) nor load_locale (lib/freedom_patches/translate_accelerator.rb:46-60) normalizes locale before checking @loaded_locales.include?(locale) (lines 48, 64) or appending @loaded_locales << locale (line 58). Because :en != 'en' in Ruby, passing the same locale as both a Symbol and a String bypasses the include? check, triggers a redundant load of the locale's YAML files, and appends a duplicate entry to @loaded_locales.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "I18n::Backend::Fallbacks is included via send(:include, ...) even though include is public since Ruby 2.1.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "While config/initializers/i18n.rb:9 does use send(:include, I18n::Backend::Fallbacks), this repository explicitly supports and runs required CI builds on Ruby 2.0.0 (.travis.yml:23, README.md:28). Because Module#include is private in Ruby 2.0.0, calling .include directly would raise NoMethodError, so send(:include, ...) is required rather than a problem.",
+    "introduced_by_patch": true,
+    "impact": "trivial",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i13",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Backend classes are monkey-patched via send(:include), which is fragile across gem upgrades.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Although config/initializers/i18n.rb:5 and config/initializers/i18n.rb:9 call send(:include, ...) on I18n::Backend::Simple and I18n.backend.class, including I18n::Backend::Pluralization and I18n::Backend::Fallbacks into the backend class is the i18n gem's documented public extension API (and the same mechanism Rails's config.i18n.fallbacks uses). Using send(:include, ...) simply accounts for Ruby's Module#include being private prior to Ruby 2.1 rather than fragile monkey-patching of gem internals.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The custom fallback list drops the standard locale-ancestor fallbacks, so regional locales skip the matching base-language translations.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Although FallbackLocaleList#[] (config/initializers/i18n.rb:12-24) replaces I18n::Locale::Fallbacks with [locale, SiteSetting.default_locale.to_sym, :en], Discourse only supports underscore-separated regional locales like pt_BR (config/locales/server.pt_BR.yml:7, config/application.rb:82, lib/freedom_patches/translate_accelerator.rb:13-17). Standard I18n::Locale::Fallbacks in i18n 0.7.0 (Gemfile.lock:126) splits locale tags only on hyphens via I18n::Locale::Tag::Simple, so it never provided base-language ancestor fallbacks for any supported Discourse regional locale, and hyphenated locales are rejected by available_locales enforcement.",
+    "introduced_by_patch": false,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     },
+     {
+      "kind": "search",
+      "allowed": true
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

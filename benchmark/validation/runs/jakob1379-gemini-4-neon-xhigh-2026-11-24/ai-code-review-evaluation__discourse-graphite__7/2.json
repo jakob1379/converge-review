@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/stylesheets/mobile/topic-post.scss:182, `.topic-map h3` was changed from `scale-color($primary, $lightness: 20%)` to `dark-light-choose(scale-color($primary, $lightness: 50%), scale-color($secondary, $lightness: 50%))`, altering light-theme lightness from 20% to 50%. By contrast, app/assets/stylesheets/desktop/topic-post.scss:321 converts the same 20% value to `dark-light-choose(scale-color($primary, $lightness: 20%), scale-color($secondary, $lightness: 80%))`.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

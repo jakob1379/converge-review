@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/slots.ts:114, `dayjs(date.start).add(utcOffset, \"minutes\") === dayjs(date.end).add(utcOffset, \"minutes\")` compares two newly created Dayjs objects by reference, so the condition is always false and the zero-length date override rejection branch at line 115 never runs. As a result, slots starting at or straddling the override timestamp fail the subsequent boundary checks (lines 117-125) and wrongly return `true` as available at line 134.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

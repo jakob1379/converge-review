@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:70-78, blacklistedGuestEmails is lowercased but compared directly via !blacklistedGuestEmails.includes(guest) against raw emails validated only with z.string().email() (addGuests.schema.ts:5). Because neither toLowerCase() nor extractBaseEmail() is applied (unlike handleNewBooking.ts:729-730), blacklisted addresses pass when submitted with uppercase characters or a plus-alias.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

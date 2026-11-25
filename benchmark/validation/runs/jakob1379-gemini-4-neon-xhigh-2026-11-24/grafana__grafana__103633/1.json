@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/authz/rbac/service_test.go:333-395, removing the cacheHit:true case from TestService_getUserPermissions leaves the cacheHit field (line 337) always false and both 'if tc.cacheHit' branches (lines 367-369 and 388-390) dead. No test directly asserts that getUserPermissions always queries the store when permCache is populated (TestService_CacheCheck at lines 947-972 only exercises outdated-cache fallback through Check without asserting store calls), and no test covers the removed cache read in getAnonymousPermissions (pkg/services/authz/rbac/service.go:419-437).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

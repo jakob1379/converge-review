@@ -1,0 +1,33 @@
+{
+ "findings": [
+  {
+   "issue": "i5",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In packages/features/bookings/lib/handleCancelBooking.ts, `apiDeletes.push(deletedEvent)` pushes the resolved value rather than a promise. The later `Promise.all(prismaPromises.concat(apiDeletes))` therefore does not wait for those deletions.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In packages/features/bookings/lib/handleCancelBooking.ts:460-467, an unawaited `.forEach(async ...)` callback awaits `calendar?.deleteEvent(...)` on line 466 and pushes the resolved value `deletedEvent` into `apiDeletes` on line 467, so `await Promise.all(prismaPromises.concat(apiDeletes))` at packages/features/bookings/lib/handleCancelBooking.ts:652 does not wait for those deletions. This pre-existed in untouched code (the patch only added `await` to `getCalendar(credential)` at line 461).",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

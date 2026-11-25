@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "RecoveryAuthnCodesFormAuthenticator.java:80-88 gets the credential from RecoveryAuthnCodesUtils.getCredential() (RecoveryAuthnCodesUtils.java:56-62, which prefers getFederatedCredentialsStream() from user storage), checks allCodesUsed(), and calls removeStoredCredentialById(), which only removes from userLocalStorage()/userFederatedStorage() (UserCredentialManager.java:114-117,298-305) and never removes the user storage provider's copy. Because UserCredentialManager.isValid() (UserCredentialManager.java:59-80) falls through to local CredentialInputValidator providers if the federated provider does not validate, when both credentials exist the authenticator can validate against the local credential yet inspect or attempt to remove the federated one returned by getCredential().",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

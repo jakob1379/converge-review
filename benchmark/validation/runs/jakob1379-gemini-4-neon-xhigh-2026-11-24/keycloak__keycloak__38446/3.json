@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java:255-264, testRecoveryKeysSetupAndLogin creates a new TestAppHelper and calls startLogin() and logout() without ever calling completeLogin() or asserting logout()'s boolean result. Because TestAppHelper only assigns refreshToken in completeLogin() (testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/util/TestAppHelper.java:70-74), logout() (TestAppHelper.java:104-110) calls oauth.doLogout(null), omitting the refresh_token parameter (tests/utils-shared/src/main/java/org/keycloak/testsuite/util/oauth/LogoutRequest.java:21-23, AbstractHttpPostRequest.java:77-81) and silently failing to log out the session.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

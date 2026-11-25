@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/emails/email-manager.ts:525-550, sendAddGuestsEmails passes calendarEvent directly to AttendeeScheduledEmail and AttendeeAddGuestsEmail (lines 542-544) without clearing additionalNotes when calendarEvent.hideCalendarNotes is true (unlike sendScheduledEmails at line 119), and neither template nor BaseScheduledEmail checks hideCalendarNotes. Additionally, its caller in packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts:124-147 omits hideCalendarNotes and forwards booking.description (where additionalNotes are persisted) directly into evt.description, exposing hidden notes to attendees.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

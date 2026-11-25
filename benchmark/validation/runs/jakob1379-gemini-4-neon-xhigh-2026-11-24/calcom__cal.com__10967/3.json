@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "At packages/trpc/server/routers/viewer/organizations/create.handler.ts:151, the patch drops the negation when converting `!IS_TEAM_BILLING_ENABLED && { slug }` to `IS_TEAM_BILLING_ENABLED ? { slug } : {}` while line 153 keeps `IS_TEAM_BILLING_ENABLED ? { requestedSlug: slug } : {}`. As a result, billing-enabled orgs receive `slug` immediately before payment, and billing-disabled orgs have neither `slug` nor `metadata.requestedSlug`, which triggers `NoOrganizationSlugError` at packages/trpc/server/routers/viewer/organizations/createTeams.handler.ts:67-69.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/annotations/annotationsimpl/xorm_store.go:534, 554, and 576, the added r.log.Error calls pass the entire ids slice (\"ids\", ids) on every cleanup batch. Because ids can hold up to r.cfg.AnnotationCleanupJobBatchSize entries (e.g., thousands of IDs, tested with 32767 at pkg/services/annotations/annotationsimpl/cleanup_test.go:101), this can emit very large log lines.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,93 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "packages/features/bookings/lib/handleCancelBooking.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The async functions deleteScheduledEmailReminder and deleteScheduledSMSReminder are called inside forEach loops without await. The call sites include handleCancelBooking.ts, handleNewBooking.ts, bookings.tsx and workflows.tsx. Because of this, reminder cancellation or DB updates may not complete before the request ends, and rejections are lost.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Async deleteScheduledEmailReminder (packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:197) and deleteScheduledSMSReminder (packages/features/ee/workflows/lib/reminders/smsReminderManager.ts:177) are called inside unawaited forEach loops in packages/features/bookings/lib/handleCancelBooking.ts:485-493, packages/features/bookings/lib/handleNewBooking.ts:966-972, packages/trpc/server/routers/viewer/bookings.tsx:488-494, and packages/trpc/server/routers/viewer/workflows.tsx:212-218,376-382,519-525,574-580. Because this patch moved the previously awaited Prisma reminder deletions/updates into those unawaited helpers and added the new loop in handleNewBooking.ts:964-975, reminder cancellations and DB updates may not finish before the request ends, and errors cannot be caught by callers (the helpers also swallow exceptions with console.log).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i3",
+   "path": "emailReminderManager.ts",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In deleteScheduledEmailReminder (emailReminderManager.ts), the immediateDelete=true branch cancels the SendGrid scheduled send and then returns. It neither deletes the workflowReminder DB row nor marks it cancelled, which leaves orphaned rows.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Although emailReminderManager.ts:213-223 returns without modifying the DB row when immediateDelete is true, it does not leave orphaned rows because every caller passing immediateDelete=true immediately deletes the parent record whose relation has onDelete: Cascade (schema.prisma:592,637,643): workflows.tsx:214 (workflow.deleteMany at line 220), workflows.tsx:521 (workflowStep.delete at line 527), and handleNewBooking.ts:968 (eventManager.reschedule calling prisma.booking.delete at EventManager.ts:290).",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The EMAIL/SMS reminder-deletion dispatch block is duplicated at 7 call sites.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The EMAIL/SMS reminder-deletion if/else dispatch block is duplicated at 7 call sites across 4 files: packages/features/bookings/lib/handleCancelBooking.ts:487-491, packages/features/bookings/lib/handleNewBooking.ts:967-971, packages/trpc/server/routers/viewer/bookings.tsx:489-493, and packages/trpc/server/routers/viewer/workflows.tsx:213-217, 377-381, 520-524, and 575-579. This patch updates all 6 pre-existing sites and adds the 7th rather than extracting a shared dispatcher.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

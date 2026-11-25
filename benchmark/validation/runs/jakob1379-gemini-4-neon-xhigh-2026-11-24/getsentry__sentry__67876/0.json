@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/integrations/github/integration.py:501-505, GitHubInstallation.dispatch directly accesses integration.metadata[\"sender\"][\"login\"] without guarding for missing keys. Because build_integration only sets metadata[\"sender\"] when state.get(\"sender\") is truthy (src/sentry/integrations/github/integration.py:376-377) and ensure_integration overwrites metadata during normal pipeline completion without sender (src/sentry/integrations/pipeline.py:32-42), any active Integration lacking \"sender\" raises an unhandled KeyError resulting in an HTTP 500.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

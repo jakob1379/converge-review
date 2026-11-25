@@ -1,0 +1,21 @@
+{
+ "verdict": "confirmed",
+ "reason": "tests/sentry/api/helpers/test_error_upsampling.py:21 creates self.organization with Organization.objects.create(name=\"test-org\") instead of self.create_organization(), bypassing the factory's slug reservation and outbox setup (src/sentry/testutils/factories.py:364-403) and violating the factory rules in CLAUDE.md:322 and CLAUDE.md:627.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

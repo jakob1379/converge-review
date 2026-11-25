@@ -1,0 +1,84 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": "AuthzClientCryptoProvider.java",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In concatenatedRSToASN1DER, lines 114-115 call ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) and discard the results. The return statement at lines 117-121 repeats the encoding with new encoders, so lines 114-115 are dead code.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In AuthzClientCryptoProvider.java:114-115, ASN1Encoder.create().write(rBigInteger) and ASN1Encoder.create().write(sBigInteger) write into fresh ByteArrayOutputStream instances (ASN1Encoder.java:38-49) with no side effects and discard the returned encoders, while AuthzClientCryptoProvider.java:117-121 repeats both encodings with new ASN1Encoder instances.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "CryptoIntegration.detectProvider() no longer throws the fail-fast 'Multiple crypto providers loaded' IllegalStateException; it picks the highest order() instead. The Default, Elytron and FIPS1402 providers all return 200, so a tie is decided by ServiceLoader/classpath order. For example, a FIPS deployment with a stray crypto-default jar can run on non-FIPS BouncyCastle without failing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In common/src/main/java/org/keycloak/common/crypto/CryptoIntegration.java:55-73, detectProvider() removed the IllegalStateException on multiple providers and returns foundProviders.get(0) after sorting by order() descending without checking for ties. Because DefaultCryptoProvider (crypto/default/src/main/java/org/keycloak/crypto/def/DefaultCryptoProvider.java:83-85), WildFlyElytronProvider (crypto/elytron/src/main/java/org/keycloak/crypto/elytron/WildFlyElytronProvider.java:76-78), and FIPS1402Provider (crypto/fips1402/src/main/java/org/keycloak/crypto/fips/FIPS1402Provider.java:114-116) all return 200, a tie is silently decided by ServiceLoader classpath order with ignored providers only logged at debug level.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "concatenatedRSToASN1DER() assumes signature.length == signLength without validating it. A malformed signature can throw ArrayIndexOutOfBoundsException instead of IOException.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In authz/client/src/main/java/org/keycloak/authorization/client/util/crypto/AuthzClientCryptoProvider.java:103-110, concatenatedRSToASN1DER() copies len = signLength / 2 bytes twice from signature via System.arraycopy() without checking signature.length == signLength. A malformed shorter signature therefore throws ArrayIndexOutOfBoundsException instead of the declared IOException, though callers such as core/src/main/java/org/keycloak/crypto/ECDSASignatureVerifierContext.java:25-32 catch Exception.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

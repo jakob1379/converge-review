@@ -1,0 +1,17 @@
+{
+ "verdict": "refuted",
+ "reason": "Although config/initializers/i18n.rb:5 and config/initializers/i18n.rb:9 call send(:include, ...) on I18n::Backend::Simple and I18n.backend.class, including I18n::Backend::Pluralization and I18n::Backend::Fallbacks into the backend class is the i18n gem's documented public extension API (and the same mechanism Rails's config.i18n.fallbacks uses). Using send(:include, ...) simply accounts for Ruby's Module#include being private prior to Ruby 2.1 rather than fragile monkey-patching of gem internals.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

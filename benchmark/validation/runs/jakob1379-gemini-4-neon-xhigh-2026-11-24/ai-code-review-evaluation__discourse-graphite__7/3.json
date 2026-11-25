@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "The comment at app/assets/stylesheets/common/base/discourse.scss:72-73 still states that the default for topic-list table cells is `scale-color($primary, $lightness: 50%)`, even though this patch converted both the topic-list table cells (app/assets/stylesheets/common/base/_topic-list.scss:48,55; app/assets/stylesheets/mobile/topic-list.scss:75) and the adjacent `.coldmap-*` rules (app/assets/stylesheets/common/base/discourse.scss:76,79,82) to `dark-light-choose(...)`.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

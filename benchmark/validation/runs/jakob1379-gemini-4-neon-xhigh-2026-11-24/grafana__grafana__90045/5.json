@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/apiserver/rest/dualwriter_mode3.go (lines 50-57, 108-114, 134-141, and 161-167), the async goroutines for Create, Delete, Update, and DeleteCollection never log errors returned by d.Legacy calls, replacing the previous log.Error calls with only d.recordLegacyDuration/d.recordStorageDuration. Those helpers in pkg/apiserver/rest/metrics.go (lines 54-62) only observe the duration on the Prometheus histogram with the is_error label.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

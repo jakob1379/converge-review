@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/javascripts/admin/controllers/admin-group.js.es6:61-65, the addMembers action passes this.get(\"usernames\") to the model's addMembers method without clearing usernames or resetting the user-selector input, even leaving a '// TODO: should clear the input' comment at line 62. Neither Discourse.Group#addMembers (app/assets/javascripts/discourse/models/group.js:51-60) nor the user-selector component clears the input afterwards.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

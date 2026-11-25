@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "pkg/server/wire.go:374-375 still registers anonstore.ProvideAnonDBStore and binds anonstore.AnonStore to *anonstore.AnonDBStore, even though the patch changed ProvideAnonDBStore (pkg/services/anonymous/anonimpl/anonstore/database.go:52) to require an unprovided int64 deviceLimit parameter. Because ProvideAnonymousDeviceService (pkg/services/anonymous/anonimpl/impl.go:36-43) now takes db.DB and constructs the store directly instead of injecting anonstore.AnonStore, the Wire binding is dead in OSS and will fail Wire generation for any consumer that requests AnonStore.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

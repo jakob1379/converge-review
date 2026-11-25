@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "src/sentry/spans/consumers/process/flusher.py:32 claims 'Creates one process per shard for parallel processing', whereas src/sentry/consumers/__init__.py:432-437 defaults --flusher-processes to 1, causing SpanFlusher (flusher.py:51,60-66) to cap num_processes at 1 and run all shards in one process. Likewise, flusher.py:178 describes updating healthy_since 'for all shards' even though line 179 updates a single per-process Value, and flusher.py:235 says 'Check if any shard handled by this process is unhealthy' inside an elif body that only sets cause = 'hang' (line 236) after checking the single per-process healthy_since value (lines 231-234).",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

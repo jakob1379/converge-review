@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/webhook/app-credential.ts:73-80, updating an existing credential only writes `data: { key: keys }` and never resets `invalid: false` (nor do the token-refresh updates such as packages/app-store/googlecalendar/lib/CalendarService.ts:98-101 or packages/app-store/salesforce/lib/CalendarService.ts:96-99). Once a credential is marked `invalid: true` (e.g., packages/app-store/googlecalendar/lib/CalendarService.ts:112-117), it stays invalid even after new keys are synced via the webhook, causing packages/core/getCalendarsEvents.ts:17 to keep skipping it and the UI to keep flagging it as invalid.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "EmailValidator#validate_each in lib/validators/email_validator.rb:3-16 only checks domain whitelist/blacklist settings and BlockedEmail.should_block?, without checking email format (such as Email.is_valid? in lib/email.rb:8-15). Consequently, validates :email, email: true in app/models/user.rb:47 accepts malformed values like sam@sam or sam (note that EmailValidator is newly added in this patch and User's prior email_validator also lacked format checks).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

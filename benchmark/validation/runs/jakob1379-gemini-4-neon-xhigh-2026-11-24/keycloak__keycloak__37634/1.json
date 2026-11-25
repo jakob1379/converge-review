@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/AssertEvents.java:476-485, isAccessTokenId splits item on ':' and calls items[0].substring(3, 5) at line 483 without checking items[0].length(). Any two-part string whose prefix before ':' has fewer than 5 characters throws StringIndexOutOfBoundsException instead of returning false.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

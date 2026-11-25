@@ -1,0 +1,61 @@
+{
+ "findings": [
+  {
+   "issue": "i3",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In `test_state_results_multi_group`, the expected occurrence for `group_2` is built with `value=6`, while the data packet has `group_2=10`. The test passes only because the value is not used when the occurrence is constructed.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/sentry/workflow_engine/processors/test_detector.py:177, test_state_results_multi_group passes {\"group_1\": 6, \"group_2\": 10} in data_packet, but lines 190-192 build occurrence_2 with value=6; this only passes because build_mock_occurrence_and_event at lines 244-275 never uses its value parameter.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i9",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The Kafka publish assertion allows extra publishes, so the test does not catch duplicate occurrence production.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In tests/sentry/workflow_engine/processors/test_detector.py:206-222, test_state_results_multi_group asserts Kafka publishes with mock_produce_occurrence_to_kafka.assert_has_calls([...], any_order=True) without checking call_count. Because unittest.mock.assert_has_calls permits additional calls beyond those listed, extra or duplicate calls to produce_occurrence_to_kafka would still pass the test.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

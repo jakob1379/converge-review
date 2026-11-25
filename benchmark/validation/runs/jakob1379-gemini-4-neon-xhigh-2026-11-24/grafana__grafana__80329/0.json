@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/cleanup/cleanup.go:77, the patch changes CleanUpService.Run's ticker from 10 minutes to 1 minute, causing all eight cleanup jobs in clean (pkg/services/cleanup/cleanup.go:88-105) to run 10x as often. Because clean retains a 9-minute timeout (pkg/services/cleanup/cleanup.go:89) and time.Ticker buffers a tick while srv.clean executes (pkg/services/cleanup/cleanup.go:78-85), any run taking longer than a minute immediately triggers the next run back-to-back.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

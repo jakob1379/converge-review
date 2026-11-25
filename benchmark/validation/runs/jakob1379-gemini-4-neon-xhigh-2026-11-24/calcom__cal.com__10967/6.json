@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/bookings/lib/handleCancelBooking.ts:423-468, the recurring series-delete block (lines 444-468) is placed inside `for (const reference of bookingCalendarReference)` (line 423) without using `reference` or the resolved `calendar`/`calendarCredential`. Instead, on every iteration it loops only over `bookingToDelete.user.credentials` (line 449) and calls `updBooking.references.find(...)` (line 454), repeatedly deleting only the first calendar reference N times while never deleting other hosts' copies.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

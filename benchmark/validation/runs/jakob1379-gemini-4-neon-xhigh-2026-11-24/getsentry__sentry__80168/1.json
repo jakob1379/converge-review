@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/sentry/workflow_engine/processors/test_detector.py:206-222, test_state_results_multi_group asserts Kafka publishes with mock_produce_occurrence_to_kafka.assert_has_calls([...], any_order=True) without checking call_count. Because unittest.mock.assert_has_calls permits additional calls beyond those listed, extra or duplicate calls to produce_occurrence_to_kafka would still pass the test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,25 @@
+{
+ "verdict": "confirmed",
+ "reason": "In services/src/main/java/org/keycloak/services/resources/admin/permissions/GroupPermissionsV2.java:121-124, getGroupIdsWithViewPermission() passes groupResource.getId() to hasPermission() and adds it to granted, even though hasPermission() looks up resources by name (GroupPermissionsV2.java:141) and group resources store the group ID in resource.getName() while resource.getId() is a generated authorization resource UUID (server-spi-private/src/main/java/org/keycloak/authorization/AdminPermissionsSchema.java:109,121 and JPAResourceStore.java:63-70). Consequently, per-group lookups fail in hasPermission() and any returned resource UUIDs do not match group IDs expected by user counts and filtering in UsersResource.java:398,425,430,448-451 and BruteForceUsersResource.java:147-150.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

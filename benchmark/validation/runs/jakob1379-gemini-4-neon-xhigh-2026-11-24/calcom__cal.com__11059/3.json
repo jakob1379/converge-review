@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:16-29, parseRefreshTokenResponse returns the Zod safeParse wrapper ({ success: true, data }), and packages/app-store/googlecalendar/lib/CalendarService.ts:97-101 stores that entire object directly into prisma.credential.update({ data: { key } }) instead of key.data. On the next GoogleCalendarService instantiation, googleCredentialSchema.parse(credential.key) at packages/app-store/googlecalendar/lib/CalendarService.ts:75 throws because the required token fields are nested under data rather than at the top level.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

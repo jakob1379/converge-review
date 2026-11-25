@@ -1,0 +1,145 @@
+{
+ "findings": [
+  {
+   "issue": "i1",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The public GET /groups/:name/members endpoint now defaults to limit=50 for every group, but the public route and template have no pagination controls, so members after the 50th cannot be reached.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "GroupsController#members now unconditionally defaults to limit=50 for all groups (app/controllers/groups_controller.rb:22-26) and Discourse.Group#findMembers sends limit: 50, offset: 0 (app/assets/javascripts/discourse/models/group.js:10-29). The public group members route only calls model.findMembers() once (app/assets/javascripts/discourse/routes/group-members.js.es6:8-12) and its template renders members with no pagination or load-more controls (app/assets/javascripts/discourse/templates/group/members.hbs:1-21), so members beyond the 50th cannot be reached.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "In the group member row itemView, {{#unless automatic}} resolves against the member (Discourse.User) rather than the group, so `automatic` is undefined and the remove link is shown for automatic groups.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "app/assets/javascripts/admin/templates/group.hbs:21 uses the keyword form `{{each member in members itemView=\"group-member\"}}`, so Ember's collectionHelper (vendor/assets/javascripts/development/ember.js:7997-7998) binds the itemView's `_context` to `_parentView.context` (the AdminGroupController / group) rather than `content`, while exposing the Discourse.User only via the `member` keyword (ember.js:8223-8225). Thus `{{#unless automatic}}` in app/assets/javascripts/admin/templates/group_member.hbs:1 resolves against the group controller and hides the remove link for automatic groups.",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i15",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The 'cannot remove members from automatic groups' controller spec sends xhr :put to remove_member, but the route is DELETE; it passes only because controller specs skip routing.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In spec/controllers/admin/groups_controller_spec.rb:114-116, the 'cannot remove members from automatic groups' test calls `xhr :put, :remove_member`, whereas config/routes.rb:49-50 maps `DELETE members` to `groups#remove_member` (and `PUT members` to `groups#add_members`). Because Rails controller specs dispatch directly to the named action without enforcing HTTP verb routing, the spec passes despite using the wrong verb.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i16",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The limit and offset params on the members endpoint are not validated or clamped: negative values reach SQL and cause errors, and limit has no upper cap.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/controllers/groups_controller.rb:22-26, `limit = (params[:limit] || 50).to_i` and `offset = params[:offset].to_i` are passed directly to `.limit(limit).offset(offset)` without lower-bound validation or an upper cap, so negative values generate invalid negative SQL `LIMIT`/`OFFSET` clauses in PostgreSQL and arbitrary positive `limit` values are uncapped. The patch rewrote these lines and removed the `if group.automatic?` guard, exposing all groups to this unvalidated input.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i19",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The usernames input is not cleared after an add operation.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/assets/javascripts/admin/controllers/admin-group.js.es6:61-65, the addMembers action passes this.get(\"usernames\") to the model's addMembers method without clearing usernames or resetting the user-selector input, even leaving a '// TODO: should clear the input' comment at line 62. Neither Discourse.Group#addMembers (app/assets/javascripts/discourse/models/group.js:51-60) nor the user-selector component clears the input afterwards.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

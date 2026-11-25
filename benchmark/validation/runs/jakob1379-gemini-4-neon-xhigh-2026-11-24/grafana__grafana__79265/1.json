@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In pkg/services/anonymous/anonimpl/impl.go:87, tagDeviceUI inserts the device key into localCache (29m TTL, impl.go:42) before calling CreateOrUpdateDevice at impl.go:93 and returns on error without evicting it. Subsequent requests from a rejected device hit the cache at impl.go:83-85, causing TagDevice to return nil and Anonymous.Authenticate (pkg/services/anonymous/anonimpl/client.go:44-58) to grant access until the entry expires.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

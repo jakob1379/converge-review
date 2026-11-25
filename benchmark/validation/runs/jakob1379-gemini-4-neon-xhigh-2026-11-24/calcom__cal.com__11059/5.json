@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "parseRefreshTokenResponse in packages/app-store/_utils/oauth/parseRefreshTokenResponse.ts:21-23 throws an Error whenever !refreshTokenResponse.success and therefore only ever returns a result with success: true. Consequently, the !accessTokenParsed.success check in packages/app-store/salesforce/lib/CalendarService.ts:92-94 and the !parsedToken.success check in packages/app-store/zoomvideo/lib/VideoApiAdapter.ts:108-110 are unreachable dead code.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

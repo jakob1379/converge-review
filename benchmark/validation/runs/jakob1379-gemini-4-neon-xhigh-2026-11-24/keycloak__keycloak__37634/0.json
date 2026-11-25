@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In services/src/main/java/org/keycloak/protocol/oidc/encode/AccessTokenContext.java:72-73, the constructor calls Objects.requireNonNull(grantType, \"Null rawTokenId not allowed\") instead of checking rawTokenId. A null rawTokenId is therefore accepted and concatenated as \"<prefix>:null\" in services/src/main/java/org/keycloak/protocol/oidc/encode/DefaultTokenContextEncoderProvider.java:114-117 (or left null for downstream callers).",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

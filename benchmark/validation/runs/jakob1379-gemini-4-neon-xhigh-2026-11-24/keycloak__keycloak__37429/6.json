@@ -1,0 +1,45 @@
+{
+ "verdict": "refuted",
+ "reason": "OWASP's HtmlChangeListener only reports policy-discarded tags and attributes, silently ignoring HTML comments, unmatched closing tags, unclosed tags, and malformed markup (as OWASP explicitly warns against using it to validate raw input). Because misc/theme-verifier/src/main/java/org/keycloak/themeverifier/VerifyMessageProperties.java:92-112 (with commons-text at misc/theme-verifier/pom.xml:80-85) validates raw properties without replacing them with sanitized output, the string-comparison pipeline catches broken/unsafe HTML\u2014such as the unclosed <p>, stray </strong>, </ b>, and </p<p> fixes in this patch\u2014that HtmlChangeListener cannot detect.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "fetch",
+   "allowed": false
+  },
+  {
+   "kind": "fetch",
+   "allowed": false
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  },
+  {
+   "kind": "search",
+   "allowed": true
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

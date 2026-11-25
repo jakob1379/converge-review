@@ -1,0 +1,236 @@
+{
+ "findings": [
+  {
+   "issue": "i4",
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The migration indexes execute(...)[0]['id'] for the embed_category lookup without checking for an empty result. It raises IndexError when no matching site_settings row exists, such as on fresh installs or the test DB.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:9-11, the migration directly indexes execute(...)[0]['id'] on the PG::Result without checking cmd_tuples/ntuples first (unlike lines 18-20). When no matching embed_category row exists in site_settings (e.g., fresh installs, test DBs, or sites without embedding configured), PG::Result#[0] raises IndexError and aborts the migration.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i9",
+   "path": "db/migrate/20150818190757_create_embeddable_hosts.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "The migration backfill interpolates legacy host strings directly into raw SQL (VALUES ('#{h}', ...)) without quoting or parameter binding. A value containing a single quote aborts the migration.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In db/migrate/20150818190757_create_embeddable_hosts.rb:20-25, the migration reads the legacy embeddable_hosts setting, splits it on newlines, and interpolates each host directly into raw SQL via VALUES ('#{h}', ...) at line 25 without quoting or parameter binding. Because host_list has no validator in lib/site_setting_extension.rb:420-430, a stored value containing a single quote causes a SQL syntax error that aborts the migration (and permits SQL injection).",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i10",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "EmbeddableHost's before_validation calls self.host.sub! without a nil guard. A missing host raises NoMethodError (500) instead of producing a validation error.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/models/embeddable_host.rb:5-8, the before_validation callback unconditionally calls self.host.sub! without checking for nil. When host is nil (e.g., via a missing :host key at app/controllers/admin/embeddable_hosts_controller.rb:21 or EmbeddableHost.new.valid?), validation raises NoMethodError (HTTP 500) instead of failing validates_format_of and returning a validation error.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i13",
+   "path": "embedding_controller.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Admin::EmbeddingController#update persists nothing and only re-renders show. The PUT customize/embedding route and the client saveChanges action that back it are therefore dead.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Admin::EmbeddingController#update (app/controllers/admin/embedding_controller.rb:9-11) ignores params and only runs the same render_serialized call as #show (lines 5-7) without persisting anything. Both the PUT route (config/routes.rb:139) and the unreferenced saveChanges action calling update({}) (app/assets/javascripts/admin/controllers/admin-embedding.js.es6:5-7, unused in app/assets/javascripts/admin/templates/embedding.hbs) are dead code.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i14",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The new create/update/destroy and embedding show endpoints have no behavioural tests. The specs only assert subclassing of AdminController.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "Both new controller specs (spec/controllers/admin/embeddable_hosts_controller_spec.rb:5-7 and spec/controllers/admin/embedding_controller_spec.rb:5-7) only assert inheritance from Admin::AdminController. None of the new actions in app/controllers/admin/embeddable_hosts_controller.rb:5-18 (create, update, destroy) or app/controllers/admin/embedding_controller.rb:5-11 (show, update) have any behavioural tests.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i15",
+   "path": "app/controllers/admin/embeddable_hosts_controller.rb",
+   "line": null,
+   "severity": "Minor",
+   "claim": "Admin::EmbeddableHostsController#update and #destroy use EmbeddableHost.where(id:).first and then call methods on the result. An unknown id raises NoMethodError (500) instead of returning 404.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In app/controllers/admin/embeddable_hosts_controller.rb:10-16, #update passes `EmbeddableHost.where(id: params[:id]).first` to `save_host`, which calls `host.host =` at line 23, and #destroy calls `host.destroy` at line 16 without checking for `nil`; an unknown id therefore raises `NoMethodError` (500) instead of returning 404.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i34",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The host validation regex's [a-z]{2,5} TLD rule rejects localhost, IP addresses and TLDs longer than 5 characters such as .museum. Migrated rows that skipped validation then fail on later edit.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "The regex in app/models/embeddable_host.rb:2 requires a dot followed by 2\u20135 letters (`\\.[a-z]{2,5}`), which rejects `localhost`, numeric IP addresses, and TLDs longer than 5 characters such as `.museum`. Because db/migrate/20150818190757_create_embeddable_hosts.rb:25 inserts migrated hosts via raw SQL without running validations, any such migrated row will fail `host.save` on later edits in app/controllers/admin/embeddable_hosts_controller.rb:27.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i37",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The singleton embedding record is fetched with store.find without an id, which resolves to a collection.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "Although app/assets/javascripts/admin/routes/admin-embedding.js.es6:3 calls `this.store.find('embedding')` without an id, Discourse's custom store in app/assets/javascripts/discourse/models/store.js.es6:64-73 only returns a `_resultSet` collection when `typeof findArgs === \"object\"` (line 67). Because `findArgs` is `undefined`, execution takes the `else` branch at line 70 and calls `_hydrate` on `result['embedding']` (fetched from `/admin/customize/embedding` via app/assets/javascripts/admin/adapters/embedding.js.es6:4-6), resolving to a single model record rather than a collection.",
+    "introduced_by_patch": false,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

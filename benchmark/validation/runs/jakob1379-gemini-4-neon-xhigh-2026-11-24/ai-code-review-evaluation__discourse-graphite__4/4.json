@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/models/topic_embed.rb:44-53, TopicEmbed.import_remote passes url directly to open(url).read on line 48 without validating its format or scheme first, whereas the http/https check only occurs afterward in TopicEmbed.import at app/models/topic_embed.rb:11. Callers also do not enforce an http/https scheme (lib/topic_retriever.rb:15 checks only URI(@embed_url).host and lib/tasks/disqus.thor:148 does no validation), allowing non-HTTP schemes, local file access, or Kernel#open command injection.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

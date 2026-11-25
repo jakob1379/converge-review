@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/lib/server/service/__tests__/insightsBooking.integration-test.ts:332-343, expect(conditions).toEqual(Prisma.sql`...`) asserts exact array order inside both ANY(...) parameters, which buildOrgAuthorizationCondition (packages/lib/server/service/insightsBooking.ts:150-169) builds without sorting. Neither TeamRepository.findAllByParentId (packages/lib/server/repository/team.ts:192-197) nor MembershipRepository.findAllByTeamIds (packages/lib/server/repository/membership.ts:409-419) specifies an orderBy clause, making the SQL-fragment equality nondeterministic.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In apps/web/pages/api/auth/two-factor/totp/disable.ts:36-38, the handler returns early when !user.twoFactorEnabled, making user.twoFactorEnabled always true at lines 48 and 69. Additionally, the !process.env.CALENDSO_ENCRYPTION_KEY guard is duplicated in both branches at lines 49-52 and 80-83.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

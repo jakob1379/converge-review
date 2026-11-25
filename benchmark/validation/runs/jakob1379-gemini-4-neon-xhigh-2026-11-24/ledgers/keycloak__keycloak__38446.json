@@ -1,0 +1,117 @@
+{
+ "findings": [
+  {
+   "issue": "i2",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "Core Keycloak does not enforce single use for recovery codes stored through the generic user-storage path. It leaves consuming a used code entirely to the user-storage provider, with no guidance.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "When recovery codes are stored in user storage via CredentialHelper.createRecoveryCodesCredential (server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:115-131), validation in UserCredentialManager.isValid (model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:59-79) delegates directly to the UserStorageProvider's CredentialInputValidator.isValid and skips RecoveryAuthnCodesCredentialProvider.isValid (services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:99-116), while RecoveryAuthnCodesFormAuthenticator (services/src/main/java/org/keycloak/authentication/authenticators/browser/RecoveryAuthnCodesFormAuthenticator.java:70-92) never consumes the used code. Neither the SPI interfaces (server-spi/src/main/java/org/keycloak/credential/CredentialInputValidator.java:27-37) nor the new helpers document that providers must consume used codes, as reflected by the patch's own BackwardsCompatibilityUserStorage.isValid (testsuite/integration-arquillian/servers/auth-server/services/testsuite-providers/src/main/java/org/keycloak/testsuite/federation/BackwardsCompatibilityUserStorage.java:326-340) leaving codes reusable.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i5",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "RecoveryAuthnCodesFormAuthenticator takes the credential returned by getCredential(), which may come from user storage, makes the allCodesUsed decision on it, and calls removeStoredCredentialById(). That method only removes local/fed-storage credentials, so the provider's copy is not removed. When local and federated credentials both exist, the authenticator inspects or removes a different credential from the one that validated.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "RecoveryAuthnCodesFormAuthenticator.java:80-88 gets the credential from RecoveryAuthnCodesUtils.getCredential() (RecoveryAuthnCodesUtils.java:56-62, which prefers getFederatedCredentialsStream() from user storage), checks allCodesUsed(), and calls removeStoredCredentialById(), which only removes from userLocalStorage()/userFederatedStorage() (UserCredentialManager.java:114-117,298-305) and never removes the user storage provider's copy. Because UserCredentialManager.isValid() (UserCredentialManager.java:59-80) falls through to local CredentialInputValidator providers if the federated provider does not validate, when both credentials exist the authenticator can validate against the local credential yet inspect or attempt to remove the federated one returned by getCredential().",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i18",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "When createRecoveryCodesCredential stores codes in user storage (updateCredential returns true), it returns without calling recoveryCodeCredentialProvider.createCredential(), so existing local recovery-code credentials are not deleted and old codes remain valid.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In server-spi-private/src/main/java/org/keycloak/utils/CredentialHelper.java:125-130, when user.credentialManager().updateCredential returns true, createRecoveryCodesCredential only logs and skips recoveryCodeCredentialProvider.createCredential (which deletes existing local credentials in services/src/main/java/org/keycloak/credential/RecoveryAuthnCodesCredentialProvider.java:39-40). Because model/storage/src/main/java/org/keycloak/credential/UserCredentialManager.java:75-76 falls back to local CredentialInputValidators like RecoveryAuthnCodesCredentialProvider.isValid when user storage rejects a code, any previously stored local recovery codes remain valid for authentication.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i22",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test calls TestAppHelper.logout(), which relies on a refreshToken set by completeLogin(), but never calls completeLogin() after submitting the recovery code, so logout may be a no-op and leave sessions behind.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/storage/BackwardsCompatibilityUserStorageTest.java:255-264, testRecoveryKeysSetupAndLogin creates a new TestAppHelper and calls startLogin() and logout() without ever calling completeLogin() or asserting logout()'s boolean result. Because TestAppHelper only assigns refreshToken in completeLogin() (testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/util/TestAppHelper.java:70-74), logout() (TestAppHelper.java:104-110) calls oauth.doLogout(null), omitting the refresh_token parameter (tests/utils-shared/src/main/java/org/keycloak/testsuite/util/oauth/LogoutRequest.java:21-23, AbstractHttpPostRequest.java:77-81) and silently failing to log out the session.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

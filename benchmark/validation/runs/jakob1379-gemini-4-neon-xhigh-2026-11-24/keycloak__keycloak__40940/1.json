@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In tests/base/src/test/java/org/keycloak/tests/admin/group/GroupTest.java:139-149, createMultiDeleteMultiReadMulti starts an unreferenced background Thread via new Thread(...).start() and never joins it. Line 157 asserts assertThat(caughtExceptions, Matchers.empty()) immediately after deletedAll.set(true) on line 155, so exceptions from an in-flight groups() request can occur after the assertion and the reader thread can outlive the test.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

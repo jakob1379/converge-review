@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/apps/components/CredentialActionsDropdown.tsx:42-50, deleteCacheMutation only calls showToast and onSuccess?.() without invalidating utils.viewer.calendars.connectedCalendars (unlike disconnectMutation at lines 61-64). SelectedCalendarsSettingsWebWrapper.tsx:71-78,124-131 forwards props.onChanged as onSuccess using data from connectedCalendars.useQuery (lines 153-161), and EventAdvancedTab.tsx:372-384 renders SelectedCalendarsSettingsWebWrapper without onChanged, leaving cacheUpdatedAt and 'Last updated' stale after cache deletion.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

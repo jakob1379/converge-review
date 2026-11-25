@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "The regex in app/models/embeddable_host.rb:2 requires a dot followed by 2\u20135 letters (`\\.[a-z]{2,5}`), which rejects `localhost`, numeric IP addresses, and TLDs longer than 5 characters such as `.museum`. Because db/migrate/20150818190757_create_embeddable_hosts.rb:25 inserts migrated hosts via raw SQL without running validations, any such migrated row will fail `host.save` on later edits in app/controllers/admin/embeddable_hosts_controller.rb:27.",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In src/sentry/api/endpoints/organization_auditlogs.py:73-83, requests with ?optimized_pagination=true (for superusers or members with global access) paginate AuditLogEntry (where datetime is a DateTimeField at src/sentry/models/auditlogentry.py:69) with OptimizedCursorPaginator and order_by=\"-datetime\". OptimizedCursorPaginator.get_item_key (src/sentry/api/paginator.py:838-840) passes that datetime directly to math.floor/math.ceil when build_cursor invokes key() on any non-empty result set (src/sentry/utils/cursors.py:130,141,191), raising an unhandled TypeError (500).",
+ "introduced_by_patch": true,
+ "impact": "blocks-merge",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

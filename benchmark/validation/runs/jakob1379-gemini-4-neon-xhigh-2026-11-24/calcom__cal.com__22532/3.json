@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In packages/features/apps/components/CredentialActionsDropdown.tsx:88-94, the `cache_last_updated` timestamp is formatted with `new Intl.DateTimeFormat(\"en-US\", { dateStyle: \"short\", timeStyle: \"short\" })`, hard-coding the locale instead of using `i18n.language` from `useLocale()` (only `t` is destructured on line 37) and omitting any `timeZone` option for the user's profile timezone.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

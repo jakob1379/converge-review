@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In lib/topic_retriever.rb:27-28, retrieved_recently? calls $redis.setnx(retrieved_key, \"1\") and $redis.expire(retrieved_key, 60) as two separate Redis commands (proxied directly in lib/discourse_redis.rb:46-57). If a crash or connection failure occurs between them, the key persists without a TTL and subsequent throttled calls always see setnx return false, blocking retrieval of that URL unless bypassed by staff or cleared manually.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

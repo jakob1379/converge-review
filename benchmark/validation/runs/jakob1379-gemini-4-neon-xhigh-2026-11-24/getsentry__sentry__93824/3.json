@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "SpanFlusher._create_process_for_shard at src/sentry/spans/consumers/process/flusher.py:127-132 is newly introduced by this patch and only looks up the shard in self.process_to_shards_map to call _create_process_for_shards. Both _create_processes (line 84) and _ensure_processes_alive (line 259) call _create_process_for_shards directly, and no callers of _create_process_for_shard exist in the patch or tests.",
+ "introduced_by_patch": true,
+ "impact": "trivial",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

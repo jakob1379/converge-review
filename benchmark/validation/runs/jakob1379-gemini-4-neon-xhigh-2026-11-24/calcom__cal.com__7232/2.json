@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "The EMAIL/SMS reminder-deletion if/else dispatch block is duplicated at 7 call sites across 4 files: packages/features/bookings/lib/handleCancelBooking.ts:487-491, packages/features/bookings/lib/handleNewBooking.ts:967-971, packages/trpc/server/routers/viewer/bookings.tsx:489-493, and packages/trpc/server/routers/viewer/workflows.tsx:213-217, 377-381, 520-524, and 575-579. This patch updates all 6 pre-existing sites and adds the 7th rather than extracting a shared dispatcher.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

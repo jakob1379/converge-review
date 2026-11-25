@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In services/src/main/java/org/keycloak/protocol/oidc/encode/DefaultTokenContextEncoderProviderFactory.java:106-137, neither lazy refresh path (getShortcutByGrantType at lines 106-119 nor getGrantTypeByShortcut at lines 121-137) performs the duplicate-shortcut validation done in postInit (lines 82-85). Specifically, getShortcutByGrantType unconditionally calls grantsByShortcuts.put(shortcut, grantType) at line 113, allowing a dynamically deployed custom grant with a colliding shortcut to silently overwrite an existing shortcut mapping.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}

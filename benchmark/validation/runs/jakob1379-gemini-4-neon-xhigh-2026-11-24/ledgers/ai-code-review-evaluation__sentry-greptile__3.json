@@ -1,0 +1,125 @@
+{
+ "findings": [
+  {
+   "issue": "i3",
+   "path": "factories.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "_set_sample_rate_from_error_sampling in factories.py checks `if client_sample_rate:`. A valid client_sample_rate of 0 or 0.0 is therefore falsy and never set as sample_rate.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "appendix",
+   "verifier": {
+    "verdict": "refuted",
+    "reason": "While src/sentry/testutils/factories.py:353 checks `if client_sample_rate:`, 0 and 0.0 are not valid error sampling rates in Sentry: src/sentry/event_manager.py:786 strictly requires `0 < client_sample_rate <= 1` and rejects 0 as invalid (also tested in tests/sentry/event_manager/test_event_manager.py:3103-3104), so omitting `sample_rate` for 0/0.0 matches production behavior.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i12",
+   "path": "organization_events_stats.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "In OrganizationEventsStatsEndpoint._get_event_stats, upsampling eligibility is computed from the outer `dataset` and raw request query instead of `scoped_dataset` and the executed query. As a result, dashboard-split subqueries (e.g. discover when the outer dataset is metrics) are not upsampled or are upsampled incorrectly.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/api/endpoints/organization_events_stats.py:220-222, `_get_event_stats` passes the outer `dataset` and raw `request` (whose `request.GET.get('query', '')` is read in src/sentry/api/helpers/error_upsampling.py:135) instead of its `scoped_dataset` and `query` parameters. Because dashboard-split subqueries in src/sentry/api/endpoints/organization_events_stats.py:362-395 and 417-445 call `_get_event_stats` with `discover` and rewritten queries while the outer `dataset` is a metrics dataset, `_should_apply_sample_weight_transform` (src/sentry/api/helpers/error_upsampling.py:103-127) always returns `False` and skips upsampling.",
+    "introduced_by_patch": true,
+    "impact": "blocks-merge",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i17",
+   "path": null,
+   "line": null,
+   "severity": "Minor",
+   "claim": "The test creates the organization with Organization.objects.create(name='test-org') instead of self.create_organization(), contrary to the repo's CLAUDE.md factory rule.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "tests/sentry/api/helpers/test_error_upsampling.py:21 creates self.organization with Organization.objects.create(name=\"test-org\") instead of self.create_organization(), bypassing the factory's slug reservation and outbox setup (src/sentry/testutils/factories.py:364-403) and violating the factory rules in CLAUDE.md:322 and CLAUDE.md:627.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  },
+  {
+   "issue": "i18",
+   "path": "discover.py",
+   "line": null,
+   "severity": "Minor",
+   "claim": "upsampled_count in discover.py is not marked private=True. It is therefore exposed as a public Discover function that can bypass the allowlist and error-query checks and reference sample_weight on datasets without that column.",
+   "evidence": null,
+   "seats": [],
+   "verdict": "fix",
+   "list": "main",
+   "verifier": {
+    "verdict": "confirmed",
+    "reason": "In src/sentry/search/events/datasets/discover.py:1041-1052, SnQLFunction(\"upsampled_count\", ...) omits private=True (defaulting to False), so BaseQueryBuilder.resolve_function (src/sentry/search/events/builder/base.py:737-738) and DiscoverFunction.is_accessible (src/sentry/search/events/fields.py:1515-1534) allow any caller to invoke upsampled_count() directly without functions_acl, bypassing the allowlist and error-query checks in src/sentry/api/helpers/error_upsampling.py:13-140. Because DiscoverQueryBuilder.load_config (src/sentry/search/events/builder/discover.py:65-71) uses DiscoverDatasetConfig for Discover, Transactions, Events, and IssuePlatform, this exposes a query emitting Column(\"sample_weight\") on datasets that do not have that column.",
+    "introduced_by_patch": true,
+    "impact": "worth-fixing",
+    "cost_usd": 0,
+    "usage": null,
+    "permission_requests": [
+     {
+      "kind": "execute",
+      "allowed": false
+     },
+     {
+      "kind": "execute",
+      "allowed": false
+     }
+    ],
+    "cli": "gemini",
+    "model": "gemini-4-neon",
+    "effort": "xhigh"
+   }
+  }
+ ],
+ "coverage": "pooled issues; severity and verdict are placeholders"
+}

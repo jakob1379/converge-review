@@ -1,0 +1,17 @@
+{
+ "verdict": "confirmed",
+ "reason": "In app/assets/stylesheets/desktop/topic-post.scss:291, the patch changed `.topic-meta-data h5 a` from `scale-color($primary, $lightness: 30%)` to `dark-light-choose(scale-color($primary, $lightness: 70%), scale-color($secondary, $lightness: 30%))`. Because `dark-light-choose` (app/assets/stylesheets/common/foundation/variables.scss:48-54) returns its first argument for light themes, the lightness percentages are swapped and light-theme links get 70% lightness instead of 30%, making them much lighter and lower-contrast.",
+ "introduced_by_patch": true,
+ "impact": "worth-fixing",
+ "cost_usd": 0,
+ "usage": null,
+ "permission_requests": [
+  {
+   "kind": "execute",
+   "allowed": false
+  }
+ ],
+ "cli": "gemini",
+ "model": "gemini-4-neon",
+ "effort": "xhigh"
+}
